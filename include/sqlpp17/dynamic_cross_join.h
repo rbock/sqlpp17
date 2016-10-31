@@ -26,75 +26,67 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <memory>
-#include <sqlpp17/type_traits.h>
-#include <sqlpp17/interpret.h>
+#include <sqlpp17/join_functions.h>
 
 namespace sqlpp
 {
-  template <typename Context>
-  struct interpretable_t
+  template <typename Rhs>
+  struct dynamic_cross_join_t
   {
-    template <typename T>
-    interpretable_t(T t) : _requires_braces(requires_braces<T>), _impl(std::make_shared<_impl_t<T>>(t))
-    {
-    }
-
-    interpretable_t(const interpretable_t&) = default;
-    interpretable_t(interpretable_t&&) = default;
-    interpretable_t& operator=(const interpretable_t&) = default;
-    interpretable_t& operator=(interpretable_t&&) = default;
-    ~interpretable_t() = default;
-
-    auto interpret(Context& context) const -> Context&
-    {
-      return _impl->interpret(context);
-    }
-
-    bool _requires_braces;
-
-  private:
-    struct _impl_base
-    {
-      virtual auto interpret(Context& context) const -> Context& = 0;
-    };
+    using _traits = make_traits<no_value_t, tag::is_table, tag::is_join>;
+    using _nodes = detail::type_vector<PreJoin, On>;
+    using _can_be_null = std::false_type;
+    using _provided_tables = provided_tables_of<PreJoin>;
+    using _required_tables = detail::make_difference_set_t<required_tables_of<On>, _provided_tables>;
 
     template <typename T>
-    struct _impl_t : public _impl_base
+    auto join(T t) const
     {
-      static_assert(parameters_of<T>::size() == 0, "parameters not supported in dynamic statement parts");
-      _impl_t(T t) : _t(t)
-      {
-      }
+      return ::sqlpp::join(*this, t);
+    }
 
-      auto interpret(Context& context) const -> Context&
-      {
-        ::sqlpp::interpret(_t, context);
-        return context;
-      }
+    template <typename T>
+    auto inner_join(T t) const
+    {
+      return ::sqlpp::inner_join(*this, t);
+    }
 
-      T _t;
-    };
+    template <typename T>
+    auto left_outer_join(T t) const
+    {
+      return ::sqlpp::left_outer_join(*this, t);
+    }
 
-    std::shared_ptr<const _impl_base> _impl;
+    template <typename T>
+    auto right_outer_join(T t) const
+    {
+      return ::sqlpp::right_outer_join(*this, t);
+    }
+
+    template <typename T>
+    auto outer_join(T t) const
+    {
+      return ::sqlpp::outer_join(*this, t);
+    }
+
+    template <typename T>
+    auto cross_join(T t) const
+    {
+      return ::sqlpp::cross_join(*this, t);
+    }
+
+    Rhs _rhs;
   };
 
-  template <typename Context, typename Database>
-  struct interpreter_t<Context, interpretable_t<Database>>
+  template <typename Context, typename Rhs>
+  struct interpreter_t<Context, dynamic_cross_join_t<Rhs>>
   {
-    using T = interpretable_t<Database>;
+    using T = cross_join_t<Rhs>;
 
     static Context& _(const T& t, Context& context)
     {
-      if (t._requires_braces)
-      {
-        context << '(';
-        t.interpret(context);
-        context << ')';
-      }
-      else
-        t.interpret(context);
-
+      context << " CROSS JOIN ";
+      interpret(t._rhs, context);
       return context;
     }
   };

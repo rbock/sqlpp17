@@ -26,75 +26,29 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <memory>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/interpret.h>
 
 namespace sqlpp
 {
-  template <typename Context>
-  struct interpretable_t
+  template <typename Expression>
+  struct on_t
   {
-    template <typename T>
-    interpretable_t(T t) : _requires_braces(requires_braces<T>), _impl(std::make_shared<_impl_t<T>>(t))
-    {
-    }
+    using _traits = make_traits<no_value_t, tag::is_on>;
+    using _nodes = detail::type_vector<Expression>;
 
-    interpretable_t(const interpretable_t&) = default;
-    interpretable_t(interpretable_t&&) = default;
-    interpretable_t& operator=(const interpretable_t&) = default;
-    interpretable_t& operator=(interpretable_t&&) = default;
-    ~interpretable_t() = default;
-
-    auto interpret(Context& context) const -> Context&
-    {
-      return _impl->interpret(context);
-    }
-
-    bool _requires_braces;
-
-  private:
-    struct _impl_base
-    {
-      virtual auto interpret(Context& context) const -> Context& = 0;
-    };
-
-    template <typename T>
-    struct _impl_t : public _impl_base
-    {
-      static_assert(parameters_of<T>::size() == 0, "parameters not supported in dynamic statement parts");
-      _impl_t(T t) : _t(t)
-      {
-      }
-
-      auto interpret(Context& context) const -> Context&
-      {
-        ::sqlpp::interpret(_t, context);
-        return context;
-      }
-
-      T _t;
-    };
-
-    std::shared_ptr<const _impl_base> _impl;
+    Expression _expression;
   };
 
-  template <typename Context, typename Database>
-  struct interpreter_t<Context, interpretable_t<Database>>
+  template <typename Context, typename Expression>
+  struct interpreter_t<Context, on_t<Expression>>
   {
-    using T = interpretable_t<Database>;
+    using T = on_t<Expression>;
 
     static Context& _(const T& t, Context& context)
     {
-      if (t._requires_braces)
-      {
-        context << '(';
-        t.interpret(context);
-        context << ')';
-      }
-      else
-        t.interpret(context);
-
+      context << " ON ";
+      interpret(t._expression, context);
       return context;
     }
   };

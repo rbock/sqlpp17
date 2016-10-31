@@ -26,39 +26,51 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <ostream>
+#include <sqlpp17/type_traits.h>
 
 namespace sqlpp
 {
-  struct serializer_context
+  struct inner_join_t
   {
-    serializer_context(std::ostream& os) : _os(os)
-    {
-    }
+    /*
+    template <typename Lhs, typename Rhs>
+    using _provided_nullable_tables =
+        detail::make_joined_set_t<provided_nullable_tables_of<Lhs>, provided_nullable_tables_of<Rhs>>;
+        */
 
-    template <typename T>
-    auto operator<<(T t) -> std::ostream&
-    {
-      return _os << t;
-    }
+    static constexpr const char* _name = " INNER";
+  };
 
-    static auto escape(std::string arg) -> std::string
-    {
-      if (arg.find('\''))
-      {
-        std::string retVal;
-        for (const auto c : arg)
-        {
-          if (c == '\'')
-            retVal.push_back(c);
-          retVal.push_back(c);
-        }
-        return retVal;
-      }
-      else
-        return arg;
-    }
+  struct outer_join_t
+  {
+    /*
+    template <typename Lhs, typename Rhs>
+    using _provided_nullable_tables = detail::make_joined_set_t<provided_tables_of<Lhs>, provided_tables_of<Rhs>>;
+    */
 
-    std::ostream& _os;
+    static constexpr const char* _name = " OUTER";
+  };
+
+  struct left_outer_join_t
+  {
+    /*
+  template <typename Lhs, typename Rhs>
+  using _provided_nullable_tables =
+      detail::make_joined_set_t<provided_nullable_tables_of<Lhs>, provided_tables_of<Rhs>>;
+      */
+
+    static constexpr const char* _name = " LEFT OUTER";
+  };
+
+  struct right_outer_join_t
+  {
+    /*
+      template <typename Lhs, typename Rhs>
+      using _provided_nullable_tables =
+          detail::make_joined_set_t<provided_tables_of<Lhs>, provided_nullable_tables_of<Rhs>>;
+          */
+
+    static constexpr const char* _name = " RIGHT OUTER";
   };
 }
+

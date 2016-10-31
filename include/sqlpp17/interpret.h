@@ -26,31 +26,33 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/failed.h>
+#include <sqlpp17/interpreter.h>
+#include <sqlpp17/type_traits.h>
 
 namespace sqlpp
 {
-  template <typename Assert>
-  struct bad_statement
+  template <typename T, typename Context>
+  auto interpret(const T& t, Context& context)
   {
-    bad_statement(Assert)
+    return interpreter_t<Context, T>::_(t, context);
+  }
+
+  template <typename T, typename Context>
+  auto interpret_operand(const T& t, Context& context) -> Context&
+  {
+    if
+      constexpr(requires_braces<T>)
+      {
+        context << '(';
+        interpreter_t<Context, T>::_(t, context);
+        context << ')';
+      }
+    else
     {
-      Assert::_();
+      interpreter_t<Context, T>::_(t, context);
     }
-  };
 
-  template <typename T>
-  struct make_return_type
-  {
-    using type = T;
-  };
-
-  template <typename T>
-  struct make_return_type<failed<T>>
-  {
-    using type = bad_statement<failed<T>>;
-  };
-
-  template <typename T>
-  using make_return_type_t = typename make_return_type<T>::type;
+    return context;
+  }
 }
+

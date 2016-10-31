@@ -41,6 +41,9 @@ namespace sqlpp
   template <typename T>
   constexpr auto is_table = false;
 
+  template <typename T>
+  constexpr auto is_join = false;
+
   template <typename... Args>
   constexpr auto is_table<table<Args...>> = true;
 

@@ -26,31 +26,35 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/failed.h>
+#include <sqlpp17/pre_join.h>
+#include <sqlpp17/on.h>
 
 namespace sqlpp
 {
-  template <typename Assert>
-  struct bad_statement
+  template <typename PreJoin, typename On>
+  class join_t : public join_functions<join_t<PreJoin, On>>
   {
-    bad_statement(Assert)
+    using _traits = make_traits<no_value_t, tag::is_table, tag::is_join>;
+    using _nodes = detail::type_vector<PreJoin, On>;
+    using _can_be_null = std::false_type;
+    using _provided_tables = provided_tables_of<PreJoin>;
+    using _required_tables = detail::make_difference_set_t<required_tables_of<On>, _provided_tables>;
+
+    PreJoin _pre_join;
+    On _on;
+  };
+
+  template <typename Context, typename PreJoin, typename On>
+  struct interpreter_t<Context, join_t<PreJoin, On>>
+  {
+    using T = join_t<PreJoin, On>;
+
+    static Context& _(const T& t, Context& context)
     {
-      Assert::_();
+      interpret(t._pre_join, context);
+      interpret(t._on, context);
+      return context;
     }
   };
-
-  template <typename T>
-  struct make_return_type
-  {
-    using type = T;
-  };
-
-  template <typename T>
-  struct make_return_type<failed<T>>
-  {
-    using type = bad_statement<failed<T>>;
-  };
-
-  template <typename T>
-  using make_return_type_t = typename make_return_type<T>::type;
 }
+

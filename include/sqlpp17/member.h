@@ -26,19 +26,9 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/wrapped_static_assert.h>
-#include <sqlpp17/wrong.h>
-
 namespace sqlpp
 {
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_serializer_specialization_t, "missing serializer specialization");
-
-  template <typename Context, typename T, typename Enable = void>
-  struct serializer_t
-  {
-    using _serialize_check = assert_serializer_specialization_t;
-
-    static void _(const T&, Context&);
-  };
+  template <typename Name, typename Type>
+  using member_t = typename Name::_alias_t::template _member_t<Type>;
 }
 

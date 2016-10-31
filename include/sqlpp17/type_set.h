@@ -76,7 +76,7 @@ namespace sqlpp
       }
 
       template <typename... T>
-      [[nodiscard]] constexpr auto is_disjoint(_type_set<T...>) const
+      [[nodiscard]] constexpr auto is_disjoint_from(_type_set<T...>) const
       {
         return (true && ... && (!count<T>()));
       }

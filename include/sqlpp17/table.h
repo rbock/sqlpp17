@@ -26,31 +26,41 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/failed.h>
+#include <sqlpp17/member.h>
+#include <sqlpp17/type_traits.h>
+#include <sqlpp17/table_alias.h>
+#include <sqlpp17/join_functions.h>
 
 namespace sqlpp
 {
-  template <typename Assert>
-  struct bad_statement
+  template <typename Table, typename... ColumnSpecs>
+  class table_t : public join_functions<Table>, public member_t<ColumnSpecs, column_t<Table, ColumnSpecs>>...
   {
-    bad_statement(Assert)
+    static_assert(sizeof...(ColumnSpecs), "at least one column required per table");
+
+    auto& ref() const
     {
-      Assert::_();
+      return static_cast<const Table&>(this);
+    }
+
+  public:
+    template <typename AliasProvider>
+    auto as(const AliasProvider&) const
+    {
+      return table_alias_t<AliasProvider, Table>{ref()};
     }
   };
 
-  template <typename T>
-  struct make_return_type
+  template <typename Context, typename Table, typename... ColumnSpecs>
+  struct interpreter_t<Context, table_t<Table, ColumnSpecs...>>
   {
-    using type = T;
-  };
+    using T = table_t<Table, ColumnSpecs...>;
 
-  template <typename T>
-  struct make_return_type<failed<T>>
-  {
-    using type = bad_statement<failed<T>>;
+    static Context& _(const T&, Context& context)
+    {
+      context << name_of<T>::char_ptr();
+      return context;
+    }
   };
-
-  template <typename T>
-  using make_return_type_t = typename make_return_type<T>::type;
 }
+

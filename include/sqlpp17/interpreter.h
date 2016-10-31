@@ -26,31 +26,32 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <utility>
 #include <sqlpp17/failed.h>
+#include <sqlpp17/wrapped_static_assert.h>
+#include <sqlpp17/wrong.h>
 
 namespace sqlpp
 {
-  template <typename Assert>
-  struct bad_statement
+  template <typename Type>
+  struct assert_interpreter_specialization;
+
+  template <typename Type>
+  struct failed<assert_interpreter_specialization<Type>> : std::false_type
   {
-    bad_statement(Assert)
+    template <typename... T>
+    static auto _(T&&...) -> void
     {
-      Assert::_();
+      static_assert(wrong<T...>, "missing interpreter specialization");
     }
   };
 
-  template <typename T>
-  struct make_return_type
+  template <typename Context, typename T, typename Enable = void>
+  struct interpreter_t
   {
-    using type = T;
-  };
+    using _interpret_check = failed<assert_interpreter_specialization<T>>;
 
-  template <typename T>
-  struct make_return_type<failed<T>>
-  {
-    using type = bad_statement<failed<T>>;
+    static void _(const T&, Context&);
   };
-
-  template <typename T>
-  using make_return_type_t = typename make_return_type<T>::type;
 }
+

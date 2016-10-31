@@ -26,33 +26,35 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/serializer.h>
-#include <sqlpp17/type_traits.h>
+#include <sqlpp17/column.h>
+#include <sqlpp17/interpreter.h>
+#include <sqlpp17/join_functions.h>
+#include <sqlpp17/member.h>
 
 namespace sqlpp
 {
-  template <typename T, typename Context>
-  auto serialize(const T& t, Context& context)
+  template <typename AliasProvider, typename Table, typename... ColumnSpecs>
+  struct table_alias_t : public join_functions<table_alias_t<AliasProvider, Table, ColumnSpecs...>>,
+                         public member_t<ColumnSpecs, column_t<AliasProvider, ColumnSpecs>>...
   {
-    return serializer_t<Context, T>::_(t, context);
-  }
+    Table _table;
+  };
 
-  template <typename T, typename Context>
-  auto serialize_operand(const T& t, Context& context) -> Context&
+  template <typename Context, typename AliasProvider, typename Table, typename... ColumnSpecs>
+  struct interpreter_t<Context, table_alias_t<AliasProvider, Table, ColumnSpecs...>>
   {
-    if
-      constexpr(requires_braces<T>)
-      {
-        context << '(';
-        serializer_t<Context, T>::_(t, context);
-        context << ')';
-      }
-    else
+    using T = table_alias_t<AliasProvider, Table, ColumnSpecs...>;
+
+    static Context& _(const T& t, Context& context)
     {
-      serializer_t<Context, T>::_(t, context);
+      if
+        constexpr(requires_braces<Table>) context << "(";
+      serialize(t._table, context);
+      if
+        constexpr(requires_braces<Table>) context << ")";
+      context << " AS " << name_of<T>::char_ptr();
+      return context;
     }
-
-    return context;
-  }
+  };
 }
 

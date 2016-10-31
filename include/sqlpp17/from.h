@@ -28,7 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <vector>
 #include <sqlpp17/interpretable.h>
-#include <sqlpp17/serializer.h>
+#include <sqlpp17/interpret.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
 
@@ -41,26 +41,30 @@ namespace sqlpp
   SQLPP_WRAPPED_STATIC_ASSERT(assert_from_add_provides_no_known_table_names,
                               "from::add() arg must not add table names already used in from()");
 
-  template <typename Table, typename T>
-  constexpr auto check_from_add(const T&)
+  namespace detail
   {
-    if
-      constexpr(is_conditionless_dynamic_join<T>)
-      {
-        return failed<assert_from_add_arg_is_not_conditionless_dynamic_join>{};
-      }
-    else if
-      constexpr(!is_dynamic_join<T>)
-      {
-        return failed<assert_from_add_arg_is_dynamic_join>{};
-      }
-    else if
-      constexpr(!provided_table_names_of<Table>::count<name_of<T>>())
-      {
-        return failed<assert_from_add_provides_no_known_table_names>{};
-      }
-    else
-      return succeeded{};
+#warning need to implement from::add
+    template <typename Table, typename T>
+    constexpr auto check_from_add(const T&)
+    {
+      if
+        constexpr(is_conditionless_dynamic_join<T>)
+        {
+          return failed<assert_from_add_arg_is_not_conditionless_dynamic_join>{};
+        }
+      else if
+        constexpr(!is_dynamic_join<T>)
+        {
+          return failed<assert_from_add_arg_is_dynamic_join>{};
+        }
+      else if
+        constexpr(!provided_table_names_of<Table>::count<name_of<T>>())
+        {
+          return failed<assert_from_add_provides_no_known_table_names>{};
+        }
+      else
+        return succeeded{};
+    }
   }
 
   template <typename Connection, typename Table>
@@ -101,24 +105,25 @@ namespace sqlpp
     clause_base(const from_t<Table>& f) : from(f._data)
     {
     }
+
     from_data<Connection, Table> from;
   };
 
   template <typename Context, typename Table, typename Connection, typename Statement>
-  class serializer_t<Context, clause_base<from_t<Table>, Connection, Statement>>
+  class interpreter_t<Context, clause_base<from_t<Table>, Connection, Statement>>
   {
     using T = clause_base<from_t<Table>, Connection, Statement>;
 
     static Context& _(const T& t, Context& context)
     {
       context << " FROM ";
-      serialize(t._table, context);
+      interpret(t._table, context);
       if
         constexpr(!std::is_same<Connection, void>::value)
         {
           for (const auto& dynamic_join : t._dynamic_joins)
           {
-            serialize(dynamic_join, context);
+            interpret(dynamic_join, context);
           }
         }
       return context;
