@@ -33,28 +33,22 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  template <typename Table, typename... ColumnSpecs>
-  class table_t : public join_functions<Table>, public member_t<ColumnSpecs, column_t<Table, ColumnSpecs>>...
+  template <typename TableSpec, typename... ColumnSpecs>
+  class table_t : public join_functions<table_t<TableSpec, ColumnSpecs...>>,
+                  public member_t<ColumnSpecs, column_t<TableSpec, ColumnSpecs>>...
   {
-    static_assert(sizeof...(ColumnSpecs), "at least one column required per table");
-
-    auto& ref() const
-    {
-      return static_cast<const Table&>(this);
-    }
-
   public:
-    template <typename AliasProvider>
-    auto as(const AliasProvider&) const
+    template <typename Alias>
+    constexpr auto as(const Alias&) const
     {
-      return table_alias_t<AliasProvider, Table>{ref()};
+      return table_alias_t<table_t, Alias, ColumnSpecs...>{};
     }
   };
 
-  template <typename Context, typename Table, typename... ColumnSpecs>
-  struct interpreter_t<Context, table_t<Table, ColumnSpecs...>>
+  template <typename Context, typename TableSpec, typename... ColumnSpecs>
+  struct interpreter_t<Context, table_t<TableSpec, ColumnSpecs...>>
   {
-    using T = table_t<Table, ColumnSpecs...>;
+    using T = table_t<TableSpec, ColumnSpecs...>;
 
     static Context& _(const T&, Context& context)
     {
@@ -62,5 +56,8 @@ namespace sqlpp
       return context;
     }
   };
+
+  template <typename TableSpec, typename... ColumnSpecs>
+  constexpr auto is_table_v<table_t<TableSpec, ColumnSpecs...>> = true;
 }
 

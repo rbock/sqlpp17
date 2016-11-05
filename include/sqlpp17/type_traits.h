@@ -28,24 +28,27 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <type_traits>
 #include <utility>
-#include <sqlpp17/clause_fwd.h>
 #include <sqlpp17/type_set.h>
 
 namespace sqlpp
 {
-  template <typename Name, typename... ColumnSpecs>
-  struct table
+  template <typename T>
+  constexpr auto is_table_v = false;
+
+  template <typename T>
+  constexpr auto is_table(const T&)
   {
+    return is_table_v<T>;
   };
 
   template <typename T>
-  constexpr auto is_table = false;
+  constexpr auto is_boolean = false;
+
+  template <typename T>
+  constexpr auto is_expression = false;
 
   template <typename T>
   constexpr auto is_join = false;
-
-  template <typename... Args>
-  constexpr auto is_table<table<Args...>> = true;
 
   template <typename T>
   constexpr auto is_conditionless_join = false;
@@ -60,16 +63,16 @@ namespace sqlpp
   constexpr auto requires_braces = false;
 
   template <typename T>
-  using parameters_of = type_set_t<>;
+  constexpr auto parameters_of = type_set_t<>();
 
   template <typename T>
-  using required_tables_of = type_set_t<>;
+  constexpr auto required_tables_of = type_set_t<>();
 
   template <typename T>
-  using provided_tables_of = type_set_t<>;
+  constexpr auto provided_tables_of = type_set<>();
 
   template <typename T>
-  using provided_table_names_of = type_set_t<>;
+  constexpr auto provided_table_names_of = type_set_t<>();
 
   template <typename T>
   using name_of = T;

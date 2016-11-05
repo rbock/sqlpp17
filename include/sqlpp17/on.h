@@ -34,9 +34,6 @@ namespace sqlpp
   template <typename Expression>
   struct on_t
   {
-    using _traits = make_traits<no_value_t, tag::is_on>;
-    using _nodes = detail::type_vector<Expression>;
-
     Expression _expression;
   };
 

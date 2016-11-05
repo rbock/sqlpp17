@@ -26,12 +26,13 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/on.h>
 #include <sqlpp17/join.h>
+#include <sqlpp17/on.h>
+#include <sqlpp17/unconditional.h>
 
 namespace sqlpp
 {
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_on_is_boolean_expression_t, "argument is not a boolean expression in on()");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_on_is_boolean_expression, "argument is not a boolean expression in on()");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_join_on_no_foreign_table_dependencies,
                               "on() condition must not depend on other tables");
 
@@ -41,12 +42,12 @@ namespace sqlpp
     constexpr auto check_join(const PreJoin&, const Expr&)
     {
       if
-        constexpr(!is_expression_t<Expr> || !is_boolean_t<Expr>)
+        constexpr(!is_expression<Expr> || !is_boolean<Expr>)
         {
-          return assert_on_is_boolean_expression{};
+          return failed<assert_on_is_boolean_expression>{};
         }
       else if
-        constexpr(!(required_tables_of<Expr>{} <= provided_tables_of<PreJoin>{}))
+        constexpr(!(required_tables_of<Expr> <= provided_tables_of<PreJoin>))
         {
           return failed<assert_join_on_no_foreign_table_dependencies>{};
         }
@@ -74,11 +75,6 @@ namespace sqlpp
     }
 
   public:
-    using _traits = make_traits<no_value_t, tag::is_pre_join>;
-    using _nodes = detail::type_vector<Lhs, Rhs>;
-    using _can_be_null = std::false_type;
-    using _provided_outer_tables = typename JoinType::template _provided_outer_tables<Lhs, Rhs>;
-
     auto unconditionally() const
     {
       return join_t<pre_join_t, on_t<unconditional_t>>{*this, {}};

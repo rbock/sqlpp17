@@ -26,38 +26,51 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/column.h>
-#include <sqlpp17/interpreter.h>
-#include <sqlpp17/join_functions.h>
-#include <sqlpp17/member.h>
+#include <cstddef>
 
-namespace sqlpp
+namespace sqlpp17
 {
-  template <typename Table, typename Alias, typename... ColumnSpecs>
-  struct table_alias_t : public join_functions<table_alias_t<Table, Alias, ColumnSpecs...>>,
-                         public member_t<ColumnSpecs, column_t<Alias, ColumnSpecs>>...
+  class char_ptr_ref
   {
-    Table _table;
-  };
+    const char* const _content;
+    std::size_t _size;
 
-  template <typename Context, typename Table, typename Alias, typename... ColumnSpecs>
-  struct interpreter_t<Context, table_alias_t<Table, Alias, ColumnSpecs...>>
-  {
-    using T = table_alias_t<Table, Alias, ColumnSpecs...>;
-
-    static Context& _(const T& t, Context& context)
+  public:
+    template <unsigned N>
+    constexpr char_ptr_ref(const char (&content)[N]) : _content(content), _size(N)
     {
-      if
-        constexpr(requires_braces<Table>) context << "(";
-      serialize(t._table, context);
-      if
-        constexpr(requires_braces<Table>) context << ")";
-      context << " AS " << name_of<T>::char_ptr();
-      return context;
+    }
+
+    constexpr auto get() const
+    {
+      return _content;
+    }
+
+    constexpr auto at(std::size_t i) const
+    {
+      return _content[i];
+    }
+
+    constexpr auto size() const
+    {
+      return _size;
+    }
+
+    constexpr auto operator==(const char_ptr_ref& rhs) const
+    {
+      if (size() != rhs.size())
+        return false;
+      for (auto i = std::size_t{}; i < size(); ++i)
+      {
+        if (get()[i] != rhs.get()[i])
+          return false;
+      }
+      return true;
+    }
+
+    constexpr auto operator!=(const char_ptr_ref& rhs) const
+    {
+      return !(operator==(rhs));
     }
   };
-
-  template <typename Table, typename Alias, typename... ColumnSpecs>
-  constexpr auto is_table_v<table_alias_t<Table, Alias, ColumnSpecs...>> = true;
 }
-

@@ -26,38 +26,24 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/column.h>
-#include <sqlpp17/interpreter.h>
-#include <sqlpp17/join_functions.h>
-#include <sqlpp17/member.h>
+#include <sqlpp17/char_ptr_ref.h>
 
-namespace sqlpp
-{
-  template <typename Table, typename Alias, typename... ColumnSpecs>
-  struct table_alias_t : public join_functions<table_alias_t<Table, Alias, ColumnSpecs...>>,
-                         public member_t<ColumnSpecs, column_t<Alias, ColumnSpecs>>...
-  {
-    Table _table;
-  };
-
-  template <typename Context, typename Table, typename Alias, typename... ColumnSpecs>
-  struct interpreter_t<Context, table_alias_t<Table, Alias, ColumnSpecs...>>
-  {
-    using T = table_alias_t<Table, Alias, ColumnSpecs...>;
-
-    static Context& _(const T& t, Context& context)
-    {
-      if
-        constexpr(requires_braces<Table>) context << "(";
-      serialize(t._table, context);
-      if
-        constexpr(requires_braces<Table>) context << ")";
-      context << " AS " << name_of<T>::char_ptr();
-      return context;
-    }
-  };
-
-  template <typename Table, typename Alias, typename... ColumnSpecs>
-  constexpr auto is_table_v<table_alias_t<Table, Alias, ColumnSpecs...>> = true;
-}
+#define SQLPP_ALIAS_PROVIDER(name)                                 \
+  struct name##_t                                                  \
+  {                                                                \
+    struct _alias_t                                                \
+    {                                                              \
+      static constexpr auto name = ::sqlpp17::char_ptr_ref(#name); \
+      template <typename T>                                        \
+      struct _member_t                                             \
+      {                                                            \
+        T name;                                                    \
+        const T& operator()() const                                \
+        {                                                          \
+          return name;                                             \
+        }                                                          \
+      };                                                           \
+    };                                                             \
+  };                                                               \
+  constexpr auto name = name##_t{};
 

@@ -1,5 +1,3 @@
-#pragma once
-
 /*
 Copyright (c) 2016, Roland Bock
 All rights reserved.
@@ -26,38 +24,22 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/column.h>
-#include <sqlpp17/interpreter.h>
-#include <sqlpp17/join_functions.h>
-#include <sqlpp17/member.h>
+#include <sqlpp17/alias_provider.h>
+#include <tables/TabEmpty.h>
+#include <tables/TabPerson.h>
+#include <tables/TabDepartment.h>
 
-namespace sqlpp
+static_assert(!sqlpp::is_table(7));
+static_assert(!sqlpp::is_table(test::tabPerson.id));
+
+static_assert(sqlpp::is_table(test::tabEmpty));
+static_assert(sqlpp::is_table(test::tabPerson));
+static_assert(sqlpp::is_table(test::tabDepartment));
+
+SQLPP_ALIAS_PROVIDER(foo)
+
+static_assert(sqlpp::is_table(test::tabDepartment.as(foo)));
+
+int main()
 {
-  template <typename Table, typename Alias, typename... ColumnSpecs>
-  struct table_alias_t : public join_functions<table_alias_t<Table, Alias, ColumnSpecs...>>,
-                         public member_t<ColumnSpecs, column_t<Alias, ColumnSpecs>>...
-  {
-    Table _table;
-  };
-
-  template <typename Context, typename Table, typename Alias, typename... ColumnSpecs>
-  struct interpreter_t<Context, table_alias_t<Table, Alias, ColumnSpecs...>>
-  {
-    using T = table_alias_t<Table, Alias, ColumnSpecs...>;
-
-    static Context& _(const T& t, Context& context)
-    {
-      if
-        constexpr(requires_braces<Table>) context << "(";
-      serialize(t._table, context);
-      if
-        constexpr(requires_braces<Table>) context << ")";
-      context << " AS " << name_of<T>::char_ptr();
-      return context;
-    }
-  };
-
-  template <typename Table, typename Alias, typename... ColumnSpecs>
-  constexpr auto is_table_v<table_alias_t<Table, Alias, ColumnSpecs...>> = true;
 }
-

@@ -66,12 +66,12 @@ namespace sqlpp
           return failed<assert_pre_join_rhs_no_join>{};
         }
       else if
-        constexpr(!provided_table_names_of<Lhs>{}.is_disjoint_from(provided_table_names_of<Rhs>{}))
+        constexpr(!provided_table_names_of<Lhs>.is_disjoint_from(provided_table_names_of<Rhs>))
         {
           return failed<assert_pre_join_unique_names>{};
         }
       else if
-        constexpr(!required_tables_of<Lhs>::empty() || !required_tables_of<Rhs>::empty())
+        constexpr(!required_tables_of<Lhs>.empty() || !required_tables_of<Rhs>.empty())
         {
           return failed<assert_pre_join_no_table_dependencies>{};
         }
