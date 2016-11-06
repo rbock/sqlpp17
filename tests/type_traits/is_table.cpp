@@ -25,20 +25,44 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/alias_provider.h>
+#include <sqlpp17/join_functions.h>
+#include <sqlpp17/pre_join.h>
+#include <sqlpp17/cross_join.h>
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
 #include <tables/TabDepartment.h>
 
-static_assert(!sqlpp::is_table(7));
-static_assert(!sqlpp::is_table(test::tabPerson.id));
+SQLPP_ALIAS_PROVIDER(foo)
 
+// non-tables
+static_assert(not sqlpp::is_table(7));
+static_assert(not sqlpp::is_table(test::tabPerson.id));
+static_assert(not sqlpp::is_table(test::tabPerson.id.as(test::tabPerson)));
+
+// unconditional joins
+static_assert(not sqlpp::is_table(test::tabEmpty.join(test::tabPerson)));
+static_assert(not sqlpp::is_table(test::tabEmpty.inner_join(test::tabPerson)));
+static_assert(not sqlpp::is_table(test::tabEmpty.left_outer_join(test::tabPerson)));
+static_assert(not sqlpp::is_table(test::tabEmpty.right_outer_join(test::tabPerson)));
+static_assert(not sqlpp::is_table(test::tabEmpty.outer_join(test::tabPerson)));
+
+// raw tables
 static_assert(sqlpp::is_table(test::tabEmpty));
 static_assert(sqlpp::is_table(test::tabPerson));
 static_assert(sqlpp::is_table(test::tabDepartment));
 
-SQLPP_ALIAS_PROVIDER(foo)
-
+// aliased tables
 static_assert(sqlpp::is_table(test::tabDepartment.as(foo)));
+static_assert(sqlpp::is_table(test::tabDepartment.as(test::tabEmpty)));
+static_assert(sqlpp::is_table(test::tabDepartment.as(test::tabPerson.id)));
+
+// conditional or cross joins
+static_assert(sqlpp::is_table(test::tabEmpty.cross_join(test::tabPerson)));
+static_assert(sqlpp::is_table(test::tabEmpty.join(test::tabPerson).unconditionally()));
+static_assert(sqlpp::is_table(test::tabEmpty.inner_join(test::tabPerson).unconditionally()));
+static_assert(sqlpp::is_table(test::tabEmpty.left_outer_join(test::tabPerson).unconditionally()));
+static_assert(sqlpp::is_table(test::tabEmpty.right_outer_join(test::tabPerson).unconditionally()));
+static_assert(sqlpp::is_table(test::tabEmpty.outer_join(test::tabPerson).unconditionally()));
 
 int main()
 {

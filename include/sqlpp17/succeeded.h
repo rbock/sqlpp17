@@ -26,9 +26,11 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <type_traits>
+
 namespace sqlpp
 {
-  struct succeeded
+  struct succeeded : public std::true_type
   {
   };
 

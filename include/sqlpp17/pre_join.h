@@ -75,13 +75,13 @@ namespace sqlpp
     }
 
   public:
-    auto unconditionally() const
+    constexpr auto unconditionally() const
     {
       return join_t<pre_join_t, on_t<unconditional_t>>{*this, {}};
     }
 
     template <typename Expr>
-    auto on(Expr expr) const -> make_return_type<decltype(on_impl(expr))>
+    constexpr auto on(Expr expr) const -> make_return_type<decltype(on_impl(expr))>
     {
       return on_impl(expr);
     }

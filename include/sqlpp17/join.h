@@ -34,6 +34,11 @@ namespace sqlpp
   template <typename PreJoin, typename On>
   class join_t : public join_functions<join_t<PreJoin, On>>
   {
+  public:
+    constexpr join_t(PreJoin pre_join, On on) : _pre_join(pre_join), _on(on)
+    {
+    }
+
     PreJoin _pre_join;
     On _on;
   };
@@ -50,5 +55,8 @@ namespace sqlpp
       return context;
     }
   };
+
+  template <typename PreJoin, typename On>
+  constexpr auto is_table_v<join_t<PreJoin, On>> = true;
 }
 

@@ -26,14 +26,23 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <sqlpp17/alias.h>
 #include <sqlpp17/interpreter.h>
 #include <sqlpp17/type_traits.h>
 
 namespace sqlpp
 {
-  template <typename Table, typename ColumnSpec>
+  template <typename TableAlias, typename ColumnSpec>
   class column_t
   {
+  public:
+    using _alias_t = typename ColumnSpec::_alias_t;
+
+    template <typename Alias>
+    constexpr auto as(const Alias&) const
+    {
+      return alias_t<Alias, column_t>{{}};
+    }
   };
 
   template <typename Context, typename Table, typename ColumnSpec>

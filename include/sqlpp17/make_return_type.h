@@ -39,18 +39,21 @@ namespace sqlpp
     }
   };
 
-  template <typename T>
-  struct make_return_type
+  namespace detail
   {
-    using type = T;
-  };
+    template <typename T>
+    struct make_return_type
+    {
+      using type = T;
+    };
+
+    template <typename T>
+    struct make_return_type<failed<T>>
+    {
+      using type = bad_statement<failed<T>>;
+    };
+  }
 
   template <typename T>
-  struct make_return_type<failed<T>>
-  {
-    using type = bad_statement<failed<T>>;
-  };
-
-  template <typename T>
-  using make_return_type_t = typename make_return_type<T>::type;
+  using make_return_type = typename detail::make_return_type<T>::type;
 }

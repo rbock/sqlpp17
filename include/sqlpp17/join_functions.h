@@ -37,11 +37,10 @@ namespace sqlpp
   class pre_join_t;
 
   template <typename Lhs, typename Rhs>
-  struct cross_join_t;
+  class cross_join_t;
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_pre_join_lhs_table, "lhs argument of join() has to be a table or a join");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_pre_join_rhs_table, "rhs argument of join() has to be a table");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_pre_join_rhs_no_join, "rhs argument of join() must not be a join");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_pre_join_unique_names, "joined table names have to be unique");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_pre_join_no_table_dependencies, "joined tables must not depend on other tables");
 
@@ -51,19 +50,14 @@ namespace sqlpp
     constexpr auto check_pre_join(const Lhs&, const Rhs&)
     {
       if
-        constexpr(!is_table<Lhs>)
+        constexpr(!is_table_v<Lhs>)
         {
           return failed<assert_pre_join_lhs_table>{};
         }
       else if
-        constexpr(!is_table<Rhs>)
+        constexpr(!is_table_v<Rhs>)
         {
           return failed<assert_pre_join_rhs_table>{};
-        }
-      else if
-        constexpr(is_join<Rhs>)
-        {
-          return failed<assert_pre_join_rhs_no_join>{};
         }
       else if
         constexpr(!provided_table_names_of<Lhs>.is_disjoint_from(provided_table_names_of<Rhs>))
@@ -80,7 +74,7 @@ namespace sqlpp
     }
 
     template <typename JoinType, typename Lhs, typename Rhs>
-    auto join_impl(Lhs lhs, Rhs rhs)
+    constexpr auto join_impl(Lhs lhs, Rhs rhs)
     {
       constexpr auto check = check_pre_join(lhs, rhs);
       if
@@ -96,31 +90,33 @@ namespace sqlpp
   }
 
   template <typename Lhs, typename Rhs>
-  auto join(Lhs lhs, Rhs rhs) -> make_return_type<decltype(detail::join_impl<inner_join_t>(lhs, rhs))>
+  constexpr auto inner_join(Lhs lhs, Rhs rhs) -> make_return_type<decltype(detail::join_impl<inner_join_t>(lhs, rhs))>
   {
     return detail::join_impl<inner_join_t>(lhs, rhs);
   }
 
   template <typename Lhs, typename Rhs>
-  auto inner_join(Lhs lhs, Rhs rhs)
+  constexpr auto join(Lhs lhs, Rhs rhs)
   {
     return inner_join(lhs, rhs);
   }
 
   template <typename Lhs, typename Rhs>
-  auto left_outer_join(Lhs lhs, Rhs rhs) -> make_return_type<decltype(detail::join_impl<left_outer_join_t>(lhs, rhs))>
+  constexpr auto left_outer_join(Lhs lhs, Rhs rhs)
+      -> make_return_type<decltype(detail::join_impl<left_outer_join_t>(lhs, rhs))>
   {
     return detail::join_impl<left_outer_join_t>(lhs, rhs);
   }
 
   template <typename Lhs, typename Rhs>
-  auto right_outer_join(Lhs lhs, Rhs rhs) -> make_return_type<decltype(detail::join_impl<right_outer_join_t>(lhs, rhs))>
+  constexpr auto right_outer_join(Lhs lhs, Rhs rhs)
+      -> make_return_type<decltype(detail::join_impl<right_outer_join_t>(lhs, rhs))>
   {
     return detail::join_impl<right_outer_join_t>(lhs, rhs);
   }
 
   template <typename Lhs, typename Rhs>
-  auto outer_join(Lhs lhs, Rhs rhs) -> make_return_type<decltype(detail::join_impl<outer_join_t>(lhs, rhs))>
+  constexpr auto outer_join(Lhs lhs, Rhs rhs) -> make_return_type<decltype(detail::join_impl<outer_join_t>(lhs, rhs))>
   {
     return detail::join_impl<outer_join_t>(lhs, rhs);
   }
@@ -128,9 +124,9 @@ namespace sqlpp
   namespace detail
   {
     template <typename Lhs, typename Rhs>
-    auto cross_join_impl(Lhs lhs, Rhs rhs)
+    constexpr auto cross_join_impl(Lhs lhs, Rhs rhs)
     {
-      constexpr auto check = check_pre_join(rhs);
+      constexpr auto check = check_pre_join(lhs, rhs);
       if
         constexpr(check)
         {
@@ -144,52 +140,52 @@ namespace sqlpp
   }
 
   template <typename Lhs, typename Rhs>
-  auto cross_join(Lhs lhs, Rhs rhs) -> make_return_type<decltype(cross_join_impl(lhs, rhs))>
+  constexpr auto cross_join(Lhs lhs, Rhs rhs) -> make_return_type<decltype(detail::cross_join_impl(lhs, rhs))>
   {
-    return cross_join_impl(lhs, rhs);
+    return detail::cross_join_impl(lhs, rhs);
   }
 
   template <typename Derived>
   class join_functions
   {
-    auto& ref() const
+    constexpr auto& ref() const
     {
-      return static_cast<const Derived&>(this);
+      return static_cast<const Derived&>(*this);
     }
 
   public:
     template <typename T>
-    auto join(T t) const
+    constexpr auto join(T t) const
     {
       return ::sqlpp::join(ref(), t);
     }
 
     template <typename T>
-    auto inner_join(T t) const
+    constexpr auto inner_join(T t) const
     {
       return ::sqlpp::inner_join(ref(), t);
     }
 
     template <typename T>
-    auto left_outer_join(T t) const
+    constexpr auto left_outer_join(T t) const
     {
       return ::sqlpp::left_outer_join(ref(), t);
     }
 
     template <typename T>
-    auto right_outer_join(T t) const
+    constexpr auto right_outer_join(T t) const
     {
       return ::sqlpp::right_outer_join(ref(), t);
     }
 
     template <typename T>
-    auto outer_join(T t) const
+    constexpr auto outer_join(T t) const
     {
       return ::sqlpp::outer_join(ref(), t);
     }
 
     template <typename T>
-    auto cross_join(T t) const
+    constexpr auto cross_join(T t) const
     {
       return ::sqlpp::cross_join(ref(), t);
     }
