@@ -26,35 +26,43 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp11/dynamic_pre_join.h>
+#include <sqlpp17/join/join_functions.h>
 
 namespace sqlpp
 {
-  template <typename PreJoin, typename On>
-  class dynamic_join_t
+  template <typename Lhs, typename Rhs>
+  class cross_join_t : public join_functions<cross_join_t<Lhs, Rhs>>
   {
-    using _traits = make_traits<no_value_t, tag::is_table, tag::is_dynamic_join>;
-    using _nodes = detail::type_vector<PreJoin, On>;
-    using _can_be_null = std::false_type;
-    using _provided_tables = provided_tables_of<PreJoin>;
-    using _required_tables = detail::make_difference_set_t<required_tables_of<On>, _provided_tables>;
-
   public:
-    PreJoin _pre_join;
-    On _on;
+    constexpr cross_join_t(Lhs lhs, Rhs rhs) : _lhs(lhs), _rhs(rhs)
+    {
+    }
+
+    Lhs _lhs;
+    Rhs _rhs;
   };
 
-  template <typename Context, typename PreJoin, typename On>
-  struct interpreter_t<Context, dynamic_join_t<PreJoin, On>>
+  template <typename Context, typename Lhs, typename Rhs>
+  struct interpreter_t<Context, cross_join_t<Lhs, Rhs>>
   {
-    using T = dynamic_join_t<PreJoin, On>;
+    using T = cross_join_t<Lhs, Rhs>;
 
     static Context& _(const T& t, Context& context)
     {
-      interpret(t._pre_join, context);
-      interpret(t._on, context);
+      interpret(t._lhs, context);
+      context << " CROSS JOIN ";
+      interpret(t._rhs, context);
       return context;
     }
   };
+
+  template <typename Lhs, typename Rhs>
+  constexpr auto is_join_v<cross_join_t<Lhs, Rhs>> = true;
+
+  template <typename Lhs, typename Rhs>
+  constexpr auto is_table_v<cross_join_t<Lhs, Rhs>> = true;
+
+  template <typename Lhs, typename Rhs>
+  constexpr auto provided_tables_of_v<cross_join_t<Lhs, Rhs>> = provided_tables_of_v<Lhs> | provided_tables_of_v<Rhs>;
 }
 

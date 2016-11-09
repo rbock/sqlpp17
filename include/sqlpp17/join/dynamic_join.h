@@ -26,44 +26,27 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/member.h>
-#include <sqlpp17/type_traits.h>
-#include <sqlpp17/table_alias.h>
-#include <sqlpp17/join.h>
-
 namespace sqlpp
 {
-  template <typename TableSpec, typename... ColumnSpecs>
-  class table_t : public join_functions<table_t<TableSpec, ColumnSpecs...>>,
-                  public member_t<ColumnSpecs, column_t<TableSpec, ColumnSpecs>>...
+  template <typename ConditionlessJoin, typename On>
+  class dynamic_join_t
   {
   public:
-    using _alias_t = typename TableSpec::_alias_t;
-
-    template <typename Alias>
-    constexpr auto as(const Alias&) const
-    {
-      return table_alias_t<table_t, Alias, ColumnSpecs...>{{}};
-    }
+    ConditionlessJoin _conditionless_join;
+    On _on;
   };
 
-  template <typename Context, typename TableSpec, typename... ColumnSpecs>
-  struct interpreter_t<Context, table_t<TableSpec, ColumnSpecs...>>
+  template <typename Context, typename ConditionlessJoin, typename On>
+  struct interpreter_t<Context, dynamic_join_t<ConditionlessJoin, On>>
   {
-    using T = table_t<TableSpec, ColumnSpecs...>;
+    using T = dynamic_join_t<ConditionlessJoin, On>;
 
-    static Context& _(const T&, Context& context)
+    static Context& _(const T& t, Context& context)
     {
-      context << name_of<T>::char_ptr();
+      interpret(t._conditionless_join, context);
+      interpret(t._on, context);
       return context;
     }
   };
-
-  template <typename TableSpec, typename... ColumnSpecs>
-  constexpr auto is_table_v<table_t<TableSpec, ColumnSpecs...>> = true;
-
-  template <typename TableSpec, typename... ColumnSpecs>
-  constexpr auto provided_tables_of_v<table_t<TableSpec, ColumnSpecs...>> =
-      type_set<table_t<TableSpec, ColumnSpecs...>>();
 }
 

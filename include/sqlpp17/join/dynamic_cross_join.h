@@ -26,37 +26,28 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/join_functions.h>
+#include <sqlpp17/join/join_functions.h>
 
 namespace sqlpp
 {
-  template <typename Lhs, typename Rhs>
-  class cross_join_t : public join_functions<cross_join_t<Lhs, Rhs>>
+  template <typename Rhs>
+  class dynamic_cross_join_t
   {
   public:
-    constexpr cross_join_t(Lhs lhs, Rhs rhs) : _lhs(lhs), _rhs(rhs)
-    {
-    }
-
-    Lhs _lhs;
     Rhs _rhs;
   };
 
-  template <typename Context, typename Lhs, typename Rhs>
-  struct interpreter_t<Context, cross_join_t<Lhs, Rhs>>
+  template <typename Context, typename Rhs>
+  struct interpreter_t<Context, dynamic_cross_join_t<Rhs>>
   {
-    using T = cross_join_t<Lhs, Rhs>;
+    using T = dynamic_cross_join_t<Rhs>;
 
     static Context& _(const T& t, Context& context)
     {
-      interpret(t._lhs, context);
       context << " CROSS JOIN ";
       interpret(t._rhs, context);
       return context;
     }
   };
-
-  template <typename Lhs, typename Rhs>
-  constexpr auto is_table_v<cross_join_t<Lhs, Rhs>> = true;
 }
 

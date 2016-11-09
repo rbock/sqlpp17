@@ -26,66 +26,71 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/join_functions.h>
+#include <sqlpp17/join/on.h>
+#include <sqlpp17/join/dynamic_join.h>
+#include <sqlpp17/unconditional.h>
 
 namespace sqlpp
 {
-  template <typename Rhs>
-  struct dynamic_cross_join_t
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_dynamic_on_is_boolean_expression, "argument is not a boolean expression in on()");
+
+  namespace detail
   {
-    using _traits = make_traits<no_value_t, tag::is_table, tag::is_join>;
-    using _nodes = detail::type_vector<PreJoin, On>;
-    using _can_be_null = std::false_type;
-    using _provided_tables = provided_tables_of<PreJoin>;
-    using _required_tables = detail::make_difference_set_t<required_tables_of<On>, _provided_tables>;
-
-    template <typename T>
-    auto join(T t) const
+    template <typename ConditionlessJoin, typename Expr>
+    constexpr auto dynamic_check_join(const ConditionlessJoin&, const Expr&)
     {
-      return ::sqlpp::join(*this, t);
+      if
+        constexpr(!is_expression<Expr> || !is_boolean<Expr>)
+        {
+          return failed<assert_dynamic_on_is_boolean_expression>{};
+        }
+      else
+        return succeeded{};
+    }
+  }
+
+  template <typename JoinType, typename Rhs>
+  class dynamic_conditionless_join_t
+  {
+    template <typename Expr>
+    auto on_impl(const Expr& expr) const
+    {
+      constexpr auto check = dynamic_check_join(*this, expr);
+      if
+        constexpr(check)
+        {
+          return dynamic_join_t<dynamic_conditionless_join_t, on_t<Expr>>{*this, {expr}};
+        }
+      else
+      {
+        return check;
+      }
     }
 
-    template <typename T>
-    auto inner_join(T t) const
+  public:
+    constexpr auto unconditionally() const
     {
-      return ::sqlpp::inner_join(*this, t);
+      return dynamic_join_t<dynamic_conditionless_join_t, on_t<unconditional_t>>{*this, {}};
     }
 
-    template <typename T>
-    auto left_outer_join(T t) const
+    template <typename Expr>
+    constexpr auto on(Expr expr) const -> make_return_type<decltype(on_impl(expr))>
     {
-      return ::sqlpp::left_outer_join(*this, t);
-    }
-
-    template <typename T>
-    auto right_outer_join(T t) const
-    {
-      return ::sqlpp::right_outer_join(*this, t);
-    }
-
-    template <typename T>
-    auto outer_join(T t) const
-    {
-      return ::sqlpp::outer_join(*this, t);
-    }
-
-    template <typename T>
-    auto cross_join(T t) const
-    {
-      return ::sqlpp::cross_join(*this, t);
+      return {*this, {expr}};
     }
 
     Rhs _rhs;
   };
 
-  template <typename Context, typename Rhs>
-  struct interpreter_t<Context, dynamic_cross_join_t<Rhs>>
+  template <typename Context, typename JoinType, typename Rhs>
+  struct interpreter_t<Context, dynamic_conditionless_join_t<JoinType, Rhs>>
   {
-    using T = cross_join_t<Rhs>;
+    using T = dynamic_conditionless_join_t<JoinType, Rhs>;
 
     static Context& _(const T& t, Context& context)
     {
-      context << " CROSS JOIN ";
+      context << JoinType::_name;
+      context << " JOIN ";
       interpret(t._rhs, context);
       return context;
     }

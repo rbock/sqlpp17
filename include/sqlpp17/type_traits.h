@@ -33,6 +33,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace sqlpp
 {
   template <typename T>
+  constexpr auto is_join_v = false;
+
+  template <typename T>
+  constexpr auto is_join(const T&)
+  {
+    return is_join_v<T>;
+  };
+
+  template <typename T>
+  constexpr auto is_selectable_v = false;
+
+  template <typename T>
+  constexpr auto is_selectable(const T&)
+  {
+    return is_selectable_v<T>;
+  };
+
+  template <typename T>
   constexpr auto is_table_v = false;
 
   template <typename T>
@@ -46,9 +64,6 @@ namespace sqlpp
 
   template <typename T>
   constexpr auto is_expression = false;
-
-  template <typename T>
-  constexpr auto is_join = false;
 
   template <typename T>
   constexpr auto is_conditionless_join = false;
@@ -69,7 +84,13 @@ namespace sqlpp
   constexpr auto required_tables_of = type_set_t<>();
 
   template <typename T>
-  constexpr auto provided_tables_of = type_set<>();
+  constexpr auto provided_tables_of_v = type_set<>();
+
+  template <typename T>
+  constexpr auto provided_tables_of(const T&)
+  {
+    return provided_tables_of_v<T>;
+  }
 
   template <typename T>
   constexpr auto provided_table_names_of = type_set_t<>();

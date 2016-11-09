@@ -26,37 +26,10 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/pre_join.h>
-#include <sqlpp17/on.h>
-
-namespace sqlpp
-{
-  template <typename PreJoin, typename On>
-  class join_t : public join_functions<join_t<PreJoin, On>>
-  {
-  public:
-    constexpr join_t(PreJoin pre_join, On on) : _pre_join(pre_join), _on(on)
-    {
-    }
-
-    PreJoin _pre_join;
-    On _on;
-  };
-
-  template <typename Context, typename PreJoin, typename On>
-  struct interpreter_t<Context, join_t<PreJoin, On>>
-  {
-    using T = join_t<PreJoin, On>;
-
-    static Context& _(const T& t, Context& context)
-    {
-      interpret(t._pre_join, context);
-      interpret(t._on, context);
-      return context;
-    }
-  };
-
-  template <typename PreJoin, typename On>
-  constexpr auto is_table_v<join_t<PreJoin, On>> = true;
-}
+#include <sqlpp17/join/dynamic_join_functions.h>
+#include <sqlpp17/join/dynamic_conditionless_join.h>
+#include <sqlpp17/join/dynamic_cross_join.h>
+#include <sqlpp17/join/join_functions.h>
+#include <sqlpp17/join/conditionless_join.h>
+#include <sqlpp17/join/cross_join.h>
 

@@ -45,5 +45,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       };                                                           \
     };                                                             \
   };                                                               \
-  constexpr auto name = name##_t{};
+  constexpr auto name = name##_t                                   \
+  {                                                                \
+  }
 

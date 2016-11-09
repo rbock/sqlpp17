@@ -139,12 +139,18 @@ namespace sqlpp
     };
   }
 
-  template <typename... T>
+  template <typename... Ts>
   constexpr auto type_set()
   {
-    return (detail::_type_set<>{} << ... << detail::_base<T>{});
+    return (detail::_type_set<>{} << ... << detail::_base<Ts>{});
   }
 
-  template <typename... T>
-  using type_set_t = decltype(type_set<T...>());
+  template <typename T, typename... Ts>
+  constexpr auto type_set(const T&, const Ts&...)
+  {
+    return (detail::_type_set<T>{} << ... << detail::_base<Ts>{});
+  }
+
+  template <typename... Ts>
+  using type_set_t = decltype(type_set<Ts...>());
 }

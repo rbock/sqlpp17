@@ -29,3 +29,4 @@ function(test_compile name)
 endfunction()
 
 test_compile(is_table)
+test_compile(provided_tables_of)

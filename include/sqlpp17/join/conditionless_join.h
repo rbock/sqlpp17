@@ -26,26 +26,28 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/on.h>
-#include <sqlpp17/dynamic_join.h>
+#include <sqlpp17/join/join.h>
+#include <sqlpp17/join/on.h>
+#include <sqlpp17/unconditional.h>
 
 namespace sqlpp
 {
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_dynamic_on_is_boolean_expression_t,
-                              "argument is not a boolean expression in on()");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_on_is_boolean_expression, "argument is not a boolean expression in on()");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_join_on_no_foreign_table_dependencies,
+                              "on() condition must not depend on other tables");
 
   namespace detail
   {
-    template <typename PreJoin, typename Expr>
-    constexpr auto check_join(const PreJoin&, const Expr&)
+    template <typename ConditionlessJoin, typename Expr>
+    constexpr auto check_join(const ConditionlessJoin&, const Expr&)
     {
       if
-        constexpr(!is_expression_t<Expr> || !is_boolean_t<Expr>)
+        constexpr(!is_expression<Expr> || !is_boolean<Expr>)
         {
-          return assert_on_is_boolean_expression{};
+          return failed<assert_on_is_boolean_expression>{};
         }
       else if
-        constexpr(!(required_tables_of<Expr>{} <= provided_tables_of<PreJoin>{}))
+        constexpr(!(required_tables_of<Expr> <= provided_tables_of<ConditionlessJoin>))
         {
           return failed<assert_join_on_no_foreign_table_dependencies>{};
         }
@@ -54,8 +56,8 @@ namespace sqlpp
     }
   }
 
-  template <typename JoinType, typename Rhs>
-  class dynamic_pre_join_t
+  template <typename JoinType, typename Lhs, typename Rhs>
+  class conditionless_join_t
   {
     template <typename Expr>
     auto on_impl(const Expr& expr) const
@@ -64,7 +66,7 @@ namespace sqlpp
       if
         constexpr(check)
         {
-          return dynamic_join_t<dynamic_pre_join_t, on_t<Expr>>{*this, {expr}};
+          return join_t<conditionless_join_t, on_t<Expr>>{*this, {expr}};
         }
       else
       {
@@ -73,36 +75,38 @@ namespace sqlpp
     }
 
   public:
-    using _traits = make_traits<no_value_t, tag::is_table, tag::is_dynamic_pre_join>;
-    using _nodes = detail::type_vector<Rhs>;
-    using _can_be_null = std::false_type;
-
-    auto unconditionally() const
+    constexpr auto unconditionally() const
     {
-      return dynamic_join_t<dynamic_pre_join_t, on_t<unconditional_t>>{*this, {}};
+      return join_t<conditionless_join_t, on_t<unconditional_t>>{*this, {}};
     }
 
     template <typename Expr>
-    auto on(Expr expr) const -> make_return_type<decltype(on_impl(expr))>
+    constexpr auto on(Expr expr) const -> make_return_type<decltype(on_impl(expr))>
     {
-      return {*this, {expr}};
+      return on_impl(expr);
     }
 
+    Lhs _lhs;
     Rhs _rhs;
   };
 
-  template <typename Context, typename JoinType, typename Rhs>
-  struct interpreter_t<Context, dynamic_pre_join_t<JoinType, Rhs>>
+  template <typename Context, typename JoinType, typename Lhs, typename Rhs>
+  struct interpreter_t<Context, conditionless_join_t<JoinType, Lhs, Rhs>>
   {
-    using T = dynamic_pre_join_t<JoinType, Rhs>;
+    using T = conditionless_join_t<JoinType, Lhs, Rhs>;
 
     static Context& _(const T& t, Context& context)
     {
+      interpret(t._lhs, context);
       context << JoinType::_name;
       context << " JOIN ";
       interpret(t._rhs, context);
       return context;
     }
   };
+
+  template <typename JoinType, typename Lhs, typename Rhs>
+  constexpr auto provided_tables_of_v<conditionless_join_t<JoinType, Lhs, Rhs>> =
+      provided_tables_of_v<Lhs> | provided_tables_of_v<Rhs>;
 }
 

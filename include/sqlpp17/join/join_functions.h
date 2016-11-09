@@ -26,7 +26,7 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/join_types.h>
+#include <sqlpp17/join/join_types.h>
 #include <sqlpp17/make_return_type.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
@@ -34,40 +34,42 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace sqlpp
 {
   template <typename JoinType, typename Lhs, typename Rhs>
-  class pre_join_t;
+  class conditionless_join_t;
 
   template <typename Lhs, typename Rhs>
   class cross_join_t;
 
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_pre_join_lhs_table, "lhs argument of join() has to be a table or a join");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_pre_join_rhs_table, "rhs argument of join() has to be a table");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_pre_join_unique_names, "joined table names have to be unique");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_pre_join_no_table_dependencies, "joined tables must not depend on other tables");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_conditionless_join_lhs_table,
+                              "lhs argument of join() has to be a table or a join");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_conditionless_join_rhs_table, "rhs argument of join() has to be a table");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_conditionless_join_unique_names, "joined table names have to be unique");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_conditionless_join_no_table_dependencies,
+                              "joined tables must not depend on other tables");
 
   namespace detail
   {
     template <typename Lhs, typename Rhs>
-    constexpr auto check_pre_join(const Lhs&, const Rhs&)
+    constexpr auto check_conditionless_join(const Lhs&, const Rhs&)
     {
       if
         constexpr(!is_table_v<Lhs>)
         {
-          return failed<assert_pre_join_lhs_table>{};
+          return failed<assert_conditionless_join_lhs_table>{};
         }
       else if
         constexpr(!is_table_v<Rhs>)
         {
-          return failed<assert_pre_join_rhs_table>{};
+          return failed<assert_conditionless_join_rhs_table>{};
         }
       else if
         constexpr(!provided_table_names_of<Lhs>.is_disjoint_from(provided_table_names_of<Rhs>))
         {
-          return failed<assert_pre_join_unique_names>{};
+          return failed<assert_conditionless_join_unique_names>{};
         }
       else if
         constexpr(!required_tables_of<Lhs>.empty() || !required_tables_of<Rhs>.empty())
         {
-          return failed<assert_pre_join_no_table_dependencies>{};
+          return failed<assert_conditionless_join_no_table_dependencies>{};
         }
       else
         return succeeded{};
@@ -76,11 +78,11 @@ namespace sqlpp
     template <typename JoinType, typename Lhs, typename Rhs>
     constexpr auto join_impl(Lhs lhs, Rhs rhs)
     {
-      constexpr auto check = check_pre_join(lhs, rhs);
+      constexpr auto check = check_conditionless_join(lhs, rhs);
       if
         constexpr(check)
         {
-          return pre_join_t<JoinType, Lhs, Rhs>{lhs, rhs};
+          return conditionless_join_t<JoinType, Lhs, Rhs>{lhs, rhs};
         }
       else
       {
@@ -126,7 +128,7 @@ namespace sqlpp
     template <typename Lhs, typename Rhs>
     constexpr auto cross_join_impl(Lhs lhs, Rhs rhs)
     {
-      constexpr auto check = check_pre_join(lhs, rhs);
+      constexpr auto check = check_conditionless_join(lhs, rhs);
       if
         constexpr(check)
         {
