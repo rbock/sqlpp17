@@ -1,5 +1,3 @@
-#pragma once
-
 /*
 Copyright (c) 2016, Roland Bock
 All rights reserved.
@@ -26,42 +24,32 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/alias.h>
-#include <sqlpp17/char_sequence.h>
-#include <sqlpp17/interpreter.h>
-#include <sqlpp17/type_traits.h>
+#include <sqlpp17/alias_provider.h>
+#include <tables/TabEmpty.h>
+#include <tables/TabPerson.h>
+#include <tables/TabDepartment.h>
 
-namespace sqlpp
+SQLPP_ALIAS_PROVIDER(foo);
+
+// Tables
+static_assert(char_sequence_of(test::tabEmpty) ==
+              ::sqlpp::char_sequence<'t', 'a', 'b', '_', 'e', 'm', 'p', 't', 'y', '\x00'>{});
+
+static_assert(char_sequence_of(test::tabPerson) ==
+              ::sqlpp::char_sequence<'t', 'a', 'b', '_', 'p', 'e', 'r', 's', 'o', 'n', '\x00'>{});
+
+// Columns
+static_assert(char_sequence_of(test::tabPerson.id) == ::sqlpp::char_sequence<'i', 'd', '\x00'>{});
+static_assert(char_sequence_of(test::tabDepartment.id) == ::sqlpp::char_sequence<'i', 'd', '\x00'>{});
+
+// Table aliases
+static_assert(char_sequence_of(test::tabPerson.as(foo)) == ::sqlpp::char_sequence<'f', 'o', 'o', '\x00'>{});
+static_assert(char_sequence_of(test::tabPerson.as(test::tabDepartment.id)) ==
+              ::sqlpp::char_sequence<'i', 'd', '\x00'>{});
+
+// Column aliases
+static_assert(char_sequence_of(test::tabPerson.id.as(foo)) == ::sqlpp::char_sequence<'f', 'o', 'o', '\x00'>{});
+
+int main()
 {
-  template <typename TableAlias, typename ColumnSpec>
-  class column_t
-  {
-  public:
-    using _alias_t = typename ColumnSpec::_alias_t;
-
-    template <typename Alias>
-    constexpr auto as(const Alias&) const
-    {
-      return alias_t<Alias, column_t>{{}};
-    }
-  };
-
-  template <typename Context, typename Table, typename ColumnSpec>
-  struct interpreter_t<Context, column_t<Table, ColumnSpec>>
-  {
-    using T = column_t<Table, ColumnSpec>;
-
-    static Context& _(const T&, Context& context)
-    {
-      context << name_of<Table>::char_ptr() << '.' << name_of<T>::char_ptr();
-      return context;
-    }
-  };
-
-  template <typename Table, typename ColumnSpec>
-  struct char_sequence_of_impl<column_t<Table, ColumnSpec>>
-  {
-    using type = make_char_sequence<ColumnSpec::_alias_t::name>;
-  };
 }
-

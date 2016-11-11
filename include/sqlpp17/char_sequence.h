@@ -26,42 +26,39 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/alias.h>
-#include <sqlpp17/char_sequence.h>
-#include <sqlpp17/interpreter.h>
-#include <sqlpp17/type_traits.h>
+#include <utility>
+#include <sqlpp17/string_literal.h>
 
 namespace sqlpp
 {
-  template <typename TableAlias, typename ColumnSpec>
-  class column_t
+  template <char...>
+  struct char_sequence
   {
-  public:
-    using _alias_t = typename ColumnSpec::_alias_t;
-
-    template <typename Alias>
-    constexpr auto as(const Alias&) const
+    constexpr bool operator==(const char_sequence&) const
     {
-      return alias_t<Alias, column_t>{{}};
+      return true;
+    }
+
+    template <char... Cs>
+    constexpr bool operator==(const char_sequence<Cs...>&) const
+    {
+      return true;
     }
   };
 
-  template <typename Context, typename Table, typename ColumnSpec>
-  struct interpreter_t<Context, column_t<Table, ColumnSpec>>
+  namespace detail
   {
-    using T = column_t<Table, ColumnSpec>;
+    template <const string_literal& StringLiteral, typename IndexSequence>
+    struct make_char_sequence_impl;
 
-    static Context& _(const T&, Context& context)
+    template <const string_literal& StringLiteral, std::size_t... Is>
+    struct make_char_sequence_impl<StringLiteral, std::index_sequence<Is...>>
     {
-      context << name_of<Table>::char_ptr() << '.' << name_of<T>::char_ptr();
-      return context;
-    }
-  };
+      using type = char_sequence<StringLiteral.get()[Is]...>;
+    };
+  }
 
-  template <typename Table, typename ColumnSpec>
-  struct char_sequence_of_impl<column_t<Table, ColumnSpec>>
-  {
-    using type = make_char_sequence<ColumnSpec::_alias_t::name>;
-  };
+  template <const string_literal& StringLiteral>
+  using make_char_sequence =
+      typename detail::make_char_sequence_impl<StringLiteral, std::make_index_sequence<StringLiteral.size()>>::type;
 }
-

@@ -26,6 +26,7 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <sqlpp17/char_sequence.h>
 #include <sqlpp17/column.h>
 #include <sqlpp17/interpreter.h>
 #include <sqlpp17/join.h>
@@ -63,5 +64,11 @@ namespace sqlpp
   template <typename Table, typename Alias, typename... ColumnSpecs>
   constexpr auto provided_tables_of_v<table_alias_t<Table, Alias, ColumnSpecs...>> =
       type_set<table_alias_t<Table, Alias, ColumnSpecs...>>();
+
+  template <typename Table, typename Alias, typename... ColumnSpecs>
+  struct char_sequence_of_impl<table_alias_t<Table, Alias, ColumnSpecs...>>
+  {
+    using type = make_char_sequence<Alias::_alias_t::name>;
+  };
 }
 

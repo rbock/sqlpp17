@@ -62,7 +62,7 @@ namespace sqlpp
           return failed<assert_conditionless_join_rhs_table>{};
         }
       else if
-        constexpr(!provided_table_names_of<Lhs>.is_disjoint_from(provided_table_names_of<Rhs>))
+        constexpr(!provided_table_names_of_v<Lhs>.is_disjoint_from(provided_table_names_of_v<Rhs>))
         {
           return failed<assert_conditionless_join_unique_names>{};
         }

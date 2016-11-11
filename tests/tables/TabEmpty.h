@@ -36,6 +36,7 @@ namespace test
     {
       struct _alias_t
       {
+        static constexpr auto name = ::sqlpp::string_literal("tab_empty");
         template <typename T>
         struct _member_t
         {

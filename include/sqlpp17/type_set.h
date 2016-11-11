@@ -151,6 +151,12 @@ namespace sqlpp
     return (detail::_type_set<T>{} << ... << detail::_base<Ts>{});
   }
 
+  template <template <typename> class Transform, typename... Ts>
+  [[nodiscard]] constexpr auto transform(const detail::_type_set<Ts...>&)
+  {
+    return type_set<Transform<Ts>...>();
+  }
+
   template <typename... Ts>
   using type_set_t = decltype(type_set<Ts...>());
 }

@@ -28,5 +28,6 @@ function(test_compile name)
   target_link_libraries(${target} PRIVATE sqlpp17 sqlpp17_testing)
 endfunction()
 
+test_compile(char_sequence_of)
 test_compile(is_table)
 test_compile(provided_tables_of)

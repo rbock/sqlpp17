@@ -36,6 +36,7 @@ namespace test
     {
       struct _alias_t
       {
+        static constexpr auto name = ::sqlpp::string_literal("id");
         template <typename T>
         struct _member_t
         {
@@ -48,6 +49,7 @@ namespace test
     {
       struct _alias_t
       {
+        static constexpr auto name = ::sqlpp::string_literal("tab_department");
         template <typename T>
         struct _member_t
         {

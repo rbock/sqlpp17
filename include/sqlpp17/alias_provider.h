@@ -26,26 +26,26 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/char_ptr_ref.h>
+#include <sqlpp17/string_literal.h>
 
-#define SQLPP_ALIAS_PROVIDER(name)                                 \
-  struct name##_t                                                  \
+#define SQLPP_ALIAS_PROVIDER(NAME)                                 \
+  struct NAME##_t                                                  \
   {                                                                \
     struct _alias_t                                                \
     {                                                              \
-      static constexpr auto name = ::sqlpp17::char_ptr_ref(#name); \
+      static constexpr auto name = ::sqlpp::string_literal(#NAME); \
       template <typename T>                                        \
       struct _member_t                                             \
       {                                                            \
-        T name;                                                    \
+        T NAME;                                                    \
         const T& operator()() const                                \
         {                                                          \
-          return name;                                             \
+          return NAME;                                             \
         }                                                          \
       };                                                           \
     };                                                             \
   };                                                               \
-  constexpr auto name = name##_t                                   \
+  constexpr auto NAME = NAME##_t                                   \
   {                                                                \
   }
 

@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <type_traits>
 #include <utility>
 #include <sqlpp17/type_set.h>
+#include <sqlpp17/wrong.h>
 
 namespace sqlpp
 {
@@ -93,7 +94,28 @@ namespace sqlpp
   }
 
   template <typename T>
-  constexpr auto provided_table_names_of = type_set_t<>();
+  struct char_sequence_of_impl
+  {
+    static_assert(wrong<T>, "No valid specialization of get_name_type_of found");
+  };
+
+  template <typename T>
+  using char_sequence_of_t = typename char_sequence_of_impl<T>::type;
+
+  template <typename T>
+  constexpr auto char_sequence_of(const T&)
+  {
+    return char_sequence_of_t<T>{};
+  }
+
+  template <typename T>
+  constexpr auto provided_table_names_of_v = ::sqlpp::transform<char_sequence_of_t>(provided_tables_of_v<T>);
+
+  template <typename T>
+  constexpr auto provided_table_names_of(const T&)
+  {
+    return provided_table_names_of_v<T>;
+  }
 
   template <typename T>
   using name_of = T;

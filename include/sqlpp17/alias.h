@@ -26,6 +26,7 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <sqlpp17/char_sequence.h>
 #include <sqlpp17/interpreter.h>
 
 namespace sqlpp
@@ -33,8 +34,6 @@ namespace sqlpp
   template <typename Expression, typename Alias>
   struct alias_t
   {
-    using _alias_t = typename Alias::_alias_t;
-
     Expression _expression;
   };
 
@@ -50,6 +49,12 @@ namespace sqlpp
       context << T::alias_t::name::get();
       return context;
     }
+  };
+
+  template <typename Expression, typename Alias>
+  struct char_sequence_of_impl<alias_t<Expression, Alias>>
+  {
+    using type = make_char_sequence<Alias::_alias_t::name>;
   };
 }
 

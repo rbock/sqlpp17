@@ -28,16 +28,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <cstddef>
 
-namespace sqlpp17
+namespace sqlpp
 {
-  class char_ptr_ref
+  class string_literal
   {
     const char* const _content;
     std::size_t _size;
 
   public:
     template <unsigned N>
-    constexpr char_ptr_ref(const char (&content)[N]) : _content(content), _size(N)
+    constexpr string_literal(const char (&content)[N]) : _content(content), _size(N)
     {
     }
 
@@ -56,7 +56,7 @@ namespace sqlpp17
       return _size;
     }
 
-    constexpr auto operator==(const char_ptr_ref& rhs) const
+    constexpr auto operator==(const string_literal& rhs) const
     {
       if (size() != rhs.size())
         return false;
@@ -68,7 +68,7 @@ namespace sqlpp17
       return true;
     }
 
-    constexpr auto operator!=(const char_ptr_ref& rhs) const
+    constexpr auto operator!=(const string_literal& rhs) const
     {
       return !(operator==(rhs));
     }

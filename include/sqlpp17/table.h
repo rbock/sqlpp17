@@ -27,9 +27,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/member.h>
-#include <sqlpp17/type_traits.h>
-#include <sqlpp17/table_alias.h>
+#include <sqlpp17/char_sequence.h>
 #include <sqlpp17/join.h>
+#include <sqlpp17/table_alias.h>
+#include <sqlpp17/type_traits.h>
 
 namespace sqlpp
 {
@@ -65,5 +66,11 @@ namespace sqlpp
   template <typename TableSpec, typename... ColumnSpecs>
   constexpr auto provided_tables_of_v<table_t<TableSpec, ColumnSpecs...>> =
       type_set<table_t<TableSpec, ColumnSpecs...>>();
+
+  template <typename TableSpec, typename... ColumnSpecs>
+  struct char_sequence_of_impl<table_t<TableSpec, ColumnSpecs...>>
+  {
+    using type = make_char_sequence<TableSpec::_alias_t::name>;
+  };
 }
 
