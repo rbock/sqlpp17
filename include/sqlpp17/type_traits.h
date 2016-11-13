@@ -67,7 +67,13 @@ namespace sqlpp
   constexpr auto is_expression = false;
 
   template <typename T>
-  constexpr auto is_conditionless_join = false;
+  constexpr auto is_conditionless_join_v = false;
+
+  template <typename T>
+  constexpr auto is_conditionless_join(const T&)
+  {
+    return is_conditionless_join<T>;
+  }
 
   template <typename T>
   constexpr auto is_conditionless_dynamic_join = false;

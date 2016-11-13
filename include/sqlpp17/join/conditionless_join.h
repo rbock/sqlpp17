@@ -106,6 +106,9 @@ namespace sqlpp
   };
 
   template <typename JoinType, typename Lhs, typename Rhs>
+  constexpr auto is_conditionless_join_v<conditionless_join_t<JoinType, Lhs, Rhs>> = true;
+
+  template <typename JoinType, typename Lhs, typename Rhs>
   constexpr auto provided_tables_of_v<conditionless_join_t<JoinType, Lhs, Rhs>> =
       provided_tables_of_v<Lhs> | provided_tables_of_v<Rhs>;
 }

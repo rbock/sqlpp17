@@ -29,7 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace sqlpp
 {
   template <typename Connection, typename... Clauses>
-  struct statement;
+  class statement;
 
   template <typename Clause, typename Connection, typename Statement>
   class clause_base;

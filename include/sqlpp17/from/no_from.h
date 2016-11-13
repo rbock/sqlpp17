@@ -26,8 +26,9 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/from.h>
+#include <sqlpp17/from/from.h>
 #include <sqlpp17/make_return_type.h>
+#include <sqlpp17/statement.h>
 
 namespace sqlpp
 {
@@ -42,17 +43,17 @@ namespace sqlpp
     constexpr auto check_from(const T&)
     {
       if
-        constexpr(is_conditionless_join<T>)
+        constexpr(is_conditionless_join_v<T>)
         {
           return failed<assert_from_arg_is_not_conditionless_join>{};
         }
       else if
-        constexpr(!is_table<T>)
+        constexpr(!is_table_v<T>)
         {
           return failed<assert_from_arg_is_table>{};
         }
       else if
-        constexpr(!required_tables_of<T>::empty())
+        constexpr(!required_tables_of<T>.empty())
         {
           return failed<assert_from_arg_no_required_tables>{};
         }
@@ -75,7 +76,7 @@ namespace sqlpp
       if
         constexpr(check)
         {
-          return Statement::of(this).template replace_clause<no_from_t>(from_t<Table>{t});
+          return Statement::of(this).template replace_clause<no_from_t>(from_t<Table>{{t}});
         }
       else
       {
@@ -92,7 +93,7 @@ namespace sqlpp
   };
 
   template <typename Context, typename Connection, typename Statement>
-  class intrepreter_t<Context, clause_base<no_from_t, Connection, Statement>>
+  class interpreter_t<Context, clause_base<no_from_t, Connection, Statement>>
   {
     using T = clause_base<no_from_t, Connection, Statement>;
 
@@ -101,5 +102,11 @@ namespace sqlpp
       return context;
     }
   };
+
+  template <typename T>
+  constexpr auto from(T&& t)
+  {
+    return statement<void, no_from_t>{}.from(std::forward<T>(t));
+  }
 }
 

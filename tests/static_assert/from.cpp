@@ -1,5 +1,3 @@
-#pragma once
-
 /*
 Copyright (c) 2016, Roland Bock
 All rights reserved.
@@ -26,6 +24,30 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/from/from.h>
-#include <sqlpp17/from/no_from.h>
+#include <tables/TabEmpty.h>
+#include <tables/TabPerson.h>
+#include <tables/TabDepartment.h>
 
+#include <sqlpp17/from.h>
+
+namespace sqlpp
+{
+  template <typename Assert, typename T>
+  struct is_bad_statement : public std::false_type
+  {
+  };
+
+  template <typename Assert>
+  struct is_bad_statement<Assert, bad_statement<failed<Assert>>> : public std::true_type
+  {
+  };
+}
+
+int main(int, char* [])
+{
+  constexpr auto s = sqlpp::statement<void, sqlpp::no_from_t>{};
+
+  static_assert(sqlpp::is_bad_statement<sqlpp::assert_from_arg_is_not_conditionless_join,
+                                        decltype(s.from(test::tabPerson.join(test::tabDepartment)))>::value);
+  static_assert(sqlpp::is_bad_statement<sqlpp::assert_from_arg_is_table, decltype(s.from(1))>::value);
+}
