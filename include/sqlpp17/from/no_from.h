@@ -36,29 +36,26 @@ namespace sqlpp
   SQLPP_WRAPPED_STATIC_ASSERT(assert_from_arg_is_table, "from() arg has to be a table or join");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_from_arg_no_required_tables, "from() arg must not depend on other tables");
 
-  namespace detail
+  template <typename T>
+  constexpr auto check_from_arg(const T&)
   {
-    template <typename T>
-    constexpr auto check_from(const T&)
-    {
-      if
-        constexpr(is_conditionless_join_v<T>)
-        {
-          return failed<assert_from_arg_is_not_conditionless_join>{};
-        }
-      else if
-        constexpr(!is_table_v<T>)
-        {
-          return failed<assert_from_arg_is_table>{};
-        }
-      else if
-        constexpr(!required_tables_of<T>.empty())
-        {
-          return failed<assert_from_arg_no_required_tables>{};
-        }
-      else
-        return succeeded{};
-    }
+    if
+      constexpr(is_conditionless_join_v<T>)
+      {
+        return failed<assert_from_arg_is_not_conditionless_join>{};
+      }
+    else if
+      constexpr(!is_table_v<T>)
+      {
+        return failed<assert_from_arg_is_table>{};
+      }
+    else if
+      constexpr(!required_tables_of<T>.empty())
+      {
+        return failed<assert_from_arg_no_required_tables>{};
+      }
+    else
+      return succeeded{};
   }
 
   struct no_from_t
@@ -72,7 +69,7 @@ namespace sqlpp
     template <typename Table>
     [[nodiscard]] constexpr auto from(Table t) const
     {
-      constexpr auto check = detail::check_from(t);
+      constexpr auto check = detail::check_from_arg(t);
       if
         constexpr(check)
         {
