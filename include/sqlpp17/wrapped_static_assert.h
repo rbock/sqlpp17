@@ -32,16 +32,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-#define SQLPP_WRAPPED_STATIC_ASSERT(name, message) \
-  struct name;                                     \
-                                                   \
-  template <>                                      \
-  struct failed<name> : std::false_type            \
-  {                                                \
-    template <typename... T>                       \
-    static auto _(T&&...) -> void                  \
-    {                                              \
-      static_assert(wrong<T...>, message);         \
-    }                                              \
-  };
+#ifndef SQLPP_WRAPPED_STATIC_ASSERT_DISABLE
+#define SQLPP_WRAPPED_STATIC_ASSERT_DISABLE false
+#endif
+
+#define SQLPP_WRAPPED_STATIC_ASSERT(name, message)                                \
+  struct name;                                                                    \
+                                                                                  \
+  template <>                                                                     \
+  struct failed<name> : std::false_type                                           \
+  {                                                                               \
+    template <typename... T>                                                      \
+    static auto _(T&&...) -> void                                                 \
+    {                                                                             \
+      static_assert(wrong<T...> or SQLPP_WRAPPED_STATIC_ASSERT_DISABLE, message); \
+    }                                                                             \
+  }
 }

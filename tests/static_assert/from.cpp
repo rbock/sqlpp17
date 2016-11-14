@@ -24,6 +24,8 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#define SQLPP_WRAPPED_STATIC_ASSERT_DISABLE true
+
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
 #include <tables/TabDepartment.h>
@@ -50,4 +52,6 @@ int main(int, char* [])
   static_assert(sqlpp::is_bad_statement<sqlpp::assert_from_arg_is_not_conditionless_join,
                                         decltype(s.from(test::tabPerson.join(test::tabDepartment)))>::value);
   static_assert(sqlpp::is_bad_statement<sqlpp::assert_from_arg_is_table, decltype(s.from(1))>::value);
+
+  static_assert(sqlpp::is_bad_statement<sqlpp::assert_from_arg_is_table, decltype(sqlpp::from(1))>::value);
 }
