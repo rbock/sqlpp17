@@ -26,8 +26,8 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <sqlpp17/bad_statement.h>
 #include <sqlpp17/join/join_types.h>
-#include <sqlpp17/make_return_type.h>
 #include <sqlpp17/wrapped_static_assert.h>
 
 namespace sqlpp
@@ -72,39 +72,37 @@ namespace sqlpp
         }
       else
       {
-        return check;
+        return ::sqlpp::bad_statement_t<std::decay_t<decltype(check)>>{};
       }
     }
   }
 
   template <typename Rhs>
-  constexpr auto dynamic_inner_join(Rhs rhs) -> make_return_type<decltype(detail::dynamic_join_impl<inner_join_t>(rhs))>
+  [[nodiscard]] constexpr auto dynamic_inner_join(Rhs rhs)
   {
     return detail::dynamic_join_impl<inner_join_t>(rhs);
   }
 
   template <typename Rhs>
-  constexpr auto dynamic_join(Rhs rhs)
+  [[nodiscard]] constexpr auto dynamic_join(Rhs rhs)
   {
     return dynamic_inner_join(rhs);
   }
 
   template <typename Rhs>
-  constexpr auto dynamic_left_outer_join(Rhs rhs)
-      -> make_return_type<decltype(detail::dynamic_join_impl<left_outer_join_t>(rhs))>
+  [[nodiscard]] constexpr auto dynamic_left_outer_join(Rhs rhs)
   {
     return detail::dynamic_join_impl<left_outer_join_t>(rhs);
   }
 
   template <typename Rhs>
-  constexpr auto dynamic_right_outer_join(Rhs rhs)
-      -> make_return_type<decltype(detail::dynamic_join_impl<right_outer_join_t>(rhs))>
+  [[nodiscard]] constexpr auto dynamic_right_outer_join(Rhs rhs)
   {
     return detail::dynamic_join_impl<right_outer_join_t>(rhs);
   }
 
   template <typename Rhs>
-  constexpr auto dynamic_outer_join(Rhs rhs) -> make_return_type<decltype(detail::dynamic_join_impl<outer_join_t>(rhs))>
+  [[nodiscard]] constexpr auto dynamic_outer_join(Rhs rhs)
   {
     return detail::dynamic_join_impl<outer_join_t>(rhs);
   }
@@ -122,13 +120,13 @@ namespace sqlpp
         }
       else
       {
-        return check;
+        return ::sqlpp::bad_statement_t<std::decay_t<decltype(check)>>{};
       }
     }
   }
 
   template <typename Rhs>
-  constexpr auto dynamic_cross_join(Rhs rhs) -> make_return_type<decltype(detail::dynamic_cross_join_impl(rhs))>
+  [[nodiscard]] constexpr auto dynamic_cross_join(Rhs rhs)
   {
     return detail::dynamic_cross_join_impl(rhs);
   }

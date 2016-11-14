@@ -59,8 +59,9 @@ namespace sqlpp
   template <typename JoinType, typename Lhs, typename Rhs>
   class conditionless_join_t
   {
+  public:
     template <typename Expr>
-    auto on_impl(const Expr& expr) const
+    [[nodiscard]] auto on(const Expr& expr) const
     {
       constexpr auto check = check_join(*this, expr);
       if
@@ -70,20 +71,13 @@ namespace sqlpp
         }
       else
       {
-        return check;
+        return ::sqlpp::bad_statement_t<std::decay_t<decltype(check)>>{};
       }
     }
 
-  public:
-    constexpr auto unconditionally() const
+    [[nodiscard]] constexpr auto unconditionally() const
     {
       return join_t<conditionless_join_t, on_t<unconditional_t>>{*this, {}};
-    }
-
-    template <typename Expr>
-    constexpr auto on(Expr expr) const -> make_return_type<decltype(on_impl(expr))>
-    {
-      return on_impl(expr);
     }
 
     Lhs _lhs;

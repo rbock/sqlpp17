@@ -26,34 +26,16 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/failed.h>
+#include <sqlpp17/wrong.h>
 
 namespace sqlpp
 {
-  template <typename Assert>
-  struct bad_statement
+  template <typename Failure>
+  struct bad_statement_t
   {
-    bad_statement(Assert)
+    constexpr bad_statement_t()
     {
-      Assert::_();
+      static_assert(wrong<Failure>, "Missing specialization");
     }
   };
-
-  namespace detail
-  {
-    template <typename T>
-    struct make_return_type
-    {
-      using type = T;
-    };
-
-    template <typename T>
-    struct make_return_type<failed<T>>
-    {
-      using type = bad_statement<failed<T>>;
-    };
-  }
-
-  template <typename T>
-  using make_return_type = typename detail::make_return_type<T>::type;
 }

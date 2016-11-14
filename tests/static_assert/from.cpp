@@ -40,7 +40,7 @@ namespace sqlpp
   };
 
   template <typename Assert>
-  struct is_bad_statement<Assert, bad_statement<failed<Assert>>> : public std::true_type
+  struct is_bad_statement<Assert, bad_statement_t<failed<Assert>>> : public std::true_type
   {
   };
 }

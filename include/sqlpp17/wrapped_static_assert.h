@@ -40,10 +40,10 @@ namespace sqlpp
   struct name;                                                                    \
                                                                                   \
   template <>                                                                     \
-  struct failed<name> : std::false_type                                           \
+  struct bad_statement_t<failed<name>>                                            \
   {                                                                               \
     template <typename... T>                                                      \
-    static auto _(T&&...) -> void                                                 \
+    constexpr bad_statement_t(T&&...)                                             \
     {                                                                             \
       static_assert(wrong<T...> or SQLPP_WRAPPED_STATIC_ASSERT_DISABLE, message); \
     }                                                                             \

@@ -26,8 +26,8 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <sqlpp17/bad_statement.h>
 #include <sqlpp17/join/join_types.h>
-#include <sqlpp17/make_return_type.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
 
@@ -86,39 +86,37 @@ namespace sqlpp
         }
       else
       {
-        return check;
+        return ::sqlpp::bad_statement_t<std::decay_t<decltype(check)>>{};
       }
     }
   }
 
   template <typename Lhs, typename Rhs>
-  constexpr auto inner_join(Lhs lhs, Rhs rhs) -> make_return_type<decltype(detail::join_impl<inner_join_t>(lhs, rhs))>
+  [[nodiscard]] constexpr auto inner_join(Lhs lhs, Rhs rhs)
   {
     return detail::join_impl<inner_join_t>(lhs, rhs);
   }
 
   template <typename Lhs, typename Rhs>
-  constexpr auto join(Lhs lhs, Rhs rhs)
+  [[nodiscard]] constexpr auto join(Lhs lhs, Rhs rhs)
   {
     return inner_join(lhs, rhs);
   }
 
   template <typename Lhs, typename Rhs>
-  constexpr auto left_outer_join(Lhs lhs, Rhs rhs)
-      -> make_return_type<decltype(detail::join_impl<left_outer_join_t>(lhs, rhs))>
+  [[nodiscard]] constexpr auto left_outer_join(Lhs lhs, Rhs rhs)
   {
     return detail::join_impl<left_outer_join_t>(lhs, rhs);
   }
 
   template <typename Lhs, typename Rhs>
-  constexpr auto right_outer_join(Lhs lhs, Rhs rhs)
-      -> make_return_type<decltype(detail::join_impl<right_outer_join_t>(lhs, rhs))>
+  [[nodiscard]] constexpr auto right_outer_join(Lhs lhs, Rhs rhs)
   {
     return detail::join_impl<right_outer_join_t>(lhs, rhs);
   }
 
   template <typename Lhs, typename Rhs>
-  constexpr auto outer_join(Lhs lhs, Rhs rhs) -> make_return_type<decltype(detail::join_impl<outer_join_t>(lhs, rhs))>
+  [[nodiscard]] constexpr auto outer_join(Lhs lhs, Rhs rhs)
   {
     return detail::join_impl<outer_join_t>(lhs, rhs);
   }
@@ -136,13 +134,13 @@ namespace sqlpp
         }
       else
       {
-        return check;
+        return ::sqlpp::bad_statement_t<std::decay_t<decltype(check)>>{};
       }
     }
   }
 
   template <typename Lhs, typename Rhs>
-  constexpr auto cross_join(Lhs lhs, Rhs rhs) -> make_return_type<decltype(detail::cross_join_impl(lhs, rhs))>
+  [[nodiscard]] constexpr auto cross_join(Lhs lhs, Rhs rhs)
   {
     return detail::cross_join_impl(lhs, rhs);
   }
@@ -157,37 +155,37 @@ namespace sqlpp
 
   public:
     template <typename T>
-    constexpr auto join(T t) const
+    [[nodiscard]] constexpr auto join(T t) const
     {
       return ::sqlpp::join(ref(), t);
     }
 
     template <typename T>
-    constexpr auto inner_join(T t) const
+    [[nodiscard]] constexpr auto inner_join(T t) const
     {
       return ::sqlpp::inner_join(ref(), t);
     }
 
     template <typename T>
-    constexpr auto left_outer_join(T t) const
+    [[nodiscard]] constexpr auto left_outer_join(T t) const
     {
       return ::sqlpp::left_outer_join(ref(), t);
     }
 
     template <typename T>
-    constexpr auto right_outer_join(T t) const
+    [[nodiscard]] constexpr auto right_outer_join(T t) const
     {
       return ::sqlpp::right_outer_join(ref(), t);
     }
 
     template <typename T>
-    constexpr auto outer_join(T t) const
+    [[nodiscard]] constexpr auto outer_join(T t) const
     {
       return ::sqlpp::outer_join(ref(), t);
     }
 
     template <typename T>
-    constexpr auto cross_join(T t) const
+    [[nodiscard]] constexpr auto cross_join(T t) const
     {
       return ::sqlpp::cross_join(ref(), t);
     }

@@ -27,7 +27,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/from/from.h>
-#include <sqlpp17/make_return_type.h>
 #include <sqlpp17/statement.h>
 
 namespace sqlpp
@@ -69,8 +68,9 @@ namespace sqlpp
   template <typename Connection, typename Statement>
   class clause_base<no_from_t, Connection, Statement>
   {
+  public:
     template <typename Table>
-    auto from_impl(Table t) const
+    [[nodiscard]] constexpr auto from(Table t) const
     {
       constexpr auto check = detail::check_from(t);
       if
@@ -80,15 +80,8 @@ namespace sqlpp
         }
       else
       {
-        return check;
+        return ::sqlpp::bad_statement_t<std::decay_t<decltype(check)>>{};
       }
-    }
-
-  public:
-    template <typename Table>
-    [[nodiscard]] auto from(Table t) const -> make_return_type<decltype(from_impl(t))>
-    {
-      return from_impl(t);
     }
   };
 
@@ -103,10 +96,10 @@ namespace sqlpp
     }
   };
 
-  template <typename T>
-  constexpr auto from(T&& t)
+  template <typename Table>
+  [[nodiscard]] constexpr auto from(Table&& t)
   {
-    return statement<void, no_from_t>{}.from(std::forward<T>(t));
+    return statement<void, no_from_t>{}.from(std::forward<Table>(t));
   }
 }
 

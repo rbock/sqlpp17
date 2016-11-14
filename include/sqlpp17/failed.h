@@ -31,7 +31,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace sqlpp
 {
   template <typename T>
-  struct failed;
+  struct failed : public std::false_type
+  {
+  };
 
   template <typename T, typename U>
   constexpr auto operator&&(const failed<T>&, const failed<U>&)
