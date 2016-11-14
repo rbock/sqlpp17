@@ -40,7 +40,7 @@ namespace sqlpp
   constexpr auto is_join(const T&)
   {
     return is_join_v<T>;
-  };
+  }
 
   template <typename T>
   constexpr auto is_selectable_v = false;
@@ -49,7 +49,7 @@ namespace sqlpp
   constexpr auto is_selectable(const T&)
   {
     return is_selectable_v<T>;
-  };
+  }
 
   template <typename T>
   constexpr auto is_table_v = false;
@@ -58,7 +58,7 @@ namespace sqlpp
   constexpr auto is_table(const T&)
   {
     return is_table_v<T>;
-  };
+  }
 
   template <typename T>
   constexpr auto is_boolean = false;

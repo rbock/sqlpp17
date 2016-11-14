@@ -67,7 +67,7 @@ namespace sqlpp
       [[nodiscard]] static constexpr auto insert()
       {
         return std::conditional_t<count<T>(), _type_set, _type_set<Elements..., T>>{};
-      };
+      }
 
       template <typename T>
       [[nodiscard]] constexpr auto operator<<(_base<T>) const
@@ -135,7 +135,7 @@ namespace sqlpp
       [[nodiscard]] constexpr auto remove()
       {
         return *this - _type_set<T>{};
-      };
+      }
     };
   }
 
