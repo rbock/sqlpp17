@@ -33,6 +33,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
+  template <typename Assert, typename T>
+  constexpr auto is_bad_statement_v = false;
+
+  template <typename Assert, typename T>
+  constexpr auto is_bad_statement(const Assert&, const T&)
+  {
+    return is_bad_statement_v<Assert, T>;
+  }
+
   template <typename T>
   constexpr auto is_join_v = false;
 

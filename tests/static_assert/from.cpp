@@ -24,7 +24,7 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#define SQLPP_WRAPPED_STATIC_ASSERT_DISABLE true
+#define SQLPP_WRAPPED_STATIC_ASSERT_DISABLED_FOR_TESTING true
 
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
@@ -32,26 +32,28 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/from.h>
 
-namespace sqlpp
+namespace
 {
   template <typename Assert, typename T>
-  struct is_bad_statement : public std::false_type
+  auto test_bad_statement(const Assert&, const T&)
   {
-  };
-
-  template <typename Assert>
-  struct is_bad_statement<Assert, bad_statement_t<failed<Assert>>> : public std::true_type
-  {
-  };
+    static_assert(is_bad_statement(Assert{}, T{}));
+  }
 }
 
-int main(int, char* [])
+int main()
 {
   constexpr auto s = sqlpp::statement<void, sqlpp::no_from_t>{};
 
-  static_assert(sqlpp::is_bad_statement<sqlpp::assert_from_arg_is_not_conditionless_join,
-                                        decltype(s.from(test::tabPerson.join(test::tabDepartment)))>::value);
-  static_assert(sqlpp::is_bad_statement<sqlpp::assert_from_arg_is_table, decltype(s.from(1))>::value);
+  // constexpr tests
+  static_assert(is_bad_statement(sqlpp::assert_from_arg_is_table{}, s.from(1)));
 
-  static_assert(sqlpp::is_bad_statement<sqlpp::assert_from_arg_is_table, decltype(sqlpp::from(1))>::value);
+  static_assert(is_bad_statement(sqlpp::assert_from_arg_is_not_conditionless_join{},
+                                 s.from(test::tabPerson.join(test::tabDepartment))));
+
+  static_assert(is_bad_statement(sqlpp::assert_from_arg_is_table{}, sqlpp::from(1)));
+
+  // non-constexpr tests
+  test_bad_statement(sqlpp::assert_from_arg_is_table{}, sqlpp::from(std::string("mytable")));
 }
+

@@ -32,20 +32,23 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-#ifndef SQLPP_WRAPPED_STATIC_ASSERT_DISABLE
-#define SQLPP_WRAPPED_STATIC_ASSERT_DISABLE false
+#ifndef SQLPP_WRAPPED_STATIC_ASSERT_DISABLED_FOR_TESTING
+#define SQLPP_WRAPPED_STATIC_ASSERT_DISABLED_FOR_TESTING false
 #endif
 
-#define SQLPP_WRAPPED_STATIC_ASSERT(name, message)                                \
-  struct name;                                                                    \
-                                                                                  \
-  template <>                                                                     \
-  struct bad_statement_t<failed<name>>                                            \
-  {                                                                               \
-    template <typename... T>                                                      \
-    constexpr bad_statement_t(T&&...)                                             \
-    {                                                                             \
-      static_assert(wrong<T...> or SQLPP_WRAPPED_STATIC_ASSERT_DISABLE, message); \
-    }                                                                             \
+#define SQLPP_WRAPPED_STATIC_ASSERT(name, message)                                            \
+  struct name                                                                                 \
+  {                                                                                           \
+  };                                                                                          \
+                                                                                              \
+  template <>                                                                                 \
+  struct bad_statement_t<failed<name>>                                                        \
+  {                                                                                           \
+    template <typename... T>                                                                  \
+    constexpr bad_statement_t(T&&...)                                                         \
+    {                                                                                         \
+      constexpr auto check = wrong<T...> or SQLPP_WRAPPED_STATIC_ASSERT_DISABLED_FOR_TESTING; \
+      static_assert(check, message);                                                          \
+    }                                                                                         \
   }
 }

@@ -69,7 +69,7 @@ namespace sqlpp
     template <typename Table>
     [[nodiscard]] constexpr auto from(Table t) const
     {
-      constexpr auto check = detail::check_from_arg(t);
+      constexpr auto check = check_from_arg(t);
       if
         constexpr(check)
         {
