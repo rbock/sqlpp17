@@ -63,5 +63,8 @@ namespace sqlpp
   {
     using type = make_char_sequence<ColumnSpec::_alias_t::name>;
   };
+
+  template <typename Table, typename ColumnSpec>
+  constexpr auto required_tables_of_v<column_t<Table, ColumnSpec>> = type_set<column_t<Table, ColumnSpec>>();
 }
 

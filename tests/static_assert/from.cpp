@@ -24,13 +24,21 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#define SQLPP_WRAPPED_STATIC_ASSERT_DISABLED_FOR_TESTING true
-
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
 #include <tables/TabDepartment.h>
 
 #include <sqlpp17/from.h>
+
+// Turning off static_assert for from()
+namespace sqlpp
+{
+  template <typename... T>
+  constexpr auto wrong<assert_from_arg_is_table, T...> = true;
+
+  template <typename... T>
+  constexpr auto wrong<assert_from_arg_is_not_conditionless_join, T...> = true;
+}
 
 namespace
 {

@@ -53,7 +53,7 @@ namespace sqlpp
           return failed<assert_dynamic_conditionless_join_table>{};
         }
       else if
-        constexpr(!required_tables_of<Rhs>.empty())
+        constexpr(!required_tables_of_v<Rhs>.empty())
         {
           return failed<assert_dynamic_conditionless_join_no_table_dependencies>{};
         }

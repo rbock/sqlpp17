@@ -97,7 +97,13 @@ namespace sqlpp
   constexpr auto parameters_of = type_set_t<>();
 
   template <typename T>
-  constexpr auto required_tables_of = type_set_t<>();
+  constexpr auto required_tables_of_v = type_set_t<>();
+
+  template <typename T>
+  constexpr auto required_tables_of(const T&)
+  {
+    return required_tables_of_v<T>;
+  }
 
   template <typename T>
   constexpr auto provided_tables_of_v = type_set<>();
