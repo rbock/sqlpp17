@@ -26,9 +26,6 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/join/dynamic_join_functions.h>
-#include <sqlpp17/join/dynamic_conditionless_join.h>
-#include <sqlpp17/join/dynamic_cross_join.h>
 #include <sqlpp17/join/join_functions.h>
 #include <sqlpp17/join/conditionless_join.h>
 #include <sqlpp17/join/cross_join.h>

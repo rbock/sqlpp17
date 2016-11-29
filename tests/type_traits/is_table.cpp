@@ -43,14 +43,6 @@ static_assert(not sqlpp::is_table(test::tabEmpty.left_outer_join(test::tabPerson
 static_assert(not sqlpp::is_table(test::tabEmpty.right_outer_join(test::tabPerson)));
 static_assert(not sqlpp::is_table(test::tabEmpty.outer_join(test::tabPerson)));
 
-// dynamic joins
-static_assert(not sqlpp::is_table(dynamic_cross_join(test::tabPerson)));
-static_assert(not sqlpp::is_table(dynamic_join(test::tabPerson).unconditionally()));
-static_assert(not sqlpp::is_table(dynamic_inner_join(test::tabPerson).unconditionally()));
-static_assert(not sqlpp::is_table(dynamic_left_outer_join(test::tabPerson).unconditionally()));
-static_assert(not sqlpp::is_table(dynamic_right_outer_join(test::tabPerson).unconditionally()));
-static_assert(not sqlpp::is_table(dynamic_outer_join(test::tabPerson).unconditionally()));
-
 // raw tables
 static_assert(sqlpp::is_table(test::tabEmpty));
 static_assert(sqlpp::is_table(test::tabPerson));

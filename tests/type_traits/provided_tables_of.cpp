@@ -47,14 +47,6 @@ static_assert(provided_tables_of(test::tabEmpty.right_outer_join(test::tabPerson
 static_assert(provided_tables_of(test::tabEmpty.outer_join(test::tabPerson)) ==
               type_set(test::tabEmpty, test::tabPerson));
 
-// dynamic joins
-static_assert(provided_tables_of(dynamic_cross_join(test::tabPerson)).empty());
-static_assert(provided_tables_of(dynamic_join(test::tabPerson).unconditionally()).empty());
-static_assert(provided_tables_of(dynamic_inner_join(test::tabPerson).unconditionally()).empty());
-static_assert(provided_tables_of(dynamic_left_outer_join(test::tabPerson).unconditionally()).empty());
-static_assert(provided_tables_of(dynamic_right_outer_join(test::tabPerson).unconditionally()).empty());
-static_assert(provided_tables_of(dynamic_outer_join(test::tabPerson).unconditionally()).empty());
-
 // raw tables
 static_assert(provided_tables_of(test::tabEmpty) == type_set(test::tabEmpty));
 static_assert(provided_tables_of(test::tabPerson) == type_set(test::tabPerson));

@@ -34,6 +34,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace sqlpp
 {
   template <typename Assert, typename T>
+  constexpr auto is_alias_v = false;
+
+  template <typename Assert, typename T>
+  constexpr auto is_alias(const Assert&, const T&)
+  {
+    return is_alias_v<Assert, T>;
+  }
+
+  template <typename Assert, typename T>
   constexpr auto is_bad_statement_v = false;
 
   template <typename Assert, typename T>
@@ -73,9 +82,6 @@ namespace sqlpp
   constexpr auto is_boolean = false;
 
   template <typename T>
-  constexpr auto is_expression = false;
-
-  template <typename T>
   constexpr auto is_conditionless_join_v = false;
 
   template <typename T>
@@ -83,6 +89,18 @@ namespace sqlpp
   {
     return is_conditionless_join<T>;
   }
+
+  template <typename T>
+  constexpr auto is_expression_v = false;
+
+  template <typename T>
+  constexpr auto is_expression(const T&)
+  {
+    return is_expression<T>;
+  }
+
+  template <typename T>
+  using value_type_of = void;
 
   template <typename T>
   constexpr auto is_conditionless_dynamic_join = false;
