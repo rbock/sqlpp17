@@ -28,10 +28,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  template <typename Connection, typename... Clauses>
+  template <typename... Clauses>
   class statement;
 
-  template <typename Clause, typename Connection, typename Statement>
+  template <typename Clause, typename Statement>
   class clause_base;
 }
 

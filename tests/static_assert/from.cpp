@@ -51,7 +51,7 @@ namespace
 
 int main()
 {
-  constexpr auto s = sqlpp::statement<void, sqlpp::no_from_t>{};
+  constexpr auto s = sqlpp::statement<sqlpp::no_from_t>{};
 
   // constexpr tests
   static_assert(is_bad_statement(sqlpp::assert_from_arg_is_table{}, s.from(1)));

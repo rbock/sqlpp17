@@ -62,8 +62,8 @@ namespace sqlpp
   {
   };
 
-  template <typename Connection, typename Statement>
-  class clause_base<no_from_t, Connection, Statement>
+  template <typename Statement>
+  class clause_base<no_from_t, Statement>
   {
   public:
     template <typename Table>
@@ -73,7 +73,7 @@ namespace sqlpp
       if
         constexpr(check)
         {
-          return Statement::of(this).template replace_clause<no_from_t>(from_t<Table>{{t}});
+          return Statement::of(this).template replace_clause<no_from_t>(from_t<Table>{t});
         }
       else
       {
@@ -82,10 +82,10 @@ namespace sqlpp
     }
   };
 
-  template <typename Context, typename Connection, typename Statement>
-  class interpreter_t<Context, clause_base<no_from_t, Connection, Statement>>
+  template <typename Context, typename Statement>
+  class interpreter_t<Context, clause_base<no_from_t, Statement>>
   {
-    using T = clause_base<no_from_t, Connection, Statement>;
+    using T = clause_base<no_from_t, Statement>;
 
     static Context& _(const T&, Context& context)
     {
@@ -96,7 +96,7 @@ namespace sqlpp
   template <typename Table>
   [[nodiscard]] constexpr auto from(Table&& t)
   {
-    return statement<void, no_from_t>{}.from(std::forward<Table>(t));
+    return statement<no_from_t>{}.from(std::forward<Table>(t));
   }
 }
 

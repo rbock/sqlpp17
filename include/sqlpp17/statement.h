@@ -33,16 +33,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  template <typename Connection, typename... Clauses>
-  class statement : public clause_base<Clauses, Connection, statement<Connection, Clauses...>>...
+  template <typename... Clauses>
+  class statement : public clause_base<Clauses, statement<Clauses...>>...
   {
-    template <typename, typename, typename>
+    template <typename, typename>
     friend class clause_base;
 
     using clauses = type_vector<Clauses...>;
 
     template <typename... Cs>
-    using new_statement = statement<Connection, Cs...>;
+    using new_statement = statement<Cs...>;
 
     template <typename Base>
     static auto of(const Base* base)
@@ -60,8 +60,7 @@ namespace sqlpp
 
     [[nodiscard]] constexpr auto check_consistency() const
     {
-      return (succeeded{} && ... &&
-              check_consistency(static_cast<const clause_base<Clauses, Connection, statement>&>(*this)));
+      return (succeeded{} && ... && check_consistency(static_cast<const clause_base<Clauses, statement>&>(*this)));
     }
 
   public:
@@ -70,7 +69,7 @@ namespace sqlpp
     }
 
     template <typename Arg>
-    constexpr statement(Arg&& arg) : clause_base<Clauses, Connection, statement>(arg)...
+    constexpr statement(Arg&& arg) : clause_base<Clauses, statement>(arg)...
     {
     }
   };
