@@ -1,0 +1,14 @@
+No "dynamic_select" et al.
+==========================
+In sqlpp11, we can add tables dynamically to the right. We can combine conditions dynamically via AND.
+In sqlpp17, we can anonymize tables/joins and expressions so that we can combine static and dynamic parts more fluently.
+
+There will also be several versions of select: With a static tuple, or with a vector of variants of fields.
+
+row.x should be a value/optional, not a complex object.
+=======================================================
+auto x = row.x leads to too many surprises
+
+results.front() needs to throw is results.empty()
+=================================================
+It happens way too often that someone assumes that there is at least one result, when there isn't
