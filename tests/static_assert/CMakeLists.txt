@@ -28,4 +28,7 @@ function(test_compile name)
   target_link_libraries(${target} PRIVATE sqlpp17 sqlpp17_testing)
 endfunction()
 
+test_compile(anonymize)
 test_compile(from)
+test_compile(where)
+test_compile(having)

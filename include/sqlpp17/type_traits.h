@@ -33,6 +33,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
+  template <typename T>
+  constexpr auto contains_aggregate_v = false;
+
+  template <typename T>
+  constexpr auto contains_aggregate(const T&)
+  {
+    return contains_aggregate_v<T>;
+  }
+
   template <typename Assert, typename T>
   constexpr auto is_alias_v = false;
 
@@ -49,6 +58,15 @@ namespace sqlpp
   constexpr auto is_bad_statement(const Assert&, const T&)
   {
     return is_bad_statement_v<Assert, T>;
+  }
+
+  template <typename T>
+  constexpr auto is_boolean_v = false;
+
+  template <typename T>
+  constexpr auto is_boolean(const T&)
+  {
+    return is_boolean_v<T>;
   }
 
   template <typename T>
@@ -77,9 +95,6 @@ namespace sqlpp
   {
     return is_table_v<T>;
   }
-
-  template <typename T>
-  constexpr auto is_boolean = false;
 
   template <typename T>
   constexpr auto is_conditionless_join_v = false;
