@@ -114,8 +114,18 @@ namespace sqlpp
     return is_expression<T>;
   }
 
+  struct no_value_t
+  {
+  };
+
   template <typename T>
-  using value_type_of = void;
+  using value_type_of_t = no_value_t;
+
+  template <typename T>
+  constexpr auto value_type_of(const T&)
+  {
+    return value_type_of_t<T>{};
+  }
 
   template <typename T>
   constexpr auto is_conditionless_dynamic_join = false;

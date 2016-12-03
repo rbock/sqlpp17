@@ -138,7 +138,7 @@ namespace sqlpp
     else if
       constexpr(::sqlpp::is_expression_v<T>)
       {
-        return anonymous_t<Context, tag::expression<value_type_of<T>>>{t};
+        return anonymous_t<Context, tag::expression<value_type_of_t<T>>>{t};
       }
     else
     {

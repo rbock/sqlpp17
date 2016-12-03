@@ -30,5 +30,7 @@ endfunction()
 
 test_compile(anonymize)
 test_compile(from)
-test_compile(where)
+test_compile(operator)
 test_compile(having)
+test_compile(selected_fields)
+test_compile(where)

@@ -26,10 +26,6 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/no_from.h>
-#include <sqlpp17/statement.h>
+#include <sqlpp17/selected_fields/selected_fields.h>
+#include <sqlpp17/selected_fields/no_selected_fields.h>
 
-namespace sqlpp
-{
-  using select_t = statement<void, no_from>;
-}
