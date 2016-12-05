@@ -45,6 +45,11 @@ namespace sqlpp
   class clause_base<from_t<Table>, Statement>
   {
   public:
+    template <typename OtherStatement>
+    clause_base(const clause_base<from_t<Table>, OtherStatement>& s) : _table(s._table)
+    {
+    }
+
     clause_base(const from_t<Table>& f) : _table(f._table)
     {
     }

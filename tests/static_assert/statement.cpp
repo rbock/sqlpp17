@@ -1,5 +1,3 @@
-#pragma once
-
 /*
 Copyright (c) 2016, Roland Bock
 All rights reserved.
@@ -26,49 +24,52 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <vector>
-#include <tuple>
-#include <sqlpp17/clause_fwd.h>
-#include <sqlpp17/interpretable.h>
-#include <sqlpp17/interpret.h>
-#include <sqlpp17/type_traits.h>
-#include <sqlpp17/wrapped_static_assert.h>
+#include <tables/TabEmpty.h>
+#include <tables/TabPerson.h>
+#include <tables/TabDepartment.h>
 
+#include <sqlpp17/from.h>
+#include <sqlpp17/where.h>
+
+#warning : Not implemented yet
+#if 0
+// Turning off static_assert for from()
 namespace sqlpp
 {
-  template <typename... Fields>
-  struct selected_fields_t
-  {
-    std::tuple<Fields...> _fields;
-  };
+  template <typename... T>
+  constexpr auto wrong<assert_from_arg_is_table, T...> = true;
 
-  template <typename... Fields, typename Statement>
-  class clause_base<selected_fields_t<Fields...>, Statement>
-  {
-  public:
-    template <typename OtherStatement>
-    clause_base(const clause_base<selected_fields_t<Fields...>, OtherStatement>& s) : _fields(s._fields)
-    {
-    }
-
-    clause_base(const selected_fields_t<Fields...>& f) : _fields(f._fields)
-    {
-    }
-
-    std::tuple<Fields...> _fields;
-  };
-#warning : The dynamic vector variant is missing
-
-  template <typename Context, typename Table, typename Statement>
-  class interpreter_t<Context, clause_base<selected_fields_t<Table>, Statement>>
-  {
-    using T = clause_base<selected_fields_t<Table>, Statement>;
-
-    static Context& _(const T& t, Context& context)
-    {
-      context << " FROM ";
-      interpret(t._table, context);
-      return context;
-    }
-  };
+  template <typename... T>
+  constexpr auto wrong<assert_from_arg_is_not_conditionless_join, T...> = true;
 }
+
+namespace
+{
+  template <typename Assert, typename T>
+  auto test_bad_statement(const Assert&, const T&)
+  {
+    static_assert(is_bad_statement(Assert{}, T{}));
+  }
+}
+#endif
+
+int main()
+{
+  constexpr auto f = sqlpp::statement<sqlpp::no_from_t>{};
+  constexpr auto w = sqlpp::statement<sqlpp::no_where_t>{};
+  auto s = f << w;
+
+#if 0
+  // constexpr tests
+  static_assert(is_bad_statement(sqlpp::assert_from_arg_is_table{}, s.from(1)));
+
+  static_assert(is_bad_statement(sqlpp::assert_from_arg_is_not_conditionless_join{},
+                                 s.from(test::tabPerson.join(test::tabDepartment))));
+
+  static_assert(is_bad_statement(sqlpp::assert_from_arg_is_table{}, sqlpp::from(1)));
+
+  // non-constexpr tests
+  test_bad_statement(sqlpp::assert_from_arg_is_table{}, sqlpp::from(std::string("mytable")));
+#endif
+}
+

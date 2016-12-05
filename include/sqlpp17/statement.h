@@ -73,4 +73,12 @@ namespace sqlpp
     {
     }
   };
+
+  template <typename... LClauses, typename... RClauses>
+#warning : Would like to make this a constexpr function, but make_constructor_arg is not
+  auto operator<<(statement<LClauses...> l, statement<RClauses...> r)
+  {
+#warning : Need to tag clauses to detect multiple instances of the same tag
+    return statement<LClauses..., RClauses...>(detail::make_constructor_arg(l, r));
+  }
 }

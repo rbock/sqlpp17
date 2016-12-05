@@ -71,6 +71,13 @@ namespace sqlpp
   class clause_base<no_selected_fields_t, Statement>
   {
   public:
+    template <typename OtherStatement>
+    constexpr clause_base(const clause_base<no_selected_fields_t, OtherStatement>& s)
+    {
+    }
+
+    constexpr clause_base() = default;
+
     template <typename... Fields>
     [[nodiscard]] constexpr auto selected_fields(Fields... fields) const
     {
@@ -110,7 +117,8 @@ namespace sqlpp
       if
         constexpr(check)
         {
-          return Statement::of(this).template replace_clause<no_selected_fields_t>(selected_fields_t<Table>{t});
+          return Statement::of(this).template replace_clause<no_selected_fields_t>(
+              selected_fields_t<std::vector<std::variant<Fields...>>>{fields});
         }
       else
       {

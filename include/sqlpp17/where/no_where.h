@@ -66,6 +66,13 @@ namespace sqlpp
   class clause_base<no_where_t, Statement>
   {
   public:
+    template <typename OtherStatement>
+    constexpr clause_base(const clause_base<no_where_t, OtherStatement>& s)
+    {
+    }
+
+    constexpr clause_base() = default;
+
     template <typename Condition>
     [[nodiscard]] constexpr auto where(Condition condition) const
     {

@@ -59,6 +59,13 @@ namespace sqlpp
   class clause_base<no_having_t, Statement>
   {
   public:
+    template <typename OtherStatement>
+    constexpr clause_base(const clause_base<no_having_t, OtherStatement>& s)
+    {
+    }
+
+    constexpr clause_base() = default;
+
     template <typename Condition>
     [[nodiscard]] constexpr auto having(Condition condition) const
     {

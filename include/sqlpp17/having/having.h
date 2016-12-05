@@ -45,6 +45,11 @@ namespace sqlpp
   class clause_base<having_t<Condition>, Statement>
   {
   public:
+    template <typename OtherStatement>
+    clause_base(const clause_base<having_t<Condition>, OtherStatement>& s) : _condition(s._condition)
+    {
+    }
+
     clause_base(const having_t<Condition>& f) : _condition(f._condition)
     {
     }
