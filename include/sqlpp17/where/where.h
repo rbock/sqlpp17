@@ -35,11 +35,21 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
+  namespace clause
+  {
+    struct where
+    {
+    };
+  }
+
   template <typename Condition>
   struct where_t
   {
     Condition _condition;
   };
+
+  template <typename Table>
+  constexpr auto clause_tag<where_t<Table>> = clause::where{};
 
   template <typename Condition, typename Statement>
   class clause_base<where_t<Condition>, Statement>

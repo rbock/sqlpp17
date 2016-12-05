@@ -36,11 +36,21 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
+  namespace clause
+  {
+    struct selected_fields
+    {
+    };
+  }
+
   template <typename... Fields>
   struct selected_fields_t
   {
     std::tuple<Fields...> _fields;
   };
+
+  template <typename Table>
+  constexpr auto clause_tag<selected_fields_t<Table>> = clause::selected_fields{};
 
   template <typename... Fields, typename Statement>
   class clause_base<selected_fields_t<Fields...>, Statement>

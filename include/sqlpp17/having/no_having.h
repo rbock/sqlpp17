@@ -55,6 +55,9 @@ namespace sqlpp
   {
   };
 
+  template <>
+  constexpr auto clause_tag<no_having_t> = clause::having{};
+
   template <typename Statement>
   class clause_base<no_having_t, Statement>
   {

@@ -33,6 +33,23 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
+  namespace clause
+  {
+    struct custom
+    {
+    };
+  }
+
+  struct no_clause
+  {
+  };
+
+  template <typename T>
+  constexpr auto is_tagged_clause_v = false;
+
+  template <typename T>
+  constexpr auto clause_tag = no_clause{};
+
   template <typename T>
   constexpr auto contains_aggregate_v = false;
 

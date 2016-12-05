@@ -35,11 +35,21 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
+  namespace clause
+  {
+    struct from
+    {
+    };
+  }
+
   template <typename Table>
   struct from_t
   {
     Table _table;
   };
+
+  template <typename Table>
+  constexpr auto clause_tag<from_t<Table>> = clause::from{};
 
   template <typename Table, typename Statement>
   class clause_base<from_t<Table>, Statement>

@@ -26,6 +26,7 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <sqlpp17/all.h>
 #include <sqlpp17/detail/statement_constructor_arg.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/algorithm.h>
@@ -74,11 +75,43 @@ namespace sqlpp
     }
   };
 
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_statement_contains_tagged_clauses, "statements must contain tagged clauses");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_statement_contains_unique_clauses,
+                              "statements must contain uniquely tagged clauses (except custom clauses)");
+#warning : Need to check statement clauses for execution of the statement
+
+  template <typename... Clauses>
+  constexpr auto check_statement_clauses()
+  {
+    constexpr auto count_custom_tags =
+        (std::size_t{} + ... + std::is_same_v<decltype(clause_tag<Clauses>), clause::custom>);
+    if
+      constexpr(all<is_tagged_clause_v<Clauses>...>)
+      {
+        return failed<assert_statement_contains_tagged_clauses>{};
+      }
+    else if
+      constexpr((type_set<Clauses...>() - type_set<clause::custom>()).size() != sizeof...(Clauses) - count_custom_tags)
+      {
+        return failed<assert_statement_contains_unique_clauses>{};
+      }
+    else
+      return succeeded{};
+  }
+
   template <typename... LClauses, typename... RClauses>
 #warning : Would like to make this a constexpr function, but make_constructor_arg is not
   auto operator<<(statement<LClauses...> l, statement<RClauses...> r)
   {
-#warning : Need to tag clauses to detect multiple instances of the same tag
-    return statement<LClauses..., RClauses...>(detail::make_constructor_arg(l, r));
+    constexpr auto check = check_statement_clauses<LClauses..., RClauses...>();
+    if
+      constexpr(check)
+      {
+        return statement<LClauses..., RClauses...>(detail::make_constructor_arg(l, r));
+      }
+    else
+    {
+      return ::sqlpp::bad_statement_t<std::decay_t<decltype(check)>>{};
+    }
   }
 }

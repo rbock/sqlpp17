@@ -67,6 +67,9 @@ namespace sqlpp
   {
   };
 
+  template <>
+  constexpr auto clause_tag<no_selected_fields_t> = clause::selected_fields{};
+
   template <typename Statement>
   class clause_base<no_selected_fields_t, Statement>
   {
