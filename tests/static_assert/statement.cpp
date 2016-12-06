@@ -57,7 +57,7 @@ int main()
 {
   constexpr auto f = sqlpp::statement<sqlpp::no_from_t>{};
   constexpr auto w = sqlpp::statement<sqlpp::no_where_t>{};
-  auto s = f << w;
+  constexpr auto s = f << w;
 
 #if 0
   // constexpr tests

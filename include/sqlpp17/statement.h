@@ -100,8 +100,7 @@ namespace sqlpp
   }
 
   template <typename... LClauses, typename... RClauses>
-#warning : Would like to make this a constexpr function, but make_constructor_arg is not
-  auto operator<<(statement<LClauses...> l, statement<RClauses...> r)
+  constexpr auto operator<<(statement<LClauses...> l, statement<RClauses...> r)
   {
     constexpr auto check = check_statement_clauses<LClauses..., RClauses...>();
     if

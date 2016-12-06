@@ -32,25 +32,27 @@ namespace sqlpp
 {
   namespace detail
   {
-    // The statement constructor arg inherits from
-    //   - the "old" statement (which inherits from all its clauses)
-    //   - the "new" clause
-    // This way the constructor arg can be used to initialize all clauses in the new statement
-    template <typename OldStatement, typename NewClause>
-    struct statement_constructor_arg : OldStatement, NewClause
+    // Statements inherit from clauses. They can be used as constructor
+    // arguments for clauses.
+    // The statement_constructor_arg inherits from fragments
+    // (statements or other clause constructor arguments).
+    //
+    // Thus, if initialized with the right fragments, the
+    // statement_constructor_arg can be used to construct all clauses
+    // in the new statement.
+    template <typename... Fragments>
+    struct statement_constructor_arg : Fragments...
     {
-      template <typename Statement, typename Clause>
-      statement_constructor_arg(Statement&& statement, Clause&& clause)
-          : OldStatement{std::forward<Statement>(statement)}, NewClause{std::forward<Clause>(clause)}
+      template <typename... Ts>
+      constexpr statement_constructor_arg(Ts&&... ts) : Fragments{std::forward<Ts>(ts)}...
       {
       }
     };
 
-    template <typename OldStatement, typename NewClause>
-    auto make_constructor_arg(OldStatement&& statement, NewClause&& clause)
+    template <typename... Fragments>
+    constexpr auto make_constructor_arg(Fragments&&... fragments)
     {
-      return statement_constructor_arg<std::decay_t<OldStatement>, std::decay_t<NewClause>>{
-          std::forward<OldStatement>(statement), std::forward<NewClause>(clause)};
+      return statement_constructor_arg<std::decay_t<Fragments>...>{std::forward<Fragments>(fragments)...};
     }
   }
 }
