@@ -50,7 +50,7 @@ namespace sqlpp
         return failed<assert_from_arg_is_table>{};
       }
     else if
-      constexpr(!required_tables_of<T>.empty())
+      constexpr(!required_tables_of_v<T>.empty())
       {
         return failed<assert_from_arg_no_required_tables>{};
       }

@@ -1,5 +1,3 @@
-#pragma once
-
 /*
 Copyright (c) 2016, Roland Bock
 All rights reserved.
@@ -26,36 +24,20 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <utility>
-#include <sqlpp17/failed.h>
-#include <sqlpp17/wrapped_static_assert.h>
-#include <sqlpp17/wrong.h>
+#include <iostream>
+#include <tables/TabEmpty.h>
+#include <tables/TabPerson.h>
+#include <tables/TabDepartment.h>
 
-namespace sqlpp
+#include <sqlpp17/interpret.h>
+#include <sqlpp17/select.h>
+
+int main()
 {
-  template <typename Type>
-  struct assert_interpreter_specialization;
-
-  template <typename Type>
-  struct failed<assert_interpreter_specialization<Type>> : std::false_type
-  {
-    template <typename... T>
-    static auto _(T&&...) -> void
-    {
-      static_assert(wrong<T...>, "missing interpreter specialization");
-    }
-  };
-
-  template <typename Context, typename T, typename Enable = void>
-  struct interpreter_t
-  {
-    using _interpret_check = failed<assert_interpreter_specialization<T>>;
-
-    template <typename X>
-    static auto _(const X&, Context&)
-    {
-      static_assert(wrong<X>, "missing interpreter specialization");
-    }
-  };
+#warning : s should be a constexpr
+  /* constexpr*/ auto s = sqlpp::from(test::tabPerson);
+#warning : need to test results
+#warning : want to use operator<<() ?
+  interpret(s, std::cout);
 }
 

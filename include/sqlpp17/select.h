@@ -26,36 +26,55 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <utility>
-#include <sqlpp17/failed.h>
-#include <sqlpp17/wrapped_static_assert.h>
-#include <sqlpp17/wrong.h>
+#include <sqlpp17/clause_fwd.h>
+#include <sqlpp17/interpret.h>
+#include <sqlpp17/type_traits.h>
+#include <sqlpp17/selected_fields.h>
+#include <sqlpp17/from.h>
+#include <sqlpp17/where.h>
 
 namespace sqlpp
 {
-  template <typename Type>
-  struct assert_interpreter_specialization;
-
-  template <typename Type>
-  struct failed<assert_interpreter_specialization<Type>> : std::false_type
+  namespace clause
   {
-    template <typename... T>
-    static auto _(T&&...) -> void
+    struct select
     {
-      static_assert(wrong<T...>, "missing interpreter specialization");
+    };
+  }
+
+  struct select_t
+  {
+  };
+
+  template <>
+  constexpr auto clause_tag<select_t> = clause::select{};
+
+  template <typename Statement>
+  class clause_base<select_t, Statement>
+  {
+  public:
+    template <typename OtherStatement>
+    clause_base(const clause_base<select_t, OtherStatement>&)
+    {
+    }
+
+    clause_base() = default;
+  };
+
+  template <typename Context, typename Statement>
+  class interpreter_t<Context, clause_base<select_t, Statement>>
+  {
+    using T = clause_base<select_t, Statement>;
+
+    static Context& _(const T& t, Context& context)
+    {
+      context << "SELECT ";
+      return context;
     }
   };
 
-  template <typename Context, typename T, typename Enable = void>
-  struct interpreter_t
+  [[nodiscard]] constexpr auto select()
   {
-    using _interpret_check = failed<assert_interpreter_specialization<T>>;
-
-    template <typename X>
-    static auto _(const X&, Context&)
-    {
-      static_assert(wrong<X>, "missing interpreter specialization");
-    }
-  };
+    return statement<select_t, no_selected_fields_t, no_from_t, no_where_t>{};
+  }
 }
-

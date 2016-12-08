@@ -99,6 +99,20 @@ namespace sqlpp
       return succeeded{};
   }
 
+  template <typename Context, typename... Clauses>
+  class interpreter_t<Context, statement<Clauses...>>
+  {
+    using T = statement<Clauses...>;
+
+  public:
+    static Context& _(const T& t, Context& context)
+    {
+      context << "STATEMENT";
+      (..., interpret(static_cast<const clause_base<Clauses, T>&>(t), context));
+      return context;
+    }
+  };
+
   template <typename... LClauses, typename... RClauses>
   constexpr auto operator<<(statement<LClauses...> l, statement<RClauses...> r)
   {

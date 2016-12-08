@@ -32,7 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace sqlpp
 {
   template <typename T, typename Context>
-  auto interpret(const T& t, Context& context)
+  auto& interpret(const T& t, Context& context)
   {
     return interpreter_t<Context, T>::_(t, context);
   }

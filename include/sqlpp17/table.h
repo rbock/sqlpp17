@@ -49,13 +49,14 @@ namespace sqlpp
   };
 
   template <typename Context, typename TableSpec, typename... ColumnSpecs>
-  struct interpreter_t<Context, table_t<TableSpec, ColumnSpecs...>>
+  class interpreter_t<Context, table_t<TableSpec, ColumnSpecs...>>
   {
     using T = table_t<TableSpec, ColumnSpecs...>;
 
+  public:
     static Context& _(const T&, Context& context)
     {
-      context << name_of<T>::char_ptr();
+      context << name_of<T>::_alias_t::name.get();
       return context;
     }
   };

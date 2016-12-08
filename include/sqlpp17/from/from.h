@@ -72,6 +72,7 @@ namespace sqlpp
   {
     using T = clause_base<from_t<Table>, Statement>;
 
+  public:
     static Context& _(const T& t, Context& context)
     {
       context << " FROM ";
