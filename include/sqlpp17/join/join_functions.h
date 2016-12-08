@@ -148,7 +148,7 @@ namespace sqlpp
   template <typename Derived>
   class join_functions
   {
-    constexpr auto& ref() const
+    constexpr decltype(auto) ref() const
     {
       return static_cast<const Derived&>(*this);
     }

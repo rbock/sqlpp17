@@ -28,7 +28,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/alias.h>
 #include <sqlpp17/char_sequence.h>
-#include <sqlpp17/interpreter.h>
 #include <sqlpp17/type_traits.h>
 
 namespace sqlpp
@@ -47,16 +46,10 @@ namespace sqlpp
   };
 
   template <typename Context, typename Table, typename ColumnSpec>
-  struct interpreter_t<Context, column_t<Table, ColumnSpec>>
+  decltype(auto) operator<<(Context& context, const column_t<Table, ColumnSpec>& t)
   {
-    using T = column_t<Table, ColumnSpec>;
-
-    static Context& _(const T&, Context& context)
-    {
-      context << name_of<Table>::char_ptr() << '.' << name_of<T>::char_ptr();
-      return context;
-    }
-  };
+    return context << name_of<Table>::char_ptr() << '.' << name_of<decltype(t)>::char_ptr();
+  }
 
   template <typename Table, typename ColumnSpec>
   struct char_sequence_of_impl<column_t<Table, ColumnSpec>>

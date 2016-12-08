@@ -28,8 +28,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <vector>
 #include <sqlpp17/clause_fwd.h>
-#include <sqlpp17/interpretable.h>
-#include <sqlpp17/interpret.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
 
@@ -68,15 +66,8 @@ namespace sqlpp
   };
 
   template <typename Context, typename Condition, typename Statement>
-  class interpreter_t<Context, clause_base<having_t<Condition>, Statement>>
+  decltype(auto) operator<<(Context& context, const clause_base<having_t<Condition>, Statement>& t)
   {
-    using T = clause_base<having_t<Condition>, Statement>;
-
-    static Context& _(const T& t, Context& context)
-    {
-      context << " HAVING ";
-      interpret(t._condition, context);
-      return context;
-    }
+    return context << " HAVING " << t._condition;
   };
 }

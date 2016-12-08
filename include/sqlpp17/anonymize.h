@@ -58,9 +58,9 @@ namespace sqlpp
     anonymous_t& operator=(anonymous_t&&) = default;
     ~anonymous_t() = default;
 
-    auto interpret(Context& context) const -> Context&
+    auto serialize(Context& context) const -> Context&
     {
-      return _impl->interpret(context);
+      return _impl->serialize(context);
     }
 
     bool _requires_braces;
@@ -68,7 +68,7 @@ namespace sqlpp
   private:
     struct _impl_base
     {
-      virtual auto interpret(Context& context) const -> Context& = 0;
+      virtual auto serialize(Context& context) const -> Context& = 0;
     };
 
     template <typename T>
@@ -78,10 +78,9 @@ namespace sqlpp
       {
       }
 
-      auto interpret(Context& context) const -> Context&
+      auto serialize(Context& context) const -> Context&
       {
-        ::sqlpp::interpret(_t, context);
-        return context;
+        return context << _t;
       }
 
       T _t;
@@ -91,24 +90,17 @@ namespace sqlpp
   };
 
   template <typename Context, typename Tag>
-  struct interpreter_t<Context, anonymous_t<Context, Tag>>
+  decltype(auto) operator<<(Context& context, const anonymous_t<Context, Tag>& t)
   {
-    using T = anonymous_t<Context, Tag>;
-
-    static Context& _(const T& t, Context& context)
+    if (t._requires_braces)
     {
-      if (t._requires_braces)
-      {
-        context << '(';
-        t.interpret(context);
-        context << ')';
-      }
-      else
-        t.interpret(context);
-
-      return context;
+      context << '(' << t.serialize(context) << ')';
     }
-  };
+    else
+      context << t;
+
+    return context;
+  }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_anonymize_arg_has_no_parameters,
                               "anonymized expression must not contain parameters");

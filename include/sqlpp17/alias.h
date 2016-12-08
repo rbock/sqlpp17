@@ -27,7 +27,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/char_sequence.h>
-#include <sqlpp17/interpreter.h>
 
 namespace sqlpp
 {
@@ -38,18 +37,11 @@ namespace sqlpp
   };
 
   template <typename Context, typename Expression, typename Alias>
-  struct interpreter_t<Context, alias_t<Expression, Alias>>
+  decltype(auto) operator<<(Context& context, const alias_t<Expression, Alias>& t)
   {
-    using T = alias_t<Expression, Alias>;
-
-    static Context& _(const T& t, Context& context)
-    {
-      interpret_operand(t._expression, context);
-      context << " AS ";
-      context << T::alias_t::name::get();
-      return context;
-    }
-  };
+#warning : need a better function to obtain a name
+    return context << t._expression << " AS " << decltype(t)::alias_t::name::get();
+  }
 
   template <typename Expression, typename Alias>
   struct char_sequence_of_impl<alias_t<Expression, Alias>>

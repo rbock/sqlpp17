@@ -29,8 +29,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vector>
 #include <tuple>
 #include <sqlpp17/clause_fwd.h>
-#include <sqlpp17/interpretable.h>
-#include <sqlpp17/interpret.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
 
@@ -70,15 +68,8 @@ namespace sqlpp
 #warning : The dynamic vector variant is missing
 
   template <typename Context, typename Table, typename Statement>
-  class interpreter_t<Context, clause_base<selected_fields_t<Table>, Statement>>
+  decltype(auto) operator<<(Context& context, const clause_base<selected_fields_t<Table>, Statement>& t)
   {
-    using T = clause_base<selected_fields_t<Table>, Statement>;
-
-    static Context& _(const T& t, Context& context)
-    {
-      context << " FROM ";
-      interpret(t._table, context);
-      return context;
-    }
-  };
+    return context << " FROM " << t._table;
+  }
 }

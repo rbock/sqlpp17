@@ -93,15 +93,10 @@ namespace sqlpp
   };
 
   template <typename Context, typename Statement>
-  class interpreter_t<Context, clause_base<no_where_t, Statement>>
+  decltype(auto) operator<<(Context& context, const clause_base<no_where_t, Statement>&)
   {
-    using T = clause_base<no_where_t, Statement>;
-
-    static Context& _(const T&, Context& context)
-    {
-      return context;
-    }
-  };
+    return context;
+  }
 
   template <typename Condition>
   [[nodiscard]] constexpr auto where(Condition&& condition)

@@ -85,19 +85,14 @@ namespace sqlpp
   };
 
   template <typename Context, typename JoinType, typename Lhs, typename Rhs>
-  struct interpreter_t<Context, conditionless_join_t<JoinType, Lhs, Rhs>>
+  decltype(auto) operator<<(Context& context, const conditionless_join_t<JoinType, Lhs, Rhs>& t)
   {
-    using T = conditionless_join_t<JoinType, Lhs, Rhs>;
-
-    static Context& _(const T& t, Context& context)
-    {
-      interpret(t._lhs, context);
-      context << JoinType::_name;
-      context << " JOIN ";
-      interpret(t._rhs, context);
-      return context;
-    }
-  };
+    context << t._lhs;
+    context << JoinType::_name;
+    context << " JOIN ";
+    context << t._rhs;
+    return context;
+  }
 
   template <typename JoinType, typename Lhs, typename Rhs>
   constexpr auto is_conditionless_join_v<conditionless_join_t<JoinType, Lhs, Rhs>> = true;

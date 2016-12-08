@@ -26,8 +26,6 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/interpreter.h>
-
 namespace sqlpp
 {
   template <typename ConditionlessJoin, typename On>
@@ -43,17 +41,10 @@ namespace sqlpp
   };
 
   template <typename Context, typename ConditionlessJoin, typename On>
-  struct interpreter_t<Context, join_t<ConditionlessJoin, On>>
+  auto operator<<(Context& context, const join_t<ConditionlessJoin, On>& t)
   {
-    using T = join_t<ConditionlessJoin, On>;
-
-    static Context& _(const T& t, Context& context)
-    {
-      interpret(t._conditionless_join, context);
-      interpret(t._on, context);
-      return context;
-    }
-  };
+    return context << t._conditionless_join << t.on;
+  }
 
   template <typename ConditionlessJoin, typename On>
   constexpr auto is_join_v<join_t<ConditionlessJoin, On>> = true;

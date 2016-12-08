@@ -93,15 +93,10 @@ namespace sqlpp
   };
 
   template <typename Context, typename Statement>
-  class interpreter_t<Context, clause_base<no_from_t, Statement>>
+  decltype(auto) operator<<(Context& context, const clause_base<no_from_t, Statement>&)
   {
-    using T = clause_base<no_from_t, Statement>;
-
-    static Context& _(const T&, Context& context)
-    {
-      return context;
-    }
-  };
+    return context;
+  }
 
   template <typename Table>
   [[nodiscard]] constexpr auto from(Table&& t)

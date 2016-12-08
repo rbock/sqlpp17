@@ -28,7 +28,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/char_sequence.h>
 #include <sqlpp17/column.h>
-#include <sqlpp17/interpreter.h>
 #include <sqlpp17/join.h>
 #include <sqlpp17/member.h>
 
@@ -42,21 +41,16 @@ namespace sqlpp
   };
 
   template <typename Context, typename Table, typename Alias, typename... ColumnSpecs>
-  struct interpreter_t<Context, table_alias_t<Table, Alias, ColumnSpecs...>>
+  decltype(auto) operator<<(Context& context, const table_alias_t<Table, Alias, ColumnSpecs...>& t)
   {
-    using T = table_alias_t<Table, Alias, ColumnSpecs...>;
-
-    static Context& _(const T& t, Context& context)
-    {
-      if
-        constexpr(requires_braces<Table>) context << "(";
-      serialize(t._table, context);
-      if
-        constexpr(requires_braces<Table>) context << ")";
-      context << " AS " << name_of<T>::char_ptr();
-      return context;
-    }
-  };
+    if
+      constexpr(requires_braces<Table>) context << "(";
+    context << t._table;
+    if
+      constexpr(requires_braces<Table>) context << ")";
+    context << " AS " << name_of<decltype(t)>::char_ptr();
+    return context;
+  }
 
   template <typename Table, typename Alias, typename... ColumnSpecs>
   constexpr auto is_table_v<table_alias_t<Table, Alias, ColumnSpecs...>> = true;

@@ -29,7 +29,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tables/TabPerson.h>
 #include <tables/TabDepartment.h>
 
-#include <sqlpp17/interpret.h>
 #include <sqlpp17/select.h>
 
 int main()
@@ -38,6 +37,6 @@ int main()
   /* constexpr*/ auto s = sqlpp::from(test::tabPerson);
 #warning : need to test results
 #warning : want to use operator<<() ?
-  interpret(s, std::cout);
+  std::cout << s;
 }
 

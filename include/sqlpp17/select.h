@@ -27,7 +27,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/clause_fwd.h>
-#include <sqlpp17/interpret.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/selected_fields.h>
 #include <sqlpp17/from.h>
@@ -62,16 +61,10 @@ namespace sqlpp
   };
 
   template <typename Context, typename Statement>
-  class interpreter_t<Context, clause_base<select_t, Statement>>
+  decltype(auto) operator<<(Context& context, const clause_base<select_t, Statement>& t)
   {
-    using T = clause_base<select_t, Statement>;
-
-    static Context& _(const T& t, Context& context)
-    {
-      context << "SELECT ";
-      return context;
-    }
-  };
+    return context << "SELECT ";
+  }
 
   [[nodiscard]] constexpr auto select()
   {

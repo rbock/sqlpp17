@@ -49,17 +49,10 @@ namespace sqlpp
   };
 
   template <typename Context, typename TableSpec, typename... ColumnSpecs>
-  class interpreter_t<Context, table_t<TableSpec, ColumnSpecs...>>
+  decltype(auto) operator<<(Context& context, const table_t<TableSpec, ColumnSpecs...>& t)
   {
-    using T = table_t<TableSpec, ColumnSpecs...>;
-
-  public:
-    static Context& _(const T&, Context& context)
-    {
-      context << name_of<T>::_alias_t::name.get();
-      return context;
-    }
-  };
+    return context << (name_of<table_t<TableSpec, ColumnSpecs...>>::_alias_t::name.get());
+  }
 
   template <typename TableSpec, typename... ColumnSpecs>
   constexpr auto is_table_v<table_t<TableSpec, ColumnSpecs...>> = true;

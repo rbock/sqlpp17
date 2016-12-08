@@ -27,7 +27,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/type_traits.h>
-#include <sqlpp17/interpret.h>
 
 namespace sqlpp
 {
@@ -38,16 +37,9 @@ namespace sqlpp
   };
 
   template <typename Context, typename Expression>
-  struct interpreter_t<Context, on_t<Expression>>
+  decltype(auto) operator<<(Context& context, const on_t<Expression>& t)
   {
-    using T = on_t<Expression>;
-
-    static Context& _(const T& t, Context& context)
-    {
-      context << " ON ";
-      interpret(t._expression, context);
-      return context;
-    }
-  };
+    return context << " ON " << t._expression;
+  }
 }
 

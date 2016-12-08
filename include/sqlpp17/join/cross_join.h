@@ -43,18 +43,13 @@ namespace sqlpp
   };
 
   template <typename Context, typename Lhs, typename Rhs>
-  struct interpreter_t<Context, cross_join_t<Lhs, Rhs>>
+  decltype(auto) operator&(Context& context, const cross_join_t<Lhs, Rhs>& t)
   {
-    using T = cross_join_t<Lhs, Rhs>;
-
-    static Context& _(const T& t, Context& context)
-    {
-      interpret(t._lhs, context);
-      context << " CROSS JOIN ";
-      interpret(t._rhs, context);
-      return context;
-    }
-  };
+    context << t._lhs;
+    context << " CROSS JOIN ";
+    context << t._rhs;
+    return context;
+  }
 
   template <typename Lhs, typename Rhs>
   constexpr auto is_join_v<cross_join_t<Lhs, Rhs>> = true;
