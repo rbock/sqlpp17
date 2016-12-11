@@ -31,33 +31,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_valid_plus_operands, "invalid operands for operator plus");
-
-  template <typename ValueType, typename L, typename R>
-  struct plus_t
+  struct integral_t
   {
-    L l;
-    R r;
   };
 
-  template <typename L, typename R, typename ValueTypeLeft, typename ValueTypeRight>
-  constexpr auto operator_plus(L, R, ValueTypeRight, ValueTypeRight)
-  {
-    return failed<assert_valid_plus_operands>{};
-  }
-
   template <typename L, typename R>
-  constexpr auto operator+(L l, R r)
+  constexpr auto operator_plus(L l, R r, integral_t, integral_t)
   {
-    constexpr auto op = operator_plus(l, r, value_type_of(l), value_type_of(r));
-    if
-      constexpr(!is_failed(op))
-      {
-        return op;
-      }
-    else
-    {
-      return ::sqlpp::bad_statement_t<std::decay_t<decltype(op)>>{};
-    }
+    return plus_t<integral_t, L, R>{l, r};
   }
 }

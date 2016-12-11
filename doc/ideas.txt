@@ -14,3 +14,5 @@ results.front() needs to throw is results.empty()
 It happens way too often that someone assumes that there is at least one result, when there isn't
 
 Instead of having a "custom_statement", combine statements with operator<< or similar
+
+Use braces only if needed, e.g. not for "x and y and z" but for "(x or y) and z". Same with +-*/.
