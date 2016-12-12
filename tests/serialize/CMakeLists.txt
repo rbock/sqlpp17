@@ -30,3 +30,5 @@ function(test_compile name)
 endfunction()
 
 test_compile(select)
+test_compile(operator)
+

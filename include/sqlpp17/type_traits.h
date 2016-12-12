@@ -48,6 +48,15 @@ namespace sqlpp
   constexpr auto is_tagged_clause_v = false;
 
   template <typename T>
+  constexpr auto is_failed_v = false;
+
+  template <typename T>
+  constexpr auto is_failed(const T&)
+  {
+    return is_failed_v<T>;
+  };
+
+  template <typename T>
   constexpr auto clause_tag = no_clause{};
 
   template <typename T>
@@ -136,12 +145,12 @@ namespace sqlpp
   };
 
   template <typename T>
-  using value_type_of_t = no_value_t;
+  constexpr auto value_type_of_v = no_value_t{};
 
   template <typename T>
   constexpr auto value_type_of(const T&)
   {
-    return value_type_of_t<T>{};
+    return value_type_of_v<T>;
   }
 
   template <typename T>
@@ -151,7 +160,13 @@ namespace sqlpp
   constexpr auto is_dynamic_join = false;
 
   template <typename T>
-  constexpr auto requires_braces = false;
+  constexpr auto requires_braces_v = false;
+
+  template <typename T>
+  constexpr auto requires_braces(const T&)
+  {
+    return requires_braces_v<T>;
+  }
 
   template <typename T>
   constexpr auto parameters_of = type_set_t<>();

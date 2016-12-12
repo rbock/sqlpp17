@@ -27,6 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/succeeded.h>
+#include <sqlpp17/type_traits.h>
 
 namespace sqlpp
 {
@@ -34,6 +35,9 @@ namespace sqlpp
   struct failed : public std::false_type
   {
   };
+
+  template <typename T>
+  constexpr auto is_failed_v<failed<T>> = true;
 
   template <typename T, typename U>
   constexpr auto operator&&(const failed<T>&, const failed<U>&)
@@ -53,3 +57,4 @@ namespace sqlpp
     return failed<T>{};
   }
 }
+

@@ -26,43 +26,24 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/alias.h>
-#include <sqlpp17/char_sequence.h>
-#include <sqlpp17/type_traits.h>
+#include <type_traits>
+#include <sqlpp17/operator_fwd.h>
 
 namespace sqlpp
 {
-  template <typename TableAlias, typename ColumnSpec>
-  class column_t
+  struct boolean_t
   {
-  public:
-    using _alias_t = typename ColumnSpec::_alias_t;
-
-    template <typename Alias>
-    constexpr auto as(const Alias&) const
-    {
-      return alias_t<Alias, column_t>{{}};
-    }
   };
 
-  template <typename Table, typename Spec>
-  constexpr auto value_type_of_v<column_t<Table, Spec>> = typename Spec::value_type{};
-
-  template <typename Context, typename Table, typename ColumnSpec>
-  decltype(auto) operator<<(Context& context, const column_t<Table, ColumnSpec>& t)
+  template <typename L, typename R>
+  constexpr auto operator_and(L l, R r, boolean_t, boolean_t)
   {
-#warning need a helper to obtain the name
-    return context << name_of<Table>::_alias_t::name.get() << '.'
-                   << name_of<std::decay_t<decltype(t)>>::_alias_t::name.get();
+    return and_t<L, R>{l, r};
   }
 
-  template <typename Table, typename ColumnSpec>
-  struct char_sequence_of_impl<column_t<Table, ColumnSpec>>
+  template <typename L, typename R>
+  constexpr auto operator_or(L l, R r, boolean_t, boolean_t)
   {
-    using type = make_char_sequence<ColumnSpec::_alias_t::name>;
-  };
-
-  template <typename Table, typename ColumnSpec>
-  constexpr auto required_tables_of_v<column_t<Table, ColumnSpec>> = type_set<column_t<Table, ColumnSpec>>();
+    return or_t<L, R>{l, r};
+  }
 }
-

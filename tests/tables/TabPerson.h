@@ -27,6 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/table.h>
+#include <sqlpp17/data_type.h>
 
 namespace test
 {
@@ -43,6 +44,21 @@ namespace test
           T id;
         };
       };
+      using value_type = sqlpp::integral_t;
+    };
+
+    struct IsManager
+    {
+      struct _alias_t
+      {
+        static constexpr auto name = ::sqlpp::string_literal("is_manager");
+        template <typename T>
+        struct _member_t
+        {
+          T isManager;
+        };
+      };
+      using value_type = sqlpp::boolean_t;
     };
 
     struct _
@@ -59,5 +75,5 @@ namespace test
     };
   }
 
-  constexpr auto tabPerson = sqlpp::table_t<TabPerson_::_, TabPerson_::Id>{};
+  constexpr auto tabPerson = sqlpp::table_t<TabPerson_::_, TabPerson_::Id, TabPerson_::IsManager>{};
 }

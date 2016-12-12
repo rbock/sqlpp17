@@ -31,9 +31,9 @@ namespace sqlpp
   template <typename ValueType, typename L, typename R>
   struct plus_t;
 
-  template <typename ValueType, typename L, typename R>
+  template <typename L, typename R>
   struct and_t;
 
-  template <typename ValueType, typename L, typename R>
+  template <typename L, typename R>
   struct or_t;
 }

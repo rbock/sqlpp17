@@ -28,28 +28,29 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <type_traits>
 #include <sqlpp17/operator_fwd.h>
+#include <sqlpp17/embrace.h>
 
 namespace sqlpp
 {
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_valid_plus_operands, "invalid operands for operator plus");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_valid_or_operands, "invalid operands for operator or");
 
-  template <typename ValueType, typename L, typename R>
-  struct plus_t
+  template <typename L, typename R>
+  struct or_t
   {
     L l;
     R r;
   };
 
   template <typename L, typename R, typename ValueTypeLeft, typename ValueTypeRight>
-  constexpr auto operator_plus(L, R, ValueTypeRight, ValueTypeRight)
+  constexpr auto operator_or(L, R, ValueTypeRight, ValueTypeRight)
   {
-    return failed<assert_valid_plus_operands>{};
+    return failed<assert_valid_or_operands>{};
   }
 
   template <typename L, typename R>
-  constexpr auto operator+(L l, R r)
+  constexpr auto operator||(L l, R r)
   {
-    auto op = operator_plus(l, r, value_type_of(l), value_type_of(r));
+    auto op = operator_or(l, r, value_type_of(l), value_type_of(r));
     if
       constexpr(!is_failed(op))
       {
@@ -61,21 +62,21 @@ namespace sqlpp
     }
   }
 
-  template <typename ValueType, typename L, typename R>
-  constexpr auto value_type_of_v<plus_t<ValueType, L, R>> = ValueType{};
+  template <typename L, typename R>
+  constexpr auto value_type_of_v<or_t<L, R>> = boolean_t{};
 
-  template <typename ValueType, typename L, typename R>
-  constexpr auto requires_braces_v<plus_t<ValueType, L, R>> = true;
+  template <typename L, typename R>
+  constexpr auto requires_braces_v<or_t<L, R>> = true;
 
-  template <typename Context, typename V, typename L, typename R>
-  constexpr decltype(auto) operator<<(Context& context, const plus_t<V, L, R>& t)
+  template <typename Context, typename L, typename R>
+  constexpr decltype(auto) operator<<(Context& context, const or_t<L, R>& t)
   {
-    return context << embrace(t.l) << " + " << embrace(t.r);
+    return context << embrace(t.l) << " OR " << embrace(t.r);
   }
 
-  template <typename Context, typename V1, typename L1, typename R1, typename V2, typename R2>
-  constexpr decltype(auto) operator<<(Context& context, const plus_t<V2, plus_t<V1, L1, R1>, R2>& t)
+  template <typename Context, typename L1, typename R1, typename R2>
+  constexpr decltype(auto) operator<<(Context& context, const or_t<or_t<L1, R1>, R2>& t)
   {
-    return context << t.l << " + " << embrace(t.r);
+    return context << t.l << " OR " << embrace(t.r);
   }
 }
