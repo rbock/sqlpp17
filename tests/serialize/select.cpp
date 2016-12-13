@@ -34,9 +34,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 int main()
 {
 #warning : s should be a constexpr
-  /* constexpr*/ auto s = sqlpp::from(test::tabPerson);
+  auto s = sqlpp::select() << sqlpp::selected_fields(test::tabPerson.id, test::tabPerson.isManager)
+                           << sqlpp::from(test::tabPerson) << sqlpp::where(test::tabPerson.isManager)
+                           << sqlpp::having(test::tabPerson.isManager);
 #warning : need to test results
-#warning : want to use operator<<() ?
   std::cout << s;
 }
 

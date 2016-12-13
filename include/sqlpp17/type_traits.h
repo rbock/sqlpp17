@@ -33,6 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
+  struct boolean_t;
   namespace clause
   {
     struct custom
@@ -84,15 +85,6 @@ namespace sqlpp
   constexpr auto is_bad_statement(const Assert&, const T&)
   {
     return is_bad_statement_v<Assert, T>;
-  }
-
-  template <typename T>
-  constexpr auto is_boolean_v = false;
-
-  template <typename T>
-  constexpr auto is_boolean(const T&)
-  {
-    return is_boolean_v<T>;
   }
 
   template <typename T>
@@ -151,6 +143,15 @@ namespace sqlpp
   constexpr auto value_type_of(const T&)
   {
     return value_type_of_v<T>;
+  }
+
+  template <typename T>
+  constexpr auto is_boolean_v = std::is_same_v<std::decay_t<decltype(value_type_of_v<T>)>, boolean_t>;
+
+  template <typename T>
+  constexpr auto is_boolean(const T&)
+  {
+    return is_boolean_v<T>;
   }
 
   template <typename T>

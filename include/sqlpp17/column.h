@@ -48,6 +48,12 @@ namespace sqlpp
   template <typename Table, typename Spec>
   constexpr auto value_type_of_v<column_t<Table, Spec>> = typename Spec::value_type{};
 
+  template <typename Table, typename Spec>
+  constexpr auto is_expression_v<column_t<Table, Spec>> = true;
+
+  template <typename Table, typename Spec>
+  constexpr auto is_selectable_v<column_t<Table, Spec>> = true;
+
   template <typename Context, typename Table, typename ColumnSpec>
   decltype(auto) operator<<(Context& context, const column_t<Table, ColumnSpec>& t)
   {

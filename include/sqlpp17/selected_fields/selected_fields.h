@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <vector>
 #include <tuple>
+#include <sqlpp17/detail/separator.h>
 #include <sqlpp17/clause_fwd.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
@@ -67,9 +68,11 @@ namespace sqlpp
   };
 #warning : The dynamic vector variant is missing
 
-  template <typename Context, typename Table, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<selected_fields_t<Table>, Statement>& t)
+  template <typename Context, typename... Fields, typename Statement>
+  decltype(auto) operator<<(Context& context, const clause_base<selected_fields_t<Fields...>, Statement>& t)
   {
-    return context << " FROM " << t._table;
+    auto separate = detail::separator<Context>{context, ", "};
+    context << ' ';
+    return (context << ... << separate(std::get<Fields>(t._fields)));
   }
 }

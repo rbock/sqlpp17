@@ -55,7 +55,7 @@ namespace sqlpp
         return failed<assert_selected_fields_args_are_selectable>{};
       }
     else if
-      constexpr(type_set<char_sequence_of_t<T>...>().size() == sizeof...(T))
+      constexpr(type_set<char_sequence_of_t<T>...>().size() != sizeof...(T))
       {
         return failed<assert_selected_fields_args_have_unique_names>{};
       }
@@ -89,7 +89,7 @@ namespace sqlpp
         constexpr(check)
         {
           return Statement::of(this).template replace_clause<no_selected_fields_t>(
-              selected_fields_t<std::tuple<Fields...>>{std::make_tuple(fields...)});
+              selected_fields_t<Fields...>{std::make_tuple(fields...)});
         }
       else
       {
@@ -105,7 +105,7 @@ namespace sqlpp
         constexpr(check)
         {
           return Statement::of(this).template replace_clause<no_selected_fields_t>(
-              selected_fields_t<std::tuple<Fields...>>{fields});
+              selected_fields_t<Fields...>{fields});
         }
       else
       {

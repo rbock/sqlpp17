@@ -26,49 +26,29 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/clause_fwd.h>
-#include <sqlpp17/type_traits.h>
-#include <sqlpp17/selected_fields.h>
-#include <sqlpp17/from.h>
-#include <sqlpp17/having.h>
-#include <sqlpp17/where.h>
+#include <utility>
 
 namespace sqlpp
 {
-  namespace clause
+  namespace detail
   {
-    struct select
+    template <typename Context>
+    struct separator
     {
+      Context& context;
+      const char* sep;
+      bool is_first = true;
+
+      template <typename Expr>
+      decltype(auto) operator()(const Expr& expr)
+      {
+        if (is_first)
+          is_first = false;
+        else
+          context << sep;
+        return expr;
+      }
     };
   }
-
-  struct select_t
-  {
-  };
-
-  template <>
-  constexpr auto clause_tag<select_t> = clause::select{};
-
-  template <typename Statement>
-  class clause_base<select_t, Statement>
-  {
-  public:
-    template <typename OtherStatement>
-    clause_base(const clause_base<select_t, OtherStatement>&)
-    {
-    }
-
-    clause_base() = default;
-  };
-
-  template <typename Context, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<select_t, Statement>& t)
-  {
-    return context << "SELECT";
-  }
-
-  [[nodiscard]] constexpr auto select()
-  {
-    return statement<select_t, no_selected_fields_t, no_from_t, no_where_t, no_having_t>{};
-  }
 }
+
