@@ -64,6 +64,9 @@ namespace sqlpp
   }
 
   template <typename L, typename R>
+  constexpr auto is_expression_v<and_t<L, R>> = true;
+
+  template <typename L, typename R>
   constexpr auto value_type_of_v<and_t<L, R>> = boolean_t{};
 
   template <typename L, typename R>

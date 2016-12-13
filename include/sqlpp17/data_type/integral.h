@@ -36,7 +36,25 @@ namespace sqlpp
   };
 
   template <typename L, typename R>
-  constexpr auto operator_plus(L l, R r, integral_t, integral_t)
+  constexpr auto operator_equal(L l, R r, const integral_t&, const integral_t&)
+  {
+    return equal_t<L, R>{l, r};
+  }
+
+  template <typename L, typename R>
+  constexpr auto operator_equal(L l, R r, const integral_t&, const unsigned_integral_t&)
+  {
+    return equal_t<L, R>{l, r};
+  }
+
+  template <typename L, typename R>
+  constexpr auto operator_equal(L l, R r, const integral_t&, const floating_point_t&)
+  {
+    return equal_t<L, R>{l, r};
+  }
+
+  template <typename L, typename R>
+  constexpr auto operator_plus(L l, R r, const integral_t&, const integral_t&)
   {
     return plus_t<integral_t, L, R>{l, r};
   }

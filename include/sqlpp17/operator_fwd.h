@@ -28,12 +28,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  template <typename ValueType, typename L, typename R>
-  struct plus_t;
-
+  // boolean
   template <typename L, typename R>
   struct and_t;
 
   template <typename L, typename R>
   struct or_t;
+
+  // comparison
+  template <typename L, typename R>
+  struct equal_t;
+
+  // arithmetic
+  template <typename ValueType, typename L, typename R>
+  struct plus_t;
 }

@@ -31,19 +31,48 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  struct boolean_t
-  {
-  };
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_valid_equal_operands, "invalid operands for operator equal");
 
   template <typename L, typename R>
-  constexpr auto operator_and(L l, R r, const boolean_t&, const boolean_t&)
+  struct equal_t
   {
-    return and_t<L, R>{l, r};
+    L l;
+    R r;
+  };
+
+  template <typename L, typename R, typename ValueTypeLeft, typename ValueTypeRight>
+  constexpr auto operator_equal(L, R, ValueTypeRight, ValueTypeRight)
+  {
+    return failed<assert_valid_equal_operands>{};
   }
 
   template <typename L, typename R>
-  constexpr auto operator_or(L l, R r, const boolean_t&, const boolean_t&)
+  constexpr auto operator==(L l, R r)
   {
-    return or_t<L, R>{l, r};
+    auto op = operator_equal(l, r, value_type_of(l), value_type_of(r));
+    if
+      constexpr(!is_failed(op))
+      {
+        return op;
+      }
+    else
+    {
+      return ::sqlpp::bad_statement_t<std::decay_t<decltype(op)>>{};
+    }
+  }
+
+  template <typename L, typename R>
+  constexpr auto is_expression_v<equal_t<L, R>> = true;
+
+  template <typename L, typename R>
+  constexpr auto value_type_of_v<equal_t<L, R>> = boolean_t{};
+
+  template <typename L, typename R>
+  constexpr auto requires_braces_v<equal_t<L, R>> = true;
+
+  template <typename Context, typename L, typename R>
+  constexpr decltype(auto) operator<<(Context& context, const equal_t<L, R>& t)
+  {
+    return context << embrace(t.l) << " = " << embrace(t.r);
   }
 }

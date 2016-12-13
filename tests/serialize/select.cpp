@@ -30,13 +30,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tables/TabDepartment.h>
 
 #include <sqlpp17/select.h>
+#include <sqlpp17/operator.h>
 
 int main()
 {
 #warning : s should be a constexpr
   auto s = sqlpp::select() << sqlpp::selected_fields(test::tabPerson.id, test::tabPerson.isManager)
                            << sqlpp::from(test::tabPerson) << sqlpp::where(test::tabPerson.isManager)
-                           << sqlpp::having(test::tabPerson.isManager);
+                           << sqlpp::having(test::tabPerson.id == test::tabPerson.id or test::tabPerson.isManager);
 #warning : need to test results
   std::cout << s;
 }
