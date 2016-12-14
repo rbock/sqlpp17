@@ -124,6 +124,15 @@ namespace sqlpp
   }
 
   template <typename T>
+  constexpr auto null_is_trivial_v = false;
+
+  template <typename T>
+  constexpr auto null_is_trivial(const T&)
+  {
+    return null_is_trivial_v<T>;
+  }
+
+  template <typename T>
   constexpr auto is_expression_v = false;
 
   template <typename T>
