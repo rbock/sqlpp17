@@ -15,4 +15,14 @@ It happens way too often that someone assumes that there is at least one result,
 
 Instead of having a "custom_statement", combine statements with operator<< or similar
 
+Braces:
+=======
 Use braces only if needed, e.g. not for "x and y and z" but for "(x or y) and z". Same with +-*/.
+
+Actually, quite simple: no braces for chaining "same" operators, any other combination requires braces.
+
+Invert the logic from sqlpp11: Instead of expressions writing braces for themselves, request braces for subexpressions where they might be required.
+
+TrivialIsNull:
+==============
+Evaluate "trivial_is_null" in a "if constexpr" instead of wrapping it in a type as in sqlpp11.

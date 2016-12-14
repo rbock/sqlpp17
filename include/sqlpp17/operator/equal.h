@@ -41,7 +41,7 @@ namespace sqlpp
   };
 
   template <typename L, typename R, typename ValueTypeLeft, typename ValueTypeRight>
-  constexpr auto operator_equal(L, R, ValueTypeRight, ValueTypeRight)
+  constexpr auto operator_equal(L, R, const ValueTypeLeft&, const ValueTypeRight&)
   {
     return failed<assert_valid_equal_operands>{};
   }

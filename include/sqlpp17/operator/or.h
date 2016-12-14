@@ -42,7 +42,7 @@ namespace sqlpp
   };
 
   template <typename L, typename R, typename ValueTypeLeft, typename ValueTypeRight>
-  constexpr auto operator_or(L, R, ValueTypeRight, ValueTypeRight)
+  constexpr auto operator_or(L, R, const ValueTypeLeft&, const ValueTypeRight&)
   {
     return failed<assert_valid_or_operands>{};
   }

@@ -136,7 +136,7 @@ namespace sqlpp
   {
   };
 
-  template <typename T>
+  template <typename T, typename Enable = void>
   constexpr auto value_type_of_v = no_value_t{};
 
   template <typename T>

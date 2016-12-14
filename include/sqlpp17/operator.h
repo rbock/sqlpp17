@@ -26,6 +26,10 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <sqlpp17/bad_statement.h>
+#include <sqlpp17/data_type_fwd.h>
+#include <sqlpp17/wrapped_static_assert.h>
+
 // boolean
 #include <sqlpp17/operator/and.h>
 #include <sqlpp17/operator/or.h>

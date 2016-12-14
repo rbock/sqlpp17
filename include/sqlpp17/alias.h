@@ -36,6 +36,12 @@ namespace sqlpp
     Expression _expression;
   };
 
+  template <typename Expression, typename Alias>
+  constexpr auto value_type_of_v<alias_t<Expression, Alias>> = value_type_of_v<Expression>;
+
+  template <typename Expression, typename Alias>
+  constexpr auto is_selectable_v<alias_t<Expression, Alias>> = true;
+
   template <typename Context, typename Expression, typename Alias>
   decltype(auto) operator<<(Context& context, const alias_t<Expression, Alias>& t)
   {

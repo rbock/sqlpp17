@@ -28,9 +28,23 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  struct boolean_t;
-  struct integral_t;
-  struct unsigned_integral_t;
-  struct floating_point_t;
-  struct text_t;
+  struct boolean_t
+  {
+  };
+
+  struct integral_t
+  {
+  };
+
+  struct unsigned_integral_t
+  {
+  };
+
+  struct floating_point_t
+  {
+  };
+
+  struct text_t
+  {
+  };
 }

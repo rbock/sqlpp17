@@ -42,7 +42,7 @@ namespace sqlpp
   };
 
   template <typename L, typename R, typename ValueTypeLeft, typename ValueTypeRight>
-  constexpr auto operator_and(L, R, ValueTypeLeft, ValueTypeRight)
+  constexpr auto operator_and(L, R, const ValueTypeLeft&, const ValueTypeRight&)
   {
     ValueTypeLeft::Hansi;
     return failed<assert_valid_and_operands>{};

@@ -41,7 +41,7 @@ namespace sqlpp
   };
 
   template <typename L, typename R, typename ValueTypeLeft, typename ValueTypeRight>
-  constexpr auto operator_plus(L, R, ValueTypeRight, ValueTypeRight)
+  constexpr auto operator_plus(L, R, const ValueTypeLeft&, const ValueTypeRight&)
   {
     return failed<assert_valid_plus_operands>{};
   }

@@ -34,10 +34,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 int main()
 {
+  std::cout << true
+            << " As of now, I need to print a bool before I can print complex statements (don't ask me why, but "
+               "please figure out why, I guess it is a linker problem).\n"
+            << std::endl;
 #warning : s should be a constexpr
   auto s = sqlpp::select() << sqlpp::selected_fields(test::tabPerson.id, test::tabPerson.isManager)
                            << sqlpp::from(test::tabPerson) << sqlpp::where(test::tabPerson.isManager)
-                           << sqlpp::having(test::tabPerson.id == test::tabPerson.id or test::tabPerson.isManager);
+                           << sqlpp::having(test::tabPerson.id == test::tabPerson.id or test::tabPerson.id == 1);
 #warning : need to test results
   std::cout << s;
 }

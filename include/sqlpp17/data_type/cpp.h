@@ -26,9 +26,24 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/data_type_fwd.h>
-#include <sqlpp17/data_type/cpp.h>
+#include <type_traits>
+#include <string>
 
-#include <sqlpp17/data_type/boolean.h>
-#include <sqlpp17/data_type/integral.h>
+namespace sqlpp
+{
+  template <>
+  constexpr auto value_type_of_v<bool> = boolean_t{};
 
+  template <>
+  constexpr auto value_type_of_v<char> = text_t{};
+
+  template <typename T>
+  constexpr auto value_type_of_v<T, std::enable_if_t<std::is_integral_v<T> && !std::is_unsigned_v<T>>> = integral_t{};
+
+  template <typename T>
+  constexpr auto value_type_of_v<T, std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>>> =
+      unsigned_integral_t{};
+
+  template <typename T>
+  constexpr auto value_type_of_v<T, std::enable_if_t<std::is_floating_point_v<T>>> = floating_point_t{};
+}

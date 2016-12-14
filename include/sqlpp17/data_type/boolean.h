@@ -31,9 +31,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  struct boolean_t
+  template <typename L, typename R>
+  constexpr auto operator_equal(L l, R r, const boolean_t&, const boolean_t&)
   {
-  };
+    return equal_t<L, R>{l, r};
+  }
 
   template <typename L, typename R>
   constexpr auto operator_and(L l, R r, const boolean_t&, const boolean_t&)
