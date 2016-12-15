@@ -33,6 +33,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
+  namespace tag
+  {
+    constexpr auto must_not_insert = 1 << 0;
+    constexpr auto must_not_update = 1 << 1;
+    constexpr auto has_default = 1 << 2;
+    constexpr auto can_be_null = 1 << 3;
+    constexpr auto null_is_trivial_value = 1 << 4;
+  }
+
   struct boolean_t;
   namespace clause
   {
@@ -124,12 +133,57 @@ namespace sqlpp
   }
 
   template <typename T>
-  constexpr auto null_is_trivial_v = false;
+  constexpr auto null_is_trivial_value_v = false;
 
   template <typename T>
-  constexpr auto null_is_trivial(const T&)
+  constexpr auto null_is_trivial_value(const T&)
   {
-    return null_is_trivial_v<T>;
+    return null_is_trivial_value_v<T>;
+  }
+
+  template <typename T>
+  constexpr auto can_be_null_v = false;
+
+  template <typename T>
+  constexpr auto can_be_null(const T&)
+  {
+    return can_be_null_v<T>;
+  }
+
+  template <typename T>
+  constexpr auto must_not_insert_v = false;
+
+  template <typename T>
+  constexpr auto must_not_insert(const T&)
+  {
+    return must_not_insert_v<T>;
+  }
+
+  template <typename T>
+  constexpr auto must_not_update_v = false;
+
+  template <typename T>
+  constexpr auto must_not_update(const T&)
+  {
+    return must_not_update_v<T>;
+  }
+
+  template <typename T>
+  constexpr auto has_default_v = false;
+
+  template <typename T>
+  constexpr auto has_default(const T&)
+  {
+    return has_default_v<T>;
+  }
+
+  template <typename T>
+  constexpr auto require_insert_v = false;
+
+  template <typename T>
+  constexpr auto require_insert(const T&)
+  {
+    return require_insert_v<T>;
   }
 
   template <typename T>

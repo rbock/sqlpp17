@@ -54,6 +54,25 @@ namespace sqlpp
   template <typename Table, typename Spec>
   constexpr auto is_selectable_v<column_t<Table, Spec>> = true;
 
+  template <typename Table, typename Spec>
+  constexpr auto null_is_trivial_value_v<column_t<Table, Spec>> = (Spec::tags & tag::null_is_trivial_value) != 0;
+
+  template <typename Table, typename Spec>
+  constexpr auto can_be_null_v<column_t<Table, Spec>> = (Spec::tags & tag::can_be_null) != 0;
+
+  template <typename Table, typename Spec>
+  constexpr auto must_not_insert_v<column_t<Table, Spec>> = (Spec::tags & tag::must_not_insert) != 0;
+
+  template <typename Table, typename Spec>
+  constexpr auto must_not_update_v<column_t<Table, Spec>> = (Spec::tags & tag::must_not_update) != 0;
+
+  template <typename Table, typename Spec>
+  constexpr auto has_default_v<column_t<Table, Spec>> = (Spec::tags & tag::has_default) != 0;
+
+  template <typename Table, typename Spec>
+  constexpr auto require_insert_v<column_t<Table, Spec>> = (Spec::tags & tag::has_default) == 0 &&
+                                                           (Spec::tags & tag::must_not_insert) == 0;
+
   template <typename Context, typename Table, typename ColumnSpec>
   decltype(auto) operator<<(Context& context, const column_t<Table, ColumnSpec>& t)
   {

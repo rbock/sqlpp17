@@ -28,7 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <type_traits>
 #include <sqlpp17/operator_fwd.h>
-#include <sqlpp17/is_trivial.h>
+#include <sqlpp17/is_trivial_value.h>
 
 namespace sqlpp
 {
@@ -74,7 +74,7 @@ namespace sqlpp
   template <typename Context, typename L, typename R>
   constexpr decltype(auto) operator<<(Context& context, const equal_t<L, R>& t)
   {
-    if (null_is_trivial(t.l) and is_trivial(t.r))
+    if (null_is_trivial_value(t.l) and is_trivial_value(t.r))
     {
       return context << embrace(t.l) << " IS NULL ";
     }

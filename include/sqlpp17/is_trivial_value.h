@@ -26,49 +26,11 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <type_traits>
-#include <string>
-
 namespace sqlpp
 {
-  // bool
-  template <>
-  constexpr auto value_type_of_v<bool> = boolean_t{};
-
-  constexpr auto is_trivial_value(const bool& value)
+  constexpr auto is_trivial_value(...)
   {
-    return value == false;
-  }
-
-  // text
-  template <>
-  constexpr auto value_type_of_v<char> = text_t{};
-
-  constexpr auto is_trivial_value(const char& value)
-  {
-    return value == '\0';
-  }
-
-  // numeric
-  template <typename T>
-  constexpr auto value_type_of_v<T, std::enable_if_t<std::is_integral_v<T> && !std::is_unsigned_v<T>>> = integral_t{};
-
-  template <typename T>
-  constexpr auto value_type_of_v<T, std::enable_if_t<std::is_integral_v<T> && std::is_unsigned_v<T>>> =
-      unsigned_integral_t{};
-
-  template <typename T>
-  constexpr auto is_trivial_value(const T& value) -> std::enable_if_t<std::is_integral_v<T>, bool>
-  {
-    return value == T{};
-  }
-
-  template <typename T>
-  constexpr auto value_type_of_v<T, std::enable_if_t<std::is_floating_point_v<T>>> = floating_point_t{};
-
-  template <typename T>
-  constexpr auto is_trivial_value(const T& value) -> std::enable_if_t<std::is_floating_point_v<T>, bool>
-  {
-    return value == T{};
+    return false;
   }
 }
+

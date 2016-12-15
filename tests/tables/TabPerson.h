@@ -45,6 +45,7 @@ namespace test
         };
       };
       using value_type = sqlpp::integral_t;
+      static constexpr auto tags = sqlpp::tag::must_not_insert | sqlpp::tag::must_not_update | sqlpp::tag::has_default;
     };
 
     struct IsManager
@@ -59,6 +60,22 @@ namespace test
         };
       };
       using value_type = sqlpp::boolean_t;
+      static constexpr auto tags = 0;
+    };
+
+    struct Name
+    {
+      struct _alias_t
+      {
+        static constexpr auto name = ::sqlpp::string_literal("name");
+        template <typename T>
+        struct _member_t
+        {
+          T name;
+        };
+      };
+      using value_type = sqlpp::text_t;
+      static constexpr auto tags = sqlpp::tag::can_be_null | sqlpp::tag::null_is_trivial_value;
     };
 
     struct _
@@ -75,5 +92,5 @@ namespace test
     };
   }
 
-  constexpr auto tabPerson = sqlpp::table_t<TabPerson_::_, TabPerson_::Id, TabPerson_::IsManager>{};
+  constexpr auto tabPerson = sqlpp::table_t<TabPerson_::_, TabPerson_::Id, TabPerson_::IsManager, TabPerson_::Name>{};
 }
