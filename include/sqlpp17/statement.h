@@ -34,8 +34,50 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
+  struct no_result
+  {
+  };
+
+  template <typename Statement>
+  class result_base<no_result, Statement>
+  {
+  };
+
+  template <>
+  constexpr auto is_result_clause_v<no_result> = true;  // yes, no result is also a result :-)
+
+  template <typename T>
+  struct result_wrapper
+  {
+    using type = T;
+
+    template <typename Rhs>
+    constexpr auto operator<<(const result_wrapper<Rhs>&)
+    {
+      if
+        constexpr(is_result_clause_v<Rhs>)
+        {
+          return result_wrapper<Rhs>{};
+        }
+      else
+      {
+        return result_wrapper<T>{};
+      }
+    }
+  };
+
   template <typename... Clauses>
-  class statement : public clause_base<Clauses, statement<Clauses...>>...
+  struct get_result_clause
+  {
+    using type = typename decltype((result_wrapper<no_result>{} << ... << result_wrapper<Clauses>{}))::type;
+  };
+
+  template <typename... Clauses>
+  using get_result_clause_t = typename get_result_clause<Clauses...>::type;
+
+  template <typename... Clauses>
+  class statement : public clause_base<Clauses, statement<Clauses...>>...,
+                    public result_base<get_result_clause_t<Clauses...>, statement<Clauses...>>
   {
     template <typename, typename>
     friend class clause_base;

@@ -48,6 +48,9 @@ namespace sqlpp
     std::tuple<Fields...> _fields;
   };
 
+  template <typename... Fields>
+  constexpr auto is_result_clause_v<selected_fields_t<Fields...>> = true;
+
   template <typename Table>
   constexpr auto clause_tag<selected_fields_t<Table>> = clause::selected_fields{};
 
@@ -66,6 +69,14 @@ namespace sqlpp
 
     std::tuple<Fields...> _fields;
   };
+
+  template <typename... Fields, typename Statement>
+  class result_base<selected_fields_t<Fields...>, Statement>
+  {
+  public:
+#warning : Need to prepare some result functionality
+  };
+
 #warning : The dynamic vector variant is missing
 
   template <typename Context, typename... Fields, typename Statement>

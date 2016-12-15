@@ -106,6 +106,15 @@ namespace sqlpp
   }
 
   template <typename T>
+  constexpr auto is_result_clause_v = false;
+
+  template <typename T>
+  constexpr auto is_result_clause(const T&)
+  {
+    return is_result_clause_v<T>;
+  }
+
+  template <typename T>
   constexpr auto is_selectable_v = false;
 
   template <typename T>
