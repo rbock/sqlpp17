@@ -9,6 +9,10 @@ row.x should be a value/optional, not a complex object.
 =======================================================
 auto x = row.x leads to too many surprises
 
+std::optional is not good if "trivial_is_null", though.
+
+Need something that represents a value and offers is_null.
+
 results.front() needs to throw is results.empty()
 =================================================
 It happens way too often that someone assumes that there is at least one result, when there isn't
@@ -26,3 +30,5 @@ Invert the logic from sqlpp11: Instead of expressions writing braces for themsel
 TrivialIsNull:
 ==============
 Evaluate "trivial_is_null" in a "if constexpr" instead of wrapping it in a type as in sqlpp11.
+
+

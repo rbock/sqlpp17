@@ -74,6 +74,9 @@ namespace sqlpp
   class result_base<selected_fields_t<Fields...>, Statement>
   {
   public:
+    void run() const
+    {
+    }
 #warning : Need to prepare some result functionality
   };
 

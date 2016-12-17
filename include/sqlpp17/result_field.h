@@ -1,3 +1,5 @@
+#pragma once
+
 /*
 Copyright (c) 2016, Roland Bock
 All rights reserved.
@@ -24,27 +26,29 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <iostream>
-#include <tables/TabEmpty.h>
-#include <tables/TabPerson.h>
-#include <tables/TabDepartment.h>
+#include <type_traits>
+#include <member>
 
-#include <sqlpp17/select.h>
-#include <sqlpp17/operator.h>
-
-int main()
+namespace sqlpp
 {
-  std::cout << true
-            << " As of now, I need to print a bool before I can print complex statements (don't ask me why, but "
-               "please figure out why, I guess it is a linker problem).\n"
-            << std::endl;
-#warning : s should be a constexpr
-  auto s = sqlpp::select() << sqlpp::selected_fields(test::tabPerson.id, test::tabPerson.isManager)
-                           << sqlpp::from(test::tabPerson)
-                           << sqlpp::where(test::tabPerson.isManager and test::tabPerson.name == '\0')
-                           << sqlpp::having(test::tabPerson.id == test::tabPerson.id or test::tabPerson.id == 1);
-#warning : need to test results
-  std::cout << s;
-  s.run();
-}
+  template <typename Selected, bool CanBeNull, bool NullIsTrivialValue>
+  struct result_field;
 
+  template <typename Selected, bool NullIsTrivialValue>
+  struct result_field<Selected, false, NullIsTrivialValue>
+  {
+    using base = Selected::_alias_t::member<cpp_type<Selected>>;
+  }
+
+  template <typename Selected>
+  struct result_field<Selected, true, false>
+  {
+    using base = Selected::_alias_t::member<can_be_null<cpp_type<Selected>>>;
+  }
+
+  template <typename Selected>
+  struct result_field<Selected, true, true>
+  {
+    using base = Selected::_alias_t::member<std::optional<cpp_type<Selected>>>;
+  }
+}
