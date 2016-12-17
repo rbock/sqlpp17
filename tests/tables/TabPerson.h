@@ -37,7 +37,7 @@ namespace test
     {
       struct _alias_t
       {
-        static constexpr auto name = ::sqlpp::string_literal("id");
+        static constexpr char name[] = "id";
         template <typename T>
         struct _member_t
         {
@@ -52,7 +52,7 @@ namespace test
     {
       struct _alias_t
       {
-        static constexpr auto name = ::sqlpp::string_literal("is_manager");
+        static constexpr char name[] = "is_manager";
         template <typename T>
         struct _member_t
         {
@@ -67,7 +67,7 @@ namespace test
     {
       struct _alias_t
       {
-        static constexpr auto name = ::sqlpp::string_literal("name");
+        static constexpr char name[] = "name";
         template <typename T>
         struct _member_t
         {
@@ -82,7 +82,7 @@ namespace test
     {
       struct _alias_t
       {
-        static constexpr auto name = ::sqlpp::string_literal("tab_person");
+        static constexpr char name[] = "tab_person";
         template <typename T>
         struct _member_t
         {

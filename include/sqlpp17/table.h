@@ -51,7 +51,7 @@ namespace sqlpp
   template <typename Context, typename TableSpec, typename... ColumnSpecs>
   decltype(auto) operator<<(Context& context, const table_t<TableSpec, ColumnSpecs...>& t)
   {
-    return context << (name_of<table_t<TableSpec, ColumnSpecs...>>::_alias_t::name.get());
+    return context << (name_of<table_t<TableSpec, ColumnSpecs...>>::_alias_t::name);
   }
 
   template <typename TableSpec, typename... ColumnSpecs>

@@ -26,26 +26,24 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/string_literal.h>
-
-#define SQLPP_ALIAS_PROVIDER(NAME)                                 \
-  struct NAME##_t                                                  \
-  {                                                                \
-    struct _alias_t                                                \
-    {                                                              \
-      static constexpr auto name = ::sqlpp::string_literal(#NAME); \
-      template <typename T>                                        \
-      struct _member_t                                             \
-      {                                                            \
-        T NAME;                                                    \
-        const T& operator()() const                                \
-        {                                                          \
-          return NAME;                                             \
-        }                                                          \
-      };                                                           \
-    };                                                             \
-  };                                                               \
-  constexpr auto NAME = NAME##_t                                   \
-  {                                                                \
+#define SQLPP_ALIAS_PROVIDER(NAME)          \
+  struct NAME##_t                           \
+  {                                         \
+    struct _alias_t                         \
+    {                                       \
+      static constexpr char name[] = #NAME; \
+      template <typename T>                 \
+      struct _member_t                      \
+      {                                     \
+        T NAME;                             \
+        const T& operator()() const         \
+        {                                   \
+          return NAME;                      \
+        }                                   \
+      };                                    \
+    };                                      \
+  };                                        \
+  constexpr auto NAME = NAME##_t            \
+  {                                         \
   }
 

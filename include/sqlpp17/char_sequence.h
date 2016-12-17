@@ -27,7 +27,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <utility>
-#include <sqlpp17/string_literal.h>
 
 namespace sqlpp
 {
@@ -48,17 +47,25 @@ namespace sqlpp
 
   namespace detail
   {
-    template <const string_literal& StringLiteral, typename IndexSequence>
+    template <const auto& StringLiteral, typename IndexSequence>
     struct make_char_sequence_impl;
 
-    template <const string_literal& StringLiteral, std::size_t... Is>
+    template <const auto& StringLiteral, std::size_t... Is>
     struct make_char_sequence_impl<StringLiteral, std::index_sequence<Is...>>
     {
-      using type = char_sequence<StringLiteral.get()[Is]...>;
+      using type = char_sequence<StringLiteral[Is]...>;
+    };
+
+    template <const auto& Value>
+    struct make_char_sequence;
+
+    template <std::size_t N, const char (&StringLiteral)[N]>
+    struct make_char_sequence<StringLiteral>
+    {
+      using type = typename detail::make_char_sequence_impl<StringLiteral, std::make_index_sequence<N>>::type;
     };
   }
 
-  template <const string_literal& StringLiteral>
-  using make_char_sequence =
-      typename detail::make_char_sequence_impl<StringLiteral, std::make_index_sequence<StringLiteral.size()>>::type;
+  template <const auto& StringLiteral>
+  using make_char_sequence = typename detail::make_char_sequence<StringLiteral>::type;
 }
