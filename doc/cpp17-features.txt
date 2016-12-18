@@ -1,0 +1,12 @@
+ - constexpr if
+   See no_from.h, for instance
+ - fold expressions
+   serialization, e.g. a join in selected_fields
+ - auto non-type template parameters
+   - turning char[N] into a character_sequence<Cs...>
+   - used with inline variable (static constexpr)
+ - [[nodiscard]]
+ - variant
+ - optional?
+ - structured binding?
+ - string_view?
