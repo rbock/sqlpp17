@@ -26,29 +26,41 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <type_traits>
-#include <member>
+#include <optional>
+#include <sqlpp17/type_traits.h>
+#include <sqlpp17/member.h>
 
 namespace sqlpp
 {
-  template <typename Selected, bool CanBeNull, bool NullIsTrivialValue>
-  struct result_field;
+  template <typename T>
+  using cpp_type = int;
+#warning : Need to have "real" cpp_type
 
-  template <typename Selected, bool NullIsTrivialValue>
-  struct result_field<Selected, false, NullIsTrivialValue>
+  namespace detail
   {
-    using base = Selected::_alias_t::member<cpp_type<Selected>>;
+    template <typename Selected, bool CanBeNull, bool NullIsTrivialValue>
+    struct make_result_field_base;
+
+    template <typename Selected, bool NullIsTrivialValue>
+    struct make_result_field_base<Selected, false, NullIsTrivialValue>
+    {
+      using type = typename Selected::_alias_t::template _member_t<cpp_type<Selected>>;
+    };
+
+    template <typename Selected>
+    struct make_result_field_base<Selected, true, false>
+    {
+      using type = typename Selected::_alias_t::template _member_t<can_be_null<cpp_type<Selected>>>;
+    };
+
+    template <typename Selected>
+    struct make_result_field_base<Selected, true, true>
+    {
+      using type = typename Selected::_alias_t::template _member_t<std::optional<cpp_type<Selected>>>;
+    };
   }
 
   template <typename Selected>
-  struct result_field<Selected, true, false>
-  {
-    using base = Selected::_alias_t::member<can_be_null<cpp_type<Selected>>>;
-  }
-
-  template <typename Selected>
-  struct result_field<Selected, true, true>
-  {
-    using base = Selected::_alias_t::member<std::optional<cpp_type<Selected>>>;
-  }
+  using result_field_base = typename detail::
+      make_result_field_base<Selected, can_be_null_v<Selected>, null_is_trivial_value_v<Selected>>::type;
 }

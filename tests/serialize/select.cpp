@@ -32,6 +32,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/select.h>
 #include <sqlpp17/operator.h>
 
+#warning : Need a real result class and a real connection
+
+struct connection
+{
+  template <typename Statement, typename Row>
+  auto select(const Statement& s, const Row& row)
+  {
+    return row;
+  }
+};
+
 int main()
 {
   std::cout << true
@@ -45,6 +56,8 @@ int main()
                            << sqlpp::having(test::tabPerson.id == test::tabPerson.id or test::tabPerson.id == 1);
 #warning : need to test results
   std::cout << s;
-  s.run();
+  auto conn = connection{};
+  auto row = s.run(conn);
+  row.isManager.hansi;
 }
 

@@ -30,6 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tuple>
 #include <sqlpp17/detail/separator.h>
 #include <sqlpp17/clause_fwd.h>
+#include <sqlpp17/result_field_base.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
 
@@ -70,14 +71,25 @@ namespace sqlpp
     std::tuple<Fields...> _fields;
   };
 
+#warning : Need to implement result_row_t for real...
+
+  template <typename Connection, typename... Fields>
+  struct result_row_t : result_field_base<Fields>...
+  {
+  };
+
   template <typename... Fields, typename Statement>
   class result_base<selected_fields_t<Fields...>, Statement>
   {
+    template <typename Connection>
+    using _result_row = result_row_t<Connection, Fields...>;
+
   public:
-    void run() const
+    template <typename Connection>
+    [[nodiscard]] auto run(Connection& connection) const
     {
+      return connection.select(Statement::of(this), _result_row<Connection>{});
     }
-#warning : Need to prepare some result functionality
   };
 
 #warning : The dynamic vector variant is missing

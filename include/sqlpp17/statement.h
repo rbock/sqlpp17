@@ -82,6 +82,9 @@ namespace sqlpp
     template <typename, typename>
     friend class clause_base;
 
+    template <typename, typename>
+    friend class result_base;
+
     using clauses = type_vector<Clauses...>;
 
     template <typename... Cs>
