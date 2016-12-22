@@ -49,6 +49,12 @@ namespace sqlpp
   constexpr auto value_type_of_v<column_t<Table, Spec>> = typename Spec::value_type{};
 
   template <typename Table, typename Spec>
+  struct cpp_type_of<column_t<Table, Spec>>
+  {
+    using type = typename cpp_type_of<typename Spec::value_type>::type;
+  };
+
+  template <typename Table, typename Spec>
   constexpr auto is_expression_v<column_t<Table, Spec>> = true;
 
   template <typename Table, typename Spec>

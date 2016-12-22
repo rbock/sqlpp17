@@ -25,12 +25,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <iostream>
+#include <tables/TabDepartment.h>
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
-#include <tables/TabDepartment.h>
 
-#include <sqlpp17/select.h>
 #include <sqlpp17/operator.h>
+#include <sqlpp17/select.h>
 
 #warning : Need a real result class and a real connection
 
@@ -50,7 +50,8 @@ int main()
                "please figure out why, I guess it is a linker problem).\n"
             << std::endl;
 #warning : s should be a constexpr
-  auto s = sqlpp::select() << sqlpp::selected_fields(test::tabPerson.id, test::tabPerson.isManager)
+  auto s = sqlpp::select() << sqlpp::selected_fields(test::tabPerson.id, test::tabPerson.isManager,
+                                                     test::tabPerson.address, test::tabPerson.name)
                            << sqlpp::from(test::tabPerson)
                            << sqlpp::where(test::tabPerson.isManager and test::tabPerson.name == '\0')
                            << sqlpp::having(test::tabPerson.id == test::tabPerson.id or test::tabPerson.id == 1);
@@ -58,6 +59,5 @@ int main()
   std::cout << s;
   auto conn = connection{};
   auto row = s.run(conn);
-  row.isManager.hansi;
 }
 

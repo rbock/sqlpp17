@@ -26,32 +26,13 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <type_traits>
-#include <sqlpp17/operator_fwd.h>
-
 namespace sqlpp
 {
-  template <>
-  struct cpp_type_of<boolean_t>
+  template <typename T>
+  struct null_is_trivial
   {
-    using type = bool;
+    T value;
+    bool is_null;
   };
-
-  template <typename L, typename R>
-  constexpr auto operator_equal(L l, R r, const boolean_t&, const boolean_t&)
-  {
-    return equal_t<L, R>{l, r};
-  }
-
-  template <typename L, typename R>
-  constexpr auto operator_and(L l, R r, const boolean_t&, const boolean_t&)
-  {
-    return and_t<L, R>{l, r};
-  }
-
-  template <typename L, typename R>
-  constexpr auto operator_or(L l, R r, const boolean_t&, const boolean_t&)
-  {
-    return or_t<L, R>{l, r};
-  }
 }
+

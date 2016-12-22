@@ -31,6 +31,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
+  template <>
+  struct cpp_type_of<integral_t>
+  {
+    using type = int64_t;
+  };
+
   template <typename L, typename R>
   constexpr auto operator_equal(L l, R r, const integral_t&, const integral_t&)
   {

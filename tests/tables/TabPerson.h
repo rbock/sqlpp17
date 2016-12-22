@@ -78,6 +78,21 @@ namespace test
       static constexpr auto tags = sqlpp::tag::can_be_null | sqlpp::tag::null_is_trivial_value;
     };
 
+    struct Address
+    {
+      struct _alias_t
+      {
+        static constexpr char name[] = "address";
+        template <typename T>
+        struct _member_t
+        {
+          T address;
+        };
+      };
+      using value_type = sqlpp::text_t;
+      static constexpr auto tags = sqlpp::tag::can_be_null;
+    };
+
     struct _
     {
       struct _alias_t
@@ -92,5 +107,6 @@ namespace test
     };
   }
 
-  constexpr auto tabPerson = sqlpp::table_t<TabPerson_::_, TabPerson_::Id, TabPerson_::IsManager, TabPerson_::Name>{};
+  constexpr auto tabPerson =
+      sqlpp::table_t<TabPerson_::_, TabPerson_::Id, TabPerson_::IsManager, TabPerson_::Name, TabPerson_::Address>{};
 }

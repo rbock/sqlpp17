@@ -27,15 +27,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <optional>
-#include <sqlpp17/type_traits.h>
 #include <sqlpp17/member.h>
+#include <sqlpp17/null_is_trivial.h>
+#include <sqlpp17/type_traits.h>
 
 namespace sqlpp
 {
-  template <typename T>
-  using cpp_type = int;
-#warning : Need to have "real" cpp_type
-
   namespace detail
   {
     template <typename Selected, bool CanBeNull, bool NullIsTrivialValue>
@@ -44,19 +41,19 @@ namespace sqlpp
     template <typename Selected, bool NullIsTrivialValue>
     struct make_result_field_base<Selected, false, NullIsTrivialValue>
     {
-      using type = typename Selected::_alias_t::template _member_t<cpp_type<Selected>>;
-    };
-
-    template <typename Selected>
-    struct make_result_field_base<Selected, true, false>
-    {
-      using type = typename Selected::_alias_t::template _member_t<can_be_null<cpp_type<Selected>>>;
+      using type = typename Selected::_alias_t::template _member_t<cpp_type_of_t<Selected>>;
     };
 
     template <typename Selected>
     struct make_result_field_base<Selected, true, true>
     {
-      using type = typename Selected::_alias_t::template _member_t<std::optional<cpp_type<Selected>>>;
+      using type = typename Selected::_alias_t::template _member_t<null_is_trivial<cpp_type_of_t<Selected>>>;
+    };
+
+    template <typename Selected>
+    struct make_result_field_base<Selected, true, false>
+    {
+      using type = typename Selected::_alias_t::template _member_t<std::optional<cpp_type_of_t<Selected>>>;
     };
   }
 

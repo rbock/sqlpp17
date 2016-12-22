@@ -78,6 +78,15 @@ namespace sqlpp
     return contains_aggregate_v<T>;
   }
 
+  template <typename T>
+  struct cpp_type_of
+  {
+    static_assert(wrong<T>, "cpp_type_of not implemented for T");
+  };
+
+  template <typename T>
+  using cpp_type_of_t = typename cpp_type_of<T>::type;
+
   template <typename Assert, typename T>
   constexpr auto is_alias_v = false;
 
