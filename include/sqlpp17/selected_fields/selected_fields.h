@@ -26,10 +26,10 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <vector>
 #include <tuple>
-#include <sqlpp17/detail/separator.h>
+#include <vector>
 #include <sqlpp17/clause_fwd.h>
+#include <sqlpp17/detail/separator.h>
 #include <sqlpp17/result_field_base.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
@@ -73,16 +73,39 @@ namespace sqlpp
 
 #warning : Need to implement result_row_t for real...
 
-  template <typename Connection, typename... Fields>
-  struct result_row_t : result_field_base<Fields>...
+  template <typename Connection, typename... FieldSpecs>
+  struct result_row_t : result_field_base<FieldSpecs>...
   {
   };
+
+  template <typename Alias, typename CppType, bool CanBeNull, bool NullIsTrivialValue>
+  struct field_spec
+  {
+    using _alias_t = Alias;
+  };
+
+  template <typename Alias, typename CppType, bool CanBeNull, bool NullIsTrivialValue>
+  struct cpp_type_of<field_spec<Alias, CppType, CanBeNull, NullIsTrivialValue>>
+  {
+    using type = CppType;
+  };
+
+  template <typename Alias, typename CppType, bool CanBeNull, bool NullIsTrivialValue>
+  constexpr auto can_be_null_v<field_spec<Alias, CppType, CanBeNull, NullIsTrivialValue>> = CanBeNull;
+
+  template <typename Alias, typename CppType, bool CanBeNull, bool NullIsTrivialValue>
+  constexpr auto null_is_trivial_value_v<field_spec<Alias, CppType, CanBeNull, NullIsTrivialValue>> =
+      NullIsTrivialValue;
+
+  template <typename Field>
+  using make_field_spec =
+      field_spec<typename Field::_alias_t, cpp_type_of_t<Field>, can_be_null_v<Field>, null_is_trivial_value_v<Field>>;
 
   template <typename... Fields, typename Statement>
   class result_base<selected_fields_t<Fields...>, Statement>
   {
     template <typename Connection>
-    using _result_row = result_row_t<Connection, Fields...>;
+    using _result_row = result_row_t<Connection, make_field_spec<Fields>...>;
 
   public:
     template <typename Connection>
