@@ -31,4 +31,11 @@ TrivialIsNull:
 ==============
 Evaluate "trivial_is_null" in a "if constexpr" instead of wrapping it in a type as in sqlpp11.
 
+Custom statements:
+==================
+These can be created trivially by concatenating sub-statements.
 
+Union:
+======
+"merge" field specs: if left can be null while right cannot, then union can be null
+union() takes two or more select statements (the member function could forward to a free function)
