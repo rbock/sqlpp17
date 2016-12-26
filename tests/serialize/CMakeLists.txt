@@ -29,6 +29,7 @@ function(test_compile name)
 	add_test(${target} ${target})
 endfunction()
 
-test_compile(select)
 test_compile(operator)
+test_compile(select)
+test_compile(union)
 

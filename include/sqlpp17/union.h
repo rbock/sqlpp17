@@ -26,11 +26,6 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/type_traits.h>
-
-namespace sqlpp
-{
-  template <typename Name, typename Type>
-  using member_t = typename Name::_alias_t::template _member_t<Type>;
-}
+#include <sqlpp17/union/no_union.h>
+#include <sqlpp17/union/union.h>
 

@@ -26,11 +26,11 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <sqlpp17/algorithm.h>
 #include <sqlpp17/all.h>
+#include <sqlpp17/clause_fwd.h>
 #include <sqlpp17/detail/statement_constructor_arg.h>
 #include <sqlpp17/type_traits.h>
-#include <sqlpp17/algorithm.h>
-#include <sqlpp17/clause_fwd.h>
 
 namespace sqlpp
 {
@@ -96,14 +96,6 @@ namespace sqlpp
       return static_cast<const statement&>(*base);
     }
 
-    template <typename OldClause, typename NewClause>
-    auto replace_clause(NewClause&& newClause) const
-    {
-      using new_clauses = algorithm::replace_t<clauses, OldClause, std::decay_t<NewClause>>;
-      return algorithm::copy_t<new_clauses, new_statement>{
-          detail::make_constructor_arg(*this, std::forward<NewClause>(newClause))};
-    }
-
     [[nodiscard]] constexpr auto check_consistency() const
     {
       return (succeeded{} && ... && check_consistency(static_cast<const clause_base<Clauses, statement>&>(*this)));
@@ -118,7 +110,21 @@ namespace sqlpp
     constexpr statement(Arg&& arg) : clause_base<Clauses, statement>(arg)...
     {
     }
+
+    template <typename OldClause, typename NewClause>
+    auto replace_clause(NewClause&& newClause) const
+    {
+      using new_clauses = algorithm::replace_t<clauses, OldClause, std::decay_t<NewClause>>;
+      return algorithm::copy_t<new_clauses, new_statement>{
+          detail::make_constructor_arg(*this, std::forward<NewClause>(newClause))};
+    }
   };
+
+  template <typename... Clauses>
+  constexpr auto is_statement_v<statement<Clauses...>> = true;
+
+  template <typename... Clauses>
+  constexpr auto requires_braces_v<statement<Clauses...>> = true;
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_statement_contains_tagged_clauses, "statements must contain tagged clauses");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_statement_contains_unique_clauses,

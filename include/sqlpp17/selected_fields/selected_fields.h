@@ -73,10 +73,17 @@ namespace sqlpp
 
 #warning : Need to implement result_row_t for real...
 
-  template <typename Connection, typename... FieldSpecs>
+  template <typename... FieldSpecs>
   struct result_row_t : result_field_base<FieldSpecs>...
   {
   };
+
+  template <typename... LeftFieldSpecs, typename... RightFieldSpecs>
+  constexpr auto
+      result_rows_are_compatible_v<result_row_t<LeftFieldSpecs...>,
+                                   result_row_t<RightFieldSpecs...>,
+                                   std::enable_if_t<sizeof...(LeftFieldSpecs) == sizeof...(RightFieldSpecs)>> =
+          (true && ... && field_specs_are_compatible_v<LeftFieldSpecs, RightFieldSpecs>);
 
   template <typename Alias, typename CppType, bool CanBeNull, bool NullIsTrivialValue>
   struct field_spec
@@ -97,6 +104,20 @@ namespace sqlpp
   constexpr auto null_is_trivial_value_v<field_spec<Alias, CppType, CanBeNull, NullIsTrivialValue>> =
       NullIsTrivialValue;
 
+  template <typename LeftAlias,
+            typename LeftCppType,
+            bool LeftCanBeNull,
+            bool LeftNullIsTrivialValue,
+            typename RightAlias,
+            typename RightCppType,
+            bool RightCanBeNull,
+            bool RightNullIsTrivialValue>
+  constexpr auto
+      field_specs_are_compatible_v<field_spec<LeftAlias, LeftCppType, LeftCanBeNull, LeftNullIsTrivialValue>,
+                                   field_spec<RightAlias, RightCppType, RightCanBeNull, RightNullIsTrivialValue>> =
+          std::is_same<make_char_sequence<LeftAlias::name>, make_char_sequence<RightAlias::name>>::value and
+              std::is_same<LeftCppType, RightCppType>::value and LeftNullIsTrivialValue == RightNullIsTrivialValue;
+
   template <typename Field>
   using make_field_spec =
       field_spec<typename Field::_alias_t, cpp_type_of_t<Field>, can_be_null_v<Field>, null_is_trivial_value_v<Field>>;
@@ -104,14 +125,13 @@ namespace sqlpp
   template <typename... Fields, typename Statement>
   class result_base<selected_fields_t<Fields...>, Statement>
   {
-    template <typename Connection>
-    using _result_row = result_row_t<Connection, make_field_spec<Fields>...>;
-
   public:
+    using result_row_t = result_row_t<make_field_spec<Fields>...>;
+
     template <typename Connection>
     [[nodiscard]] auto run(Connection& connection) const
     {
-      return connection.select(Statement::of(this), _result_row<Connection>{});
+      return connection.select(Statement::of(this), result_row_t{});
     }
   };
 

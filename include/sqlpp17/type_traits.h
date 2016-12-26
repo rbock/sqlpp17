@@ -96,6 +96,45 @@ namespace sqlpp
     return is_alias_v<Assert, T>;
   }
 
+  template <typename T>
+  constexpr auto is_statement_v = false;
+
+  template <typename T>
+  constexpr auto is_statement(const T&)
+  {
+    return is_statement_v<T>;
+  }
+
+  template <typename T, typename Enable = void>
+  constexpr auto has_result_row_v = false;
+
+  template <typename T>
+  constexpr auto has_result_row_v<T, std::void_t<typename T::result_row_t>> = true;
+
+  template <typename T>
+  constexpr auto has_result_row(const T&)
+  {
+    return has_result_row_v<T>;
+  }
+
+  template <typename Left, typename Right, typename Enable = void>
+  constexpr auto result_rows_are_compatible_v = false;
+
+  template <typename Left, typename Right>
+  constexpr auto result_rows_are_compatible(const Left&, const Right&)
+  {
+    return result_rows_are_compatible_v<Left, Right>;
+  }
+
+  template <typename Left, typename Right>
+  constexpr auto field_specs_are_compatible_v = false;
+
+  template <typename Left, typename Right>
+  constexpr auto field_specs_are_compatible(const Left&, const Right&)
+  {
+    return field_specs_are_compatible_v<Left, Right>;
+  }
+
   template <typename Assert, typename T>
   constexpr auto is_bad_statement_v = false;
 
