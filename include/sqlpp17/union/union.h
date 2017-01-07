@@ -71,27 +71,25 @@ namespace sqlpp
     RightSelect _right;
   };
 
-  template <typename LeftField, typename RightField>
-  struct merge_field_spec
+  template <typename LeftColumn, typename RightColumn>
+  struct merge_column_spec
   {
-    static_assert(wrong<merge_field_spec>, "Invalid arguments for merge_field_spec");
+    static_assert(wrong<merge_column_spec>, "Invalid arguments for merge_column_spec");
   };
 
   template <typename LeftAlias,
             typename LeftCppType,
-            bool LeftCanBeNull,
-            bool LeftNullIsTrivialValue,
+            tag::type LeftTags,
             typename RightAlias,
             typename RightCppType,
-            bool RightCanBeNull,
-            bool RightNullIsTrivialValue>
-  struct merge_field_spec<field_spec<LeftAlias, LeftCppType, LeftCanBeNull, LeftNullIsTrivialValue>,
-                          field_spec<RightAlias, RightCppType, RightCanBeNull, RightNullIsTrivialValue>>
+            tag::type RightTags>
+  struct merge_column_spec<column_spec<LeftAlias, LeftCppType, LeftTags>,
+                           column_spec<RightAlias, RightCppType, RightTags>>
   {
-    using type = field_spec<LeftAlias,
-                            LeftCppType,
-                            LeftNullIsTrivialValue || RightNullIsTrivialValue,
-                            LeftNullIsTrivialValue && RightNullIsTrivialValue>;
+    using type = column_spec<LeftAlias,
+                             LeftCppType,
+                             ((LeftTags ^ tag::null_is_trivial_value) | (RightTags ^ tag::null_is_trivial_value)) ^
+                                 tag::null_is_trivial_value>;
   };
 
   template <typename LeftResultRow, typename RightResultRow>
@@ -100,10 +98,10 @@ namespace sqlpp
     static_assert(wrong<merge_result_row_specs>, "Invalid arguments for merge_result_row_specs");
   };
 
-  template <typename... LeftFieldSpecs, typename... RightFieldSpecs>
-  struct merge_result_row_specs<result_row_t<LeftFieldSpecs...>, result_row_t<RightFieldSpecs...>>
+  template <typename... LeftColumnSpecs, typename... RightColumnSpecs>
+  struct merge_result_row_specs<result_row_t<LeftColumnSpecs...>, result_row_t<RightColumnSpecs...>>
   {
-    using type = result_row_t<typename merge_field_spec<LeftFieldSpecs, RightFieldSpecs>::type...>;
+    using type = result_row_t<typename merge_column_spec<LeftColumnSpecs, RightColumnSpecs>::type...>;
   };
 
   template <typename LeftSelect, typename RightSelect, typename Statement>

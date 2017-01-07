@@ -24,11 +24,11 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <tables/TabDepartment.h>
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
-#include <tables/TabDepartment.h>
 
-#include <sqlpp17/selected_fields.h>
+#include <sqlpp17/selected_columns.h>
 
 #warning : Not implemented yet
 #if 0
@@ -54,7 +54,7 @@ namespace
 
 int main()
 {
-  constexpr auto s = sqlpp::statement<sqlpp::no_selected_fields_t>{};
+  constexpr auto s = sqlpp::statement<sqlpp::no_selected_columns_t>{};
 
 #if 0
   // constexpr tests

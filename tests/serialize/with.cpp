@@ -47,8 +47,8 @@ struct connection
 int main()
 {
 #warning : s should be a constexpr
-  auto s = sqlpp::with(1) << sqlpp::select() << sqlpp::selected_fields(test::tabPerson.id, test::tabPerson.isManager,
-                                                                       test::tabPerson.address, test::tabPerson.name)
+  auto s = sqlpp::with(1) << sqlpp::select() << sqlpp::selected_columns(test::tabPerson.id, test::tabPerson.isManager,
+                                                                        test::tabPerson.address, test::tabPerson.name)
                           << sqlpp::from(test::tabPerson)
                           << sqlpp::where(test::tabPerson.isManager and test::tabPerson.name == '\0')
                           << sqlpp::having(test::tabPerson.id == test::tabPerson.id or test::tabPerson.id == 1);

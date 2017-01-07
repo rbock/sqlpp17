@@ -29,7 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/clause_fwd.h>
 #include <sqlpp17/from.h>
 #include <sqlpp17/having.h>
-#include <sqlpp17/selected_fields.h>
+#include <sqlpp17/selected_columns.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/where.h>
 
@@ -69,8 +69,28 @@ namespace sqlpp
 
   [[nodiscard]] constexpr auto select()
   {
-#warning : constexpr if on the arguments to see whether these are flags or columns?
-#warning : a nice way of distributing the flags to flags and the columns to selected columns would be preferable
-    return statement<select_t, no_selected_fields_t, no_from_t, no_where_t, no_having_t>{};
+    return statement<select_t, no_selected_columns_t, no_from_t, no_where_t, no_having_t>{};
+  }
+
+  template <typename... Fs>
+  [[nodiscard]] constexpr auto select(Fs... fs)
+  {
+    /*
+    else if
+      constexpr((true && ... is_flag_v<Fs>))
+      {
+      return ::sqlpp::select().flags(fs...);
+      }
+      */
+    if
+      constexpr((true && ... && is_selectable_v<Fs>))
+      {
+        return ::sqlpp::select().columns(fs...);
+      }
+    else
+    {
+#warning Need to add handling for flags and errors here
+      return 17;  //::sqlpp::bad_statement_t<assert_select_args_are_flags_or_columns>{};
+    }
   }
 }

@@ -31,6 +31,10 @@ TrivialIsNull:
 ==============
 Evaluate "trivial_is_null" in a "if constexpr" instead of wrapping it in a type as in sqlpp11.
 
+trivial_is_null should not be a connection feature. This is just too confusing if you have different values for columns and connections.
+
+need a tvin function again, this should work for column_groups, too (nice for outer joins)
+
 Custom statements:
 ==================
 These can be created trivially by concatenating sub-statements.

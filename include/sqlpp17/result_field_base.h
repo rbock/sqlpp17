@@ -41,19 +41,19 @@ namespace sqlpp
     template <typename FieldSpec, bool NullIsTrivialValue>
     struct make_result_field_base<FieldSpec, false, NullIsTrivialValue>
     {
-      using type = member_t<FieldSpec, cpp_type_of_t<FieldSpec>>;
+      using type = member_t<FieldSpec, cpp_type_of_t<value_type_of_t<FieldSpec>>>;
     };
 
     template <typename FieldSpec>
     struct make_result_field_base<FieldSpec, true, true>
     {
-      using type = member_t<FieldSpec, null_is_trivial<cpp_type_of_t<FieldSpec>>>;
+      using type = member_t<FieldSpec, null_is_trivial<cpp_type_of_t<value_type_of_t<FieldSpec>>>>;
     };
 
     template <typename FieldSpec>
     struct make_result_field_base<FieldSpec, true, false>
     {
-      using type = member_t<FieldSpec, std::optional<cpp_type_of_t<FieldSpec>>>;
+      using type = member_t<FieldSpec, std::optional<cpp_type_of_t<value_type_of_t<FieldSpec>>>>;
     };
   }
 

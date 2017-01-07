@@ -45,15 +45,15 @@ struct connection
 };
 int main()
 {
-  /*
+/*
 std::cout << true
-          << " As of now, I need to print a bool before I can print complex statements (don't ask me why, but "
-             "please figure out why, I guess it is a linker problem).\n"
-          << std::endl;
-          */
+        << " As of now, I need to print a bool before I can print complex statements (don't ask me why, but "
+           "please figure out why, I guess it is a linker problem).\n"
+        << std::endl;
+        */
 #warning : s should be a constexpr
-  auto s = sqlpp::union_(sqlpp::select() << selected_fields(test::tabPerson.id),
-                         sqlpp::select() << selected_fields(test::tabPerson.id));
+  auto s = sqlpp::union_(sqlpp::select() << selected_columns(test::tabPerson.id),
+                         sqlpp::select() << selected_columns(test::tabPerson.id));
 /*
 sqlpp::select() << sqlpp::selected_fields(test::tabPerson.id, test::tabPerson.isManager,
                                                    test::tabPerson.address, test::tabPerson.name)
@@ -63,9 +63,9 @@ sqlpp::select() << sqlpp::selected_fields(test::tabPerson.id, test::tabPerson.is
                          */
 #warning : need to test results
   std::cout << s;
-  /*
   auto conn = connection{};
   auto row = s.run(conn);
+  /*
 
   // using data_members_of_meta = std::meta::get_public_data_members_m<reflexpr(reflexpr(row))>;
   // std::cout << std::meta::get_size_v<data_members_of_meta> << std::endl;

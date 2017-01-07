@@ -26,7 +26,9 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <cstdint>
 #include <type_traits>
+
 #include <utility>
 #include <sqlpp17/type_set.h>
 #include <sqlpp17/wrong.h>
@@ -35,6 +37,7 @@ namespace sqlpp
 {
   namespace tag
   {
+    using type = uint16_t;
     constexpr auto none = 0;
     constexpr auto must_not_insert = 1 << 0;
     constexpr auto must_not_update = 1 << 1;
@@ -128,12 +131,12 @@ namespace sqlpp
   }
 
   template <typename Left, typename Right>
-  constexpr auto field_specs_are_compatible_v = false;
+  constexpr auto column_specs_are_compatible_v = false;
 
   template <typename Left, typename Right>
-  constexpr auto field_specs_are_compatible(const Left&, const Right&)
+  constexpr auto column_specs_are_compatible(const Left&, const Right&)
   {
-    return field_specs_are_compatible_v<Left, Right>;
+    return column_specs_are_compatible_v<Left, Right>;
   }
 
   template <typename Assert, typename T>
@@ -261,7 +264,7 @@ namespace sqlpp
   constexpr auto value_type_of_v = no_value_t{};
 
   template <typename T>
-  using value_type_of_t = decltype(value_type_of_v<T>);
+  using value_type_of_t = std::decay_t<decltype(value_type_of_v<T>)>;
 
   template <typename T>
   constexpr auto value_type_of(const T&)
