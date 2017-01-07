@@ -115,8 +115,9 @@ namespace sqlpp
   constexpr auto
       field_specs_are_compatible_v<field_spec<LeftAlias, LeftCppType, LeftCanBeNull, LeftNullIsTrivialValue>,
                                    field_spec<RightAlias, RightCppType, RightCanBeNull, RightNullIsTrivialValue>> =
-          std::is_same<make_char_sequence<LeftAlias::name>, make_char_sequence<RightAlias::name>>::value and
-              std::is_same<LeftCppType, RightCppType>::value and LeftNullIsTrivialValue == RightNullIsTrivialValue;
+          std::is_same_v<make_char_sequence<LeftAlias::name>, make_char_sequence<RightAlias::name>>&&
+              std::is_same_v<LeftCppType, RightCppType> &&
+          (LeftNullIsTrivialValue == RightNullIsTrivialValue);
 
   template <typename Field>
   using make_field_spec =

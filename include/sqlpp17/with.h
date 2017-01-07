@@ -1,3 +1,5 @@
+#pragma once
+
 /*
 Copyright (c) 2016, Roland Bock
 All rights reserved.
@@ -24,36 +26,6 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <iostream>
-#include <tables/TabDepartment.h>
-#include <tables/TabEmpty.h>
-#include <tables/TabPerson.h>
-
-#include <sqlpp17/operator.h>
-#include <sqlpp17/select.h>
-
-#warning : Need a real result class and a real connection
-
-struct connection
-{
-  template <typename Statement, typename Row>
-  auto select(const Statement& s, const Row& row)
-  {
-    return row;
-  }
-};
-
-int main()
-{
-#warning : s should be a constexpr
-  auto s = sqlpp::select() << sqlpp::selected_fields(test::tabPerson.id, test::tabPerson.isManager,
-                                                     test::tabPerson.address, test::tabPerson.name)
-                           << sqlpp::from(test::tabPerson)
-                           << sqlpp::where(test::tabPerson.isManager and test::tabPerson.name == '\0')
-                           << sqlpp::having(test::tabPerson.id == test::tabPerson.id or test::tabPerson.id == 1);
-#warning : need to test results
-  std::cout << s << std::endl;
-  auto conn = connection{};
-  auto row = s.run(conn);
-}
+#include <sqlpp17/with/no_with.h>
+#include <sqlpp17/with/with.h>
 

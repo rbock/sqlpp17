@@ -32,4 +32,5 @@ endfunction()
 test_compile(operator)
 test_compile(select)
 test_compile(union)
+test_compile(with)
 

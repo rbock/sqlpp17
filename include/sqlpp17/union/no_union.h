@@ -90,6 +90,7 @@ namespace sqlpp
     return context;
   }
 
+#warning : Need union_all / union_distinct
   template <typename LeftSelect, typename RightSelect>
   [[nodiscard]] constexpr auto union_(LeftSelect l, RightSelect r)
   {

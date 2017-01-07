@@ -1,3 +1,5 @@
+#pragma once
+
 /*
 Copyright (c) 2016, Roland Bock
 All rights reserved.
@@ -24,36 +26,52 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <iostream>
-#include <tables/TabDepartment.h>
-#include <tables/TabEmpty.h>
-#include <tables/TabPerson.h>
+#include <sqlpp17/clause_fwd.h>
+#include <sqlpp17/type_traits.h>
+#include <sqlpp17/wrapped_static_assert.h>
 
-#include <sqlpp17/operator.h>
-#include <sqlpp17/select.h>
-
-#warning : Need a real result class and a real connection
-
-struct connection
+namespace sqlpp
 {
-  template <typename Statement, typename Row>
-  auto select(const Statement& s, const Row& row)
+  namespace clause
   {
-    return row;
+    struct with
+    {
+    };
   }
-};
 
-int main()
-{
-#warning : s should be a constexpr
-  auto s = sqlpp::select() << sqlpp::selected_fields(test::tabPerson.id, test::tabPerson.isManager,
-                                                     test::tabPerson.address, test::tabPerson.name)
-                           << sqlpp::from(test::tabPerson)
-                           << sqlpp::where(test::tabPerson.isManager and test::tabPerson.name == '\0')
-                           << sqlpp::having(test::tabPerson.id == test::tabPerson.id or test::tabPerson.id == 1);
-#warning : need to test results
-  std::cout << s << std::endl;
-  auto conn = connection{};
-  auto row = s.run(conn);
+  enum class with_mode
+  {
+    flat,
+    recursive
+  };
+
+  template <with_mode Mode, typename... CommonTableExpressions>
+  struct with_t
+  {
+    std::tuple<CommonTableExpressions...> _ctes;
+  };
+
+  template <with_mode Mode, typename... CommonTableExpressions, typename Statement>
+  class clause_base<with_t<Mode, CommonTableExpressions...>, Statement>
+  {
+  public:
+    template <typename OtherStatement>
+    clause_base(const clause_base<with_t<Mode, CommonTableExpressions...>, OtherStatement>& s) : _ctes(s._ctes)
+    {
+    }
+
+    clause_base(const with_t<Mode, CommonTableExpressions...>& f) : _ctes(f._ctes)
+    {
+    }
+
+    std::tuple<CommonTableExpressions...> _ctes;
+  };
+
+  template <typename Context, with_mode Mode, typename... CommonTableExpressions, typename Statement>
+  decltype(auto) operator<<(Context& context, const clause_base<with_t<Mode, CommonTableExpressions...>, Statement>& t)
+  {
+#warning : WITH cannot occur after a compound operator like UNION
+#warning : THis is not complete!
+    return context << "WITH ";
+  }
 }
-

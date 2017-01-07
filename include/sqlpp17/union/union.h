@@ -48,6 +48,9 @@ namespace sqlpp
   };
 
   template <typename LeftSelect, typename RightSelect>
+  constexpr auto is_result_clause_v<union_t<LeftSelect, RightSelect>> = true;
+
+  template <typename LeftSelect, typename RightSelect>
   constexpr auto clause_tag<union_t<LeftSelect, RightSelect>> = clause::union_{};
 
   template <typename LeftSelect, typename RightSelect, typename Statement>
@@ -66,6 +69,55 @@ namespace sqlpp
 
     LeftSelect _left;
     RightSelect _right;
+  };
+
+  template <typename LeftField, typename RightField>
+  struct merge_field_spec
+  {
+    static_assert(wrong<merge_field_spec>, "Invalid arguments for merge_field_spec");
+  };
+
+  template <typename LeftAlias,
+            typename LeftCppType,
+            bool LeftCanBeNull,
+            bool LeftNullIsTrivialValue,
+            typename RightAlias,
+            typename RightCppType,
+            bool RightCanBeNull,
+            bool RightNullIsTrivialValue>
+  struct merge_field_spec<field_spec<LeftAlias, LeftCppType, LeftCanBeNull, LeftNullIsTrivialValue>,
+                          field_spec<RightAlias, RightCppType, RightCanBeNull, RightNullIsTrivialValue>>
+  {
+    using type = field_spec<LeftAlias,
+                            LeftCppType,
+                            LeftNullIsTrivialValue || RightNullIsTrivialValue,
+                            LeftNullIsTrivialValue && RightNullIsTrivialValue>;
+  };
+
+  template <typename LeftResultRow, typename RightResultRow>
+  struct merge_result_row_specs
+  {
+    static_assert(wrong<merge_result_row_specs>, "Invalid arguments for merge_result_row_specs");
+  };
+
+  template <typename... LeftFieldSpecs, typename... RightFieldSpecs>
+  struct merge_result_row_specs<result_row_t<LeftFieldSpecs...>, result_row_t<RightFieldSpecs...>>
+  {
+    using type = result_row_t<typename merge_field_spec<LeftFieldSpecs, RightFieldSpecs>::type...>;
+  };
+
+  template <typename LeftSelect, typename RightSelect, typename Statement>
+  class result_base<union_t<LeftSelect, RightSelect>, Statement>
+  {
+  public:
+    using result_row_t =
+        typename merge_result_row_specs<typename LeftSelect::result_row_t, typename RightSelect::result_row_t>::type;
+
+    template <typename Connection>
+    [[nodiscard]] auto run(Connection& connection) const
+    {
+      return connection.select(Statement::of(this), result_row_t{});
+    }
   };
 
   template <typename Context, typename LeftSelect, typename RightSelect, typename Statement>

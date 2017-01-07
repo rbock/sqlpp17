@@ -31,7 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/operator.h>
 #include <sqlpp17/select.h>
-#include <sqlpp17/union.h>
+#include <sqlpp17/with.h>
 
 #warning : Need a real result class and a real connection
 
@@ -45,22 +45,12 @@ struct connection
 };
 int main()
 {
-  /*
-std::cout << true
-          << " As of now, I need to print a bool before I can print complex statements (don't ask me why, but "
-             "please figure out why, I guess it is a linker problem).\n"
-          << std::endl;
-          */
 #warning : s should be a constexpr
-  auto s = sqlpp::union_(sqlpp::select() << selected_fields(test::tabPerson.id),
-                         sqlpp::select() << selected_fields(test::tabPerson.id));
-/*
-sqlpp::select() << sqlpp::selected_fields(test::tabPerson.id, test::tabPerson.isManager,
-                                                   test::tabPerson.address, test::tabPerson.name)
-                         << sqlpp::from(test::tabPerson)
-                         << sqlpp::where(test::tabPerson.isManager and test::tabPerson.name == '\0')
-                         << sqlpp::having(test::tabPerson.id == test::tabPerson.id or test::tabPerson.id == 1);
-                         */
+  auto s = sqlpp::with(1) << sqlpp::select() << sqlpp::selected_fields(test::tabPerson.id, test::tabPerson.isManager,
+                                                                       test::tabPerson.address, test::tabPerson.name)
+                          << sqlpp::from(test::tabPerson)
+                          << sqlpp::where(test::tabPerson.isManager and test::tabPerson.name == '\0')
+                          << sqlpp::having(test::tabPerson.id == test::tabPerson.id or test::tabPerson.id == 1);
 #warning : need to test results
   std::cout << s;
   /*
