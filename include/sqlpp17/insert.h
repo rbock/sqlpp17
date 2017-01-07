@@ -27,34 +27,30 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/clause_fwd.h>
-#include <sqlpp17/from.h>
-#include <sqlpp17/having.h>
-#include <sqlpp17/selected_fields.h>
 #include <sqlpp17/type_traits.h>
-#include <sqlpp17/where.h>
 
 namespace sqlpp
 {
   namespace clause
   {
-    struct select
+    struct insert
     {
     };
   }
 
-  struct select_t
+  struct insert_t
   {
   };
 
   template <>
-  constexpr auto clause_tag<select_t> = clause::select{};
+  constexpr auto clause_tag<insert_t> = clause::insert{};
 
   template <typename Statement>
-  class clause_base<select_t, Statement>
+  class clause_base<insert_t, Statement>
   {
   public:
     template <typename OtherStatement>
-    clause_base(const clause_base<select_t, OtherStatement>&)
+    clause_base(const clause_base<insert_t, OtherStatement>&)
     {
     }
 
@@ -62,15 +58,13 @@ namespace sqlpp
   };
 
   template <typename Context, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<select_t, Statement>& t)
+  decltype(auto) operator<<(Context& context, const clause_base<insert_t, Statement>& t)
   {
     return context << "SELECT";
   }
 
-  [[nodiscard]] constexpr auto select()
+  [[nodiscard]] constexpr auto insert()
   {
-#warning : constexpr if on the arguments to see whether these are flags or columns?
-#warning : a nice way of distributing the flags to flags and the columns to selected columns would be preferable
-    return statement<select_t, no_selected_fields_t, no_from_t, no_where_t, no_having_t>{};
+    return statement < insert_t{};
   }
 }

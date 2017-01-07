@@ -28,9 +28,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <tuple>
 #include <vector>
+
 #include <sqlpp17/clause_fwd.h>
 #include <sqlpp17/detail/separator.h>
-#include <sqlpp17/result_field_base.h>
+#include <sqlpp17/result_row.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
 
@@ -72,11 +73,6 @@ namespace sqlpp
   };
 
 #warning : Need to implement result_row_t for real...
-
-  template <typename... FieldSpecs>
-  struct result_row_t : result_field_base<FieldSpecs>...
-  {
-  };
 
   template <typename... LeftFieldSpecs, typename... RightFieldSpecs>
   constexpr auto

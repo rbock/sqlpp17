@@ -35,6 +35,7 @@ namespace sqlpp
 {
   namespace tag
   {
+    constexpr auto none = 0;
     constexpr auto must_not_insert = 1 << 0;
     constexpr auto must_not_update = 1 << 1;
     constexpr auto has_default = 1 << 2;
@@ -258,6 +259,9 @@ namespace sqlpp
 
   template <typename T, typename Enable = void>
   constexpr auto value_type_of_v = no_value_t{};
+
+  template <typename T>
+  using value_type_of_t = decltype(value_type_of_v<T>);
 
   template <typename T>
   constexpr auto value_type_of(const T&)

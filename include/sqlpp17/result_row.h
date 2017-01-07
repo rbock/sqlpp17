@@ -26,51 +26,13 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/clause_fwd.h>
-#include <sqlpp17/from.h>
-#include <sqlpp17/having.h>
-#include <sqlpp17/selected_fields.h>
-#include <sqlpp17/type_traits.h>
-#include <sqlpp17/where.h>
+#include <sqlpp17/result_field_base.h>
 
 namespace sqlpp
 {
-  namespace clause
-  {
-    struct select
-    {
-    };
-  }
-
-  struct select_t
+  template <typename... FieldSpecs>
+  struct result_row_t : result_field_base<FieldSpecs>...
   {
   };
-
-  template <>
-  constexpr auto clause_tag<select_t> = clause::select{};
-
-  template <typename Statement>
-  class clause_base<select_t, Statement>
-  {
-  public:
-    template <typename OtherStatement>
-    clause_base(const clause_base<select_t, OtherStatement>&)
-    {
-    }
-
-    clause_base() = default;
-  };
-
-  template <typename Context, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<select_t, Statement>& t)
-  {
-    return context << "SELECT";
-  }
-
-  [[nodiscard]] constexpr auto select()
-  {
-#warning : constexpr if on the arguments to see whether these are flags or columns?
-#warning : a nice way of distributing the flags to flags and the columns to selected columns would be preferable
-    return statement<select_t, no_selected_fields_t, no_from_t, no_where_t, no_having_t>{};
-  }
 }
+

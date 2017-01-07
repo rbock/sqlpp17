@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
 
+#include <sqlpp17/cte.h>
 #include <sqlpp17/operator.h>
 #include <sqlpp17/select.h>
 #include <sqlpp17/with.h>
