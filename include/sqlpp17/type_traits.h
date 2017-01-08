@@ -256,6 +256,15 @@ namespace sqlpp
     return is_expression<T>;
   }
 
+  template <typename T>
+  constexpr auto is_select_flag_v = false;
+
+  template <typename T>
+  constexpr auto is_select_flag(const T&)
+  {
+    return is_select_flag<T>;
+  }
+
   struct no_value_t
   {
   };

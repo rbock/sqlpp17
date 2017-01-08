@@ -39,33 +39,33 @@ namespace sqlpp
 {
   namespace clause
   {
-    struct selected_columns
+    struct select_columns
     {
     };
   }
 
   template <typename... Columns>
-  struct selected_columns_t
+  struct select_columns_t
   {
     std::tuple<Columns...> _columns;
   };
 
   template <typename... Columns>
-  constexpr auto is_result_clause_v<selected_columns_t<Columns...>> = true;
+  constexpr auto is_result_clause_v<select_columns_t<Columns...>> = true;
 
   template <typename Table>
-  constexpr auto clause_tag<selected_columns_t<Table>> = clause::selected_columns{};
+  constexpr auto clause_tag<select_columns_t<Table>> = clause::select_columns{};
 
   template <typename... Columns, typename Statement>
-  class clause_base<selected_columns_t<Columns...>, Statement>
+  class clause_base<select_columns_t<Columns...>, Statement>
   {
   public:
     template <typename OtherStatement>
-    clause_base(const clause_base<selected_columns_t<Columns...>, OtherStatement>& s) : _columns(s._columns)
+    clause_base(const clause_base<select_columns_t<Columns...>, OtherStatement>& s) : _columns(s._columns)
     {
     }
 
-    clause_base(const selected_columns_t<Columns...>& f) : _columns(f._columns)
+    clause_base(const select_columns_t<Columns...>& f) : _columns(f._columns)
     {
     }
 
@@ -115,7 +115,7 @@ namespace sqlpp
                                        can_be_null_v<Column> | null_is_trivial_value_v<Column>>;
 
   template <typename... Columns, typename Statement>
-  class result_base<selected_columns_t<Columns...>, Statement>
+  class result_base<select_columns_t<Columns...>, Statement>
   {
   public:
     using result_row_t = result_row_t<make_column_spec<Columns>...>;
@@ -130,7 +130,7 @@ namespace sqlpp
 #warning : The dynamic vector variant is missing
 
   template <typename Context, typename... Columns, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<selected_columns_t<Columns...>, Statement>& t)
+  decltype(auto) operator<<(Context& context, const clause_base<select_columns_t<Columns...>, Statement>& t)
   {
     auto separate = detail::separator<Context>{context, ", "};
     context << ' ';

@@ -1,3 +1,5 @@
+#pragma once
+
 /*
 Copyright (c) 2016, Roland Bock
 All rights reserved.
@@ -24,49 +26,6 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <tables/TabDepartment.h>
-#include <tables/TabEmpty.h>
-#include <tables/TabPerson.h>
-
-#include <sqlpp17/selected_columns.h>
-
-#warning : Not implemented yet
-#if 0
-// Turning off static_assert for from()
-namespace sqlpp
-{
-  template <typename... T>
-  constexpr auto wrong<assert_from_arg_is_table, T...> = true;
-
-  template <typename... T>
-  constexpr auto wrong<assert_from_arg_is_not_conditionless_join, T...> = true;
-}
-
-namespace
-{
-  template <typename Assert, typename T>
-  auto test_bad_statement(const Assert&, const T&)
-  {
-    static_assert(is_bad_statement(Assert{}, T{}));
-  }
-}
-#endif
-
-int main()
-{
-  constexpr auto s = sqlpp::statement<sqlpp::no_selected_columns_t>{};
-
-#if 0
-  // constexpr tests
-  static_assert(is_bad_statement(sqlpp::assert_from_arg_is_table{}, s.from(1)));
-
-  static_assert(is_bad_statement(sqlpp::assert_from_arg_is_not_conditionless_join{},
-                                 s.from(test::tabPerson.join(test::tabDepartment))));
-
-  static_assert(is_bad_statement(sqlpp::assert_from_arg_is_table{}, sqlpp::from(1)));
-
-  // non-constexpr tests
-  test_bad_statement(sqlpp::assert_from_arg_is_table{}, sqlpp::from(std::string("mytable")));
-#endif
-}
+#include <sqlpp17/select_columns/no_select_columns.h>
+#include <sqlpp17/select_columns/select_columns.h>
 

@@ -1,3 +1,5 @@
+#pragma once
+
 /*
 Copyright (c) 2016, Roland Bock
 All rights reserved.
@@ -24,36 +26,54 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <iostream>
-#include <tables/TabDepartment.h>
-#include <tables/TabEmpty.h>
-#include <tables/TabPerson.h>
+#include <tuple>
+#include <vector>
 
-#include <sqlpp17/operator.h>
-#include <sqlpp17/select.h>
+#include <sqlpp17/clause_fwd.h>
+#include <sqlpp17/detail/separator.h>
+#include <sqlpp17/result_row.h>
+#include <sqlpp17/type_traits.h>
+#include <sqlpp17/wrapped_static_assert.h>
 
-#warning : Need a real result class and a real connection
-
-struct connection
+namespace sqlpp
 {
-  template <typename Statement, typename Row>
-  auto select(const Statement& s, const Row& row)
+  namespace clause
   {
-    return row;
+    struct select_flags
+    {
+    };
   }
-};
 
-int main()
-{
-#warning : s should be a constexpr
-  auto s = sqlpp::select() << sqlpp::select_columns(test::tabPerson.id, test::tabPerson.isManager,
-                                                    test::tabPerson.address, test::tabPerson.name)
-                           << sqlpp::from(test::tabPerson)
-                           << sqlpp::where(test::tabPerson.isManager and test::tabPerson.name == '\0')
-                           << sqlpp::having(test::tabPerson.id == test::tabPerson.id or test::tabPerson.id == 1);
-#warning : need to test results
-  std::cout << s << std::endl;
-  auto conn = connection{};
-  auto row = s.run(conn);
+  template <typename... Columns>
+  struct select_flags_t
+  {
+    std::tuple<Columns...> _flags;
+  };
+
+  template <typename Table>
+  constexpr auto clause_tag<select_flags_t<Table>> = clause::select_flags{};
+
+  template <typename... Columns, typename Statement>
+  class clause_base<select_flags_t<Columns...>, Statement>
+  {
+  public:
+    template <typename OtherStatement>
+    clause_base(const clause_base<select_flags_t<Columns...>, OtherStatement>& s) : _flags(s._flags)
+    {
+    }
+
+    clause_base(const select_flags_t<Columns...>& f) : _flags(f._flags)
+    {
+    }
+
+    std::tuple<Columns...> _flags;
+  };
+
+  template <typename Context, typename... Columns, typename Statement>
+  decltype(auto) operator<<(Context& context, const clause_base<select_flags_t<Columns...>, Statement>& t)
+  {
+    auto separate = detail::separator<Context>{context, " "};
+    context << ' ';
+    return (context << ... << separate(std::get<Columns>(t._flags)));
+  }
 }
-

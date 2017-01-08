@@ -29,12 +29,23 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/clause_fwd.h>
 #include <sqlpp17/from.h>
 #include <sqlpp17/having.h>
-#include <sqlpp17/selected_columns.h>
+#include <sqlpp17/select_columns.h>
+#include <sqlpp17/select_flags.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/where.h>
 
 namespace sqlpp
 {
+  SQLPP_WRAPPED_STATIC_ASSERT(
+      assert_select_args_are_flags_or_columns,
+      "select() args must not be a either select flags or selectable columns or a tuple/vector of either kind");
+
+  template <typename...>
+  struct select_failure
+  {
+    using type = failed<assert_select_args_are_flags_or_columns>;
+  };
+
   namespace clause
   {
     struct select
@@ -67,30 +78,55 @@ namespace sqlpp
     return context << "SELECT";
   }
 
+  // select with no args or an empty tuple yields a blank select statement
+
   [[nodiscard]] constexpr auto select()
   {
-    return statement<select_t, no_selected_columns_t, no_from_t, no_where_t, no_having_t>{};
+    return statement<select_t, no_select_flags_t, no_select_columns_t, no_from_t, no_where_t, no_having_t>{};
   }
+
+  [[nodiscard]] constexpr auto select(std::tuple<>)
+  {
+    return statement<select_t, no_select_flags_t, no_select_columns_t, no_from_t, no_where_t, no_having_t>{};
+  }
+
+  // select with at least one argument will either create flags or columns
 
   template <typename... Fs>
   [[nodiscard]] constexpr auto select(Fs... fs)
   {
-    /*
-    else if
-      constexpr((true && ... is_flag_v<Fs>))
-      {
-      return ::sqlpp::select().flags(fs...);
-      }
-      */
     if
+      constexpr((true && ... && is_select_flag_v<Fs>))
+      {
+        return ::sqlpp::select().flags(fs...);
+      }
+    else if
       constexpr((true && ... && is_selectable_v<Fs>))
       {
         return ::sqlpp::select().columns(fs...);
       }
     else
     {
-#warning Need to add handling for flags and errors here
-      return 17;  //::sqlpp::bad_statement_t<assert_select_args_are_flags_or_columns>{};
+      return ::sqlpp::bad_statement_t<typename select_failure<Fs...>::type>{};
+    }
+  }
+
+  template <typename... Fs>
+  [[nodiscard]] constexpr auto select(std::tuple<Fs...> fs)
+  {
+    if
+      constexpr((true && ... && is_select_flag_v<Fs>))
+      {
+        return ::sqlpp::select().flags(fs);
+      }
+    else if
+      constexpr((true && ... && is_selectable_v<Fs>))
+      {
+        return ::sqlpp::select().columns(fs);
+      }
+    else
+    {
+      return ::sqlpp::bad_statement_t<typename select_failure<Fs...>::type>{};
     }
   }
 }

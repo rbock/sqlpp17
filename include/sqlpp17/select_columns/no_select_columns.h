@@ -29,66 +29,67 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tuple>
 #include <variant>
 #include <sqlpp17/all.h>
-#include <sqlpp17/selected_columns/selected_columns.h>
+#include <sqlpp17/select_columns/select_columns.h>
 #include <sqlpp17/statement.h>
 
 namespace sqlpp
 {
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_selected_columns_args_not_empty,
-                              "columns() must be called with at least one argument");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_selected_columns_args_are_selectable,
-                              "columns() args must be selectable (i.e. named expressions)");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_selected_columns_args_have_unique_names, "columns() args must have unique names");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_select_columns_args_not_empty,
+                              "select columns() must be called with at least one argument");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_select_columns_args_are_selectable,
+                              "select columns() args must be selectable (i.e. named expressions)");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_select_columns_args_have_unique_names,
+                              "select columns() args must have unique names");
 
   template <typename... T>
-  constexpr auto check_selected_columns_arg(const T&...)
+  constexpr auto check_select_columns_arg(const T&...)
   {
     if
       constexpr(sizeof...(T) == 0)
       {
-        return failed<assert_selected_columns_args_not_empty>{};
+        return failed<assert_select_columns_args_not_empty>{};
       }
     else if
       constexpr(!all<is_selectable_v<T>...>)
       {
-        return failed<assert_selected_columns_args_are_selectable>{};
+        return failed<assert_select_columns_args_are_selectable>{};
       }
     else if
       constexpr(type_set<char_sequence_of_t<T>...>().size() != sizeof...(T))
       {
-        return failed<assert_selected_columns_args_have_unique_names>{};
+        return failed<assert_select_columns_args_have_unique_names>{};
       }
     else
       return succeeded{};
   }
 
-  struct no_selected_columns_t
+  struct no_select_columns_t
   {
   };
 
   template <>
-  constexpr auto clause_tag<no_selected_columns_t> = clause::selected_columns{};
+  constexpr auto clause_tag<no_select_columns_t> = clause::select_columns{};
 
   template <typename Statement>
-  class clause_base<no_selected_columns_t, Statement>
+  class clause_base<no_select_columns_t, Statement>
   {
   public:
     template <typename OtherStatement>
-    constexpr clause_base(const clause_base<no_selected_columns_t, OtherStatement>& s)
+    constexpr clause_base(const clause_base<no_select_columns_t, OtherStatement>& s)
     {
     }
 
     constexpr clause_base() = default;
 
-    template <typename... Fields>
-    [[nodiscard]] constexpr auto columns(Fields... columns) const
+    template <typename... Columns>
+    [[nodiscard]] constexpr auto columns(Columns... columns) const
     {
-      constexpr auto check = check_selected_columns_arg(columns...);
+      constexpr auto check = check_select_columns_arg(columns...);
       if
         constexpr(check)
         {
-          return Statement::of(this).template replace_clause<no_selected_columns_t>(
-              selected_columns_t<Fields...>{std::make_tuple(columns...)});
+          return Statement::of(this).template replace_clause<no_select_columns_t>(
+              select_columns_t<Columns...>{std::make_tuple(columns...)});
         }
       else
       {
@@ -96,15 +97,15 @@ namespace sqlpp
       }
     }
 
-    template <typename... Fields>
-    [[nodiscard]] constexpr auto columns(std::tuple<Fields...> columns) const
+    template <typename... Columns>
+    [[nodiscard]] constexpr auto columns(std::tuple<Columns...> columns) const
     {
-      constexpr auto check = check_selected_columns_arg(std::declval<Fields>()...);
+      constexpr auto check = check_select_columns_arg(std::declval<Columns>()...);
       if
         constexpr(check)
         {
-          return Statement::of(this).template replace_clause<no_selected_columns_t>(
-              selected_columns_t<Fields...>{columns});
+          return Statement::of(this).template replace_clause<no_select_columns_t>(
+              select_columns_t<Columns...>{columns});
         }
       else
       {
@@ -112,15 +113,15 @@ namespace sqlpp
       }
     }
 
-    template <typename... Fields>
-    [[nodiscard]] constexpr auto columns(std::vector<std::variant<Fields...>> columns) const
+    template <typename... Columns>
+    [[nodiscard]] constexpr auto columns(std::vector<std::variant<Columns...>> columns) const
     {
-      constexpr auto check = check_selected_columns_arg(std::declval<Fields>()...);
+      constexpr auto check = check_select_columns_arg(std::declval<Columns>()...);
       if
         constexpr(check)
         {
-          return Statement::of(this).template replace_clause<no_selected_columns_t>(
-              selected_columns_t<std::vector<std::variant<Fields...>>>{columns});
+          return Statement::of(this).template replace_clause<no_select_columns_t>(
+              select_columns_t<std::vector<std::variant<Columns...>>>{columns});
         }
       else
       {
@@ -130,15 +131,15 @@ namespace sqlpp
   };
 
   template <typename Context, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<no_selected_columns_t, Statement>& t)
+  decltype(auto) operator<<(Context& context, const clause_base<no_select_columns_t, Statement>& t)
   {
     return context;
   }
 
-  template <typename... Fields>
-  [[nodiscard]] constexpr auto selected_columns(Fields&&... columns)
+  template <typename... Columns>
+  [[nodiscard]] constexpr auto select_columns(Columns&&... columns)
   {
-    return statement<no_selected_columns_t>{}.columns(std::forward<Fields>(columns)...);
+    return statement<no_select_columns_t>{}.columns(std::forward<Columns>(columns)...);
   }
 }
 

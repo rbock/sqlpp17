@@ -5,6 +5,24 @@ In sqlpp17, we can anonymize tables/joins and expressions so that we can combine
 
 There will also be several versions of select: With a static tuple, or with a vector of variants of fields.
 
+providing flags and columns:
+============================
+select(all_of(t)).flags(sqlpp::distinct)...
+
+or 
+
+select(sqlpp::distinct).columns(all_of(t))...
+
+or
+
+select().flags(sqlpp::distinct).columns(all_of(t))...
+
+The nicest way would still be to just say
+
+select(sqlpp::distinct, all_of(t))...
+
+That also happens to be the hardest way to do it (haven't found a nice solution yet)
+
 row.x should be a value/optional, not a complex object.
 =======================================================
 auto x = row.x leads to too many surprises
