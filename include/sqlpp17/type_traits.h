@@ -100,6 +100,24 @@ namespace sqlpp
     return is_alias_v<Assert, T>;
   }
 
+  template <typename Assert, typename T>
+  constexpr auto is_assignment_v = false;
+
+  template <typename Assert, typename T>
+  constexpr auto is_assignment(const Assert&, const T&)
+  {
+    return is_assignment_v<Assert, T>;
+  }
+
+  template <typename T>
+  constexpr auto is_column_v = false;
+
+  template <typename T>
+  constexpr auto is_column(const T&)
+  {
+    return is_column_v<T>;
+  }
+
   template <typename T>
   constexpr auto is_statement_v = false;
 
@@ -182,6 +200,15 @@ namespace sqlpp
   constexpr auto is_table(const T&)
   {
     return is_table_v<T>;
+  }
+
+  template <typename T>
+  constexpr auto is_read_only_table_v = false;
+
+  template <typename T>
+  constexpr auto is_read_only_table(const T&)
+  {
+    return is_read_only_table_v<T>;
   }
 
   template <typename T>

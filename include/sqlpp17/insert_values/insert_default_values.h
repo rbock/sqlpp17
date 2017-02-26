@@ -27,45 +27,40 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/clause_fwd.h>
-#include <sqlpp17/into.h>
-#include <sqlpp17/type_traits.h>
 
 namespace sqlpp
 {
   namespace clause
   {
-    struct insert
+    struct insert_default_values
     {
     };
   }
 
-  struct insert_t
+  struct insert_default_values_t
   {
   };
 
   template <>
-  constexpr auto clause_tag<insert_t> = clause::insert{};
+  constexpr auto clause_tag<insert_default_values_t> = clause::insert_default_values{};
 
   template <typename Statement>
-  class clause_base<insert_t, Statement>
+  class clause_base<insert_default_values_t, Statement>
   {
   public:
     template <typename OtherStatement>
-    clause_base(const clause_base<insert_t, OtherStatement>&)
+    clause_base(const clause_base<insert_default_values_t, OtherStatement>& s)
     {
     }
 
-    clause_base() = default;
+    clause_base(const insert_default_values_t& f)
+    {
+    }
   };
 
   template <typename Context, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<insert_t, Statement>& t)
+  decltype(auto) operator<<(Context& context, const clause_base<insert_default_values_t, Statement>& t)
   {
-    return context << "INSERT";
-  }
-
-  [[nodiscard]] constexpr auto insert()
-  {
-    return statement<insert_t, no_into_t>{};
+    return context << " DEFAULT_VALUES";
   }
 }

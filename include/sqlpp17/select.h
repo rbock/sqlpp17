@@ -85,9 +85,10 @@ namespace sqlpp
     return statement<select_t, no_select_flags_t, no_select_columns_t, no_from_t, no_where_t, no_having_t>{};
   }
 
+  template <typename T = void>
   [[nodiscard]] constexpr auto select(std::tuple<>)
   {
-    return statement<select_t, no_select_flags_t, no_select_columns_t, no_from_t, no_where_t, no_having_t>{};
+    return ::sqlpp::bad_statement_t<typename select_failure<T>::type>{};
   }
 
   // select with at least one argument will either create flags or columns

@@ -27,45 +27,63 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/clause_fwd.h>
-#include <sqlpp17/into.h>
+#include <sqlpp17/insert_values/insert_values.h>
 #include <sqlpp17/type_traits.h>
+#include <sqlpp17/type_vector.h>
+#include <sqlpp17/wrapped_static_assert.h>
 
 namespace sqlpp
 {
   namespace clause
   {
-    struct insert
+    struct insert_columns
     {
     };
   }
 
-  struct insert_t
+  template <typename... Columns>
+  struct insert_columns_t
   {
   };
 
-  template <>
-  constexpr auto clause_tag<insert_t> = clause::insert{};
+  template <typename... Columns>
+  constexpr auto clause_tag<insert_columns_t<Columns...>> = clause::insert_columns{};
 
-  template <typename Statement>
-  class clause_base<insert_t, Statement>
+  template <typename... Columns, typename Statement>
+  class clause_base<insert_columns_t<Columns...>, Statement>
   {
   public:
     template <typename OtherStatement>
-    clause_base(const clause_base<insert_t, OtherStatement>&)
+    clause_base(const clause_base<insert_columns_t<Columns...>, OtherStatement>& s)
     {
     }
 
-    clause_base() = default;
+    clause_base(const insert_columns_t<Columns...>& f)
+    {
+    }
+
+    template <typename... Assignments>
+    [[nodiscard]] constexpr auto add_values(Assignments... assignments) const
+    {
+      constexpr auto check = check_add_values_args(type_vector<Columns...>{}, type_vector<Assignments...>{});
+      if
+        constexpr(check)
+        {
+          using row_t = std::tuple<Assignments...>;
+          return Statement::of(this).template replace_clause<insert_columns_t<Columns...>>(
+              insert_values_t<row_t>{row_t{assignments...}});
+        }
+      else
+      {
+        return ::sqlpp::bad_statement_t<std::decay_t<decltype(check)>>{};
+      }
+    }
   };
 
-  template <typename Context, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<insert_t, Statement>& t)
+  template <typename Context, typename... Columns, typename Statement>
+  decltype(auto) operator<<(Context& context, const clause_base<insert_columns_t<Columns...>, Statement>& t)
   {
-    return context << "INSERT";
-  }
-
-  [[nodiscard]] constexpr auto insert()
-  {
-    return statement<insert_t, no_into_t>{};
+#warning : Must not serialize
+    return context << " FROM " << t._table;
   }
 }
