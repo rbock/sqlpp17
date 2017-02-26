@@ -28,7 +28,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/clause_fwd.h>
 #include <sqlpp17/from.h>
+#include <sqlpp17/group_by.h>
 #include <sqlpp17/having.h>
+#include <sqlpp17/order_by.h>
 #include <sqlpp17/select_columns.h>
 #include <sqlpp17/select_flags.h>
 #include <sqlpp17/type_traits.h>
@@ -82,7 +84,8 @@ namespace sqlpp
 
   [[nodiscard]] constexpr auto select()
   {
-    return statement<select_t, no_select_flags_t, no_select_columns_t, no_from_t, no_where_t, no_having_t>{};
+    return statement<select_t, no_select_flags_t, no_select_columns_t, no_from_t, no_where_t, no_group_by_t,
+                     no_having_t, no_order_by_t>{};
   }
 
   template <typename T = void>
