@@ -30,7 +30,9 @@ function(test_compile name)
 endfunction()
 
 test_compile(operator)
+test_compile(insert)
 test_compile(select)
 test_compile(union)
+test_compile(update)
 test_compile(with)
 
