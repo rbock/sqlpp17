@@ -26,49 +26,52 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <vector>
 #include <sqlpp17/clause_fwd.h>
+#include <sqlpp17/limit.h>
+#include <sqlpp17/offset.h>
+#include <sqlpp17/order_by.h>
+#include <sqlpp17/remove_table.h>
 #include <sqlpp17/type_traits.h>
-#include <sqlpp17/wrapped_static_assert.h>
+#include <sqlpp17/using.h>
+#include <sqlpp17/where.h>
 
 namespace sqlpp
 {
   namespace clause
   {
-    struct update_table
+    struct remove
     {
     };
   }
 
-  template <typename Table>
-  struct update_table_t
+  struct remove_t
   {
-    Table _table;
   };
 
-  template <typename Table>
-  constexpr auto clause_tag<update_table_t<Table>> = clause::update_table{};
+  template <>
+  constexpr auto clause_tag<remove_t> = clause::remove{};
 
-  template <typename Table, typename Statement>
-  class clause_base<update_table_t<Table>, Statement>
+  template <typename Statement>
+  class clause_base<remove_t, Statement>
   {
   public:
     template <typename OtherStatement>
-    clause_base(const clause_base<update_table_t<Table>, OtherStatement>& s) : _table(s._table)
+    clause_base(const clause_base<remove_t, OtherStatement>&)
     {
     }
 
-    clause_base(const update_table_t<Table>& f) : _table(f._table)
-    {
-    }
-
-    Table _table;
+    clause_base() = default;
   };
 
-  template <typename Context, typename Table, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<update_table_t<Table>, Statement>& t)
+  template <typename Context, typename Statement>
+  decltype(auto) operator<<(Context& context, const clause_base<remove_t, Statement>& t)
   {
-#warning : Some databases support joins for update, others don't
-    return context << t._table;
+    return context << "DELETE";
+  }
+
+  [[nodiscard]] constexpr auto remove()
+  {
+    return statement<remove_t, no_remove_table_t, no_using_t, no_where_t, no_order_by_t, no_limit_t, no_offset_t>{};
+#warning : Need to prevent sub-clauses with certain databases. For instance, using is allowed only in MySQL, order_by, limit and offset are NOT allowed in MySQL
   }
 }

@@ -27,6 +27,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/clause_fwd.h>
+#include <sqlpp17/limit.h>
+#include <sqlpp17/offset.h>
+#include <sqlpp17/order_by.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/update_set.h>
 #include <sqlpp17/update_table.h>
@@ -68,6 +71,8 @@ namespace sqlpp
 
   [[nodiscard]] constexpr auto update()
   {
-    return statement<update_t, no_update_table_t, no_update_set_t, no_where_t>{};
+    return statement<update_t, no_update_table_t, no_update_set_t, no_where_t, no_order_by_t, no_limit_t,
+                     no_offset_t>{};
+#warning : Not all databases support order by, limit and offset in update
   }
 }

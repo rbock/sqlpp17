@@ -1,5 +1,3 @@
-#pragma once
-
 /*
 Copyright (c) 2016, Roland Bock
 All rights reserved.
@@ -26,49 +24,49 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <vector>
-#include <sqlpp17/clause_fwd.h>
-#include <sqlpp17/type_traits.h>
-#include <sqlpp17/wrapped_static_assert.h>
+#include <tables/TabDepartment.h>
+#include <tables/TabEmpty.h>
+#include <tables/TabPerson.h>
 
+#include <sqlpp17/remove_table.h>
+
+#warning : Not implemented yet
+#if 0
+// Turning off static_assert for from()
 namespace sqlpp
 {
-  namespace clause
+  template <typename... T>
+  constexpr auto wrong<assert_from_arg_is_table, T...> = true;
+
+  template <typename... T>
+  constexpr auto wrong<assert_from_arg_is_not_conditionless_join, T...> = true;
+}
+
+namespace
+{
+  template <typename Assert, typename T>
+  auto test_bad_statement(const Assert&, const T&)
   {
-    struct update_table
-    {
-    };
-  }
-
-  template <typename Table>
-  struct update_table_t
-  {
-    Table _table;
-  };
-
-  template <typename Table>
-  constexpr auto clause_tag<update_table_t<Table>> = clause::update_table{};
-
-  template <typename Table, typename Statement>
-  class clause_base<update_table_t<Table>, Statement>
-  {
-  public:
-    template <typename OtherStatement>
-    clause_base(const clause_base<update_table_t<Table>, OtherStatement>& s) : _table(s._table)
-    {
-    }
-
-    clause_base(const update_table_t<Table>& f) : _table(f._table)
-    {
-    }
-
-    Table _table;
-  };
-
-  template <typename Context, typename Table, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<update_table_t<Table>, Statement>& t)
-  {
-#warning : Some databases support joins for update, others don't
-    return context << t._table;
+    static_assert(is_bad_statement(Assert{}, T{}));
   }
 }
+#endif
+
+int main()
+{
+  constexpr auto s = sqlpp::statement<sqlpp::no_remove_table_t>{};
+
+#if 0
+  // constexpr tests
+  static_assert(is_bad_statement(sqlpp::assert_from_arg_is_table{}, s.from(1)));
+
+  static_assert(is_bad_statement(sqlpp::assert_from_arg_is_not_conditionless_join{},
+                                 s.from(test::tabPerson.join(test::tabDepartment))));
+
+  static_assert(is_bad_statement(sqlpp::assert_from_arg_is_table{}, sqlpp::from(1)));
+
+  // non-constexpr tests
+  test_bad_statement(sqlpp::assert_from_arg_is_table{}, sqlpp::from(std::string("mytable")));
+#endif
+}
+

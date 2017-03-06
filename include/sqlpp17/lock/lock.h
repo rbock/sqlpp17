@@ -35,40 +35,62 @@ namespace sqlpp
 {
   namespace clause
   {
-    struct update_table
+    struct lock
     {
     };
   }
 
-  template <typename Table>
-  struct update_table_t
+  struct for_update_t
   {
-    Table _table;
   };
 
-  template <typename Table>
-  constexpr auto clause_tag<update_table_t<Table>> = clause::update_table{};
+  struct for_share_t
+  {
+  };
 
-  template <typename Table, typename Statement>
-  class clause_base<update_table_t<Table>, Statement>
+  template <>
+  constexpr auto clause_tag<for_update_t> = clause::lock{};
+
+  template <>
+  constexpr auto clause_tag<for_share_t> = clause::lock{};
+
+  template <typename Statement>
+  class clause_base<for_update_t, Statement>
   {
   public:
     template <typename OtherStatement>
-    clause_base(const clause_base<update_table_t<Table>, OtherStatement>& s) : _table(s._table)
+    constexpr clause_base(const clause_base<for_update_t, OtherStatement>& s)
     {
     }
 
-    clause_base(const update_table_t<Table>& f) : _table(f._table)
+    constexpr clause_base(const for_update_t& f)
     {
     }
-
-    Table _table;
   };
 
-  template <typename Context, typename Table, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<update_table_t<Table>, Statement>& t)
+  template <typename Statement>
+  class clause_base<for_share_t, Statement>
   {
-#warning : Some databases support joins for update, others don't
-    return context << t._table;
+  public:
+    template <typename OtherStatement>
+    constexpr clause_base(const clause_base<for_share_t, OtherStatement>& s)
+    {
+    }
+
+    constexpr clause_base(const for_share_t& f)
+    {
+    }
+  };
+
+  template <typename Context, typename Statement>
+  decltype(auto) operator<<(Context& context, const clause_base<for_update_t, Statement>& t)
+  {
+    return context << " FOR UPDATE";
+  }
+
+  template <typename Context, typename Statement>
+  decltype(auto) operator<<(Context& context, const clause_base<for_share_t, Statement>& t)
+  {
+    return context << " FOR SHARE";
   }
 }

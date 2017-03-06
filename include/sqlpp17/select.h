@@ -31,6 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/group_by.h>
 #include <sqlpp17/having.h>
 #include <sqlpp17/limit.h>
+#include <sqlpp17/lock.h>
 #include <sqlpp17/offset.h>
 #include <sqlpp17/order_by.h>
 #include <sqlpp17/select_columns.h>
@@ -86,8 +87,9 @@ namespace sqlpp
 
   [[nodiscard]] constexpr auto select()
   {
+#warning Add lock for update / lock in share mode
     return statement<select_t, no_select_flags_t, no_select_columns_t, no_from_t, no_where_t, no_group_by_t,
-                     no_having_t, no_order_by_t, no_limit_t, no_offset_t>{};
+                     no_having_t, no_order_by_t, no_limit_t, no_offset_t, no_lock_t>{};
   }
 
   template <typename T = void>

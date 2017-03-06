@@ -35,30 +35,30 @@ namespace sqlpp
 {
   namespace clause
   {
-    struct update_table
+    struct using_
     {
     };
   }
 
   template <typename Table>
-  struct update_table_t
+  struct using_t
   {
     Table _table;
   };
 
   template <typename Table>
-  constexpr auto clause_tag<update_table_t<Table>> = clause::update_table{};
+  constexpr auto clause_tag<using_t<Table>> = clause::using_{};
 
   template <typename Table, typename Statement>
-  class clause_base<update_table_t<Table>, Statement>
+  class clause_base<using_t<Table>, Statement>
   {
   public:
     template <typename OtherStatement>
-    clause_base(const clause_base<update_table_t<Table>, OtherStatement>& s) : _table(s._table)
+    clause_base(const clause_base<using_t<Table>, OtherStatement>& s) : _table(s._table)
     {
     }
 
-    clause_base(const update_table_t<Table>& f) : _table(f._table)
+    clause_base(const using_t<Table>& f) : _table(f._table)
     {
     }
 
@@ -66,9 +66,8 @@ namespace sqlpp
   };
 
   template <typename Context, typename Table, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<update_table_t<Table>, Statement>& t)
+  decltype(auto) operator<<(Context& context, const clause_base<using_t<Table>, Statement>& t)
   {
-#warning : Some databases support joins for update, others don't
-    return context << t._table;
+    return context << " INTO " << t._table;
   }
 }
