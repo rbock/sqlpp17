@@ -5,6 +5,51 @@ In sqlpp17, we can anonymize tables/joins and expressions so that we can combine
 
 There will also be several versions of select: With a static tuple, or with a vector of variants of fields.
 
+
+vector of variants, pros and cons:
+----------------------------------
+It would be a variant of things that represent named value types. We could add any number of these in a vector.
+
+Pros:
+- we could dynamically select ANY number of columns
+- we could use ANY name
+- access in vector or map pattern
+
+Cons:
+- very different interface from the static one
+- values need to be anonymized (type-erased) -> statement cannot be used for more than one db
+- we could get index/name wrong when obtaining results
+- we could get the type wrong (bad_variant exception)
+
+Using optional for those things that are optional but static in nature:
+-----------------------------------------------------------------------
+Columns can be optional in a select, but they themselves are static.
+Tables can be optional in a join, but they themselves are static.
+
+Most of the time, anyway.
+
+Thus, with 
+
+{{{
+		auto make_optbool useOption, Expression e)
+		{
+			if (useOption)
+				return std::optional<Expression>{e};
+			else
+				return std::optional<Expression>{};
+		}
+}}}
+
+we could say something like :
+
+    select(t.foo, make_opt(wantBar, f.bar))
+        .from(t.join(make_opt(wantBar, f).on(t.fId = f.id)))
+        .unconditionally();
+
+All compile time checks are made as if all conditionals actually hold a value. 
+Optional columns will always yield NULL (no database interaction).
+Optional joins will not be serialized
+
 providing flags and columns:
 ============================
 select(all_of(t)).flags(sqlpp::distinct)...

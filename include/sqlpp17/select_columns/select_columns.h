@@ -50,11 +50,23 @@ namespace sqlpp
     std::tuple<Columns...> _columns;
   };
 
+  template <typename... ColumnTypes>
+  struct dynamic_select_columns_t
+  {
+    std::vector<std::variant<ColumnTypes...>> _columns;
+  };
+
   template <typename... Columns>
   constexpr auto is_result_clause_v<select_columns_t<Columns...>> = true;
 
-  template <typename Table>
-  constexpr auto clause_tag<select_columns_t<Table>> = clause::select_columns{};
+  template <typename... ColumnTypes>
+  constexpr auto is_result_clause_v<dynamic_select_columns_t<ColumnTypes...>> = true;
+
+  template <typename... Columns>
+  constexpr auto clause_tag<select_columns_t<Columns...>> = clause::select_columns{};
+
+  template <typename... ColumnTypes>
+  constexpr auto clause_tag<dynamic_select_columns_t<ColumnTypes...>> = clause::select_columns{};
 
   template <typename... Columns, typename Statement>
   class clause_base<select_columns_t<Columns...>, Statement>
@@ -70,6 +82,22 @@ namespace sqlpp
     }
 
     std::tuple<Columns...> _columns;
+  };
+
+  template <typename... ColumnTypes, typename Statement>
+  class clause_base<dynamic_select_columns_t<ColumnTypes...>, Statement>
+  {
+  public:
+    template <typename OtherStatement>
+    clause_base(const clause_base<dynamic_select_columns_t<ColumnTypes...>, OtherStatement>& s) : _columns(s._columns)
+    {
+    }
+
+    clause_base(const dynamic_select_columns_t<ColumnTypes...>& f) : _columns(f._columns)
+    {
+    }
+
+    std::vector<std::variant<ColumnTypes...>> _columns;
   };
 
 #warning : Need to implement result_row_t for real...
@@ -135,5 +163,12 @@ namespace sqlpp
     auto separate = detail::separator<Context>{context, ", "};
     context << ' ';
     return (context << ... << separate(std::get<Columns>(t._columns)));
+  }
+
+  template <typename Context, typename... ColumnTypes, typename Statement>
+  decltype(auto) operator<<(Context& context, const clause_base<dynamic_select_columns_t<ColumnTypes...>, Statement>& t)
+  {
+#warning : Need to print for real
+    return context;
   }
 }

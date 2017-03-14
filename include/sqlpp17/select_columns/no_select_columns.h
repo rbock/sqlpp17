@@ -121,7 +121,7 @@ namespace sqlpp
         constexpr(check)
         {
           return Statement::of(this).template replace_clause<no_select_columns_t>(
-              select_columns_t<std::vector<std::variant<Columns...>>>{columns});
+              dynamic_select_columns_t<Columns...>{columns});
         }
       else
       {
