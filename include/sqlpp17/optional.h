@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2017, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,38 +26,29 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/join/join_functions.h>
-
 namespace sqlpp
 {
-  template <typename Lhs, typename Rhs>
-  class cross_join_t : public join_functions<cross_join_t<Lhs, Rhs>>
+  template <typename T>
+  struct optional
   {
-  public:
-    constexpr cross_join_t(Lhs lhs, Rhs rhs) : _lhs(lhs), _rhs(rhs)
-    {
-    }
-
-    Lhs _lhs;
-    Rhs _rhs;
+    bool to_be_used;
+    T value;
   };
 
-  template <typename Context, typename Lhs, typename Rhs>
-  decltype(auto) operator&(Context& context, const cross_join_t<Lhs, Rhs>& t)
+  template <typename T>
+  auto make_optional(bool to_be_used, T value)
   {
-    context << t._lhs;
-    context << " CROSS JOIN ";
-    context << t._rhs;
-    return context;
+    return optional<T>{to_be_used, value};
   }
 
-  template <typename Lhs, typename Rhs>
-  constexpr auto is_join_v<cross_join_t<Lhs, Rhs>> = true;
-
-  template <typename Lhs, typename Rhs>
-  constexpr auto is_table_v<cross_join_t<Lhs, Rhs>> = true;
-
-  template <typename Lhs, typename Rhs>
-  constexpr auto provided_tables_of_v<cross_join_t<Lhs, Rhs>> = provided_tables_of_v<Lhs> | provided_tables_of_v<Rhs>;
+  template <typename Context, typename T>
+  auto operator<<(Context& context, const optional<T>& t)
+  {
+    if (t.to_be_used)
+    {
+      context << t.value();
+    }
+    return context;
+  }
 }
 

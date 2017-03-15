@@ -27,7 +27,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <tuple>
-#include <variant>
 #include <sqlpp17/all.h>
 #include <sqlpp17/select_columns/select_columns.h>
 #include <sqlpp17/statement.h>
@@ -49,6 +48,7 @@ namespace sqlpp
       {
         return failed<assert_select_columns_args_not_empty>{};
       }
+#warning Need to allow optional here, too
     else if
       constexpr(!all<is_selectable_v<T>...>)
       {
@@ -106,22 +106,6 @@ namespace sqlpp
         {
           return Statement::of(this).template replace_clause<no_select_columns_t>(
               select_columns_t<Columns...>{columns});
-        }
-      else
-      {
-        return ::sqlpp::bad_statement_t<std::decay_t<decltype(check)>>{};
-      }
-    }
-
-    template <typename... Columns>
-    [[nodiscard]] constexpr auto columns(std::vector<std::variant<Columns...>> columns) const
-    {
-      constexpr auto check = check_select_columns_arg(std::declval<Columns>()...);
-      if
-        constexpr(check)
-        {
-          return Statement::of(this).template replace_clause<no_select_columns_t>(
-              dynamic_select_columns_t<Columns...>{columns});
         }
       else
       {

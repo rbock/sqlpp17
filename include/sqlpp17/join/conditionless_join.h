@@ -27,7 +27,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/join/join.h>
+#include <sqlpp17/join/join_rhs.h>
 #include <sqlpp17/join/on.h>
+#include <sqlpp17/optional.h>
 #include <sqlpp17/unconditional.h>
 
 namespace sqlpp
@@ -59,6 +61,24 @@ namespace sqlpp
   template <typename JoinType, typename Lhs, typename Rhs>
   class conditionless_join_t
   {
+    template <typename R, typename On>
+    constexpr auto make_rhs(R r, On on) const
+    {
+      return join_rhs_t<JoinType, R, On>{r, on};
+    }
+
+    template <typename R, typename On>
+    constexpr auto make_rhs(sqlpp::optional<R> r, On on) const
+    {
+      return make_optional(r.to_be_used, make_rhs(r.value, on));
+    }
+
+    template <typename L, typename R>
+    constexpr auto make_join(L l, R r) const
+    {
+      return join_t<L, R>{l, r};
+    }
+
   public:
     template <typename Expr>
     [[nodiscard]] auto on(const Expr& expr) const
@@ -67,7 +87,7 @@ namespace sqlpp
       if
         constexpr(check)
         {
-          return join_t<conditionless_join_t, on_t<Expr>>{*this, {expr}};
+          return make_join(_lhs, make_rhs(_rhs, on_t<Expr>{expr}));
         }
       else
       {
@@ -77,22 +97,12 @@ namespace sqlpp
 
     [[nodiscard]] constexpr auto unconditionally() const
     {
-      return join_t<conditionless_join_t, on_t<unconditional_t>>{*this, {}};
+      return make_join(_lhs, make_rhs(_rhs, on_t<unconditional_t>{}));
     }
 
     Lhs _lhs;
     Rhs _rhs;
   };
-
-  template <typename Context, typename JoinType, typename Lhs, typename Rhs>
-  decltype(auto) operator<<(Context& context, const conditionless_join_t<JoinType, Lhs, Rhs>& t)
-  {
-    context << t._lhs;
-    context << JoinType::_name;
-    context << " JOIN ";
-    context << t._rhs;
-    return context;
-  }
 
   template <typename JoinType, typename Lhs, typename Rhs>
   constexpr auto is_conditionless_join_v<conditionless_join_t<JoinType, Lhs, Rhs>> = true;

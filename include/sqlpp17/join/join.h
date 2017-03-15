@@ -26,33 +26,37 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <sqlpp17/join/join_functions.h>
+
 namespace sqlpp
 {
-  template <typename ConditionlessJoin, typename On>
-  class join_t : public join_functions<join_t<ConditionlessJoin, On>>
+  template <typename Lhs, typename Rhs>
+  class join_t : public join_functions<join_t<Lhs, Rhs>>
   {
   public:
-    constexpr join_t(ConditionlessJoin conditionless_join, On on) : _conditionless_join(conditionless_join), _on(on)
+    constexpr join_t(Lhs lhs, Rhs rhs) : _lhs(lhs), _rhs(rhs)
     {
     }
 
-    ConditionlessJoin _conditionless_join;
-    On _on;
+    Lhs _lhs;
+    Rhs _rhs;
   };
 
-  template <typename Context, typename ConditionlessJoin, typename On>
-  auto operator<<(Context& context, const join_t<ConditionlessJoin, On>& t)
+  template <typename Context, typename Lhs, typename Rhs>
+  auto operator<<(Context& context, const join_t<Lhs, Rhs>& t)
   {
-    return context << t._conditionless_join << t.on;
+    context << t._lhs;
+    context << t._rhs;
+    return context;
   }
 
-  template <typename ConditionlessJoin, typename On>
-  constexpr auto is_join_v<join_t<ConditionlessJoin, On>> = true;
+  template <typename Lhs, typename Rhs>
+  constexpr auto is_join_v<join_t<Lhs, Rhs>> = true;
 
-  template <typename ConditionlessJoin, typename On>
-  constexpr auto is_table_v<join_t<ConditionlessJoin, On>> = true;
+  template <typename Lhs, typename Rhs>
+  constexpr auto is_table_v<join_t<Lhs, Rhs>> = true;
 
-  template <typename ConditionlessJoin, typename On>
-  constexpr auto provided_tables_of_v<join_t<ConditionlessJoin, On>> = provided_tables_of_v<ConditionlessJoin>;
+  template <typename Lhs, typename Rhs>
+  constexpr auto provided_tables_of_v<join_t<Lhs, Rhs>> = provided_tables_of_v<Lhs> | provided_tables_of_v<Rhs>;
 }
 

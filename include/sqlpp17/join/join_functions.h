@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/bad_statement.h>
 #include <sqlpp17/join/join_types.h>
+#include <sqlpp17/optional.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
 
@@ -35,9 +36,6 @@ namespace sqlpp
 {
   template <typename JoinType, typename Lhs, typename Rhs>
   class conditionless_join_t;
-
-  template <typename Lhs, typename Rhs>
-  class cross_join_t;
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_conditionless_join_lhs_table,
                               "lhs argument of join() has to be a table or a join");
@@ -73,6 +71,12 @@ namespace sqlpp
         }
       else
         return succeeded{};
+    }
+
+    template <typename Lhs, typename Rhs>
+    constexpr auto check_conditionless_join(const Lhs& lhs, const optional<Rhs>& rhs)
+    {
+      return check_conditionless_join(lhs, rhs.value);
     }
 
     template <typename JoinType, typename Lhs, typename Rhs>
@@ -130,7 +134,7 @@ namespace sqlpp
       if
         constexpr(check)
         {
-          return cross_join_t<Lhs, Rhs>{lhs, rhs};
+          return detail::join_impl<cross_join_t>(lhs, rhs).unconditionally();
         }
       else
       {

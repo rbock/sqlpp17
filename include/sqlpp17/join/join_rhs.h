@@ -30,58 +30,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  struct cross_join_t
+  template <typename JoinType, typename Table, typename On>
+  class join_rhs_t
   {
-    /*
-    template <typename Lhs, typename Rhs>
-    using _provided_nullable_tables =
-        detail::make_joined_set_t<provided_nullable_tables_of<Lhs>, provided_nullable_tables_of<Rhs>>;
-        */
-
-    static constexpr const char* _name = " CROSS";
+  public:
+    Table _table;
+    On _on;
   };
 
-  struct inner_join_t
+  template <typename Context, typename JoinType, typename Table, typename On>
+  auto operator<<(Context& context, const join_rhs_t<JoinType, Table, On>& t)
   {
-    /*
-    template <typename Lhs, typename Rhs>
-    using _provided_nullable_tables =
-        detail::make_joined_set_t<provided_nullable_tables_of<Lhs>, provided_nullable_tables_of<Rhs>>;
-        */
+    context << JoinType::_name;
+    context << " JOIN ";
+    context << t._table;
+    context << t.on;
+  }
 
-    static constexpr const char* _name = " INNER";
-  };
-
-  struct outer_join_t
-  {
-    /*
-    template <typename Lhs, typename Rhs>
-    using _provided_nullable_tables = detail::make_joined_set_t<provided_tables_of<Lhs>, provided_tables_of<Rhs>>;
-    */
-
-    static constexpr const char* _name = " OUTER";
-  };
-
-  struct left_outer_join_t
-  {
-    /*
-  template <typename Lhs, typename Rhs>
-  using _provided_nullable_tables =
-      detail::make_joined_set_t<provided_nullable_tables_of<Lhs>, provided_tables_of<Rhs>>;
-      */
-
-    static constexpr const char* _name = " LEFT OUTER";
-  };
-
-  struct right_outer_join_t
-  {
-    /*
-      template <typename Lhs, typename Rhs>
-      using _provided_nullable_tables =
-          detail::make_joined_set_t<provided_tables_of<Lhs>, provided_nullable_tables_of<Rhs>>;
-          */
-
-    static constexpr const char* _name = " RIGHT OUTER";
-  };
+  template <typename JoinType, typename Table, typename On>
+  constexpr auto provided_tables_of_v<join_rhs_t<JoinType, Table, On>> = provided_tables_of_v<Table>;
 }
 
