@@ -55,28 +55,22 @@ namespace sqlpp
           return failed<assert_conditionless_join_lhs_table>{};
         }
       else if
-        constexpr(!is_table_v<Rhs>)
+        constexpr(!is_table_v<remove_optional_t<Rhs>>)
         {
           return failed<assert_conditionless_join_rhs_table>{};
         }
       else if
-        constexpr(!provided_table_names_of_v<Lhs>.is_disjoint_from(provided_table_names_of_v<Rhs>))
+        constexpr(!provided_table_names_of_v<Lhs>.is_disjoint_from(provided_table_names_of_v<remove_optional_t<Rhs>>))
         {
           return failed<assert_conditionless_join_unique_names>{};
         }
       else if
-        constexpr(!required_tables_of_v<Lhs>.empty() || !required_tables_of_v<Rhs>.empty())
+        constexpr(!required_tables_of_v<Lhs>.empty() || !required_tables_of_v<remove_optional_t<Rhs>>.empty())
         {
           return failed<assert_conditionless_join_no_table_dependencies>{};
         }
       else
         return succeeded{};
-    }
-
-    template <typename Lhs, typename Rhs>
-    constexpr auto check_conditionless_join(const Lhs& lhs, const optional<Rhs>& rhs)
-    {
-      return check_conditionless_join(lhs, rhs.value);
     }
 
     template <typename JoinType, typename Lhs, typename Rhs>

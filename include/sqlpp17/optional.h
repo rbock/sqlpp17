@@ -41,6 +41,21 @@ namespace sqlpp
     return optional<T>{to_be_used, value};
   }
 
+  template <typename T>
+  struct remove_optional
+  {
+    using type = T;
+  };
+
+  template <typename T>
+  struct remove_optional<sqlpp::optional<T>>
+  {
+    using type = T;
+  };
+
+  template <typename T>
+  using remove_optional_t = typename remove_optional<T>::type;
+
   template <typename Context, typename T>
   auto& operator<<(Context& context, const optional<T>& t)
   {

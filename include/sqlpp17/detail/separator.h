@@ -27,6 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <utility>
+#include <sqlpp17/optional.h>
 
 namespace sqlpp
 {
@@ -46,6 +47,19 @@ namespace sqlpp
           is_first = false;
         else
           context << sep;
+        return expr;
+      }
+
+      template <typename Expr>
+      decltype(auto) operator()(const sqlpp::optional<Expr>& expr)
+      {
+        if (expr.to_be_used)
+        {
+          if (is_first)
+            is_first = false;
+          else
+            context << sep;
+        }
         return expr;
       }
     };

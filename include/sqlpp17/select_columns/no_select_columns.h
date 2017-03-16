@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <tuple>
 #include <sqlpp17/all.h>
+#include <sqlpp17/optional.h>
 #include <sqlpp17/select_columns/select_columns.h>
 #include <sqlpp17/statement.h>
 
@@ -48,14 +49,13 @@ namespace sqlpp
       {
         return failed<assert_select_columns_args_not_empty>{};
       }
-#warning Need to allow optional here, too
     else if
-      constexpr(!all<is_selectable_v<T>...>)
+      constexpr(!all<is_selectable_v<remove_optional_t<T>>...>)
       {
         return failed<assert_select_columns_args_are_selectable>{};
       }
     else if
-      constexpr(type_set<char_sequence_of_t<T>...>().size() != sizeof...(T))
+      constexpr(type_set<char_sequence_of_t<remove_optional_t<T>>...>().size() != sizeof...(T))
       {
         return failed<assert_select_columns_args_have_unique_names>{};
       }
