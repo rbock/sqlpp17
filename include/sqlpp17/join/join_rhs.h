@@ -44,7 +44,7 @@ namespace sqlpp
     context << JoinType::_name;
     context << " JOIN ";
     context << t._table;
-    context << t.on;
+    context << t._on;
   }
 
   template <typename JoinType, typename Table, typename On>

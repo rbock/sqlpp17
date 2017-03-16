@@ -31,6 +31,7 @@ endfunction()
 
 test_compile(operator)
 test_compile(insert)
+test_compile(join)
 test_compile(select)
 test_compile(remove)
 test_compile(union)

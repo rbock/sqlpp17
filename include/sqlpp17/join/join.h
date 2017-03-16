@@ -43,7 +43,7 @@ namespace sqlpp
   };
 
   template <typename Context, typename Lhs, typename Rhs>
-  auto operator<<(Context& context, const join_t<Lhs, Rhs>& t)
+  auto& operator<<(Context& context, const join_t<Lhs, Rhs>& t)
   {
     context << t._lhs;
     context << t._rhs;

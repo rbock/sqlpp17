@@ -1,5 +1,3 @@
-#pragma once
-
 /*
 Copyright (c) 2016, Roland Bock
 All rights reserved.
@@ -26,27 +24,24 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/type_traits.h>
-#include <sqlpp17/unconditional.h>
+#include <iostream>
+#include <tables/TabDepartment.h>
+#include <tables/TabEmpty.h>
+#include <tables/TabPerson.h>
 
-namespace sqlpp
+#include <sqlpp17/join.h>
+
+int main()
 {
-  template <typename Expression>
-  struct on_t
+#warning : s should be a constexpr
   {
-    Expression _expression;
-  };
-
-  template <typename Context, typename Expression>
-  decltype(auto) operator<<(Context& context, const on_t<Expression>& t)
-  {
-    return context << " ON " << t._expression;
+    auto s = test::tabPerson.join(test::tabDepartment).unconditionally();
+    std::cout << s << std::endl;
   }
-
-  template <typename Context>
-  decltype(auto) operator<<(Context& context, const on_t<unconditional_t>& t)
   {
-    return context;
+    auto s = test::tabPerson.join(make_optional(false, test::tabDepartment)).unconditionally();
+    std::cout << s << std::endl;
   }
+#warning : need to test results
 }
 
