@@ -27,7 +27,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <tuple>
-#include <variant>
 #include <sqlpp17/all.h>
 #include <sqlpp17/group_by/group_by.h>
 #include <sqlpp17/statement.h>
@@ -91,7 +90,7 @@ namespace sqlpp
         }
       else
       {
-        return ::sqlpp::bad_statement_t<std::decay_t<decltype(check)>>{};
+        return ::sqlpp::bad_statement_t{check};
       }
     }
 
@@ -106,23 +105,7 @@ namespace sqlpp
         }
       else
       {
-        return ::sqlpp::bad_statement_t<std::decay_t<decltype(check)>>{};
-      }
-    }
-
-    template <typename... Columns>
-    [[nodiscard]] constexpr auto group_by(std::vector<std::variant<Columns...>> columns) const
-    {
-      constexpr auto check = check_group_by_arg(std::declval<Columns>()...);
-      if
-        constexpr(check)
-        {
-          return Statement::of(this).template replace_clause<no_group_by_t>(
-              group_by_t<std::vector<std::variant<Columns...>>>{columns});
-        }
-      else
-      {
-        return ::sqlpp::bad_statement_t<std::decay_t<decltype(check)>>{};
+        return ::sqlpp::bad_statement_t{check};
       }
     }
   };

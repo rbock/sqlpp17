@@ -49,6 +49,7 @@ namespace sqlpp
   template <typename L, typename R>
   constexpr auto operator+(L l, R r)
   {
+#warning : follow the general pattern
     auto op = operator_plus(l, r, value_type_of(l), value_type_of(r));
     if
       constexpr(!is_failed(op))
@@ -57,7 +58,7 @@ namespace sqlpp
       }
     else
     {
-      return ::sqlpp::bad_statement_t<std::decay_t<decltype(op)>>{};
+      return ::sqlpp::bad_statement_t{op};
     }
   }
 

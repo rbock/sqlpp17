@@ -118,7 +118,7 @@ namespace sqlpp
   class result_base<select_columns_t<Columns...>, Statement>
   {
   public:
-    using result_row_t = result_row_t<make_column_spec<Columns>...>;
+    using result_row_t = result_row_t<make_column_spec<remove_optional_t<Columns>>...>;
 
     template <typename Connection>
     [[nodiscard]] auto run(Connection& connection) const

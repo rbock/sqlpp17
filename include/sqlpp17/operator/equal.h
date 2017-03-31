@@ -27,8 +27,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <type_traits>
-#include <sqlpp17/operator_fwd.h>
 #include <sqlpp17/is_trivial_value.h>
+#include <sqlpp17/operator_fwd.h>
 
 namespace sqlpp
 {
@@ -50,6 +50,7 @@ namespace sqlpp
   template <typename L, typename R>
   constexpr auto operator==(L l, R r)
   {
+#warning : follow the general pattern
     auto op = operator_equal(l, r, value_type_of(l), value_type_of(r));
     if
       constexpr(!is_failed(op))
@@ -58,7 +59,7 @@ namespace sqlpp
       }
     else
     {
-      return ::sqlpp::bad_statement_t<std::decay_t<decltype(op)>>{};
+      return ::sqlpp::bad_statement_t{op};
     }
   }
 

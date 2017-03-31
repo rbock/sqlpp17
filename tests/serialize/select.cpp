@@ -46,14 +46,26 @@ struct connection
 int main()
 {
 #warning : s should be a constexpr
-  auto s = sqlpp::select() << sqlpp::select_columns(test::tabPerson.id, test::tabPerson.isManager,
-                                                    test::tabPerson.address, test::tabPerson.name)
-                           << sqlpp::from(test::tabPerson)
-                           << sqlpp::where(test::tabPerson.isManager and test::tabPerson.name == '\0')
-                           << sqlpp::having(test::tabPerson.id == test::tabPerson.id or test::tabPerson.id == 1);
+  {
+    auto s =
+        sqlpp::select()
+        << sqlpp::select_columns(test::tabPerson.id, test::tabPerson.isManager, test::tabPerson.address, test::tabPerson.name)
+        << sqlpp::from(test::tabPerson) << sqlpp::where(test::tabPerson.isManager and test::tabPerson.name == '\0')
+        << sqlpp::having(test::tabPerson.id == test::tabPerson.id or test::tabPerson.id == 1);
+    std::cout << s << std::endl;
+    auto conn = connection{};
+    auto row = s.run(conn);
+  }
+  {
+    auto s =
+        sqlpp::select() << sqlpp::select_columns(test::tabPerson.id, make_optional(false, test::tabPerson.isManager));
+    std::cout << s << std::endl;
+  }
+  {
+    auto s =
+        sqlpp::select() << sqlpp::select_columns(test::tabPerson.id, make_optional(true, test::tabPerson.isManager));
+    std::cout << s << std::endl;
+  }
 #warning : need to test results
-  std::cout << s << std::endl;
-  auto conn = connection{};
-  auto row = s.run(conn);
 }
 

@@ -26,8 +26,8 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/where/where.h>
 #include <sqlpp17/statement.h>
+#include <sqlpp17/where/where.h>
 
 namespace sqlpp
 {
@@ -87,7 +87,7 @@ namespace sqlpp
         }
       else
       {
-        return ::sqlpp::bad_statement_t<std::decay_t<decltype(check)>>{};
+        return ::sqlpp::bad_statement_t{check};
       }
     }
   };

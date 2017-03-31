@@ -40,6 +40,8 @@ namespace sqlpp
     {
       static_assert(wrong<Failure>, "Missing specialization");
     }
+
+    constexpr bad_statement_t(const Failure);
   };
 
   template <typename Assert>

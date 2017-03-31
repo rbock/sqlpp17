@@ -27,8 +27,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <type_traits>
-#include <sqlpp17/operator_fwd.h>
 #include <sqlpp17/embrace.h>
+#include <sqlpp17/operator_fwd.h>
 
 namespace sqlpp
 {
@@ -44,13 +44,14 @@ namespace sqlpp
   template <typename L, typename R, typename ValueTypeLeft, typename ValueTypeRight>
   constexpr auto operator_and(L, R, const ValueTypeLeft&, const ValueTypeRight&)
   {
-    ValueTypeLeft::Hansi;
+#warning : This is not right yet
     return failed<assert_valid_and_operands>{};
   }
 
   template <typename L, typename R>
   constexpr auto operator&&(L l, R r)
   {
+#warning : This should follow the same logic as everything else
     auto op = operator_and(l, r, value_type_of(l), value_type_of(r));
     if
       constexpr(!is_failed(op))
@@ -59,7 +60,7 @@ namespace sqlpp
       }
     else
     {
-      return ::sqlpp::bad_statement_t<std::decay_t<decltype(op)>>{};
+      return ::sqlpp::bad_statement_t{op};
     }
   }
 

@@ -86,7 +86,7 @@ namespace sqlpp
         }
       else
       {
-        return ::sqlpp::bad_statement_t<std::decay_t<decltype(check)>>{};
+        return ::sqlpp::bad_statement_t{check};
       }
     }
   };

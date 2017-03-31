@@ -27,7 +27,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <tuple>
-#include <variant>
 #include <sqlpp17/all.h>
 #include <sqlpp17/order_by/order_by.h>
 #include <sqlpp17/statement.h>
@@ -79,50 +78,34 @@ namespace sqlpp
 
     constexpr clause_base() = default;
 
-    template <typename... Columns>
-    [[nodiscard]] constexpr auto order_by(Columns... columns) const
+    template <typename... Expressions>
+    [[nodiscard]] constexpr auto order_by(Expressions... expressions) const
     {
-      constexpr auto check = check_order_by_arg(columns...);
+      constexpr auto check = check_order_by_arg(expressions...);
       if
         constexpr(check)
         {
           return Statement::of(this).template replace_clause<no_order_by_t>(
-              order_by_t<Columns...>{std::make_tuple(columns...)});
+              order_by_t{std::make_tuple(expressions...)});
         }
       else
       {
-        return ::sqlpp::bad_statement_t<std::decay_t<decltype(check)>>{};
+        return ::sqlpp::bad_statement_t{check};
       }
     }
 
-    template <typename... Columns>
-    [[nodiscard]] constexpr auto order_by(std::tuple<Columns...> columns) const
+    template <typename... Expressions>
+    [[nodiscard]] constexpr auto order_by(std::tuple<Expressions...> expressions) const
     {
-      constexpr auto check = check_order_by_arg(std::declval<Columns>()...);
+      constexpr auto check = check_order_by_arg(std::declval<Expressions>()...);
       if
         constexpr(check)
         {
-          return Statement::of(this).template replace_clause<no_order_by_t>(order_by_t<Columns...>{columns});
+          return Statement::of(this).template replace_clause<no_order_by_t>(order_by_t{expressions});
         }
       else
       {
-        return ::sqlpp::bad_statement_t<std::decay_t<decltype(check)>>{};
-      }
-    }
-
-    template <typename... Columns>
-    [[nodiscard]] constexpr auto order_by(std::vector<std::variant<Columns...>> columns) const
-    {
-      constexpr auto check = check_order_by_arg(std::declval<Columns>()...);
-      if
-        constexpr(check)
-        {
-          return Statement::of(this).template replace_clause<no_order_by_t>(
-              order_by_t<std::vector<std::variant<Columns...>>>{columns});
-        }
-      else
-      {
-        return ::sqlpp::bad_statement_t<std::decay_t<decltype(check)>>{};
+        return ::sqlpp::bad_statement_t(check);
       }
     }
   };
@@ -133,10 +116,10 @@ namespace sqlpp
     return context;
   }
 
-  template <typename... Columns>
-  [[nodiscard]] constexpr auto order_by(Columns&&... columns)
+  template <typename... Expressions>
+  [[nodiscard]] constexpr auto order_by(Expressions&&... expressions)
   {
-    return statement<no_order_by_t>{}.order_by(std::forward<Columns>(columns)...);
+    return statement<no_order_by_t>{}.order_by(std::forward<Expressions>(expressions)...);
   }
 }
 

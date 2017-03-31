@@ -27,7 +27,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <tuple>
-#include <variant>
 #include <sqlpp17/all.h>
 #include <sqlpp17/select_flags/select_flags.h>
 #include <sqlpp17/statement.h>
@@ -84,7 +83,7 @@ namespace sqlpp
         }
       else
       {
-        return ::sqlpp::bad_statement_t<std::decay_t<decltype(check)>>{};
+        return ::sqlpp::bad_statement_t{check};
       }
     }
 
@@ -99,7 +98,7 @@ namespace sqlpp
         }
       else
       {
-        return ::sqlpp::bad_statement_t<std::decay_t<decltype(check)>>{};
+        return ::sqlpp::bad_statement_t{check};
       }
     }
   };
