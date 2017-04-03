@@ -27,32 +27,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/limit/limit.h>
+#include <sqlpp17/optional.h>
 #include <sqlpp17/statement.h>
 
 namespace sqlpp
 {
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_limit_arg_is_expression, "limit() arg has to be a boolean expression");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_limit_arg_is_boolean, "limit() arg has to be a boolean expression");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_limit_arg_contains_no_aggregate,
-                              "limit() arg must not contain aggregate expressions (e.g. max or count)");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_limit_arg_is_integral_value, "limit() arg has to be an integral value");
 
   template <typename T>
   constexpr auto check_limit_arg(const T&)
   {
     if
-      constexpr(!is_expression_v<T>)
+      constexpr(!std::is_integral_v<remove_optional_t<T>>)
       {
-        return failed<assert_limit_arg_is_expression>{};
-      }
-    else if
-      constexpr(!is_boolean_v<T>)
-      {
-        return failed<assert_limit_arg_is_boolean>{};
-      }
-    else if
-      constexpr(contains_aggregate_v<T>)
-      {
-        return failed<assert_limit_arg_contains_no_aggregate>{};
+        return failed<assert_limit_arg_is_integral_value>{};
       }
     else
       return succeeded{};
@@ -76,14 +64,14 @@ namespace sqlpp
 
     constexpr clause_base() = default;
 
-    template <typename Condition>
-    [[nodiscard]] constexpr auto limit(Condition condition) const
+    template <typename Value>
+    [[nodiscard]] constexpr auto limit(Value value) const
     {
-      constexpr auto check = check_limit_arg(condition);
+      constexpr auto check = check_limit_arg(value);
       if
         constexpr(check)
         {
-          return Statement::of(this).template replace_clause<no_limit_t>(limit_t<Condition>{condition});
+          return Statement::of(this).template replace_clause<no_limit_t>(limit_t<Value>{value});
         }
       else
       {
@@ -98,10 +86,10 @@ namespace sqlpp
     return context;
   }
 
-  template <typename Condition>
-  [[nodiscard]] constexpr auto limit(Condition&& condition)
+  template <typename Value>
+  [[nodiscard]] constexpr auto limit(Value&& value)
   {
-    return statement<no_limit_t>{}.limit(std::forward<Condition>(condition));
+    return statement<no_limit_t>{}.limit(std::forward<Value>(value));
   }
 }
 

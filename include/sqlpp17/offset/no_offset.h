@@ -27,32 +27,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/offset/offset.h>
+#include <sqlpp17/optional.h>
 #include <sqlpp17/statement.h>
 
 namespace sqlpp
 {
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_offset_arg_is_expression, "offset() arg has to be a boolean expression");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_offset_arg_is_boolean, "offset() arg has to be a boolean expression");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_offset_arg_contains_no_aggregate,
-                              "offset() arg must not contain aggregate expressions (e.g. max or count)");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_offset_arg_is_integral_value, "offset() arg has to be an integral value");
 
   template <typename T>
   constexpr auto check_offset_arg(const T&)
   {
     if
-      constexpr(!is_expression_v<T>)
+      constexpr(!std::is_integral_v<remove_optional_t<T>>)
       {
-        return failed<assert_offset_arg_is_expression>{};
-      }
-    else if
-      constexpr(!is_boolean_v<T>)
-      {
-        return failed<assert_offset_arg_is_boolean>{};
-      }
-    else if
-      constexpr(contains_aggregate_v<T>)
-      {
-        return failed<assert_offset_arg_contains_no_aggregate>{};
+        return failed<assert_offset_arg_is_integral_value>{};
       }
     else
       return succeeded{};
@@ -76,14 +64,14 @@ namespace sqlpp
 
     constexpr clause_base() = default;
 
-    template <typename Condition>
-    [[nodiscard]] constexpr auto offset(Condition condition) const
+    template <typename Value>
+    [[nodiscard]] constexpr auto offset(Value value) const
     {
-      constexpr auto check = check_offset_arg(condition);
+      constexpr auto check = check_offset_arg(value);
       if
         constexpr(check)
         {
-          return Statement::of(this).template replace_clause<no_offset_t>(offset_t<Condition>{condition});
+          return Statement::of(this).template replace_clause<no_offset_t>(offset_t<Value>{value});
         }
       else
       {
@@ -98,10 +86,10 @@ namespace sqlpp
     return context;
   }
 
-  template <typename Condition>
-  [[nodiscard]] constexpr auto offset(Condition&& condition)
+  template <typename Value>
+  [[nodiscard]] constexpr auto offset(Value&& value)
   {
-    return statement<no_offset_t>{}.offset(std::forward<Condition>(condition));
+    return statement<no_offset_t>{}.offset(std::forward<Value>(value));
   }
 }
 
