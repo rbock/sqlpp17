@@ -41,26 +41,24 @@ namespace sqlpp
     R r;
   };
 
-  template <typename L, typename R, typename ValueTypeLeft, typename ValueTypeRight>
-  constexpr auto operator_and(L, R, const ValueTypeLeft&, const ValueTypeRight&)
+  template <typename ValueTypeLeft, typename ValueTypeRight>
+  constexpr auto check_and(const ValueTypeLeft&, const ValueTypeRight&)
   {
-#warning : This is not right yet
     return failed<assert_valid_and_operands>{};
   }
 
   template <typename L, typename R>
   constexpr auto operator&&(L l, R r)
   {
-#warning : This should follow the same logic as everything else
-    auto op = operator_and(l, r, value_type_of(l), value_type_of(r));
+    constexpr auto check = check_and(value_type_of(l), value_type_of(r));
     if
-      constexpr(!is_failed(op))
+      constexpr(check)
       {
-        return op;
+        return and_t<L, R>{l, r};
       }
     else
     {
-      return ::sqlpp::bad_statement_t{op};
+      return ::sqlpp::bad_statement_t{check};
     }
   }
 

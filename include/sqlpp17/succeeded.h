@@ -34,6 +34,16 @@ namespace sqlpp
   {
   };
 
+  template <typename ValueType>
+  struct succeeded_value_type : public std::true_type
+  {
+    constexpr succeeded_value_type(ValueType vt) : value_type(vt)
+    {
+    }
+
+    ValueType value_type;
+  };
+
   constexpr auto operator&&(const succeeded&, const succeeded&)
   {
     return succeeded{};

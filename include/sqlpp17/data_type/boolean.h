@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <type_traits>
 #include <sqlpp17/operator_fwd.h>
+#include <sqlpp17/succeeded.h>
 
 namespace sqlpp
 {
@@ -37,21 +38,18 @@ namespace sqlpp
     using type = bool;
   };
 
-  template <typename L, typename R>
-  constexpr auto operator_equal(L l, R r, const boolean_t&, const boolean_t&)
+  constexpr auto check_equal(const boolean_t&, const boolean_t&)
   {
-    return equal_t<L, R>{l, r};
+    return succeeded{};
   }
 
-  template <typename L, typename R>
-  constexpr auto operator_and(L l, R r, const boolean_t&, const boolean_t&)
+  constexpr auto check_and(const boolean_t&, const boolean_t&)
   {
-    return and_t<L, R>{l, r};
+    return succeeded{};
   }
 
-  template <typename L, typename R>
-  constexpr auto operator_or(L l, R r, const boolean_t&, const boolean_t&)
+  constexpr auto check_or(const boolean_t&, const boolean_t&)
   {
-    return or_t<L, R>{l, r};
+    return succeeded{};
   }
 }

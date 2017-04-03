@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string>
 #include <type_traits>
 #include <sqlpp17/operator_fwd.h>
+#include <sqlpp17/succeeded.h>
 
 namespace sqlpp
 {
@@ -38,9 +39,8 @@ namespace sqlpp
     using type = std::string;
   };
 
-  template <typename L, typename R>
-  constexpr auto operator_equal(L l, R r, const text_t&, const text_t&)
+  constexpr auto check_equal(const text_t&, const text_t&)
   {
-    return equal_t<L, R>{l, r};
+    return succeeded{};
   }
 }

@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <type_traits>
 #include <sqlpp17/operator_fwd.h>
+#include <sqlpp17/succeeded.h>
 
 namespace sqlpp
 {
@@ -37,27 +38,23 @@ namespace sqlpp
     using type = int64_t;
   };
 
-  template <typename L, typename R>
-  constexpr auto operator_equal(L l, R r, const integral_t&, const integral_t&)
+  constexpr auto check_equal(const integral_t&, const integral_t&)
   {
-    return equal_t<L, R>{l, r};
+    return succeeded{};
   }
 
-  template <typename L, typename R>
-  constexpr auto operator_equal(L l, R r, const integral_t&, const unsigned_integral_t&)
+  constexpr auto check_equal(const integral_t&, const unsigned_integral_t&)
   {
-    return equal_t<L, R>{l, r};
+    return succeeded{};
   }
 
-  template <typename L, typename R>
-  constexpr auto operator_equal(L l, R r, const integral_t&, const floating_point_t&)
+  constexpr auto check_equal(const integral_t&, const floating_point_t&)
   {
-    return equal_t<L, R>{l, r};
+    return succeeded{};
   }
 
-  template <typename L, typename R>
-  constexpr auto operator_plus(L l, R r, const integral_t&, const integral_t&)
+  constexpr auto check_plus(const integral_t&, const integral_t&)
   {
-    return plus_t<integral_t, L, R>{l, r};
+    return succeeded_value_type{integral_t{}};
   }
 }

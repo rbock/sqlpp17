@@ -41,8 +41,8 @@ namespace sqlpp
     R r;
   };
 
-  template <typename L, typename R, typename ValueTypeLeft, typename ValueTypeRight>
-  constexpr auto operator_equal(L, R, const ValueTypeLeft&, const ValueTypeRight&)
+  template <typename ValueTypeLeft, typename ValueTypeRight>
+  constexpr auto check_equal(const ValueTypeLeft&, const ValueTypeRight&)
   {
     return failed<assert_valid_equal_operands>{};
   }
@@ -50,16 +50,15 @@ namespace sqlpp
   template <typename L, typename R>
   constexpr auto operator==(L l, R r)
   {
-#warning : follow the general pattern
-    auto op = operator_equal(l, r, value_type_of(l), value_type_of(r));
+    constexpr auto check = check_equal(value_type_of(l), value_type_of(r));
     if
-      constexpr(!is_failed(op))
+      constexpr(check)
       {
-        return op;
+        return equal_t<L, R>{l, r};
       }
     else
     {
-      return ::sqlpp::bad_statement_t{op};
+      return ::sqlpp::bad_statement_t{check};
     }
   }
 
