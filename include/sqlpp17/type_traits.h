@@ -62,6 +62,9 @@ namespace sqlpp
   constexpr auto is_tagged_clause_v = false;
 
   template <typename T>
+  constexpr auto is_insert_allowed_v = false;
+
+  template <typename T>
   constexpr auto is_failed_v = false;
 
   template <typename T>
@@ -308,6 +311,30 @@ namespace sqlpp
     return value_type_of_v<T>;
   }
 
+  template <typename T, typename Enable = void>
+  constexpr auto table_of_v = no_value_t{};
+
+  template <typename T>
+  using table_of_t = std::decay_t<decltype(table_of_v<T>)>;
+
+  template <typename T>
+  constexpr auto table_of(const T&)
+  {
+    return table_of_v<T>;
+  }
+
+  template <typename T, typename Enable = void>
+  constexpr auto column_of_v = no_value_t{};
+
+  template <typename T>
+  using column_of_t = std::decay_t<decltype(column_of_v<T>)>;
+
+  template <typename T>
+  constexpr auto column_of(const T&)
+  {
+    return column_of_v<T>;
+  }
+
   template <typename T>
   constexpr auto is_boolean_v = std::is_same_v<std::decay_t<decltype(value_type_of_v<T>)>, boolean_t>;
 
@@ -342,6 +369,15 @@ namespace sqlpp
   constexpr auto required_tables_of(const T&)
   {
     return required_tables_of_v<T>;
+  }
+
+  template <typename T>
+  constexpr auto required_columns_of_v = type_set_t<>();
+
+  template <typename T>
+  constexpr auto required_columns_of(const T&)
+  {
+    return required_columns_of_v<T>;
   }
 
   template <typename T>

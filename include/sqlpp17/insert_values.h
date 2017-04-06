@@ -28,7 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/insert_values/no_insert_values.h>
 
-#include <sqlpp17/insert_values/insert_columns.h>
 #include <sqlpp17/insert_values/insert_default_values.h>
+#include <sqlpp17/insert_values/insert_multi_values.h>
 #include <sqlpp17/insert_values/insert_values.h>
 

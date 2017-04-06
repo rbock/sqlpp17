@@ -42,7 +42,7 @@ namespace sqlpp
                               "select columns() args must have unique names");
 
   template <typename... T>
-  constexpr auto check_select_columns_arg(const T&...)
+  constexpr auto check_select_columns_arg()
   {
     if
       constexpr(sizeof...(T) == 0)
@@ -50,12 +50,12 @@ namespace sqlpp
         return failed<assert_select_columns_args_not_empty>{};
       }
     else if
-      constexpr(!all<is_selectable_v<remove_optional_t<T>>...>)
+      constexpr(!all<is_selectable_v<T>...>)
       {
         return failed<assert_select_columns_args_are_selectable>{};
       }
     else if
-      constexpr(type_set<char_sequence_of_t<remove_optional_t<T>>...>().size() != sizeof...(T))
+      constexpr(type_set<char_sequence_of_t<T>...>().size() != sizeof...(T))
       {
         return failed<assert_select_columns_args_have_unique_names>{};
       }
@@ -84,7 +84,7 @@ namespace sqlpp
     template <typename... Columns>
     [[nodiscard]] constexpr auto columns(Columns... columns) const
     {
-      constexpr auto check = check_select_columns_arg(columns...);
+      constexpr auto check = check_select_columns_arg<remove_optional_t<Columns>...>();
       if
         constexpr(check)
         {
@@ -100,7 +100,7 @@ namespace sqlpp
     template <typename... Columns>
     [[nodiscard]] constexpr auto columns(std::tuple<Columns...> columns) const
     {
-      constexpr auto check = check_select_columns_arg(std::declval<Columns>()...);
+      constexpr auto check = check_select_columns_arg<remove_optional_t<Columns>...>();
       if
         constexpr(check)
         {

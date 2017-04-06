@@ -26,15 +26,32 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <tuple>
 #include <vector>
-#include <sqlpp17/insert_values/insert_column_values.h>
-#include <sqlpp17/insert_values/insert_columns.h>
 #include <sqlpp17/insert_values/insert_default_values.h>
+#include <sqlpp17/insert_values/insert_multi_values.h>
 #include <sqlpp17/insert_values/insert_values.h>
 #include <sqlpp17/statement.h>
 
 namespace sqlpp
 {
+#warning : Need to move this stuff away
+  namespace detail
+  {
+    template <typename... Ts>
+    struct first;
+
+    template <typename T, typename... Ts>
+    struct first<T, Ts...>
+    {
+      using type = T;
+    };
+
+    template <typename... Ts>
+    using first_t = typename first<Ts...>::type;
+  }
+
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_insert_set_at_least_one_arg, "at least one assignment required in set()");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_insert_set_args_are_assignments,
                               "at least one argument is not an assignment in set()");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_insert_set_args_contain_no_duplicates,
@@ -43,70 +60,43 @@ namespace sqlpp
                               "at least one assignment is prohibited by its column definition in set()");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_insert_set_args_affect_single_table,
                               "set() arguments contain assignments from more than one table");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_insert_set_at_least_one_arg, "at least one assignment required in set()");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_insert_set_no_missing_assignment,
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_insert_set_is_not_missing_assignment,
                               "at least one required column is missing in set()");
 
-  template <typename... T>
-  constexpr auto check_insert_set_args(const T&...)
+  template <typename... Assignments>
+  constexpr auto check_insert_set_args()
   {
     if
-      constexpr(all<is_assignment_v<T>...>)
+      constexpr(sizeof...(Assignments))
+      {
+        return failed<assert_insert_set_at_least_one_arg>{};
+      }
+    else if
+      constexpr(!all<is_assignment_v<Assignments>...>)
       {
         return failed<assert_insert_set_args_are_assignments>{};
       }
-#warning missing conditions
-    else
-      return succeeded{};
-  }
-
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_insert_columns_args_are_columns,
-                              "at least one argument is not an assignment in columns()");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_insert_columns_args_contain_no_duplicates,
-                              "at least one duplicate column detected in columns()");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_insert_columns_are_allowed,
-                              "at least one column is prohibited by its definition in columns()");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_insert_columns_args_affect_single_table,
-                              "columns() arguments contain columns from more than one table");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_insert_columns_at_least_one_arg, "at least one column required in columns()");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_insert_columns_no_missing_column,
-                              "at least one required column is missing in columns()");
-
-  template <typename... T>
-  constexpr auto check_insert_columns_args(const T&...)
-  {
-    if
-      constexpr(all<is_column_v<T>...>)
+    else if
+      constexpr(type_set<char_sequence_of_t<Assignments>...>().size() != sizeof...(Assignments))
       {
-        return failed<assert_insert_columns_args_are_columns>{};
+        return failed<assert_insert_set_args_contain_no_duplicates>{};
       }
-#warning missing conditions
-    else
-      return succeeded{};
-  }
-
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_insert_column_values_args_are_assignments,
-                              "at least one argument is not an assignment in column_values()");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_insert_column_values_args_contain_no_duplicates,
-                              "at least one duplicate column detected in column_values()");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_insert_column_values_are_allowed,
-                              "at least one column is prohibited by its definition in column_values()");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_insert_column_values_args_affect_single_table,
-                              "column_values() arguments contain columns from more than one table");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_insert_column_values_at_least_one_arg,
-                              "at least one column required in column_values()");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_insert_column_values_no_missing_column,
-                              "at least one required column is missing in column_values()");
-
-  template <typename... Assignments>
-  constexpr auto check_insert_column_values_args(const type_vector<Assignments...>&)
-  {
-    if
-      constexpr(all<is_assignment_v<Assignments>...>)
+    else if
+      constexpr(!all<is_insert_allowed_v<column_of_t<Assignments>>...>)
       {
-        return failed<assert_insert_column_values_args_are_assignments>{};
+        return failed<assert_insert_set_assignments_are_allowed>{};
       }
-#warning missing conditions
+    else if
+      constexpr(type_set<table_of_t<column_of_t<Assignments>>...>().size() != 1)
+      {
+        return failed<assert_insert_set_args_affect_single_table>{};
+      }
+    else if
+      constexpr(type_set<column_of_t<Assignments>...>() >=
+                required_columns_of_v<table_of_t<detail::first_t<Assignments...>>>)
+      {
+        return failed<assert_insert_set_is_not_missing_assignment>{};
+      }
     else
       return succeeded{};
   }
@@ -134,7 +124,7 @@ namespace sqlpp
     template <typename... Assignments>
     [[nodiscard]] constexpr auto set(Assignments... assignments) const
     {
-      constexpr auto check = check_insert_set_args(assignments...);
+      constexpr auto check = check_insert_set_args<remove_optional_t<Assignments>...>();
       if
         constexpr(check)
         {
@@ -148,33 +138,15 @@ namespace sqlpp
       }
     }
 
-    // This one accepts multiple rows of assignments via values
-    //   - a vector of identical types
-    //   - several calls to values with a single row each. This could also contain parameters
-    template <typename... Columns>
-    [[nodiscard]] constexpr auto columns(Columns... cols) const
-    {
-      constexpr auto check = check_insert_columns_args(cols...);
-      if
-        constexpr(check)
-        {
-          return Statement::of(this).template replace_clause<no_insert_values_t>(insert_columns_t<Columns...>{cols...});
-        }
-      else
-      {
-        return ::sqlpp::bad_statement_t{check};
-      }
-    }
-
     template <typename... Assignments>
-    [[nodiscard]] constexpr auto column_values(std::vector<std::tuple<Assignments...>> assignments) const
+    [[nodiscard]] constexpr auto multiset(std::vector<std::tuple<remove_optional_t<Assignments>...>> assignments) const
     {
-      constexpr auto check = check_insert_column_values_args(type_vector<Assignments...>{});
+      constexpr auto check = check_insert_set_args<remove_optional_t<Assignments>...>();
       if
         constexpr(check)
         {
           return Statement::of(this).template replace_clause<no_insert_values_t>(
-              insert_column_values_t<Assignments...>{assignments});
+              insert_multi_values_t<Assignments...>{assignments});
         }
       else
       {

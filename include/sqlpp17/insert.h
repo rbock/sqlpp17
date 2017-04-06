@@ -27,6 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/clause_fwd.h>
+#include <sqlpp17/insert_values.h>
 #include <sqlpp17/into.h>
 #include <sqlpp17/type_traits.h>
 
