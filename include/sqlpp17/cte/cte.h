@@ -64,6 +64,6 @@ namespace sqlpp
   decltype(auto) operator<<(Context& context, const cte_t<AliasProvider, Statement>& t)
   {
 #warning : the With clause must not use this one, it must serialize the statement, too.
-    return context << name_of<AliasProvider>::_alias_t::name;
+    return context << name_of_v<AliasProvider>;
   }
 }

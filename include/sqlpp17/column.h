@@ -82,8 +82,7 @@ namespace sqlpp
   template <typename Context, typename Table, typename ColumnSpec>
   decltype(auto) operator<<(Context& context, const column_t<Table, ColumnSpec>& t)
   {
-#warning need a helper to obtain the name
-    return context << name_of<Table>::_alias_t::name << '.' << name_of<std::decay_t<decltype(t)>>::_alias_t::name;
+    return context << name_of_v<Table> << '.' << name_of_v<ColumnSpec>;
   }
 
   template <typename Table, typename ColumnSpec>

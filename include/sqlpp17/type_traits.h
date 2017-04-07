@@ -414,5 +414,5 @@ namespace sqlpp
   }
 
   template <typename T>
-  using name_of = T;
+  constexpr auto name_of_v = T::_alias_t::name;
 }

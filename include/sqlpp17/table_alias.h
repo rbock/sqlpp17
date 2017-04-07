@@ -48,7 +48,7 @@ namespace sqlpp
     context << t._table;
     if
       constexpr(requires_braces<Table>) context << ")";
-    context << " AS " << name_of<decltype(t)>::char_ptr();
+    context << " AS " << name_of_v<Alias>;
     return context;
   }
 
