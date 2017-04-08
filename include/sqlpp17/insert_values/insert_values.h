@@ -39,34 +39,35 @@ namespace sqlpp
     };
   }
 
-  template <typename Table>
+  template <typename... Assignments>
   struct insert_values_t
   {
-    Table _table;
+    std::tuple<Assignments...> _assignments;
   };
 
-  template <typename Table>
-  constexpr auto clause_tag<insert_values_t<Table>> = clause::insert_values{};
+  template <typename... Assignments>
+  constexpr auto clause_tag<insert_values_t<Assignments...>> = clause::insert_values{};
 
-  template <typename Table, typename Statement>
-  class clause_base<insert_values_t<Table>, Statement>
+  template <typename Statement, typename... Assignments>
+  class clause_base<insert_values_t<Assignments...>, Statement>
   {
   public:
     template <typename OtherStatement>
-    clause_base(const clause_base<insert_values_t<Table>, OtherStatement>& s) : _table(s._table)
+    clause_base(const clause_base<insert_values_t<Assignments...>, OtherStatement>& s) : _assignments(s._assignments)
     {
     }
 
-    clause_base(const insert_values_t<Table>& f) : _table(f._table)
+    clause_base(const insert_values_t<Assignments...>& f) : _assignments(f._assignments)
     {
     }
 
-    Table _table;
+    std::tuple<Assignments...> _assignments;
   };
 
-  template <typename Context, typename Table, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<insert_values_t<Table>, Statement>& t)
+  template <typename Context, typename Statement, typename... Assignments>
+  decltype(auto) operator<<(Context& context, const clause_base<insert_values_t<Assignments...>, Statement>& t)
   {
-    return context << " FROM " << t._table;
+#warning : This is nonsense
+    return context << " FROM " << t._assignments;
   }
 }

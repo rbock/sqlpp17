@@ -69,6 +69,7 @@ namespace sqlpp
   template <typename Context, typename Statement, typename... Assignments>
   decltype(auto) operator<<(Context& context, const clause_base<insert_multi_values_t<Assignments...>, Statement>& t)
   {
+#warning : This is nonsense
     return context << " FROM " << t._table;
   }
 }

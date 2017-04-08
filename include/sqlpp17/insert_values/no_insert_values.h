@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <tuple>
 #include <vector>
+#include <sqlpp17/detail/first.h>
 #include <sqlpp17/insert_values/insert_default_values.h>
 #include <sqlpp17/insert_values/insert_multi_values.h>
 #include <sqlpp17/insert_values/insert_values.h>
@@ -35,22 +36,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-#warning : Need to move this stuff away
-  namespace detail
-  {
-    template <typename... Ts>
-    struct first;
-
-    template <typename T, typename... Ts>
-    struct first<T, Ts...>
-    {
-      using type = T;
-    };
-
-    template <typename... Ts>
-    using first_t = typename first<Ts...>::type;
-  }
-
   SQLPP_WRAPPED_STATIC_ASSERT(assert_insert_set_at_least_one_arg, "at least one assignment required in set()");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_insert_set_args_are_assignments,
                               "at least one argument is not an assignment in set()");
