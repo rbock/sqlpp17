@@ -27,7 +27,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <tuple>
-#include <sqlpp17/all.h>
 #include <sqlpp17/group_by/group_by.h>
 #include <sqlpp17/statement.h>
 
@@ -47,7 +46,7 @@ namespace sqlpp
         return failed<assert_group_by_args_not_empty>{};
       }
     else if
-      constexpr(!all<is_selectable_v<T>...>)
+      constexpr(!(true && ... && is_selectable_v<T>))
       {
         return failed<assert_group_by_args_are_selectable>{};
       }

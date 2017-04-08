@@ -26,6 +26,7 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <sqlpp17/flags.h>
 #include <sqlpp17/statement.h>
 #include <sqlpp17/union/union.h>
 
@@ -78,9 +79,15 @@ namespace sqlpp
     constexpr clause_base() = default;
 
     template <typename RightSelect>
-    [[nodiscard]] constexpr auto union_(RightSelect rhs) const
+    [[nodiscard]] constexpr auto union_all(RightSelect rhs) const
     {
-      return union_(Statement::of(this), rhs);
+      return union_all(Statement::of(this), rhs);
+    }
+
+    template <typename RightSelect>
+    [[nodiscard]] constexpr auto union_distinct(RightSelect rhs) const
+    {
+      return union_all(Statement::of(this), rhs);
     }
   };
 
@@ -90,15 +97,31 @@ namespace sqlpp
     return context;
   }
 
-#warning : Need union_all / union_distinct
   template <typename LeftSelect, typename RightSelect>
-  [[nodiscard]] constexpr auto union_(LeftSelect l, RightSelect r)
+  [[nodiscard]] constexpr auto union_all(LeftSelect l, RightSelect r)
   {
     constexpr auto check = check_union_args(l, r);
     if
       constexpr(check)
       {
-        return statement<no_union_t>{}.template replace_clause<no_union_t>(union_t<LeftSelect, RightSelect>{l, r});
+        return statement<no_union_t>{}.template replace_clause<no_union_t>(
+            union_t<all_t, LeftSelect, RightSelect>{all, l, r});
+      }
+    else
+    {
+      return ::sqlpp::bad_statement_t{check};
+    }
+  }
+
+  template <typename LeftSelect, typename RightSelect>
+  [[nodiscard]] constexpr auto union_distinct(LeftSelect l, RightSelect r)
+  {
+    constexpr auto check = check_union_args(l, r);
+    if
+      constexpr(check)
+      {
+        return statement<no_union_t>{}.template replace_clause<no_union_t>(
+            union_t<distinct_t, LeftSelect, RightSelect>{distinct, l, r});
       }
     else
     {

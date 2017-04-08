@@ -66,12 +66,12 @@ namespace sqlpp
   template <typename Context, typename Statement>
   decltype(auto) operator<<(Context& context, const clause_base<remove_t, Statement>& t)
   {
+#warning : Need to prevent sub-clauses with certain databases. For instance, using is allowed only in MySQL, order_by, limit and offset are NOT allowed in MySQL
     return context << "DELETE";
   }
 
   [[nodiscard]] constexpr auto remove()
   {
     return statement<remove_t, no_remove_table_t, no_using_t, no_where_t, no_order_by_t, no_limit_t, no_offset_t>{};
-#warning : Need to prevent sub-clauses with certain databases. For instance, using is allowed only in MySQL, order_by, limit and offset are NOT allowed in MySQL
   }
 }

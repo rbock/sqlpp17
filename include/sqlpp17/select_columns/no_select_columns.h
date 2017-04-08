@@ -27,7 +27,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <tuple>
-#include <sqlpp17/all.h>
 #include <sqlpp17/optional.h>
 #include <sqlpp17/select_columns/select_columns.h>
 #include <sqlpp17/statement.h>
@@ -50,7 +49,7 @@ namespace sqlpp
         return failed<assert_select_columns_args_not_empty>{};
       }
     else if
-      constexpr(!all<is_selectable_v<T>...>)
+      constexpr(!(true && ... && is_selectable_v<T>))
       {
         return failed<assert_select_columns_args_are_selectable>{};
       }

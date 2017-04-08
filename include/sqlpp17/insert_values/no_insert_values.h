@@ -72,7 +72,7 @@ namespace sqlpp
         return failed<assert_insert_set_at_least_one_arg>{};
       }
     else if
-      constexpr(!all<is_assignment_v<Assignments>...>)
+      constexpr(!(true && ... && is_assignment_v<Assignments>))
       {
         return failed<assert_insert_set_args_are_assignments>{};
       }
@@ -82,7 +82,7 @@ namespace sqlpp
         return failed<assert_insert_set_args_contain_no_duplicates>{};
       }
     else if
-      constexpr(!all<is_insert_allowed_v<column_of_t<Assignments>>...>)
+      constexpr(!(true && ... && is_insert_allowed_v<column_of_t<Assignments>>))
       {
         return failed<assert_insert_set_assignments_are_allowed>{};
       }

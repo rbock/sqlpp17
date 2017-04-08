@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2017, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -28,6 +28,27 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  template <bool... Bs>
-  constexpr auto all = (true && ... && Bs);
+  struct all_t
+  {
+  };
+
+  constexpr auto all = all_t{};
+
+  template <typename Context>
+  decltype(auto) operator<<(Context& context, const all_t& t)
+  {
+    return context << " ALL ";
+  }
+
+  struct distinct_t
+  {
+  };
+
+  constexpr auto distinct = distinct_t{};
+
+  template <typename Context>
+  decltype(auto) operator<<(Context& context, const distinct_t& t)
+  {
+    return context << " DISTINCT ";
+  }
 }

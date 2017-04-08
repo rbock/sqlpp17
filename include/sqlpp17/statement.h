@@ -27,7 +27,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/algorithm.h>
-#include <sqlpp17/all.h>
 #include <sqlpp17/clause_fwd.h>
 #include <sqlpp17/detail/statement_constructor_arg.h>
 #include <sqlpp17/type_traits.h>
@@ -137,7 +136,7 @@ namespace sqlpp
     constexpr auto count_custom_tags =
         (std::size_t{} + ... + std::is_same_v<decltype(clause_tag<Clauses>), clause::custom>);
     if
-      constexpr(all<is_tagged_clause_v<Clauses>...>)
+      constexpr((true && ... && is_tagged_clause_v<Clauses>))
       {
         return failed<assert_statement_contains_tagged_clauses>{};
       }

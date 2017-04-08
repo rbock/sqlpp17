@@ -27,7 +27,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <tuple>
-#include <sqlpp17/all.h>
 #include <sqlpp17/select_flags/select_flags.h>
 #include <sqlpp17/statement.h>
 
@@ -40,7 +39,7 @@ namespace sqlpp
   constexpr auto check_select_flags_arg(const T&...)
   {
     if
-      constexpr(!all<is_select_flag_v<T>...>)
+      constexpr(!(true && ... && is_select_flag_v<T>))
       {
         return failed<assert_select_flags_args_are_valid>{};
       }

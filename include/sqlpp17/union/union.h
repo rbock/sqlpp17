@@ -40,33 +40,35 @@ namespace sqlpp
     };
   }
 
-  template <typename LeftSelect, typename RightSelect>
+  template <typename Flag, typename LeftSelect, typename RightSelect>
   struct union_t
   {
+    Flag _flag;
     LeftSelect _left;
     RightSelect _right;
   };
 
-  template <typename LeftSelect, typename RightSelect>
-  constexpr auto is_result_clause_v<union_t<LeftSelect, RightSelect>> = true;
+  template <typename Flag, typename LeftSelect, typename RightSelect>
+  constexpr auto is_result_clause_v<union_t<Flag, LeftSelect, RightSelect>> = true;
 
-  template <typename LeftSelect, typename RightSelect>
-  constexpr auto clause_tag<union_t<LeftSelect, RightSelect>> = clause::union_{};
+  template <typename Flag, typename LeftSelect, typename RightSelect>
+  constexpr auto clause_tag<union_t<Flag, LeftSelect, RightSelect>> = clause::union_{};
 
-  template <typename LeftSelect, typename RightSelect, typename Statement>
-  class clause_base<union_t<LeftSelect, RightSelect>, Statement>
+  template <typename Flag, typename LeftSelect, typename RightSelect, typename Statement>
+  class clause_base<union_t<Flag, LeftSelect, RightSelect>, Statement>
   {
   public:
     template <typename OtherStatement>
-    clause_base(const clause_base<union_t<LeftSelect, RightSelect>, OtherStatement>& s)
+    clause_base(const clause_base<union_t<Flag, LeftSelect, RightSelect>, OtherStatement>& s)
         : _left(s._left), _right(s._right)
     {
     }
 
-    clause_base(const union_t<LeftSelect, RightSelect>& f) : _left(f._left), _right(f._right)
+    clause_base(const union_t<Flag, LeftSelect, RightSelect>& f) : _flag(f._flag), _left(f._left), _right(f._right)
     {
     }
 
+    Flag _flag;
     LeftSelect _left;
     RightSelect _right;
   };
@@ -104,8 +106,8 @@ namespace sqlpp
     using type = result_row_t<typename merge_column_spec<LeftColumnSpecs, RightColumnSpecs>::type...>;
   };
 
-  template <typename LeftSelect, typename RightSelect, typename Statement>
-  class result_base<union_t<LeftSelect, RightSelect>, Statement>
+  template <typename Flag, typename LeftSelect, typename RightSelect, typename Statement>
+  class result_base<union_t<Flag, LeftSelect, RightSelect>, Statement>
   {
   public:
     using result_row_t =
@@ -118,8 +120,8 @@ namespace sqlpp
     }
   };
 
-  template <typename Context, typename LeftSelect, typename RightSelect, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<union_t<LeftSelect, RightSelect>, Statement>& t)
+  template <typename Context, typename Flag, typename LeftSelect, typename RightSelect, typename Statement>
+  decltype(auto) operator<<(Context& context, const clause_base<union_t<Flag, LeftSelect, RightSelect>, Statement>& t)
   {
     return context << embrace(t._left) << " UNION " << embrace(t._right);
   }

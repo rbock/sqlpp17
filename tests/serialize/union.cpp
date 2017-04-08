@@ -52,8 +52,8 @@ std::cout << true
         << std::endl;
         */
 #warning : s should be a constexpr
-  auto s = sqlpp::union_(sqlpp::select() << select_columns(test::tabPerson.id),
-                         sqlpp::select() << select_columns(test::tabPerson.id));
+  auto s = sqlpp::union_all(sqlpp::select() << select_columns(test::tabPerson.id),
+                            sqlpp::select() << select_columns(test::tabPerson.id));
 /*
 sqlpp::select() << sqlpp::selected_fields(test::tabPerson.id, test::tabPerson.isManager,
                                                    test::tabPerson.address, test::tabPerson.name)

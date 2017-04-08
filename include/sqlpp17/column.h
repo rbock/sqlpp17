@@ -88,7 +88,7 @@ namespace sqlpp
   template <typename Table, typename ColumnSpec>
   struct char_sequence_of_impl<column_t<Table, ColumnSpec>>
   {
-    using type = make_char_sequence<ColumnSpec::_alias_t::name>;
+    using type = make_char_sequence<name_of_v<ColumnSpec>>;
   };
 
   template <typename Table, typename ColumnSpec>
