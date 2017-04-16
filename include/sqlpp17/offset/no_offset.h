@@ -35,10 +35,10 @@ namespace sqlpp
   SQLPP_WRAPPED_STATIC_ASSERT(assert_offset_arg_is_integral_value, "offset() arg has to be an integral value");
 
   template <typename T>
-  constexpr auto check_offset_arg(const T&)
+  constexpr auto check_offset_arg()
   {
     if
-      constexpr(!std::is_integral_v<remove_optional_t<T>>)
+      constexpr(!std::is_integral_v<T>)
       {
         return failed<assert_offset_arg_is_integral_value>{};
       }
@@ -67,7 +67,7 @@ namespace sqlpp
     template <typename Value>
     [[nodiscard]] constexpr auto offset(Value value) const
     {
-      constexpr auto check = check_offset_arg(value);
+      constexpr auto check = check_offset_arg<remove_optional_t<Value>>();
       if
         constexpr(check)
         {

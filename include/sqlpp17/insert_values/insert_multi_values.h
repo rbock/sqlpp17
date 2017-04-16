@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tuple>
 #include <vector>
 #include <sqlpp17/clause_fwd.h>
+#include <sqlpp17/exception.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
 
@@ -66,10 +67,58 @@ namespace sqlpp
     std::vector<std::tuple<Assignments...>> _rows;
   };
 
+  namespace detail
+  {
+    template <typename Context>
+    struct multi_row_insert_column_printer
+    {
+      Context& context;
+      bool is_first = true;
+
+      template <typename Expr>
+      decltype(auto) operator()(const Expr& expr)
+      {
+        if (is_first)
+          is_first = false;
+        else
+          context << ", ";
+        if
+          constexpr(is_optional(expr))
+          {
+            if (expr.to_be_used)
+            {
+              context << expr.value;
+            }
+            else
+            {
+              context << "default";
+            }
+          }
+      }
+    };
+  }
+
   template <typename Context, typename Statement, typename... Assignments>
   decltype(auto) operator<<(Context& context, const clause_base<insert_multi_values_t<Assignments...>, Statement>& t)
   {
-#warning : This is nonsense
-    return context << " FROM " << t._table;
+    if (t._rows.empty())
+      throw ::sqlpp::exception("empty multi row insert");
+
+    context << " (";
+
+    (context << ... << name_of_v<column_of_t<remove_optional_t<Assignments>>>);
+
+    context << ") VALUES ";
+
+    auto separate_rows = separator(context, ",");
+    for (const auto& row : t._rows)
+    {
+      separate_rows();
+      context << '(';
+      auto print = multi_row_insert_column_printer(context);
+      (..., print(std::get<Assignments>(row)));
+      context << ')';
+    }
+    return context;
   }
 }

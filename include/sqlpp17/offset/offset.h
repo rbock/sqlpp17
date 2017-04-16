@@ -40,35 +40,51 @@ namespace sqlpp
     };
   }
 
-  template <typename Condition>
+  template <typename Number>
   struct offset_t
   {
-    Condition _condition;
+    Number _number;
   };
 
-  template <typename Table>
-  constexpr auto clause_tag<offset_t<Table>> = clause::offset{};
+  template <typename Number>
+  constexpr auto clause_tag<offset_t<Number>> = clause::offset{};
 
-  template <typename Condition, typename Statement>
-  class clause_base<offset_t<Condition>, Statement>
+  template <typename Number, typename Statement>
+  class clause_base<offset_t<Number>, Statement>
   {
   public:
     template <typename OtherStatement>
-    clause_base(const clause_base<offset_t<Condition>, OtherStatement>& s) : _condition(s._condition)
+    clause_base(const clause_base<offset_t<Number>, OtherStatement>& s) : _number(s._number)
     {
     }
 
-    clause_base(const offset_t<Condition>& f) : _condition(f._condition)
+    clause_base(const offset_t<Number>& f) : _number(f._number)
     {
     }
 
-    Condition _condition;
+    Number _number;
   };
 
-  template <typename Context, typename Condition, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<offset_t<Condition>, Statement>& t)
+  template <typename Context, typename Number, typename Statement>
+  decltype(auto) operator<<(Context& context, const clause_base<offset_t<Number>, Statement>& t)
   {
 #warning : Need to ensure order_by
-    return context << " WHERE " << t._condition;
+    auto display = [&context](auto&& number) { context << " OFFSET " << number; };
+
+#warning : Same code is used in limit, maybe turn into function
+    if
+      constexpr(is_optional(t._number))
+      {
+        if (t._number.to_be_used)
+        {
+          display(t._number.value);
+        }
+      }
+    else
+    {
+      display(t._number);
+    }
+
+    return context;
   }
 }
