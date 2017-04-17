@@ -65,6 +65,9 @@ namespace sqlpp
   constexpr auto is_insert_allowed_v = false;
 
   template <typename T>
+  constexpr auto is_update_allowed_v = false;
+
+  template <typename T>
   constexpr auto is_failed_v = false;
 
   template <typename T>
@@ -357,6 +360,15 @@ namespace sqlpp
   constexpr auto requires_braces(const T&)
   {
     return requires_braces_v<T>;
+  }
+
+  template <typename T>
+  constexpr auto is_optional_v = false;
+
+  template <typename T>
+  constexpr auto is_optional(const T&)
+  {
+    return is_optional_v<T>;
   }
 
   template <typename T>

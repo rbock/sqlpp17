@@ -30,7 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vector>
 
 #include <sqlpp17/clause_fwd.h>
-#include <sqlpp17/detail/separator.h>
+#include <sqlpp17/detail/list_printer.h>
 #include <sqlpp17/result_row.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
@@ -75,8 +75,9 @@ namespace sqlpp
   template <typename Context, typename... Columns, typename Statement>
   decltype(auto) operator<<(Context& context, const clause_base<group_by_t<Columns...>, Statement>& t)
   {
-    auto separate = detail::separator<Context>{context, ", "};
+    auto separate = detail::list_printer<Context>{context, ", "};
     context << ' ';
-    return (context << ... << separate(std::get<Columns>(t._columns)));
+    (..., print(std::get<Columns>(t._columns)));
+    return context;
   }
 }

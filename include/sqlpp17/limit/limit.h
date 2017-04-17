@@ -27,7 +27,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/clause_fwd.h>
-#include <sqlpp17/type_traits.h>
+#include <sqlpp17/detail/unused.h>
+#include <sqlpp17/optional.h>
 #include <sqlpp17/wrapped_static_assert.h>
 
 namespace sqlpp
@@ -64,24 +65,15 @@ namespace sqlpp
     Number _number;
   };
 
+#warning : Need to ensure order_by
+
   template <typename Context, typename Number, typename Statement>
   decltype(auto) operator<<(Context& context, const clause_base<limit_t<Number>, Statement>& t)
   {
-#warning : Need to ensure order_by
-    auto display = [&context](auto&& number) { context << " LIMIT " << number; };
+    if (unused(t._number))
+      return context;
 
-    if
-      constexpr(is_optional(t._number))
-      {
-        if (t._number.to_be_used)
-        {
-          display(t._number.value);
-        }
-      }
-    else
-    {
-      display(t._number);
-    }
+    context << " LIMIT " << de_optionalize(t._number);
 
     return context;
   }

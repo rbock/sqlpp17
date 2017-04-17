@@ -30,7 +30,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vector>
 
 #include <sqlpp17/clause_fwd.h>
-#include <sqlpp17/detail/separator.h>
+#include <sqlpp17/detail/all_unused.h>
+#include <sqlpp17/detail/list_printer.h>
 #include <sqlpp17/result_row.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
@@ -127,12 +128,21 @@ namespace sqlpp
     }
   };
 
+#warning : It would be nice to have a noop here in case everything is optional and not to be used
+
   template <typename Context, typename... Columns, typename Statement>
   decltype(auto) operator<<(Context& context, const clause_base<select_columns_t<Columns...>, Statement>& t)
   {
-#warning : Do not print optional columns here.
-    auto separate = detail::separator<Context>{context, ", "};
+#warning : This is totally wrong for sub queries. It would be  better to throw here, or prevent it for sub queries, actually.
+    if (detail::all_unused(t._columns))
+    {
+      context << " NULL ";
+      return context;
+    }
+
+    auto print = detail::list_printer<Context>{context, ", "};
     context << ' ';
-    return (context << ... << separate(std::get<Columns>(t._columns)));
+    (..., print(std::get<Columns>(t._columns)));
+    return context;
   }
 }

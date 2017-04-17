@@ -27,6 +27,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/clause_fwd.h>
+#include <sqlpp17/detail/insert_column_printer.h>
+#include <sqlpp17/detail/insert_value_printer.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
 
@@ -67,7 +69,22 @@ namespace sqlpp
   template <typename Context, typename Statement, typename... Assignments>
   decltype(auto) operator<<(Context& context, const clause_base<insert_values_t<Assignments...>, Statement>& t)
   {
-#warning : This is nonsense
-    return context << " FROM " << t._assignments;
+    // columns
+    {
+      context << " (";
+      auto print = detail::insert_column_printer(context);
+      (..., print(std::get<Assignments>(t._assignments)));
+      context << ")";
+    }
+
+    // values
+    {
+      context << " VALUES (";
+      auto print = detail::insert_value_printer(context);
+      (..., print(std::get<Assignments>(t._assignments)));
+      context << ')';
+    }
+
+    return context;
   }
 }

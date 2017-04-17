@@ -30,7 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vector>
 
 #include <sqlpp17/clause_fwd.h>
-#include <sqlpp17/detail/separator.h>
+#include <sqlpp17/detail/list_printer.h>
 #include <sqlpp17/result_row.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
@@ -44,36 +44,37 @@ namespace sqlpp
     };
   }
 
-  template <typename... Columns>
+  template <typename... Flags>
   struct select_flags_t
   {
-    std::tuple<Columns...> _flags;
+    std::tuple<Flags...> _flags;
   };
 
   template <typename Table>
   constexpr auto clause_tag<select_flags_t<Table>> = clause::select_flags{};
 
-  template <typename... Columns, typename Statement>
-  class clause_base<select_flags_t<Columns...>, Statement>
+  template <typename... Flags, typename Statement>
+  class clause_base<select_flags_t<Flags...>, Statement>
   {
   public:
     template <typename OtherStatement>
-    clause_base(const clause_base<select_flags_t<Columns...>, OtherStatement>& s) : _flags(s._flags)
+    clause_base(const clause_base<select_flags_t<Flags...>, OtherStatement>& s) : _flags(s._flags)
     {
     }
 
-    clause_base(const select_flags_t<Columns...>& f) : _flags(f._flags)
+    clause_base(const select_flags_t<Flags...>& f) : _flags(f._flags)
     {
     }
 
-    std::tuple<Columns...> _flags;
+    std::tuple<Flags...> _flags;
   };
 
-  template <typename Context, typename... Columns, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<select_flags_t<Columns...>, Statement>& t)
+  template <typename Context, typename... Flags, typename Statement>
+  decltype(auto) operator<<(Context& context, const clause_base<select_flags_t<Flags...>, Statement>& t)
   {
-    auto separate = detail::separator<Context>{context, " "};
+    auto separate = detail::list_printer<Context>{context, " "};
     context << ' ';
-    return (context << ... << separate(std::get<Columns>(t._flags)));
+    (..., print(std::get<Flags>(t._flags)));
+    return context;
   }
 }

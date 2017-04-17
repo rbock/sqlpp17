@@ -31,29 +31,36 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_update_set_arg_is_not_conditionless_join,
-                              "update_set() arg must not be a conditionless join, use .on() or .unconditionally()");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_update_set_arg_is_table, "update_set() arg has to be a table or join");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_update_set_arg_no_required_tables,
-                              "update_set() arg must not depend on other tables");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_update_set_at_least_one_arg, "at least one assignment required in set()");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_update_set_args_are_assignments,
+                              "at least one argument is not an assignment in set()");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_update_set_args_contain_no_duplicates,
+                              "at least one duplicate column detected in set()");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_update_set_assignments_are_allowed,
+                              "at least one assignment is prohibited by its column definition in set()");
 
-  template <typename T>
-  constexpr auto check_update_set_arg(const T&)
+  template <typename... Assignments>
+  constexpr auto check_update_set_arg()
   {
     if
-      constexpr(is_conditionless_join_v<T>)
+      constexpr(sizeof...(Assignments))
       {
-        return failed<assert_update_set_arg_is_not_conditionless_join>{};
+        return failed<assert_update_set_at_least_one_arg>{};
       }
     else if
-      constexpr(!is_table_v<T>)
+      constexpr(!(true && ... && is_assignment_v<Assignments>))
       {
-        return failed<assert_update_set_arg_is_table>{};
+        return failed<assert_update_set_args_are_assignments>{};
       }
     else if
-      constexpr(!required_tables_of_v<T>.empty())
+      constexpr(type_set<char_sequence_of_t<Assignments>...>().size() != sizeof...(Assignments))
       {
-        return failed<assert_update_set_arg_no_required_tables>{};
+        return failed<assert_update_set_args_contain_no_duplicates>{};
+      }
+    else if
+      constexpr(!(true && ... && is_update_allowed_v<column_of_t<Assignments>>))
+      {
+        return failed<assert_update_set_assignments_are_allowed>{};
       }
     else
       return succeeded{};
@@ -77,14 +84,15 @@ namespace sqlpp
 
     constexpr clause_base() = default;
 
-    template <typename Table>
-    [[nodiscard]] constexpr auto update_set(Table t) const
+    template <typename... Assignments>
+    [[nodiscard]] constexpr auto update_set(Assignments... assignments) const
     {
-      constexpr auto check = check_update_set_arg(t);
+      constexpr auto check = check_update_set_arg<Assignments...>();
       if
         constexpr(check)
         {
-          return Statement::of(this).template replace_clause<no_update_set_t>(update_set_t<Table>{t});
+          return Statement::of(this).template replace_clause<no_update_set_t>(
+              update_set_t<Assignments...>{assignments...});
         }
       else
       {
@@ -99,10 +107,10 @@ namespace sqlpp
     return context;
   }
 
-  template <typename Table>
-  [[nodiscard]] constexpr auto update_set(Table&& t)
+  template <typename... Assignments>
+  [[nodiscard]] constexpr auto update_set(Assignments&&... assignments)
   {
-    return statement<no_update_set_t>{}.update_set(std::forward<Table>(t));
+    return statement<no_update_set_t>{}.update_set(std::forward<Assignments>(assignments)...);
   }
 }
 

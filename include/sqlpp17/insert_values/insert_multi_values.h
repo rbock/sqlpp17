@@ -29,6 +29,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tuple>
 #include <vector>
 #include <sqlpp17/clause_fwd.h>
+#include <sqlpp17/detail/insert_column_printer.h>
+#include <sqlpp17/detail/insert_value_printer.h>
 #include <sqlpp17/exception.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
@@ -101,24 +103,32 @@ namespace sqlpp
   template <typename Context, typename Statement, typename... Assignments>
   decltype(auto) operator<<(Context& context, const clause_base<insert_multi_values_t<Assignments...>, Statement>& t)
   {
+#warning : Might be nice to have an is_noop function that just does nothing and returns the default value of the return type
     if (t._rows.empty())
       throw ::sqlpp::exception("empty multi row insert");
 
-    context << " (";
-
-    (context << ... << name_of_v<column_of_t<remove_optional_t<Assignments>>>);
-
-    context << ") VALUES ";
-
-    auto separate_rows = separator(context, ",");
-    for (const auto& row : t._rows)
+    // columns
     {
-      separate_rows();
-      context << '(';
-      auto print = multi_row_insert_column_printer(context);
-      (..., print(std::get<Assignments>(row)));
-      context << ')';
+      context << " (";
+      auto print = detail::insert_column_printer(context);
+      (..., print(std::get<Assignments>(t._assignments)));
+      context << ")";
     }
+
+    // values
+    {
+      context << " VALUES (";
+      auto separate_rows = separator(context, ",");
+      for (const auto& row : t._rows)
+      {
+        separate_rows();
+        context << '(';
+        auto print = detail::insert_value_printer(context);
+        (..., print(std::get<Assignments>(row)));
+        context << ')';
+      }
+    }
+
     return context;
   }
 }

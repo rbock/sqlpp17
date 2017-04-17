@@ -26,8 +26,9 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <vector>
 #include <sqlpp17/clause_fwd.h>
+#include <sqlpp17/detail/unused.h>
+#include <sqlpp17/optional.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
 
@@ -65,25 +66,14 @@ namespace sqlpp
     Number _number;
   };
 
+#warning : Need to ensure order_by
   template <typename Context, typename Number, typename Statement>
   decltype(auto) operator<<(Context& context, const clause_base<offset_t<Number>, Statement>& t)
   {
-#warning : Need to ensure order_by
-    auto display = [&context](auto&& number) { context << " OFFSET " << number; };
+    if (unused(t._number))
+      return context;
 
-#warning : Same code is used in limit, maybe turn into function
-    if
-      constexpr(is_optional(t._number))
-      {
-        if (t._number.to_be_used)
-        {
-          display(t._number.value);
-        }
-      }
-    else
-    {
-      display(t._number);
-    }
+    context << " OFFSET " << de_optionalize(t._number);
 
     return context;
   }

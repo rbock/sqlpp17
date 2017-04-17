@@ -26,6 +26,8 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <sqlpp17/type_traits.h>
+
 namespace sqlpp
 {
   template <typename T>
@@ -34,6 +36,9 @@ namespace sqlpp
     bool to_be_used;
     T value;
   };
+
+  template <typename T>
+  constexpr auto is_optional_v<optional<T>> = true;
 
   template <typename T>
   auto make_optional(bool to_be_used, T value)
@@ -56,6 +61,19 @@ namespace sqlpp
   template <typename T>
   using remove_optional_t = typename remove_optional<T>::type;
 
+  template <typename T>
+  decltype(auto) de_optionalize(const T& t)
+  {
+    return t;
+  }
+
+  template <typename T>
+  decltype(auto) de_optionalize(const sqlpp::optional<T>& t)
+  {
+    return t.value;
+  }
+
+#warning : Should not be required anywhere
   template <typename Context, typename T>
   auto& operator<<(Context& context, const optional<T>& t)
   {

@@ -26,43 +26,12 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <utility>
-#include <sqlpp17/optional.h>
+#include <stdexcept>
 
 namespace sqlpp
 {
-  namespace detail
+  class exception : public std::runtime_error
   {
-    template <typename Context>
-    struct separator
-    {
-      Context& context;
-      const char* sep;
-      bool is_first = true;
-
-      template <typename Expr>
-      decltype(auto) operator()(const Expr& expr)
-      {
-        if (is_first)
-          is_first = false;
-        else
-          context << sep;
-        return expr;
-      }
-
-      template <typename Expr>
-      decltype(auto) operator()(const sqlpp::optional<Expr>& expr)
-      {
-        if (expr.to_be_used)
-        {
-          if (is_first)
-            is_first = false;
-          else
-            context << sep;
-        }
-        return expr;
-      }
-    };
-  }
+    using runtime_error::runtime_error;
+  };
 }
-
