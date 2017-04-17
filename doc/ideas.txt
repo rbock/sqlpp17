@@ -106,3 +106,9 @@ Union:
 ======
 "merge" field specs: if left can be null while right cannot, then union can be null
 union() takes two or more select statements (the member function could forward to a free function)
+
+CTE:
+====
+CTEs can be self-referential. In order to do that, we need to know the columns of a CTE.
+
+Thus, we need to create the non-recursive part first and then union-all with the second part.

@@ -31,35 +31,31 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-#warning : Need to add CTE checks for cte
-  /*
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_cte, "cte() args must be sql statements");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_cte, "cte() args have result rows (like select)");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_cte, "cte() args must have compatible result rows");
-  */
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_cte_as_arg_is_statement, "cte.as() arg must be an sql statement");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_cte_as_arg_has_result_row,
+                              "cte.as() arg must have a result_row, e.g. a select or union");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_cte_as_arg_is_not_initially_self_referential,
+                              "cte.as() arg must not be self referential in the first part");
 
-  template <typename Statement>
-  constexpr auto check_cte(const Statement&...)
+  template <typename AliasProvider, typename Statement>
+  constexpr auto check_cte_as_arg()
   {
-#warning : Need to check whether this statement has a result row, for instance
-    /*
     if
-      constexpr(!(is_statement_v<LeftSelect> && is_statement_v<RightSelect>))
+      constexpr(!is_statement_v<Statement>)
       {
-        return failed<assert_cte>{};
+        return failed<assert_cte_as_arg_is_statement>{};
       }
     else if
-      constexpr(!(has_result_row_v<LeftSelect> && has_result_row_v<RightSelect>))
+      constexpr(!has_result_row_v<Statement>)
       {
-        return failed<assert_cte>{};
+        return failed<assert_cte_as_arg_has_result_row>{};
       }
     else if
-      constexpr(!result_rows_are_compatible_v<typename LeftSelect::result_row_t, typename RightSelect::result_row_t>)
+      constexpr(required_cte_names_of_v<Statement>.template count<AliasProvider>() == 0)
       {
-        return failed<assert_cte>{};
+        return failed<assert_cte_as_arg_is_not_initially_self_referential>{};
       }
     else
-    */
     {
       return succeeded{};
     }
@@ -72,7 +68,7 @@ namespace sqlpp
     template <typename Statement>
     [[nodiscard]] constexpr auto as(Statement s) const
     {
-      constexpr auto check = check_cte_statement(s);
+      constexpr auto check = check_cte_as_arg<Statement>();
       if
         constexpr(check)
         {
@@ -85,11 +81,34 @@ namespace sqlpp
     }
   };
 
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_cte_arg_is_alias_provider, "cte() arg must be an alias provider");
+
+  template <typename AliasProvider>
+  constexpr auto check_cte_arg()
+  {
+    if
+      constexpr(!is_alias_provider_v<AliasProvider>)
+      {
+        return failed<assert_cte_arg_is_alias_provider>{};
+      }
+    else
+    {
+      return succeeded{};
+    }
+  }
   template <typename AliasProvider>
   [[nodiscard]] constexpr auto cte(AliasProvider alias)
   {
-#warning : Check if Alias Provider actually is one.
-    return cte_alias_t<AliasProvider>{};
+    constexpr auto check = check_cte_arg<AliasProvider>();
+    if
+      constexpr(check)
+      {
+        return cte_alias_t<AliasProvider>{};
+      }
+    else
+    {
+      return ::sqlpp::bad_statement_t{check};
+    }
   }
 }
 

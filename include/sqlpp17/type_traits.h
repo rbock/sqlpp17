@@ -68,6 +68,9 @@ namespace sqlpp
   constexpr auto is_update_allowed_v = false;
 
   template <typename T>
+  constexpr auto is_alias_provider_v = false;
+
+  template <typename T>
   constexpr auto is_failed_v = false;
 
   template <typename T>
@@ -381,6 +384,15 @@ namespace sqlpp
   constexpr auto required_tables_of(const T&)
   {
     return required_tables_of_v<T>;
+  }
+
+  template <typename T>
+  constexpr auto required_cte_names_of_v = type_set_t<>();
+
+  template <typename T>
+  constexpr auto required_cte_names_of(const T&)
+  {
+    return required_cte_names_of_v<T>;
   }
 
   template <typename T>
