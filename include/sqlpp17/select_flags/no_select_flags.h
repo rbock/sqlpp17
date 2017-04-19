@@ -56,9 +56,6 @@ namespace sqlpp
   {
   };
 
-  template <>
-  constexpr auto clause_tag<no_select_flags_t> = clause::select_flags{};
-
   template <typename Statement>
   class clause_base<no_select_flags_t, Statement>
   {

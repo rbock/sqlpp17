@@ -66,9 +66,6 @@ namespace sqlpp
   {
   };
 
-  template <>
-  constexpr auto clause_tag<no_select_columns_t> = clause::select_columns{};
-
   template <typename Statement>
   class clause_base<no_select_columns_t, Statement>
   {

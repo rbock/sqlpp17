@@ -62,9 +62,6 @@ namespace sqlpp
   {
   };
 
-  template <>
-  constexpr auto clause_tag<no_where_t> = clause::where{};
-
   template <typename Statement>
   class clause_base<no_where_t, Statement>
   {

@@ -50,9 +50,6 @@ namespace sqlpp
   {
   };
 
-  template <>
-  constexpr auto clause_tag<no_limit_t> = clause::limit{};
-
   template <typename Statement>
   class clause_base<no_limit_t, Statement>
   {

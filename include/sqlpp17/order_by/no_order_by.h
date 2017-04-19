@@ -63,9 +63,6 @@ namespace sqlpp
   {
   };
 
-  template <>
-  constexpr auto clause_tag<no_order_by_t> = clause::order_by{};
-
   template <typename Statement>
   class clause_base<no_order_by_t, Statement>
   {

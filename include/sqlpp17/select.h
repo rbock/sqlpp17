@@ -87,7 +87,6 @@ namespace sqlpp
 
   [[nodiscard]] constexpr auto select()
   {
-#warning Add lock for update / lock in share mode
     return statement<select_t, no_select_flags_t, no_select_columns_t, no_from_t, no_where_t, no_group_by_t,
                      no_having_t, no_order_by_t, no_limit_t, no_offset_t, no_lock_t>{};
   }

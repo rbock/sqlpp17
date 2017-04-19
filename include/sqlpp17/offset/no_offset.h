@@ -50,9 +50,6 @@ namespace sqlpp
   {
   };
 
-  template <>
-  constexpr auto clause_tag<no_offset_t> = clause::offset{};
-
   template <typename Statement>
   class clause_base<no_offset_t, Statement>
   {

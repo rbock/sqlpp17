@@ -63,9 +63,6 @@ namespace sqlpp
   {
   };
 
-  template <>
-  constexpr auto clause_tag<no_remove_table_t> = clause::remove_table{};
-
   template <typename Statement>
   class clause_base<no_remove_table_t, Statement>
   {

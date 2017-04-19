@@ -64,9 +64,6 @@ namespace sqlpp
   {
   };
 
-  template <>
-  constexpr auto clause_tag<no_union_t> = clause::union_{};
-
   template <typename Statement>
   class clause_base<no_union_t, Statement>
   {

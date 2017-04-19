@@ -61,9 +61,6 @@ namespace sqlpp
   {
   };
 
-  template <>
-  constexpr auto clause_tag<no_into_t> = clause::into{};
-
   template <typename Statement>
   class clause_base<no_into_t, Statement>
   {

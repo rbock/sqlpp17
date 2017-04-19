@@ -35,9 +35,6 @@ namespace sqlpp
   {
   };
 
-  template <>
-  constexpr auto clause_tag<no_lock_t> = clause::lock{};
-
   template <typename Statement>
   class clause_base<no_lock_t, Statement>
   {

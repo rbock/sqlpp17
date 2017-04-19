@@ -61,9 +61,6 @@ namespace sqlpp
   {
   };
 
-  template <>
-  constexpr auto clause_tag<no_using_t> = clause::using_{};
-
   template <typename Statement>
   class clause_base<no_using_t, Statement>
   {

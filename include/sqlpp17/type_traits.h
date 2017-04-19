@@ -47,19 +47,9 @@ namespace sqlpp
   }
 
   struct boolean_t;
-  namespace clause
-  {
-    struct custom
-    {
-    };
-  }
-
   struct no_clause
   {
   };
-
-  template <typename T>
-  constexpr auto is_tagged_clause_v = false;
 
   template <typename T>
   constexpr auto is_insert_allowed_v = false;
@@ -156,6 +146,12 @@ namespace sqlpp
   {
     return result_rows_are_compatible_v<Left, Right>;
   }
+
+  template <typename T>
+  struct result_row_of;
+
+  template <typename T>
+  using result_row_of_t = typename result_row_of<T>::type;
 
   template <typename Left, typename Right>
   constexpr auto column_specs_are_compatible_v = false;

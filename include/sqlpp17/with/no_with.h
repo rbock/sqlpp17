@@ -69,9 +69,6 @@ namespace sqlpp
   {
   };
 
-  template <>
-  constexpr auto clause_tag<no_with_t> = clause::with{};
-
   template <typename Statement>
   class clause_base<no_with_t, Statement>
   {

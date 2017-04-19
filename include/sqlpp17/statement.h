@@ -125,23 +125,18 @@ namespace sqlpp
   template <typename... Clauses>
   constexpr auto requires_braces_v<statement<Clauses...>> = true;
 
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_statement_contains_tagged_clauses, "statements must contain tagged clauses");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_statement_contains_unique_clauses,
-                              "statements must contain uniquely tagged clauses (except custom clauses)");
+                              "statements must contain uniquely tagged clauses only (except custom clauses)");
 #warning : Need to check statement clauses for execution of the statement
 
   template <typename... Clauses>
   constexpr auto check_statement_clauses()
   {
-    constexpr auto count_custom_tags =
-        (std::size_t{} + ... + std::is_same_v<decltype(clause_tag<Clauses>), clause::custom>);
+    constexpr auto count_untagged_clauses =
+        (std::size_t{} + ... + std::is_same_v<std::decay_t<decltype(clause_tag<Clauses>)>, no_clause>);
     if
-      constexpr((true && ... && is_tagged_clause_v<Clauses>))
-      {
-        return failed<assert_statement_contains_tagged_clauses>{};
-      }
-    else if
-      constexpr((type_set<Clauses...>() - type_set<clause::custom>()).size() != sizeof...(Clauses) - count_custom_tags)
+      constexpr((type_set(clause_tag<Clauses>...) - type_set<no_clause>()).size() !=
+                sizeof...(Clauses) - count_untagged_clauses)
       {
         return failed<assert_statement_contains_unique_clauses>{};
       }

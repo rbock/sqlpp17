@@ -70,9 +70,6 @@ namespace sqlpp
   {
   };
 
-  template <>
-  constexpr auto clause_tag<no_update_set_t> = clause::update_set{};
-
   template <typename Statement>
   class clause_base<no_update_set_t, Statement>
   {
