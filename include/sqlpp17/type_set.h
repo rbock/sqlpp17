@@ -114,14 +114,14 @@ namespace sqlpp
       template <typename... T>
       [[nodiscard]] constexpr auto operator&(_type_set<T...> rhs) const
       {
-        return (_type_set{} | ... |
+        return (_type_set<>{} | ... |
                 std::conditional_t<rhs.template count<Elements>(), _type_set<Elements>, _type_set<>>{});
       }
 
       template <typename... T>
       [[nodiscard]] constexpr auto operator-(_type_set<T...> rhs) const
       {
-        return (_type_set{} | ... |
+        return (_type_set<>{} | ... |
                 std::conditional_t<rhs.template count<Elements>(), _type_set<>, _type_set<Elements>>{});
       }
 
@@ -142,7 +142,7 @@ namespace sqlpp
   template <typename... Ts>
   constexpr auto type_set()
   {
-    return (detail::_type_set{} << ... << detail::_base<Ts>{});
+    return (detail::_type_set<>{} << ... << detail::_base<Ts>{});
   }
 
   template <typename T, typename... Ts>
