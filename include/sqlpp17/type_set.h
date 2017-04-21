@@ -69,66 +69,10 @@ namespace sqlpp
         return std::conditional_t<count<T>(), _type_set, _type_set<Elements..., T>>{};
       }
 
-      template <typename T>
-      [[nodiscard]] constexpr auto operator<<(_base<T>) const
-      {
-        return insert<T>();
-      }
-
       template <typename... T>
       [[nodiscard]] constexpr auto is_disjoint_from(_type_set<T...>) const
       {
         return (true && ... && (!count<T>()));
-      }
-
-      template <typename... T>
-      [[nodiscard]] constexpr auto operator>=(_type_set<T...>) const
-      {
-        return (true && ... && count<T>());
-      }
-
-      template <typename... T>
-      [[nodiscard]] constexpr auto operator<=(_type_set<T...> rhs) const
-      {
-        return rhs >= *this;
-      }
-
-      template <typename... T>
-      [[nodiscard]] constexpr auto operator==(_type_set<T...> rhs) const
-      {
-        return rhs <= *this && *this <= rhs;
-      }
-
-      template <typename... T>
-      [[nodiscard]] constexpr auto operator!=(_type_set<T...> rhs) const
-      {
-        return !operator==(rhs);
-      }
-
-      template <typename... T>
-      [[nodiscard]] constexpr auto operator|(_type_set<T...> rhs) const
-      {
-        return (*this << ... << _base<T>{});
-      }
-
-      template <typename... T>
-      [[nodiscard]] constexpr auto operator&(_type_set<T...> rhs) const
-      {
-        return (_type_set<>{} | ... |
-                std::conditional_t<rhs.template count<Elements>(), _type_set<Elements>, _type_set<>>{});
-      }
-
-      template <typename... T>
-      [[nodiscard]] constexpr auto operator-(_type_set<T...> rhs) const
-      {
-        return (_type_set<>{} | ... |
-                std::conditional_t<rhs.template count<Elements>(), _type_set<>, _type_set<Elements>>{});
-      }
-
-      template <typename... T>
-      [[nodiscard]] constexpr auto operator^(_type_set<T...> rhs) const
-      {
-        return (*this | rhs) - (*this & rhs);
       }
 
       template <typename T>
@@ -137,6 +81,60 @@ namespace sqlpp
         return *this - _type_set<T>{};
       }
     };
+
+    template <typename... Ls, typename R>
+    [[nodiscard]] constexpr auto operator<<(_type_set<Ls...> lhs, _base<R>)
+    {
+      return lhs.template insert<R>();
+    }
+
+    template <typename... Ls, typename... Rs>
+    [[nodiscard]] constexpr auto operator>=(_type_set<Ls...> lhs, _type_set<Rs...>)
+    {
+      return (true && ... && lhs.template count<Rs>());
+    }
+
+    template <typename... Ls, typename... Rs>
+    [[nodiscard]] constexpr auto operator<=(_type_set<Ls...> lhs, _type_set<Rs...> rhs)
+    {
+      return rhs >= lhs;
+    }
+
+    template <typename... Ls, typename... Rs>
+    [[nodiscard]] constexpr auto operator==(_type_set<Ls...> lhs, _type_set<Rs...> rhs)
+    {
+      return rhs <= lhs && lhs <= rhs;
+    }
+
+    template <typename... Ls, typename... Rs>
+    [[nodiscard]] constexpr auto operator!=(_type_set<Ls...> lhs, _type_set<Rs...> rhs)
+    {
+      return !(lhs == rhs);
+    }
+
+    template <typename... Ls, typename... Rs>
+    [[nodiscard]] constexpr auto operator|(_type_set<Ls...> lhs, _type_set<Rs...> rhs)
+    {
+      return (lhs << ... << _base<Rs>{});
+    }
+
+    template <typename... Ls, typename... Rs>
+    [[nodiscard]] constexpr auto operator&(_type_set<Ls...> lhs, _type_set<Rs...>)
+    {
+      return (_type_set<>{} | ... | std::conditional_t<lhs.template count<Rs>(), _type_set<Rs>, _type_set<>>{});
+    }
+
+    template <typename... Ls, typename... Rs>
+    [[nodiscard]] constexpr auto operator-(_type_set<Ls...>, _type_set<Rs...> rhs)
+    {
+      return (_type_set<>{} | ... | std::conditional_t<rhs.template count<Ls>(), _type_set<>, _type_set<Ls>>{});
+    }
+
+    template <typename... Ls, typename... Rs>
+    [[nodiscard]] constexpr auto operator^(_type_set<Ls...> lhs, _type_set<Rs...> rhs)
+    {
+      return (lhs | rhs) - (rhs & rhs);
+    }
   }
 
   template <typename... Ts>

@@ -63,5 +63,7 @@ namespace sqlpp
 
     template <typename Container, template <typename...> class Target>
     using copy_t = typename copy<Container, Target>::type;
+
+#warning : Add a copy_if.
   }
 }

@@ -153,6 +153,8 @@ namespace sqlpp
   template <typename... LClauses, typename... RClauses>
   constexpr auto operator<<(statement<LClauses...> l, statement<RClauses...> r)
   {
+#warning : We need to drop all no_xxx from the left statement. otherwise there could be confusion in the order
+#warning : Need a copy if for this
     constexpr auto check = check_statement_clauses<LClauses..., RClauses...>();
     if
       constexpr(check)
