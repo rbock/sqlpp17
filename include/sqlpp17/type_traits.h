@@ -73,6 +73,15 @@ namespace sqlpp
   constexpr auto clause_tag = no_clause{};
 
   template <typename T>
+  constexpr auto is_clause_v = !std::is_same_v<std::decay_t<decltype(clause_tag<T>)>, no_clause>;
+
+  template <typename T>
+  constexpr auto is_clause(const T&)
+  {
+    return is_clause_v<T>;
+  };
+
+  template <typename T>
   constexpr auto contains_aggregate_v = false;
 
   template <typename T>

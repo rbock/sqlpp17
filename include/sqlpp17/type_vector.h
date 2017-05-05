@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2017, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -32,4 +32,10 @@ namespace sqlpp
   struct type_vector
   {
   };
+
+  template <typename... Ls, typename... Rs>
+  [[nodiscard]] constexpr auto operator+(type_vector<Ls...>, type_vector<Rs...>)
+  {
+    return type_vector<Ls..., Rs...>{};
+  }
 }

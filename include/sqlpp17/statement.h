@@ -153,13 +153,15 @@ namespace sqlpp
   template <typename... LClauses, typename... RClauses>
   constexpr auto operator<<(statement<LClauses...> l, statement<RClauses...> r)
   {
-#warning : We need to drop all no_xxx from the left statement. otherwise there could be confusion in the order
-#warning : Need a copy if for this
     constexpr auto check = check_statement_clauses<LClauses..., RClauses...>();
     if
       constexpr(check)
       {
-        return statement<LClauses..., RClauses...>(detail::make_constructor_arg(l, r));
+        // remove non-clauses from left part
+        using clauses_t = decltype((type_vector<>{} + ... +
+                                    std::conditional_t<is_clause_v<LClauses>, type_vector<LClauses>, type_vector<>>{}) +
+                                   type_vector<RClauses...>{});
+        return algorithm::copy_t<clauses_t, statement>(detail::make_constructor_arg(l, r));
       }
     else
     {
