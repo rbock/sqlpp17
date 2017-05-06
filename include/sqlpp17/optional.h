@@ -72,16 +72,5 @@ namespace sqlpp
   {
     return t.value;
   }
-
-#warning : Should not be required anywhere
-  template <typename Context, typename T>
-  auto& operator<<(Context& context, const optional<T>& t)
-  {
-    if (t.to_be_used)
-    {
-      context << t.value;
-    }
-    return context;
-  }
 }
 
