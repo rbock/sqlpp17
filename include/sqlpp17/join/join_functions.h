@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2016-2017, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -34,7 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  template <typename JoinType, typename Lhs, typename Rhs>
+  template <typename Lhs, typename JoinType, typename Rhs>
   class conditionless_join_t;
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_conditionless_join_lhs_table,
@@ -80,7 +80,7 @@ namespace sqlpp
       if
         constexpr(check)
         {
-          return conditionless_join_t<JoinType, Lhs, Rhs>{lhs, rhs};
+          return conditionless_join_t{lhs, JoinType{}, rhs};
         }
       else
       {

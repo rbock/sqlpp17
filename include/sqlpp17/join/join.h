@@ -26,37 +26,48 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <sqlpp17/detail/unused.h>
 #include <sqlpp17/join/join_functions.h>
 
 namespace sqlpp
 {
-  template <typename Lhs, typename Rhs>
-  class join_t : public join_functions<join_t<Lhs, Rhs>>
+  template <typename Lhs, typename JoinType, typename Rhs, typename Condition>
+  class join_t : public join_functions<join_t<Lhs, JoinType, Rhs, Condition>>
   {
   public:
-    constexpr join_t(Lhs lhs, Rhs rhs) : _lhs(lhs), _rhs(rhs)
+    constexpr join_t(Lhs lhs, JoinType, Rhs rhs, Condition condition) : _lhs(lhs), _rhs(rhs), _condition(condition)
     {
     }
 
     Lhs _lhs;
     Rhs _rhs;
+    Condition _condition;
   };
 
-  template <typename Context, typename Lhs, typename Rhs>
-  auto& operator<<(Context& context, const join_t<Lhs, Rhs>& t)
+  template <typename Context, typename Lhs, typename JoinType, typename Rhs, typename Condition>
+  auto& operator<<(Context& context, const join_t<Lhs, JoinType, Rhs, Condition>& t)
   {
     context << t._lhs;
-    context << t._rhs;
+
+    if (detail::unused(t._rhs))
+      return context;
+
+    context << JoinType::_name;
+    context << " JOIN ";
+    context << de_optionalize(t._rhs);
+    context << t._condition;
+
     return context;
   }
 
-  template <typename Lhs, typename Rhs>
-  constexpr auto is_join_v<join_t<Lhs, Rhs>> = true;
+  template <typename Lhs, typename JoinType, typename Rhs, typename Condition>
+  constexpr auto is_join_v<join_t<Lhs, JoinType, Rhs, Condition>> = true;
 
-  template <typename Lhs, typename Rhs>
-  constexpr auto is_table_v<join_t<Lhs, Rhs>> = true;
+  template <typename Lhs, typename JoinType, typename Rhs, typename Condition>
+  constexpr auto is_table_v<join_t<Lhs, JoinType, Rhs, Condition>> = true;
 
-  template <typename Lhs, typename Rhs>
-  constexpr auto provided_tables_of_v<join_t<Lhs, Rhs>> = provided_tables_of_v<Lhs> | provided_tables_of_v<Rhs>;
+  template <typename Lhs, typename JoinType, typename Rhs, typename Condition>
+  constexpr auto provided_tables_of_v<join_t<Lhs, JoinType, Rhs, Condition>> =
+      provided_tables_of_v<Lhs> | provided_tables_of_v<Rhs>;
 }
 

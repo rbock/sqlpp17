@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2016-2017, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -27,7 +27,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/join/join.h>
-#include <sqlpp17/join/join_rhs.h>
 #include <sqlpp17/join/on.h>
 #include <sqlpp17/optional.h>
 #include <sqlpp17/unconditional.h>
@@ -58,28 +57,14 @@ namespace sqlpp
     }
   }
 
-  template <typename JoinType, typename Lhs, typename Rhs>
+  template <typename Lhs, typename JoinType, typename Rhs>
   class conditionless_join_t
   {
-    template <typename R, typename On>
-    constexpr auto make_rhs(R r, On on) const
-    {
-      return join_rhs_t<JoinType, R, On>{r, on};
-    }
-
-    template <typename R, typename On>
-    constexpr auto make_rhs(sqlpp::optional<R> r, On on) const
-    {
-      return make_optional(r.to_be_used, make_rhs(r.value, on));
-    }
-
-    template <typename L, typename R>
-    constexpr auto make_join(L l, R r) const
-    {
-      return join_t<L, R>{l, r};
-    }
-
   public:
+    constexpr conditionless_join_t(Lhs lhs, JoinType, Rhs rhs) : _lhs(lhs), _rhs(rhs)
+    {
+    }
+
     template <typename Expr>
     [[nodiscard]] auto on(const Expr& expr) const
     {
@@ -87,7 +72,7 @@ namespace sqlpp
       if
         constexpr(check)
         {
-          return make_join(_lhs, make_rhs(_rhs, on_t<Expr>{expr}));
+          return join_t{_lhs, JoinType{}, _rhs, on_t<Expr>{expr}};
         }
       else
       {
@@ -97,18 +82,18 @@ namespace sqlpp
 
     [[nodiscard]] constexpr auto unconditionally() const
     {
-      return make_join(_lhs, make_rhs(_rhs, on_t<unconditional_t>{}));
+      return join_t{_lhs, JoinType{}, _rhs, on_t<unconditional_t>{}};
     }
 
     Lhs _lhs;
     Rhs _rhs;
   };
 
-  template <typename JoinType, typename Lhs, typename Rhs>
-  constexpr auto is_conditionless_join_v<conditionless_join_t<JoinType, Lhs, Rhs>> = true;
+  template <typename Lhs, typename JoinType, typename Rhs>
+  constexpr auto is_conditionless_join_v<conditionless_join_t<Lhs, JoinType, Rhs>> = true;
 
-  template <typename JoinType, typename Lhs, typename Rhs>
-  constexpr auto provided_tables_of_v<conditionless_join_t<JoinType, Lhs, Rhs>> =
+  template <typename Lhs, typename JoinType, typename Rhs>
+  constexpr auto provided_tables_of_v<conditionless_join_t<Lhs, JoinType, Rhs>> =
       provided_tables_of_v<Lhs> | provided_tables_of_v<Rhs>;
 }
 

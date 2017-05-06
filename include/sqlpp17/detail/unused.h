@@ -33,7 +33,7 @@ namespace sqlpp
   namespace detail
   {
     template <typename T>
-    auto all_unused(const T& t) -> bool
+    auto unused(const T& t) -> bool
     {
       if
         constexpr(sqlpp::is_optional_v<T>)
