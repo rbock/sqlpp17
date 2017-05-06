@@ -70,7 +70,7 @@ namespace sqlpp
   template <typename Context, typename Number, typename Statement>
   decltype(auto) operator<<(Context& context, const clause_base<offset_t<Number>, Statement>& t)
   {
-    if (unused(t._number))
+    if (detail::unused(t._number))
       return context;
 
     context << " OFFSET " << de_optionalize(t._number);
