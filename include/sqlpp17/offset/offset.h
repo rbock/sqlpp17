@@ -39,6 +39,7 @@ namespace sqlpp
     struct offset
     {
     };
+    struct order_by;
   }
 
   template <typename Number>
@@ -66,7 +67,23 @@ namespace sqlpp
     Number _number;
   };
 
-#warning : Need to ensure order_by
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_offset_used_with_order_by, "offset must be used with order_by");
+
+  template <typename Db, typename Number, typename... Clauses>
+  constexpr auto check_clause_executable(const clause_base<offset_t<Number>, statement<Clauses...>>& t)
+  {
+    constexpr auto _tag_set = type_set(clause_tag<Clauses>...);
+    if
+      constexpr(!_tag_set.template count<clause::order_by>())
+      {
+        return failed<assert_offset_used_with_order_by>{};
+      }
+    else
+    {
+      return succeeded{};
+    }
+  }
+
   template <typename Context, typename Number, typename Statement>
   decltype(auto) operator<<(Context& context, const clause_base<offset_t<Number>, Statement>& t)
   {

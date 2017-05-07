@@ -95,11 +95,6 @@ namespace sqlpp
       return static_cast<const statement&>(*base);
     }
 
-    [[nodiscard]] constexpr auto check_consistency() const
-    {
-      return (succeeded{} && ... && check_consistency(static_cast<const clause_base<Clauses, statement>&>(*this)));
-    }
-
   public:
     constexpr statement()
     {
@@ -124,6 +119,22 @@ namespace sqlpp
 
   template <typename... Clauses>
   constexpr auto requires_braces_v<statement<Clauses...>> = true;
+
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_clauses_implement_executable_check, "missing overload of check_clause_executable");
+
+  template <typename Db, typename ClauseBase>
+  constexpr auto check_clause_executable(const ClauseBase&)
+  {
+    return failed<assert_clauses_implement_executable_check>{};
+  }
+
+  template <typename Db, typename... Clauses>
+  constexpr auto check_statement_executable(const statement<Clauses...>& s)
+  {
+    using _statement_t = statement<Clauses...>;
+    return (succeeded{} && ... &&
+            check_clause_executable<Db>(static_cast<const clause_base<Clauses, _statement_t>&>(s)));
+  }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_statement_contains_unique_clauses,
                               "statements must contain uniquely tagged clauses only (except custom clauses)");

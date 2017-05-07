@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/clause_fwd.h>
 #include <sqlpp17/detail/unused.h>
 #include <sqlpp17/optional.h>
+#include <sqlpp17/type_set.h>
 #include <sqlpp17/wrapped_static_assert.h>
 
 namespace sqlpp
@@ -38,6 +39,8 @@ namespace sqlpp
     struct limit
     {
     };
+
+    struct order_by;
   }
 
   template <typename Number>
@@ -65,7 +68,22 @@ namespace sqlpp
     Number _number;
   };
 
-#warning : Need to ensure order_by
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_limit_used_with_order_by, "limit must be used with order_by");
+
+  template <typename Db, typename Number, typename... Clauses>
+  constexpr auto check_clause_executable(const clause_base<limit_t<Number>, statement<Clauses...>>& t)
+  {
+    constexpr auto _tag_set = type_set(clause_tag<Clauses>...);
+    if
+      constexpr(!_tag_set.template count<clause::order_by>())
+      {
+        return failed<assert_limit_used_with_order_by>{};
+      }
+    else
+    {
+      return succeeded{};
+    }
+  }
 
   template <typename Context, typename Number, typename Statement>
   decltype(auto) operator<<(Context& context, const clause_base<limit_t<Number>, Statement>& t)
