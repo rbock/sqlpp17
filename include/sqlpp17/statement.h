@@ -127,7 +127,6 @@ namespace sqlpp
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_statement_contains_unique_clauses,
                               "statements must contain uniquely tagged clauses only (except custom clauses)");
-#warning : Need to check statement clauses for execution of the statement
 
   template <typename... Clauses>
   constexpr auto check_statement_clauses()
