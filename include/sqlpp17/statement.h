@@ -122,10 +122,13 @@ namespace sqlpp
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_clauses_implement_executable_check, "missing overload of check_clause_executable");
 
-  template <typename Db, typename ClauseBase>
-  constexpr auto check_clause_executable(const ClauseBase&)
+  template <typename Db, typename Clause, typename Statement>
+  constexpr auto check_clause_executable(const clause_base<Clause, Statement>&)
   {
-    return failed<assert_clauses_implement_executable_check>{};
+    if
+      constexpr(is_clause_v<Clause>) return failed<assert_clauses_implement_executable_check>{};
+    else
+      return succeeded{};
   }
 
   template <typename Db, typename... Clauses>
