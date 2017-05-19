@@ -46,10 +46,58 @@ namespace sqlpp
     constexpr auto null_is_trivial_value = 1 << 4;
   }
 
+  template <typename T>
+  struct type_t
+  {
+  };
+
+  template <typename T>
+  constexpr auto type_v = type_t<T>{};
+
   struct boolean_t;
   struct no_clause
   {
   };
+
+  template <typename T>
+  constexpr auto sub_expression_set_v = type_set();
+
+  template <typename T>
+  constexpr auto is_aggregate_v = false;
+
+  template <typename KnownAggregatesSet, typename... Ts>
+  constexpr auto recursive_is_aggregate(const type_set_t<Ts...>&)
+  {
+    return (true && ... && recursive_is_aggregate<KnownAggregatesSet, Ts>());
+  }
+
+  template <typename KnownAggregatesSet, typename T>
+  constexpr auto recursive_is_aggregate()
+  {
+    return (is_aggregate_v<T> || KnownAggregatesSet::template count<T>()) &&
+           recursive_is_aggregate<KnownAggregatesSet>(sub_expression_set_v<T>);
+  }
+
+  // constant values and type-erased values could be treated as both,
+  // aggregate and non-aggregate
+  template <typename T>
+  constexpr auto is_non_aggregate_v = false;
+
+  template <typename KnownAggregatesSet, typename... Ts>
+  constexpr auto recursive_is_non_aggregate(const type_set_t<Ts...>&)
+  {
+    return (true && ... && recursive_is_non_aggregate<KnownAggregatesSet, Ts>());
+  }
+
+  template <typename KnownAggregatesSet, typename T>
+  constexpr auto recursive_is_non_aggregate()
+  {
+    return is_non_aggregate_v<T> && (KnownAggregatesSet::template count<T>() == 0) &&
+           recursive_is_non_aggregate<KnownAggregatesSet>(sub_expression_set_v<T>);
+  }
+
+  template <typename T>
+  constexpr auto provided_aggregates_v = type_set_t<>{};
 
   template <typename T>
   constexpr auto is_insert_allowed_v = false;

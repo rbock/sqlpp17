@@ -120,23 +120,17 @@ namespace sqlpp
   template <typename... Clauses>
   constexpr auto requires_braces_v<statement<Clauses...>> = true;
 
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_clauses_implement_executable_check, "missing overload of check_clause_executable");
-
   template <typename Db, typename Clause, typename Statement>
-  constexpr auto check_clause_executable(const clause_base<Clause, Statement>&)
+  constexpr auto check_clause_executable(const type_t<clause_base<Clause, Statement>>&)
   {
-    if
-      constexpr(is_clause_v<Clause>) return failed<assert_clauses_implement_executable_check>{};
-    else
-      return succeeded{};
+    return succeeded{};
   }
 
   template <typename Db, typename... Clauses>
-  constexpr auto check_statement_executable(const statement<Clauses...>& s)
+  constexpr auto check_statement_executable(const type_t<statement<Clauses...>>& s)
   {
     using _statement_t = statement<Clauses...>;
-    return (succeeded{} && ... &&
-            check_clause_executable<Db>(static_cast<const clause_base<Clauses, _statement_t>&>(s)));
+    return (succeeded{} && ... && check_clause_executable<Db>(type_v<clause_base<Clauses, _statement_t>>));
   }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_statement_contains_unique_clauses,

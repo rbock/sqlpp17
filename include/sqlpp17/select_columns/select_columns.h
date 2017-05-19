@@ -33,6 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/detail/all_unused.h>
 #include <sqlpp17/detail/select_column_printer.h>
 #include <sqlpp17/result_row.h>
+#include <sqlpp17/statement.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
 
@@ -115,6 +116,29 @@ namespace sqlpp
                                        value_type_of_t<Column>,
                                        can_be_null_v<Column> | null_is_trivial_value_v<Column>>;
 
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_selected_columns_all_aggregates_or_none,
+                              "columns need to be either all aggregates or all non-aggregates");
+
+  template <typename Db, typename... Columns, typename... Clauses>
+  constexpr auto check_clause_executable(
+      const type_t<clause_base<select_columns_t<Columns...>, statement<Clauses...>>>& t)
+  {
+    using known_aggregates_t = decltype((::sqlpp::type_set() | ... | provided_aggregates_v<Clauses>));
+
+    constexpr auto all_aggregates = (true && ... && recursive_is_aggregate<known_aggregates_t, Columns>());
+    constexpr auto no_aggregates = (true && ... && recursive_is_non_aggregate<known_aggregates_t, Columns>());
+
+    if
+      constexpr(!(all_aggregates || !no_aggregates))
+      {
+        return failed<assert_selected_columns_all_aggregates_or_none>{};
+      }
+    else
+    {
+      return succeeded{};
+    }
+  }
+
   template <typename... Columns, typename Statement>
   class result_base<select_columns_t<Columns...>, Statement>
   {
@@ -124,8 +148,17 @@ namespace sqlpp
     template <typename Connection>
     [[nodiscard]] auto run(Connection& connection) const
     {
-#warning Need to add a check here for all sub-clauses. check needs to use the connection class, too, since some rules depend on the database.
-      return connection.select(Statement::of(this), result_row_t{});
+      constexpr auto check = check_statement_executable<Connection>(type_v<Statement>);
+
+      if
+        constexpr(check)
+        {
+          return connection.select(Statement::of(this), result_row_t{});
+        }
+      else
+      {
+        return ::sqlpp::bad_statement_t{check};
+      }
     }
   };
 
