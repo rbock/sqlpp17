@@ -116,7 +116,17 @@ namespace sqlpp
     template <typename Connection>
     [[nodiscard]] auto run(Connection& connection) const
     {
-      return connection.select(Statement::of(this), result_row_t{});
+      constexpr auto check = check_statement_executable<Connection>(type_v<Statement>);
+
+      if
+        constexpr(check)
+        {
+          return connection.select(Statement::of(this), result_row_t{});
+        }
+      else
+      {
+        return ::sqlpp::bad_statement_t{check};
+      }
     }
   };
 
