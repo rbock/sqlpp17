@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2017, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,6 +26,28 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/remove_table/no_remove_table.h>
-#include <sqlpp17/remove_table/remove_table.h>
+#include <sqlpp17/clause_fwd.h>
+#include <sqlpp17/limit.h>
+#include <sqlpp17/offset.h>
+#include <sqlpp17/order_by.h>
+#include <sqlpp17/type_traits.h>
+#include <sqlpp17/where.h>
 
+#include <sqlpp17/postgresql/remove_from.h>
+#include <sqlpp17/postgresql/remove_using.h>
+
+namespace sqlpp::postgresql
+{
+  template <typename Table>
+  [[nodiscard]] constexpr auto remove_from(Table&&... table)
+  {
+#warning : remove_from takes one or more tables, remove_using takes a join that needs to include all tables from remove_from (unless there is only one table in remove_from
+#warning : see https://www.postgresql.org/docs/9.1/static/sql-delete.html
+    /*
+     * using not required
+     * using may contain a join that must not contain the table from remove_from (it may contain an alias, though)
+     */
+    return statement<remove_t, mysql::no_remove_from_t, mysql::no_remove_using_t, no_where_t>{}.from(
+        std::forward<Tables>(tables)...);
+  }
+}

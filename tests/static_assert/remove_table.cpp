@@ -28,7 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
 
-#include <sqlpp17/remove_table.h>
+#include <sqlpp17/remove_from.h>
 
 #warning : Not implemented yet
 #if 0
@@ -54,7 +54,7 @@ namespace
 
 int main()
 {
-  constexpr auto s = sqlpp::statement<sqlpp::no_remove_table_t>{};
+  constexpr auto s = sqlpp::statement<sqlpp::no_remove_from_t>{};
 
 #if 0
   // constexpr tests

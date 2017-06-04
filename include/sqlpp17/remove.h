@@ -27,10 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/clause_fwd.h>
-#include <sqlpp17/limit.h>
-#include <sqlpp17/offset.h>
-#include <sqlpp17/order_by.h>
-#include <sqlpp17/remove_table.h>
+#include <sqlpp17/remove_from.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/using.h>
 #include <sqlpp17/where.h>
@@ -66,12 +63,12 @@ namespace sqlpp
   template <typename Context, typename Statement>
   decltype(auto) operator<<(Context& context, const clause_base<remove_t, Statement>& t)
   {
-#warning : Need to prevent sub-clauses with certain databases. For instance, using is allowed only in MySQL, order_by, limit and offset are NOT allowed in MySQL
     return context << "DELETE";
   }
 
-  [[nodiscard]] constexpr auto remove()
+  template <typename Table>
+  [[nodiscard]] constexpr auto remove(Table&& table)
   {
-    return statement<remove_t, no_remove_table_t, no_using_t, no_where_t, no_order_by_t, no_limit_t, no_offset_t>{};
+    return statement<remove_t, no_remove_from_t, no_where_t>{}.from(std::forward<Table>(table));
   }
 }
