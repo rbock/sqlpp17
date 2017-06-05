@@ -35,30 +35,30 @@ namespace sqlpp
 {
   namespace clause
   {
-    struct remove_from
+    struct remove_table
     {
     };
   }
 
   template <typename Table>
-  struct remove_from_t
+  struct remove_table_t
   {
     Table _table;
   };
 
   template <typename Table>
-  constexpr auto clause_tag<remove_from_t<Table>> = clause::remove_from{};
+  constexpr auto clause_tag<remove_table_t<Table>> = clause::remove_table{};
 
   template <typename Table, typename Statement>
-  class clause_base<remove_from_t<Table>, Statement>
+  class clause_base<remove_table_t<Table>, Statement>
   {
   public:
     template <typename OtherStatement>
-    clause_base(const clause_base<remove_from_t<Table>, OtherStatement>& s) : _table(s._table)
+    clause_base(const clause_base<remove_table_t<Table>, OtherStatement>& s) : _table(s._table)
     {
     }
 
-    clause_base(const remove_from_t<Table>& f) : _table(f._table)
+    clause_base(const remove_table_t<Table>& f) : _table(f._table)
     {
     }
 
@@ -66,49 +66,49 @@ namespace sqlpp
   };
 
   template <typename Context, typename Table, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<remove_from_t<Table>, Statement>& t)
+  decltype(auto) operator<<(Context& context, const clause_base<remove_table_t<Table>, Statement>& t)
   {
     return context << " INTO " << t._table;
   }
 
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_remove_from_arg_is_table, "remove_from() arg has to be a table");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_remove_from_arg_no_read_only_table,
-                              "remove_from() arg must not be read-only table");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_remove_from_arg_no_required_tables,
-                              "remove_from() arg must not depend on other tables");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_remove_table_arg_is_table, "remove_table() arg has to be a table");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_remove_table_arg_no_read_only_table,
+                              "remove_table() arg must not be read-only table");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_remove_table_arg_no_required_tables,
+                              "remove_table() arg must not depend on other tables");
 
   template <typename T>
-  constexpr auto check_remove_from_arg(const T&)
+  constexpr auto check_remove_table_arg(const T&)
   {
     if
       constexpr(!is_table_v<T>)
       {
-        return failed<assert_remove_from_arg_is_table>{};
+        return failed<assert_remove_table_arg_is_table>{};
       }
     else if
       constexpr(is_read_only_table_v<T>)
       {
-        return failed<assert_remove_from_arg_no_read_only_table>{};
+        return failed<assert_remove_table_arg_no_read_only_table>{};
       }
     else if
       constexpr(!required_tables_of_v<T>.empty())
       {
-        return failed<assert_remove_from_arg_no_required_tables>{};
+        return failed<assert_remove_table_arg_no_required_tables>{};
       }
     else
       return succeeded{};
   }
 
-  struct no_remove_from_t
+  struct no_remove_table_t
   {
   };
 
   template <typename Statement>
-  class clause_base<no_remove_from_t, Statement>
+  class clause_base<no_remove_table_t, Statement>
   {
   public:
     template <typename OtherStatement>
-    constexpr clause_base(const clause_base<no_remove_from_t, OtherStatement>& s)
+    constexpr clause_base(const clause_base<no_remove_table_t, OtherStatement>& s)
     {
     }
 
@@ -117,11 +117,11 @@ namespace sqlpp
     template <typename Table>
     [[nodiscard]] constexpr auto from(Table t) const
     {
-      constexpr auto check = check_remove_from_arg(t);
+      constexpr auto check = check_remove_table_arg(t);
       if
         constexpr(check)
         {
-          return Statement::of(this).template replace_clause<no_remove_from_t>(remove_from_t<Table>{t});
+          return Statement::of(this).template replace_clause<no_remove_table_t>(remove_table_t<Table>{t});
         }
       else
       {
@@ -131,15 +131,15 @@ namespace sqlpp
   };
 
   template <typename Context, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<no_remove_from_t, Statement>&)
+  decltype(auto) operator<<(Context& context, const clause_base<no_remove_table_t, Statement>&)
   {
     return context;
   }
 
   template <typename Table>
-  [[nodiscard]] constexpr auto remove_from(Table&& t)
+  [[nodiscard]] constexpr auto remove_table(Table&& t)
   {
-    return statement<no_remove_from_t>{}.from(std::forward<Table>(t));
+    return statement<no_remove_table_t>{}.from(std::forward<Table>(t));
   }
 }
 

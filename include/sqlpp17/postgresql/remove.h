@@ -27,27 +27,29 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/clause_fwd.h>
-#include <sqlpp17/limit.h>
-#include <sqlpp17/offset.h>
-#include <sqlpp17/order_by.h>
+#include <sqlpp17/remove.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/where.h>
 
-#include <sqlpp17/postgresql/remove_from.h>
+#include <sqlpp17/postgresql/remove_table.h>
 #include <sqlpp17/postgresql/remove_using.h>
 
 namespace sqlpp::postgresql
 {
+  [[nodiscard]] constexpr auto remove()
+  {
+    return statement<remove_t, postgresql::no_remove_table_t, postgresql::no_remove_using_t, no_where_t>{};
+  }
+
   template <typename Table>
   [[nodiscard]] constexpr auto remove_from(Table&&... table)
   {
-#warning : remove_from takes one or more tables, remove_using takes a join that needs to include all tables from remove_from (unless there is only one table in remove_from
 #warning : see https://www.postgresql.org/docs/9.1/static/sql-delete.html
     /*
+     * ONLY keyword
      * using not required
-     * using may contain a join that must not contain the table from remove_from (it may contain an alias, though)
+     * using may contain a join that must not contain the table from remove_table (it may contain an alias, though)
      */
-    return statement<remove_t, mysql::no_remove_from_t, mysql::no_remove_using_t, no_where_t>{}.from(
-        std::forward<Tables>(tables)...);
+    return remove().from(std::forward<Tables>(tables)...);
   }
 }

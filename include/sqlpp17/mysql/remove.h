@@ -28,16 +28,22 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/clause_fwd.h>
 #include <sqlpp17/limit.h>
-#include <sqlpp17/offset.h>
 #include <sqlpp17/order_by.h>
+#include <sqlpp17/remove.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/where.h>
 
-#include <sqlpp17/mysql/remove_from.h>
+#include <sqlpp17/mysql/remove_table.h>
 #include <sqlpp17/mysql/remove_using.h>
 
 namespace sqlpp::mysql
 {
+  [[nodiscard]] constexpr auto remove()
+  {
+    return statement<remove_t, mysql::no_remove_table_t, mysql::no_remove_using_t, no_where_t, no_order_by_t,
+                     no_limit_t>{};
+  }
+
   template <typename... Tables>
   [[nodiscard]] constexpr auto remove_from(Tables&&... tables)
   {
@@ -49,8 +55,6 @@ namespace sqlpp::mysql
      * required to be joined here.
      * two or more tables: using required to describe join
      */
-    return statement<remove_t, mysql::no_remove_from_t, mysql::no_remove_using_t, no_where_t, no_order_by_t,
-                     no_limit_t>{}
-        .from(std::forward<Tables>(tables)...);
+    return remove() from(std::forward<Tables>(tables)...);
   }
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2017, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -27,53 +27,29 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/clause_fwd.h>
-#include <sqlpp17/remove_table.h>
+#include <sqlpp17/limit.h>
+#include <sqlpp17/order_by.h>
 #include <sqlpp17/type_traits.h>
-#include <sqlpp17/using.h>
+#include <sqlpp17/update.h>
 #include <sqlpp17/where.h>
 
-namespace sqlpp
+#include <sqlpp17/mysql/update_table.h>
+#include <sqlpp17/mysql/update_using.h>
+
+namespace sqlpp::mysql
 {
-  namespace clause
+  [[nodiscard]] constexpr auto update()
   {
-    struct remove
-    {
-    };
-  }
-
-  struct remove_t
-  {
-  };
-
-  template <>
-  constexpr auto clause_tag<remove_t> = clause::remove{};
-
-  template <typename Statement>
-  class clause_base<remove_t, Statement>
-  {
-  public:
-    template <typename OtherStatement>
-    clause_base(const clause_base<remove_t, OtherStatement>&)
-    {
-    }
-
-    clause_base() = default;
-  };
-
-  template <typename Context, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<remove_t, Statement>& t)
-  {
-    return context << "DELETE";
-  }
-
-  [[nodiscard]] constexpr auto remove()
-  {
-    return statement<remove_t, no_remove_table_t, no_where_t>{};
+    return statement<update_t, mysql::no_update_table_t, mysql::no_update_using_t, no_where_t, no_order_by_t,
+                     no_limit_t>{};
   }
 
   template <typename Table>
-  [[nodiscard]] constexpr auto remove_from(Table&& table)
+  [[nodiscard]] constexpr auto update(Table&&... table)
   {
-    return remove().from(std::forward<Table>(table));
+#warning : see https://dev.mysql.com/doc/refman/5.7/en/update.html
+    /* single table or join
+     */
+    return update().table(std::forward<Table>(table));
   }
 }

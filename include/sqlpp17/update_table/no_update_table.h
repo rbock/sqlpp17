@@ -31,20 +31,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-#warning : update_table must not allow join (except for mysql)
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_update_table_arg_is_not_conditionless_join,
-                              "update_table() arg must not be a conditionless join, use .on() or .unconditionally()");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_update_table_arg_is_table, "update_table() arg has to be a table or join");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_update_table_arg_is_not_join,
+                              "update() arg must not be a join, maybe look at vendor specific versions");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_update_table_arg_is_table, "update() arg has to be a table");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_update_table_arg_no_required_tables,
-                              "update_table() arg must not depend on other tables");
+                              "update() arg must not depend on other tables");
 
   template <typename T>
   constexpr auto check_update_table_arg(const T&)
   {
     if
-      constexpr(is_conditionless_join_v<T>)
+      constexpr(is_join_v<T>)
       {
-        return failed<assert_update_table_arg_is_not_conditionless_join>{};
+        return failed<assert_update_table_arg_is_not_join>{};
       }
     else if
       constexpr(!is_table_v<T>)
@@ -76,7 +75,7 @@ namespace sqlpp
     constexpr clause_base() = default;
 
     template <typename Table>
-    [[nodiscard]] constexpr auto update_table(Table t) const
+    [[nodiscard]] constexpr auto table(Table t) const
     {
       constexpr auto check = check_update_table_arg(t);
       if
@@ -100,7 +99,7 @@ namespace sqlpp
   template <typename Table>
   [[nodiscard]] constexpr auto update_table(Table&& t)
   {
-    return statement<no_update_table_t>{}.update_table(std::forward<Table>(t));
+    return statement<no_update_table_t>{}.table(std::forward<Table>(t));
   }
 }
 

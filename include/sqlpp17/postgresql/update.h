@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2017, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -27,53 +27,27 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/clause_fwd.h>
-#include <sqlpp17/remove_table.h>
 #include <sqlpp17/type_traits.h>
-#include <sqlpp17/using.h>
+#include <sqlpp17/update.h>
 #include <sqlpp17/where.h>
 
-namespace sqlpp
+#include <sqlpp17/postgresql/update_table.h>
+
+namespace sqlpp::postgresql
 {
-  namespace clause
+  [[nodiscard]] constexpr auto update()
   {
-    struct remove
-    {
-    };
-  }
-
-  struct remove_t
-  {
-  };
-
-  template <>
-  constexpr auto clause_tag<remove_t> = clause::remove{};
-
-  template <typename Statement>
-  class clause_base<remove_t, Statement>
-  {
-  public:
-    template <typename OtherStatement>
-    clause_base(const clause_base<remove_t, OtherStatement>&)
-    {
-    }
-
-    clause_base() = default;
-  };
-
-  template <typename Context, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<remove_t, Statement>& t)
-  {
-    return context << "DELETE";
-  }
-
-  [[nodiscard]] constexpr auto remove()
-  {
-    return statement<remove_t, no_remove_table_t, no_where_t>{};
+    return statement<update_t, postgresql::no_update_table_t, no_where_t>{}(std::forward<Table>(table));
   }
 
   template <typename Table>
-  [[nodiscard]] constexpr auto remove_from(Table&& table)
+  [[nodiscard]] constexpr auto remove_from(Table&& t)
   {
-    return remove().from(std::forward<Table>(table));
+#warning : see https://www.postgresql.org/docs/9.1/static/sql-update.html
+    /*
+     * ONLY keyword
+     * from may contain a join that must not contain the table from remove_from (it may contain an alias, though)
+     */
+    return update().table(std::forward<Table>(t));
   }
 }
