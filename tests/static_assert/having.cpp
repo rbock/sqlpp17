@@ -24,11 +24,11 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <tables/TabDepartment.h>
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
-#include <tables/TabDepartment.h>
 
-#include <sqlpp17/having.h>
+#include <sqlpp17/clauses/having.h>
 
 #warning : Not implemented yet
 #if 0

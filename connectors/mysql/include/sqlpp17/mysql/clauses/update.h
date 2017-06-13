@@ -1,5 +1,7 @@
+#pragma once
+
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2017, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -24,49 +26,28 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <tables/TabDepartment.h>
-#include <tables/TabEmpty.h>
-#include <tables/TabPerson.h>
+#include <sqlpp17/clause_fwd.h>
+#include <sqlpp17/limit.h>
+#include <sqlpp17/order_by.h>
+#include <sqlpp17/type_traits.h>
+#include <sqlpp17/update.h>
+#include <sqlpp17/where.h>
 
-#include <sqlpp17/clauses/update_set.h>
+#include <sqlpp17/mysql/update_table.h>
 
-#warning : Not implemented yet
-#if 0
-// Turning off static_assert for from()
-namespace sqlpp
+namespace sqlpp::mysql
 {
-  template <typename... T>
-  constexpr auto wrong<assert_from_arg_is_table, T...> = true;
-
-  template <typename... T>
-  constexpr auto wrong<assert_from_arg_is_not_conditionless_join, T...> = true;
-}
-
-namespace
-{
-  template <typename Assert, typename T>
-  auto test_bad_statement(const Assert&, const T&)
+  [[nodiscard]] constexpr auto update()
   {
-    static_assert(is_bad_statement(Assert{}, T{}));
+    return statement<update_t, mysql::no_update_table_t, no_where_t, no_order_by_t, no_limit_t>{};
+  }
+
+  template <typename Table>
+  [[nodiscard]] constexpr auto update(Table&&... table)
+  {
+#warning : see https://dev.mysql.com/doc/refman/5.7/en/update.html
+    /* single table or join
+     */
+    return update().table(std::forward<Table>(table));
   }
 }
-#endif
-
-int main()
-{
-  constexpr auto s = sqlpp::statement<sqlpp::no_update_set_t>{};
-
-#if 0
-  // constexpr tests
-  static_assert(is_bad_statement(sqlpp::assert_from_arg_is_table{}, s.from(1)));
-
-  static_assert(is_bad_statement(sqlpp::assert_from_arg_is_not_conditionless_join{},
-                                 s.from(test::tabPerson.join(test::tabDepartment))));
-
-  static_assert(is_bad_statement(sqlpp::assert_from_arg_is_table{}, sqlpp::from(1)));
-
-  // non-constexpr tests
-  test_bad_statement(sqlpp::assert_from_arg_is_table{}, sqlpp::from(std::string("mytable")));
-#endif
-}
-

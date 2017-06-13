@@ -25,11 +25,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <string>
+#include <tables/TabDepartment.h>
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
-#include <tables/TabDepartment.h>
 
-#include <sqlpp17/from.h>
+#include <sqlpp17/clauses/from.h>
 
 // Turning off static_assert for from()
 namespace sqlpp

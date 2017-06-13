@@ -28,7 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
 
-#include <sqlpp17/insert.h>
+#include <sqlpp17/clauses/insert.h>
 
 #warning : Not implemented yet
 #if 0

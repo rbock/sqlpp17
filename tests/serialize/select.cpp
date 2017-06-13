@@ -29,8 +29,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
 
+#include <sqlpp17/clauses/select.h>
 #include <sqlpp17/operator.h>
-#include <sqlpp17/select.h>
 
 #warning : Need a real result class and a real connection
 
@@ -47,11 +47,11 @@ int main()
 {
 #warning : s should be a constexpr
   {
-    auto s =
-        sqlpp::select()
-        << sqlpp::select_columns(test::tabPerson.id, test::tabPerson.isManager, test::tabPerson.address, test::tabPerson.name)
-        << sqlpp::from(test::tabPerson) << sqlpp::where(test::tabPerson.isManager and test::tabPerson.name == '\0')
-        << sqlpp::having(test::tabPerson.id == test::tabPerson.id or test::tabPerson.id == 1);
+    auto s = sqlpp::select() << sqlpp::select_columns(test::tabPerson.id, test::tabPerson.isManager,
+                                                      test::tabPerson.address, test::tabPerson.name)
+                             << sqlpp::from(test::tabPerson)
+                             << sqlpp::where(test::tabPerson.isManager and test::tabPerson.name == '\0')
+                             << sqlpp::having(test::tabPerson.id == test::tabPerson.id or test::tabPerson.id == 1);
     std::cout << s << std::endl;
     auto conn = connection{};
     auto row = s.run(conn);

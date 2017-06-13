@@ -29,8 +29,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
 
+#include <sqlpp17/clauses/update.h>
 #include <sqlpp17/operator.h>
-#include <sqlpp17/update.h>
 
 int main()
 {

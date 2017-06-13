@@ -28,7 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
 
-#include <sqlpp17/limit.h>
+#include <sqlpp17/clauses/limit.h>
 
 #warning : Not implemented yet
 #if 0

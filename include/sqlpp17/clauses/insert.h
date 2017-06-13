@@ -1,3 +1,5 @@
+#pragma once
+
 /*
 Copyright (c) 2016, Roland Bock
 All rights reserved.
@@ -24,49 +26,47 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <tables/TabDepartment.h>
-#include <tables/TabEmpty.h>
-#include <tables/TabPerson.h>
+#include <sqlpp17/clause_fwd.h>
+#include <sqlpp17/clauses/insert_values.h>
+#include <sqlpp17/clauses/into.h>
+#include <sqlpp17/type_traits.h>
 
-#include <sqlpp17/clauses/update_set.h>
-
-#warning : Not implemented yet
-#if 0
-// Turning off static_assert for from()
 namespace sqlpp
 {
-  template <typename... T>
-  constexpr auto wrong<assert_from_arg_is_table, T...> = true;
-
-  template <typename... T>
-  constexpr auto wrong<assert_from_arg_is_not_conditionless_join, T...> = true;
-}
-
-namespace
-{
-  template <typename Assert, typename T>
-  auto test_bad_statement(const Assert&, const T&)
+  namespace clause
   {
-    static_assert(is_bad_statement(Assert{}, T{}));
+    struct insert
+    {
+    };
+  }
+
+  struct insert_t
+  {
+  };
+
+  template <>
+  constexpr auto clause_tag<insert_t> = clause::insert{};
+
+  template <typename Statement>
+  class clause_base<insert_t, Statement>
+  {
+  public:
+    template <typename OtherStatement>
+    clause_base(const clause_base<insert_t, OtherStatement>&)
+    {
+    }
+
+    clause_base() = default;
+  };
+
+  template <typename Context, typename Statement>
+  decltype(auto) operator<<(Context& context, const clause_base<insert_t, Statement>& t)
+  {
+    return context << "INSERT";
+  }
+
+  [[nodiscard]] constexpr auto insert()
+  {
+    return statement<insert_t, no_into_t>{};
   }
 }
-#endif
-
-int main()
-{
-  constexpr auto s = sqlpp::statement<sqlpp::no_update_set_t>{};
-
-#if 0
-  // constexpr tests
-  static_assert(is_bad_statement(sqlpp::assert_from_arg_is_table{}, s.from(1)));
-
-  static_assert(is_bad_statement(sqlpp::assert_from_arg_is_not_conditionless_join{},
-                                 s.from(test::tabPerson.join(test::tabDepartment))));
-
-  static_assert(is_bad_statement(sqlpp::assert_from_arg_is_table{}, sqlpp::from(1)));
-
-  // non-constexpr tests
-  test_bad_statement(sqlpp::assert_from_arg_is_table{}, sqlpp::from(std::string("mytable")));
-#endif
-}
-
