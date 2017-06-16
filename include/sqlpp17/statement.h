@@ -74,6 +74,19 @@ namespace sqlpp
   template <typename... Clauses>
   using get_result_clause_t = typename get_result_clause<Clauses...>::type;
 
+  template <typename Db, typename Clause, typename Statement>
+  constexpr auto check_clause_executable(const type_t<clause_base<Clause, Statement>>&)
+  {
+    return succeeded{};
+  }
+
+  template <typename Db, typename... Clauses>
+  constexpr auto check_statement_executable(const type_t<statement<Clauses...>>& s)
+  {
+    using _statement_t = statement<Clauses...>;
+    return (succeeded{} && ... && check_clause_executable<Db>(type_v<clause_base<Clauses, _statement_t>>));
+  }
+
   template <typename... Clauses>
   class statement : public clause_base<Clauses, statement<Clauses...>>...,
                     public result_base<get_result_clause_t<Clauses...>, statement<Clauses...>>
@@ -84,7 +97,9 @@ namespace sqlpp
     template <typename, typename>
     friend class result_base;
 
-    using clauses = type_vector<Clauses...>;
+    using _clauses = type_vector<Clauses...>;
+
+    using _result_base = result_base<get_result_clause_t<Clauses...>, statement<Clauses...>>;
 
     template <typename... Cs>
     using new_statement = statement<Cs...>;
@@ -108,9 +123,25 @@ namespace sqlpp
     template <typename OldClause, typename NewClause>
     auto replace_clause(NewClause&& newClause) const
     {
-      using new_clauses = algorithm::replace_t<clauses, OldClause, std::decay_t<NewClause>>;
+      using new_clauses = algorithm::replace_t<_clauses, OldClause, std::decay_t<NewClause>>;
       return algorithm::copy_t<new_clauses, new_statement>{
           detail::make_constructor_arg(*this, std::forward<NewClause>(newClause))};
+    }
+
+    template <typename Connection>
+    [[nodiscard]] auto run(Connection& connection) const
+    {
+      constexpr auto check = check_statement_executable<Connection>(type_v<statement>);
+
+      if
+        constexpr(check)
+        {
+          return _result_base::_run(connection);
+        }
+      else
+      {
+        return ::sqlpp::bad_statement_t{check};
+      }
     }
   };
 
@@ -119,19 +150,6 @@ namespace sqlpp
 
   template <typename... Clauses>
   constexpr auto requires_braces_v<statement<Clauses...>> = true;
-
-  template <typename Db, typename Clause, typename Statement>
-  constexpr auto check_clause_executable(const type_t<clause_base<Clause, Statement>>&)
-  {
-    return succeeded{};
-  }
-
-  template <typename Db, typename... Clauses>
-  constexpr auto check_statement_executable(const type_t<statement<Clauses...>>& s)
-  {
-    using _statement_t = statement<Clauses...>;
-    return (succeeded{} && ... && check_clause_executable<Db>(type_v<clause_base<Clauses, _statement_t>>));
-  }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_statement_contains_unique_clauses,
                               "statements must contain uniquely tagged clauses only (except custom clauses)");

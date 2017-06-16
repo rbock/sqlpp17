@@ -65,6 +65,17 @@ namespace sqlpp
     Table _table;
   };
 
+  template <typename Table, typename Statement>
+  class result_base<remove_table_t<Table>, Statement>
+  {
+  public:
+    template <typename Connection>
+    [[nodiscard]] auto _run(Connection& connection) const
+    {
+      return connection.remove(Statement::of(this));
+    }
+  };
+
   template <typename Context, typename Table, typename Statement>
   decltype(auto) operator<<(Context& context, const clause_base<remove_table_t<Table>, Statement>& t)
   {

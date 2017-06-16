@@ -143,9 +143,4 @@ namespace sqlpp
   {
     return anonymize<Database>(t);
   }
-
-#warning : type erase expressions and tables
-#warning : no dynamics for from or where or having
-#warning : optional entries in flags, selected columns, order by, group by
-#warning : vectors of variants for selected columns
 }

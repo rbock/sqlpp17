@@ -72,6 +72,17 @@ namespace sqlpp
     std::tuple<Assignments...> _assignments;
   };
 
+  template <typename... Assignments, typename Statement>
+  class result_base<insert_values_t<Assignments...>, Statement>
+  {
+  public:
+    template <typename Connection>
+    [[nodiscard]] auto _run(Connection& connection) const
+    {
+      return connection.insert(Statement::of(this));
+    }
+  };
+
   template <typename Context, typename Statement, typename... Assignments>
   decltype(auto) operator<<(Context& context, const clause_base<insert_values_t<Assignments...>, Statement>& t)
   {
@@ -115,6 +126,17 @@ namespace sqlpp
     }
   };
 
+  template <typename Statement>
+  class result_base<insert_default_values_t, Statement>
+  {
+  public:
+    template <typename Connection>
+    [[nodiscard]] auto _run(Connection& connection) const
+    {
+      return connection.insert(Statement::of(this));
+    }
+  };
+
   template <typename Context, typename Statement>
   decltype(auto) operator<<(Context& context, const clause_base<insert_default_values_t, Statement>& t)
   {
@@ -130,6 +152,9 @@ namespace sqlpp
   template <typename... Assignments>
   constexpr auto clause_tag<insert_multi_values_t<Assignments...>> = clause::insert_values{};
 
+  template <typename... Assignments>
+  constexpr auto is_result_clause_v<insert_multi_values_t<Assignments...>> = true;
+
   template <typename Statement, typename... Assignments>
   class clause_base<insert_multi_values_t<Assignments...>, Statement>
   {
@@ -144,6 +169,24 @@ namespace sqlpp
     }
 
     std::vector<std::tuple<Assignments...>> _rows;
+  };
+
+  template <typename... Assignments, typename Statement>
+  class result_base<insert_multi_values_t<Assignments...>, Statement>
+  {
+  public:
+    template <typename Connection>
+    [[nodiscard]] auto _run(Connection& connection) const
+    {
+      if (static_cast<const insert_multi_values_t<Assignments...>&>(Statement::of(this))._rows.empty())
+      {
+        return decltype(connection.insert(Statement::of(this))){};
+      }
+      else
+      {
+        return connection.insert(Statement::of(this));
+      }
+    }
   };
 
   namespace detail
@@ -180,9 +223,7 @@ namespace sqlpp
   template <typename Context, typename Statement, typename... Assignments>
   decltype(auto) operator<<(Context& context, const clause_base<insert_multi_values_t<Assignments...>, Statement>& t)
   {
-#warning : Might be nice to have an is_noop function that just does nothing and returns the default value of the return type
-    if (t._rows.empty())
-      throw ::sqlpp::exception("empty multi row insert");
+    // the _run function is responsible for treating empty rows
 
     // columns
     {

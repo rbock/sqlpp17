@@ -68,7 +68,17 @@ namespace sqlpp
     std::tuple<Assignments...> _assignments;
   };
 
+  template <typename... Assignments, typename Statement>
+  class result_base<update_set_t<Assignments...>, Statement>
+  {
+  public:
+    template <typename Connection>
+    [[nodiscard]] auto _run(Connection& connection) const
+    {
 #warning : It would be nice to have a noop here in case everything is optional and not to be used
+      return connection.update(Statement::of(this));
+    }
+  };
 
   template <typename Context, typename... Assignments, typename Statement>
   decltype(auto) operator<<(Context& context, const clause_base<update_set_t<Assignments...>, Statement>& t)

@@ -27,11 +27,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <tuple>
-#include <vector>
 
 #include <sqlpp17/clause_fwd.h>
 #include <sqlpp17/detail/list_printer.h>
-#include <sqlpp17/result_row.h>
 #include <sqlpp17/statement.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
@@ -50,9 +48,6 @@ namespace sqlpp
   {
     std::tuple<Columns...> _columns;
   };
-
-  template <typename... Columns>
-  constexpr auto is_result_clause_v<group_by_t<Columns...>> = true;
 
   template <typename Table>
   constexpr auto clause_tag<group_by_t<Table>> = clause::group_by{};

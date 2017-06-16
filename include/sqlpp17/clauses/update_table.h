@@ -68,7 +68,6 @@ namespace sqlpp
   template <typename Context, typename Table, typename Statement>
   decltype(auto) operator<<(Context& context, const clause_base<update_table_t<Table>, Statement>& t)
   {
-#warning : Some databases support joins for update, others don't
     return context << t._table;
   }
 
