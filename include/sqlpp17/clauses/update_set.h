@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tuple>
 
 #include <sqlpp17/clause_fwd.h>
+#include <sqlpp17/detail/any_to_be_used.h>
 #include <sqlpp17/detail/list_printer.h>
 #include <sqlpp17/statement.h>
 #include <sqlpp17/type_traits.h>
@@ -75,8 +76,14 @@ namespace sqlpp
     template <typename Connection>
     [[nodiscard]] auto _run(Connection& connection) const
     {
-#warning : It would be nice to have a noop here in case everything is optional and not to be used
-      return connection.update(Statement::of(this));
+      if (detail::any_to_be_used(static_cast<const update_set_t<Assignments...>&>(Statement::of(this))._assignments))
+      {
+        return connection.update(Statement::of(this));
+      }
+      else
+      {
+        return decltype(connection.update(Statement::of(this))){};
+      }
     }
   };
 
