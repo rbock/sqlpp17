@@ -38,13 +38,16 @@ namespace sqlpp
   namespace tag
   {
     using type = uint16_t;
-    constexpr auto none = 0;
-    constexpr auto must_not_insert = 1 << 0;
-    constexpr auto must_not_update = 1 << 1;
-    constexpr auto has_default = 1 << 2;
-    constexpr auto can_be_null = 1 << 3;
-    constexpr auto null_is_trivial_value = 1 << 4;
+    constexpr type none = 0;
+    constexpr type must_not_insert = 1 << 0;
+    constexpr type must_not_update = 1 << 1;
+    constexpr type has_default = 1 << 2;
+    constexpr type can_be_null = 1 << 3;
+    constexpr type null_is_trivial_value = 1 << 4;
   }
+
+  template <tag::type Tag, bool Condition>
+  constexpr auto tag_if_v = Condition ? Tag : tag::none;
 
   template <typename T>
   struct type_t
@@ -437,6 +440,15 @@ namespace sqlpp
   constexpr auto required_tables_of(const T&)
   {
     return required_tables_of_v<T>;
+  }
+
+  template <typename T>
+  constexpr auto outer_tables_of_v = type_set_t<>();
+
+  template <typename T>
+  constexpr auto outer_tables_of(const T&)
+  {
+    return outer_tables_of_v<T>;
   }
 
   template <typename T>

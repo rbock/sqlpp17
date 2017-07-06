@@ -26,12 +26,12 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/result_field_base.h>
+#include <sqlpp17/result_column_base.h>
 
 namespace sqlpp
 {
-  template <typename... FieldSpecs>
-  struct result_row_t : result_field_base<FieldSpecs>...
+  template <typename... ColumnSpecs>
+  struct result_row_t : result_column_base<ColumnSpecs>...
   {
   };
 }

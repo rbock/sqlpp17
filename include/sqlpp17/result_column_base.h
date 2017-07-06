@@ -35,29 +35,29 @@ namespace sqlpp
 {
   namespace detail
   {
-    template <typename FieldSpec, bool CanBeNull, bool NullIsTrivialValue>
-    struct make_result_field_base;
+    template <typename ColumnSpec, bool CanBeNull, bool NullIsTrivialValue>
+    struct make_result_column_base;
 
-    template <typename FieldSpec, bool NullIsTrivialValue>
-    struct make_result_field_base<FieldSpec, false, NullIsTrivialValue>
+    template <typename ColumnSpec, bool NullIsTrivialValue>
+    struct make_result_column_base<ColumnSpec, false, NullIsTrivialValue>
     {
-      using type = member_t<FieldSpec, cpp_type_of_t<value_type_of_t<FieldSpec>>>;
+      using type = member_t<ColumnSpec, cpp_type_of_t<value_type_of_t<ColumnSpec>>>;
     };
 
-    template <typename FieldSpec>
-    struct make_result_field_base<FieldSpec, true, true>
+    template <typename ColumnSpec>
+    struct make_result_column_base<ColumnSpec, true, true>
     {
-      using type = member_t<FieldSpec, null_is_trivial<cpp_type_of_t<value_type_of_t<FieldSpec>>>>;
+      using type = member_t<ColumnSpec, null_is_trivial<cpp_type_of_t<value_type_of_t<ColumnSpec>>>>;
     };
 
-    template <typename FieldSpec>
-    struct make_result_field_base<FieldSpec, true, false>
+    template <typename ColumnSpec>
+    struct make_result_column_base<ColumnSpec, true, false>
     {
-      using type = member_t<FieldSpec, std::optional<cpp_type_of_t<value_type_of_t<FieldSpec>>>>;
+      using type = member_t<ColumnSpec, std::optional<cpp_type_of_t<value_type_of_t<ColumnSpec>>>>;
     };
   }
 
-  template <typename FieldSpec>
-  using result_field_base = typename detail::
-      make_result_field_base<FieldSpec, can_be_null_v<FieldSpec>, null_is_trivial_value_v<FieldSpec>>::type;
+  template <typename ColumnSpec>
+  using result_column_base = typename detail::
+      make_result_column_base<ColumnSpec, can_be_null_v<ColumnSpec>, null_is_trivial_value_v<ColumnSpec>>::type;
 }

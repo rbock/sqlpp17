@@ -94,10 +94,10 @@ namespace sqlpp
   constexpr auto value_type_of_v<column_spec<Alias, ValueType, Tags>> = ValueType{};
 
   template <typename Alias, typename ValueType, tag::type Tags>
-  constexpr auto can_be_null_v<column_spec<Alias, ValueType, Tags>> = (Tags & tag::can_be_null);
+  constexpr auto can_be_null_v<column_spec<Alias, ValueType, Tags>> = !!(Tags & tag::can_be_null);
 
   template <typename Alias, typename ValueType, tag::type Tags>
-  constexpr auto null_is_trivial_value_v<column_spec<Alias, ValueType, Tags>> = (Tags & tag::null_is_trivial_value);
+  constexpr auto null_is_trivial_value_v<column_spec<Alias, ValueType, Tags>> = !!(Tags & tag::null_is_trivial_value);
 
   template <typename LeftAlias,
             typename LeftValueType,
@@ -110,10 +110,29 @@ namespace sqlpp
       std::is_same_v<make_char_sequence<LeftAlias::name>, make_char_sequence<RightAlias::name>>&&
           std::is_same_v<LeftValueType, RightValueType>;
 
-  template <typename Column>
-  using make_column_spec = column_spec<typename Column::_alias_t,
-                                       value_type_of_t<Column>,
-                                       can_be_null_v<Column> | null_is_trivial_value_v<Column>>;
+  template <typename Statement, typename OptColumn>
+  struct make_column_spec
+  {
+    using _opt_column_t = OptColumn;
+    using _column_t = remove_optional_t<OptColumn>;
+    using _alias_t = typename _column_t::_alias_t;
+    using _value_t = value_type_of_t<_column_t>;
+
+    static constexpr auto _outer_tables = outer_tables_of_v<Statement>;
+    static constexpr auto _column_can_be_null = can_be_null_v<_column_t>;
+    static constexpr auto _column_is_optional = is_optional_v<_opt_column_t>;
+    static constexpr auto _column_is_in_outer_table = can_be_null_v<_column_t>;
+    static constexpr auto _can_be_null_tag =
+        tag_if_v<tag::can_be_null, _column_can_be_null | _column_is_optional | _column_is_in_outer_table>;
+
+    static constexpr auto _null_is_trivial_value = null_is_trivial_value_v<_opt_column_t>;
+
+    static constexpr auto _null_is_trivial_value_tag = tag_if_v<tag::null_is_trivial_value, _null_is_trivial_value>;
+    using type = column_spec<_alias_t, _value_t, _can_be_null_tag | _null_is_trivial_value_tag>;
+  };
+
+  template <typename Statement, typename OptColumn>
+  using make_column_spec_t = typename make_column_spec<Statement, OptColumn>::type;
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_selected_columns_all_aggregates_or_none,
                               "columns need to be either all aggregates or all non-aggregates");
@@ -127,11 +146,10 @@ namespace sqlpp
     constexpr auto all_aggregates = (true && ... && recursive_is_aggregate<known_aggregates_t, Columns>());
     constexpr auto no_aggregates = (true && ... && recursive_is_non_aggregate<known_aggregates_t, Columns>());
 
-    if
-      constexpr(!(all_aggregates || !no_aggregates))
-      {
-        return failed<assert_selected_columns_all_aggregates_or_none>{};
-      }
+    if constexpr (!(all_aggregates || !no_aggregates))
+    {
+      return failed<assert_selected_columns_all_aggregates_or_none>{};
+    }
     else
     {
       return succeeded{};
@@ -142,7 +160,7 @@ namespace sqlpp
   class result_base<select_columns_t<Columns...>, Statement>
   {
   public:
-    using result_row_t = result_row_t<make_column_spec<remove_optional_t<Columns>>...>;
+    using result_row_t = result_row_t<make_column_spec_t<Statement, Columns>...>;
 
     template <typename Connection>
     [[nodiscard]] auto _run(Connection& connection) const
@@ -170,21 +188,18 @@ namespace sqlpp
   template <typename... T>
   constexpr auto check_select_columns_arg()
   {
-    if
-      constexpr(sizeof...(T) == 0)
-      {
-        return failed<assert_select_columns_args_not_empty>{};
-      }
-    else if
-      constexpr(!(true && ... && is_selectable_v<T>))
-      {
-        return failed<assert_select_columns_args_are_selectable>{};
-      }
-    else if
-      constexpr(type_set<char_sequence_of_t<T>...>().size() != sizeof...(T))
-      {
-        return failed<assert_select_columns_args_have_unique_names>{};
-      }
+    if constexpr (sizeof...(T) == 0)
+    {
+      return failed<assert_select_columns_args_not_empty>{};
+    }
+    else if constexpr (!(true && ... && is_selectable_v<T>))
+    {
+      return failed<assert_select_columns_args_are_selectable>{};
+    }
+    else if constexpr (type_set<char_sequence_of_t<T>...>().size() != sizeof...(T))
+    {
+      return failed<assert_select_columns_args_have_unique_names>{};
+    }
     else
       return succeeded{};
   }
@@ -208,12 +223,11 @@ namespace sqlpp
     [[nodiscard]] constexpr auto columns(Columns... columns) const
     {
       constexpr auto check = check_select_columns_arg<remove_optional_t<Columns>...>();
-      if
-        constexpr(check)
-        {
-          return Statement::of(this).template replace_clause<no_select_columns_t>(
-              select_columns_t<Columns...>{std::make_tuple(columns...)});
-        }
+      if constexpr (check)
+      {
+        return Statement::of(this).template replace_clause<no_select_columns_t>(
+            select_columns_t<Columns...>{std::make_tuple(columns...)});
+      }
       else
       {
         return ::sqlpp::bad_statement_t{check};
@@ -224,12 +238,10 @@ namespace sqlpp
     [[nodiscard]] constexpr auto columns(std::tuple<Columns...> columns) const
     {
       constexpr auto check = check_select_columns_arg<remove_optional_t<Columns>...>();
-      if
-        constexpr(check)
-        {
-          return Statement::of(this).template replace_clause<no_select_columns_t>(
-              select_columns_t<Columns...>{columns});
-        }
+      if constexpr (check)
+      {
+        return Statement::of(this).template replace_clause<no_select_columns_t>(select_columns_t<Columns...>{columns});
+      }
       else
       {
         return ::sqlpp::bad_statement_t{check};
