@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2017, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -34,5 +34,12 @@ namespace sqlpp
   struct result_row_t : result_column_base<ColumnSpecs>...
   {
   };
+
+  template <typename... LeftColumnSpecs, typename... RightColumnSpecs>
+  constexpr auto
+      result_rows_are_compatible_v<result_row_t<LeftColumnSpecs...>,
+                                   result_row_t<RightColumnSpecs...>,
+                                   std::enable_if_t<sizeof...(LeftColumnSpecs) == sizeof...(RightColumnSpecs)>> =
+          (true && ... && column_specs_are_compatible_v<LeftColumnSpecs, RightColumnSpecs>);
 }
 

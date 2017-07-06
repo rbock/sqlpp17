@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2017, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tuple>
 
 #include <sqlpp17/clause_fwd.h>
+#include <sqlpp17/column_spec.h>
 #include <sqlpp17/detail/select_column_printer.h>
 #include <sqlpp17/optional.h>
 #include <sqlpp17/result_row.h>
@@ -72,67 +73,6 @@ namespace sqlpp
 
     std::tuple<Columns...> _columns;
   };
-
-#warning : Need to implement result_row_t for real...
-
-  template <typename... LeftColumnSpecs, typename... RightColumnSpecs>
-  constexpr auto
-      result_rows_are_compatible_v<result_row_t<LeftColumnSpecs...>,
-                                   result_row_t<RightColumnSpecs...>,
-                                   std::enable_if_t<sizeof...(LeftColumnSpecs) == sizeof...(RightColumnSpecs)>> =
-          (true && ... && column_specs_are_compatible_v<LeftColumnSpecs, RightColumnSpecs>);
-
-  template <typename Alias, typename ValueType, tag::type Tags>
-  struct column_spec
-  {
-    using _alias_t = Alias;
-    using value_type = ValueType;
-    static constexpr auto tags = Tags;
-  };
-
-  template <typename Alias, typename ValueType, tag::type Tags>
-  constexpr auto value_type_of_v<column_spec<Alias, ValueType, Tags>> = ValueType{};
-
-  template <typename Alias, typename ValueType, tag::type Tags>
-  constexpr auto can_be_null_v<column_spec<Alias, ValueType, Tags>> = !!(Tags & tag::can_be_null);
-
-  template <typename Alias, typename ValueType, tag::type Tags>
-  constexpr auto null_is_trivial_value_v<column_spec<Alias, ValueType, Tags>> = !!(Tags & tag::null_is_trivial_value);
-
-  template <typename LeftAlias,
-            typename LeftValueType,
-            tag::type LeftTags,
-            typename RightAlias,
-            typename RightValueType,
-            tag::type RightTags>
-  constexpr auto column_specs_are_compatible_v<column_spec<LeftAlias, LeftValueType, LeftTags>,
-                                               column_spec<RightAlias, RightValueType, RightTags>> =
-      std::is_same_v<make_char_sequence<LeftAlias::name>, make_char_sequence<RightAlias::name>>&&
-          std::is_same_v<LeftValueType, RightValueType>;
-
-  template <typename Statement, typename OptColumn>
-  struct make_column_spec
-  {
-    using _opt_column_t = OptColumn;
-    using _column_t = remove_optional_t<OptColumn>;
-    using _alias_t = typename _column_t::_alias_t;
-    using _value_t = value_type_of_t<_column_t>;
-
-    static constexpr auto _outer_tables = outer_tables_of_v<Statement>;
-    static constexpr auto _column_can_be_null = can_be_null_v<_column_t>;
-    static constexpr auto _column_is_optional = is_optional_v<_opt_column_t>;
-    static constexpr auto _column_is_in_outer_table = can_be_null_v<_column_t>;
-    static constexpr auto _can_be_null_tag =
-        tag_if_v<tag::can_be_null, _column_can_be_null | _column_is_optional | _column_is_in_outer_table>;
-
-    static constexpr auto _null_is_trivial_value = null_is_trivial_value_v<_opt_column_t>;
-
-    static constexpr auto _null_is_trivial_value_tag = tag_if_v<tag::null_is_trivial_value, _null_is_trivial_value>;
-    using type = column_spec<_alias_t, _value_t, _can_be_null_tag | _null_is_trivial_value_tag>;
-  };
-
-  template <typename Statement, typename OptColumn>
-  using make_column_spec_t = typename make_column_spec<Statement, OptColumn>::type;
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_selected_columns_all_aggregates_or_none,
                               "columns need to be either all aggregates or all non-aggregates");
