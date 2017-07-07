@@ -76,25 +76,20 @@ namespace sqlpp
     RightSelect _right;
   };
 
-  template <typename LeftColumn, typename RightColumn>
+  template <typename LeftColumnSpec, typename RightColumnSpec>
   struct merge_column_spec
   {
-    static_assert(wrong<merge_column_spec>, "Invalid arguments for merge_column_spec");
-  };
+    static_assert(column_specs_are_compatible_v<LeftColumnSpec, RightColumnSpec>);
 
-  template <typename LeftAlias,
-            typename LeftCppType,
-            tag::type LeftTags,
-            typename RightAlias,
-            typename RightCppType,
-            tag::type RightTags>
-  struct merge_column_spec<column_spec<LeftAlias, LeftCppType, LeftTags>,
-                           column_spec<RightAlias, RightCppType, RightTags>>
-  {
-    using type = column_spec<LeftAlias,
-                             LeftCppType,
-                             ((LeftTags ^ tag::null_is_trivial_value) | (RightTags ^ tag::null_is_trivial_value)) ^
-                                 tag::null_is_trivial_value>;
+    using _alias_t = typename LeftColumnSpec::_alias_t;
+    using _value_t = value_type_of_t<LeftColumnSpec>;
+    static constexpr auto _can_be_null_tag =
+        tag_if_v<tag::can_be_null, (can_be_null_v<LeftColumnSpec> || can_be_null_v<RightColumnSpec>)>;
+    static constexpr auto _null_is_trivial_value_tag =
+        tag_if_v<tag::null_is_trivial_value,
+                 (null_is_trivial_value_v<LeftColumnSpec> || null_is_trivial_value_v<RightColumnSpec>)>;
+
+    using type = column_spec<_alias_t, _value_t, _can_be_null_tag | _null_is_trivial_value_tag>;
   };
 
   template <typename LeftResultRow, typename RightResultRow>
@@ -136,21 +131,19 @@ namespace sqlpp
   template <typename LeftSelect, typename RightSelect>
   constexpr auto check_union_args(const LeftSelect& l, const RightSelect& r)
   {
-    if
-      constexpr(!(is_statement_v<LeftSelect> && is_statement_v<RightSelect>))
-      {
-        return failed<assert_union_args_are_statements>{};
-      }
-    else if
-      constexpr(!(has_result_row_v<LeftSelect> && has_result_row_v<RightSelect>))
-      {
-        return failed<assert_union_args_have_result_rows>{};
-      }
-    else if
-      constexpr(!result_rows_are_compatible_v<typename LeftSelect::result_row_t, typename RightSelect::result_row_t>)
-      {
-        return failed<assert_union_args_have_compatible_rows>{};
-      }
+    if constexpr (!(is_statement_v<LeftSelect> && is_statement_v<RightSelect>))
+    {
+      return failed<assert_union_args_are_statements>{};
+    }
+    else if constexpr (!(has_result_row_v<LeftSelect> && has_result_row_v<RightSelect>))
+    {
+      return failed<assert_union_args_have_result_rows>{};
+    }
+    else if constexpr (!result_rows_are_compatible_v<typename LeftSelect::result_row_t,
+                                                     typename RightSelect::result_row_t>)
+    {
+      return failed<assert_union_args_have_compatible_rows>{};
+    }
     else
     {
       return succeeded{};
@@ -195,12 +188,11 @@ namespace sqlpp
   [[nodiscard]] constexpr auto union_all(LeftSelect l, RightSelect r)
   {
     constexpr auto check = check_union_args(l, r);
-    if
-      constexpr(check)
-      {
-        return statement<no_union_t>{}.template replace_clause<no_union_t>(
-            union_t<all_t, LeftSelect, RightSelect>{all, l, r});
-      }
+    if constexpr (check)
+    {
+      return statement<no_union_t>{}.template replace_clause<no_union_t>(
+          union_t<all_t, LeftSelect, RightSelect>{all, l, r});
+    }
     else
     {
       return ::sqlpp::bad_statement_t{check};
@@ -211,12 +203,11 @@ namespace sqlpp
   [[nodiscard]] constexpr auto union_distinct(LeftSelect l, RightSelect r)
   {
     constexpr auto check = check_union_args(l, r);
-    if
-      constexpr(check)
-      {
-        return statement<no_union_t>{}.template replace_clause<no_union_t>(
-            union_t<distinct_t, LeftSelect, RightSelect>{distinct, l, r});
-      }
+    if constexpr (check)
+    {
+      return statement<no_union_t>{}.template replace_clause<no_union_t>(
+          union_t<distinct_t, LeftSelect, RightSelect>{distinct, l, r});
+    }
     else
     {
       return ::sqlpp::bad_statement_t{check};
