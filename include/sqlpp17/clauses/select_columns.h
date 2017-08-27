@@ -166,7 +166,7 @@ namespace sqlpp
       if constexpr (check)
       {
         return Statement::of(this).template replace_clause<no_select_columns_t>(
-            select_columns_t<Columns...>{std::make_tuple(columns...)});
+            select_columns_t<Columns...>{std::tuple(columns...)});
       }
       else
       {

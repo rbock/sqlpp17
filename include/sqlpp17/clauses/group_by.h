@@ -123,7 +123,7 @@ namespace sqlpp
       if constexpr (check)
       {
         return Statement::of(this).template replace_clause<no_group_by_t>(
-            group_by_t<Columns...>{std::make_tuple(columns...)});
+            group_by_t<Columns...>{std::tuple(columns...)});
       }
       else
       {

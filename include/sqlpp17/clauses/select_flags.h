@@ -118,7 +118,7 @@ namespace sqlpp
       if constexpr (check)
       {
         return Statement::of(this).template replace_clause<no_select_flags_t>(
-            select_flags_t<Fields...>{std::make_tuple(flags...)});
+            select_flags_t<Fields...>{std::tuple(flags...)});
       }
       else
       {

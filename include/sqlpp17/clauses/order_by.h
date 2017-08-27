@@ -48,6 +48,8 @@ namespace sqlpp
   {
     std::tuple<Columns...> _columns;
   };
+  template <typename... Columns>
+  order_by_t(std::initializer_list<std::tuple<Columns...>>)->order_by_t<Columns...>;
 
   template <typename Table>
   constexpr auto clause_tag<order_by_t<Table>> = clause::order_by{};
@@ -122,7 +124,7 @@ namespace sqlpp
       constexpr auto check = check_order_by_arg(expressions...);
       if constexpr (check)
       {
-        return Statement::of(this).template replace_clause<no_order_by_t>(order_by_t{std::make_tuple(expressions...)});
+        return Statement::of(this).template replace_clause<no_order_by_t>(order_by_t{std::tuple{expressions...}});
       }
       else
       {
