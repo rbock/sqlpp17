@@ -102,16 +102,14 @@ namespace sqlpp
   template <typename... Fs>
   [[nodiscard]] constexpr auto select(Fs... fs)
   {
-    if
-      constexpr((true && ... && is_select_flag_v<Fs>))
-      {
-        return ::sqlpp::select().flags(fs...);
-      }
-    else if
-      constexpr((true && ... && is_selectable_v<Fs>))
-      {
-        return ::sqlpp::select().columns(fs...);
-      }
+    if constexpr ((true && ... && is_select_flag_v<Fs>))
+    {
+      return ::sqlpp::select().flags(fs...);
+    }
+    else if constexpr ((true && ... && is_selectable_v<Fs>))
+    {
+      return ::sqlpp::select().columns(fs...);
+    }
     else
     {
       return ::sqlpp::bad_statement_t<typename select_failure<Fs...>::type>{};
@@ -121,16 +119,14 @@ namespace sqlpp
   template <typename... Fs>
   [[nodiscard]] constexpr auto select(std::tuple<Fs...> fs)
   {
-    if
-      constexpr((true && ... && is_select_flag_v<Fs>))
-      {
-        return ::sqlpp::select().flags(fs);
-      }
-    else if
-      constexpr((true && ... && is_selectable_v<Fs>))
-      {
-        return ::sqlpp::select().columns(fs);
-      }
+    if constexpr ((true && ... && is_select_flag_v<Fs>))
+    {
+      return ::sqlpp::select().flags(fs);
+    }
+    else if constexpr ((true && ... && is_selectable_v<Fs>))
+    {
+      return ::sqlpp::select().columns(fs);
+    }
     else
     {
       return ::sqlpp::bad_statement_t<typename select_failure<Fs...>::type>{};

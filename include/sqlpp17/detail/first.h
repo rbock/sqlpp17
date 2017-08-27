@@ -46,4 +46,3 @@ namespace sqlpp
     using first_t = typename first<Ts...>::type;
   }
 }
-

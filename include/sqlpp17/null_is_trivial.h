@@ -35,4 +35,3 @@ namespace sqlpp
     bool is_null;
   };
 }
-

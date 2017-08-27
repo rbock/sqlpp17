@@ -84,16 +84,14 @@ namespace sqlpp
   template <typename... T>
   constexpr auto check_select_flags_arg(const T&...)
   {
-    if
-      constexpr(!(true && ... && is_select_flag_v<T>))
-      {
-        return failed<assert_select_flags_args_are_valid>{};
-      }
-    else if
-      constexpr(type_set<T...>().size() != sizeof...(T))
-      {
-        return failed<assert_select_flags_args_are_unique>{};
-      }
+    if constexpr (!(true && ... && is_select_flag_v<T>))
+    {
+      return failed<assert_select_flags_args_are_valid>{};
+    }
+    else if constexpr (type_set<T...>().size() != sizeof...(T))
+    {
+      return failed<assert_select_flags_args_are_unique>{};
+    }
     else
       return succeeded{};
   }
@@ -117,12 +115,11 @@ namespace sqlpp
     [[nodiscard]] constexpr auto flags(Fields... flags) const
     {
       constexpr auto check = check_select_flags_arg(flags...);
-      if
-        constexpr(check)
-        {
-          return Statement::of(this).template replace_clause<no_select_flags_t>(
-              select_flags_t<Fields...>{std::make_tuple(flags...)});
-        }
+      if constexpr (check)
+      {
+        return Statement::of(this).template replace_clause<no_select_flags_t>(
+            select_flags_t<Fields...>{std::make_tuple(flags...)});
+      }
       else
       {
         return ::sqlpp::bad_statement_t{check};
@@ -133,11 +130,10 @@ namespace sqlpp
     [[nodiscard]] constexpr auto flags(std::tuple<Fields...> flags) const
     {
       constexpr auto check = check_select_flags_arg(std::declval<Fields>()...);
-      if
-        constexpr(check)
-        {
-          return Statement::of(this).template replace_clause<no_select_flags_t>(select_flags_t<Fields...>{flags});
-        }
+      if constexpr (check)
+      {
+        return Statement::of(this).template replace_clause<no_select_flags_t>(select_flags_t<Fields...>{flags});
+      }
       else
       {
         return ::sqlpp::bad_statement_t{check};

@@ -42,4 +42,3 @@ namespace sqlpp
   template <typename Clause, typename Statement>
   class result_base;
 }
-

@@ -47,4 +47,3 @@ namespace test
   }
   constexpr auto tabEmpty = sqlpp::table_t<TabEmpty_::_>{};
 }
-

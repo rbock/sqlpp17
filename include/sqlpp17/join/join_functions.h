@@ -49,26 +49,23 @@ namespace sqlpp
     template <typename Lhs, typename Rhs>
     constexpr auto check_conditionless_join(const Lhs&, const Rhs&)
     {
-      if
-        constexpr(!is_table_v<Lhs>)
-        {
-          return failed<assert_conditionless_join_lhs_table>{};
-        }
-      else if
-        constexpr(!is_table_v<remove_optional_t<Rhs>>)
-        {
-          return failed<assert_conditionless_join_rhs_table>{};
-        }
-      else if
-        constexpr(!provided_table_names_of_v<Lhs>.is_disjoint_from(provided_table_names_of_v<remove_optional_t<Rhs>>))
-        {
-          return failed<assert_conditionless_join_unique_names>{};
-        }
-      else if
-        constexpr(!required_tables_of_v<Lhs>.empty() || !required_tables_of_v<remove_optional_t<Rhs>>.empty())
-        {
-          return failed<assert_conditionless_join_no_table_dependencies>{};
-        }
+      if constexpr (!is_table_v<Lhs>)
+      {
+        return failed<assert_conditionless_join_lhs_table>{};
+      }
+      else if constexpr (!is_table_v<remove_optional_t<Rhs>>)
+      {
+        return failed<assert_conditionless_join_rhs_table>{};
+      }
+      else if constexpr (!provided_table_names_of_v<Lhs>.is_disjoint_from(
+                             provided_table_names_of_v<remove_optional_t<Rhs>>))
+      {
+        return failed<assert_conditionless_join_unique_names>{};
+      }
+      else if constexpr (!required_tables_of_v<Lhs>.empty() || !required_tables_of_v<remove_optional_t<Rhs>>.empty())
+      {
+        return failed<assert_conditionless_join_no_table_dependencies>{};
+      }
       else
         return succeeded{};
     }
@@ -77,11 +74,10 @@ namespace sqlpp
     constexpr auto join_impl(Lhs lhs, Rhs rhs)
     {
       constexpr auto check = check_conditionless_join(lhs, rhs);
-      if
-        constexpr(check)
-        {
-          return conditionless_join_t{lhs, JoinType{}, rhs};
-        }
+      if constexpr (check)
+      {
+        return conditionless_join_t{lhs, JoinType{}, rhs};
+      }
       else
       {
         return ::sqlpp::bad_statement_t{check};
@@ -125,11 +121,10 @@ namespace sqlpp
     constexpr auto cross_join_impl(Lhs lhs, Rhs rhs)
     {
       constexpr auto check = check_conditionless_join(lhs, rhs);
-      if
-        constexpr(check)
-        {
-          return detail::join_impl<cross_join_t>(lhs, rhs).unconditionally();
-        }
+      if constexpr (check)
+      {
+        return detail::join_impl<cross_join_t>(lhs, rhs).unconditionally();
+      }
       else
       {
         return ::sqlpp::bad_statement_t{check};
@@ -189,4 +184,3 @@ namespace sqlpp
     }
   };
 }
-

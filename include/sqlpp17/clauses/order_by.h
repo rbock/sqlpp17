@@ -85,21 +85,18 @@ namespace sqlpp
   template <typename... T>
   constexpr auto check_order_by_arg(const T&...)
   {
-    if
-      constexpr(sizeof...(T) == 0)
-      {
-        return failed<assert_order_by_args_not_empty>{};
-      }
-    else if
-      constexpr(!(true && ... && is_selectable_v<T>))
-      {
-        return failed<assert_order_by_args_are_selectable>{};
-      }
-    else if
-      constexpr(type_set<char_sequence_of_t<T>...>().size() != sizeof...(T))
-      {
-        return failed<assert_order_by_args_have_unique_names>{};
-      }
+    if constexpr (sizeof...(T) == 0)
+    {
+      return failed<assert_order_by_args_not_empty>{};
+    }
+    else if constexpr (!(true && ... && is_selectable_v<T>))
+    {
+      return failed<assert_order_by_args_are_selectable>{};
+    }
+    else if constexpr (type_set<char_sequence_of_t<T>...>().size() != sizeof...(T))
+    {
+      return failed<assert_order_by_args_have_unique_names>{};
+    }
     else
       return succeeded{};
   }
@@ -123,12 +120,10 @@ namespace sqlpp
     [[nodiscard]] constexpr auto order_by(Expressions... expressions) const
     {
       constexpr auto check = check_order_by_arg(expressions...);
-      if
-        constexpr(check)
-        {
-          return Statement::of(this).template replace_clause<no_order_by_t>(
-              order_by_t{std::make_tuple(expressions...)});
-        }
+      if constexpr (check)
+      {
+        return Statement::of(this).template replace_clause<no_order_by_t>(order_by_t{std::make_tuple(expressions...)});
+      }
       else
       {
         return ::sqlpp::bad_statement_t{check};
@@ -139,11 +134,10 @@ namespace sqlpp
     [[nodiscard]] constexpr auto order_by(std::tuple<Expressions...> expressions) const
     {
       constexpr auto check = check_order_by_arg(std::declval<Expressions>()...);
-      if
-        constexpr(check)
-        {
-          return Statement::of(this).template replace_clause<no_order_by_t>(order_by_t{expressions});
-        }
+      if constexpr (check)
+      {
+        return Statement::of(this).template replace_clause<no_order_by_t>(order_by_t{expressions});
+      }
       else
       {
         return ::sqlpp::bad_statement_t(check);

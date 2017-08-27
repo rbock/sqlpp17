@@ -35,14 +35,12 @@ namespace sqlpp
     template <typename T>
     auto unused(const T& t) -> bool
     {
-      if
-        constexpr(sqlpp::is_optional_v<T>)
-        {
-          return !t.to_be_used;
-        }
+      if constexpr (sqlpp::is_optional_v<T>)
+      {
+        return !t.to_be_used;
+      }
 
       return false;
     }
   }
 }
-

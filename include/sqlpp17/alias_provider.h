@@ -46,4 +46,3 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   constexpr auto NAME = NAME##_t            \
   {                                         \
   }
-

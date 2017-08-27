@@ -75,11 +75,10 @@ namespace sqlpp
   constexpr auto check_clause_executable(const type_t<clause_base<limit_t<Number>, statement<Clauses...>>>& t)
   {
     constexpr auto _tag_set = type_set(clause_tag<Clauses>...);
-    if
-      constexpr(!_tag_set.template count<clause::order_by>())
-      {
-        return failed<assert_limit_used_with_order_by>{};
-      }
+    if constexpr (!_tag_set.template count<clause::order_by>())
+    {
+      return failed<assert_limit_used_with_order_by>{};
+    }
     else
     {
       return succeeded{};
@@ -102,11 +101,10 @@ namespace sqlpp
   template <typename T>
   constexpr auto check_limit_arg()
   {
-    if
-      constexpr(!std::is_integral_v<T>)
-      {
-        return failed<assert_limit_arg_is_integral_value>{};
-      }
+    if constexpr (!std::is_integral_v<T>)
+    {
+      return failed<assert_limit_arg_is_integral_value>{};
+    }
     else
       return succeeded{};
   }
@@ -130,11 +128,10 @@ namespace sqlpp
     [[nodiscard]] constexpr auto limit(Value value) const
     {
       constexpr auto check = check_limit_arg<remove_optional_t<Value>>();
-      if
-        constexpr(check)
-        {
-          return Statement::of(this).template replace_clause<no_limit_t>(limit_t<Value>{value});
-        }
+      if constexpr (check)
+      {
+        return Statement::of(this).template replace_clause<no_limit_t>(limit_t<Value>{value});
+      }
       else
       {
         return ::sqlpp::bad_statement_t{check};

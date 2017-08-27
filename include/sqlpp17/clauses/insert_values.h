@@ -204,18 +204,17 @@ namespace sqlpp
           is_first = false;
         else
           context << ", ";
-        if
-          constexpr(is_optional(expr))
+        if constexpr (is_optional(expr))
+        {
+          if (expr.to_be_used)
           {
-            if (expr.to_be_used)
-            {
-              context << expr.value;
-            }
-            else
-            {
-              context << "default";
-            }
+            context << expr.value;
           }
+          else
+          {
+            context << "default";
+          }
+        }
       }
     };
   }
@@ -265,37 +264,31 @@ namespace sqlpp
   template <typename... Assignments>
   constexpr auto check_insert_set_args()
   {
-    if
-      constexpr(sizeof...(Assignments))
-      {
-        return failed<assert_insert_set_at_least_one_arg>{};
-      }
-    else if
-      constexpr(!(true && ... && is_assignment_v<Assignments>))
-      {
-        return failed<assert_insert_set_args_are_assignments>{};
-      }
-    else if
-      constexpr(type_set<char_sequence_of_t<Assignments>...>().size() != sizeof...(Assignments))
-      {
-        return failed<assert_insert_set_args_contain_no_duplicates>{};
-      }
-    else if
-      constexpr(!(true && ... && is_insert_allowed_v<column_of_t<Assignments>>))
-      {
-        return failed<assert_insert_set_assignments_are_allowed>{};
-      }
-    else if
-      constexpr(type_set<table_of_t<column_of_t<Assignments>>...>().size() != 1)
-      {
-        return failed<assert_insert_set_args_affect_single_table>{};
-      }
-    else if
-      constexpr(type_set<column_of_t<Assignments>...>() >=
-                required_columns_of_v<table_of_t<detail::first_t<Assignments...>>>)
-      {
-        return failed<assert_insert_set_is_not_missing_assignment>{};
-      }
+    if constexpr (sizeof...(Assignments))
+    {
+      return failed<assert_insert_set_at_least_one_arg>{};
+    }
+    else if constexpr (!(true && ... && is_assignment_v<Assignments>))
+    {
+      return failed<assert_insert_set_args_are_assignments>{};
+    }
+    else if constexpr (type_set<char_sequence_of_t<Assignments>...>().size() != sizeof...(Assignments))
+    {
+      return failed<assert_insert_set_args_contain_no_duplicates>{};
+    }
+    else if constexpr (!(true && ... && is_insert_allowed_v<column_of_t<Assignments>>))
+    {
+      return failed<assert_insert_set_assignments_are_allowed>{};
+    }
+    else if constexpr (type_set<table_of_t<column_of_t<Assignments>>...>().size() != 1)
+    {
+      return failed<assert_insert_set_args_affect_single_table>{};
+    }
+    else if constexpr (type_set<column_of_t<Assignments>...>() >=
+                       required_columns_of_v<table_of_t<detail::first_t<Assignments...>>>)
+    {
+      return failed<assert_insert_set_is_not_missing_assignment>{};
+    }
     else
       return succeeded{};
   }
@@ -324,13 +317,12 @@ namespace sqlpp
     [[nodiscard]] constexpr auto set(Assignments... assignments) const
     {
       constexpr auto check = check_insert_set_args<remove_optional_t<Assignments>...>();
-      if
-        constexpr(check)
-        {
-          using row_t = std::tuple<Assignments...>;
-          return Statement::of(this).template replace_clause<no_insert_values_t>(
-              insert_values_t<row_t>{row_t{assignments...}});
-        }
+      if constexpr (check)
+      {
+        using row_t = std::tuple<Assignments...>;
+        return Statement::of(this).template replace_clause<no_insert_values_t>(
+            insert_values_t<row_t>{row_t{assignments...}});
+      }
       else
       {
         return ::sqlpp::bad_statement_t{check};
@@ -341,12 +333,11 @@ namespace sqlpp
     [[nodiscard]] constexpr auto multiset(std::vector<std::tuple<remove_optional_t<Assignments>...>> assignments) const
     {
       constexpr auto check = check_insert_set_args<remove_optional_t<Assignments>...>();
-      if
-        constexpr(check)
-        {
-          return Statement::of(this).template replace_clause<no_insert_values_t>(
-              insert_multi_values_t<Assignments...>{assignments});
-        }
+      if constexpr (check)
+      {
+        return Statement::of(this).template replace_clause<no_insert_values_t>(
+            insert_multi_values_t<Assignments...>{assignments});
+      }
       else
       {
         return ::sqlpp::bad_statement_t{check};

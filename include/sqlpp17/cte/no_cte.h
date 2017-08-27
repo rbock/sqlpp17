@@ -40,21 +40,18 @@ namespace sqlpp
   template <typename AliasProvider, typename Statement>
   constexpr auto check_cte_as_arg()
   {
-    if
-      constexpr(!is_statement_v<Statement>)
-      {
-        return failed<assert_cte_as_arg_is_statement>{};
-      }
-    else if
-      constexpr(!has_result_row_v<Statement>)
-      {
-        return failed<assert_cte_as_arg_has_result_row>{};
-      }
-    else if
-      constexpr(required_cte_names_of_v<Statement>.template count<AliasProvider>() == 0)
-      {
-        return failed<assert_cte_as_arg_is_not_initially_self_referential>{};
-      }
+    if constexpr (!is_statement_v<Statement>)
+    {
+      return failed<assert_cte_as_arg_is_statement>{};
+    }
+    else if constexpr (!has_result_row_v<Statement>)
+    {
+      return failed<assert_cte_as_arg_has_result_row>{};
+    }
+    else if constexpr (required_cte_names_of_v<Statement>.template count<AliasProvider>() == 0)
+    {
+      return failed<assert_cte_as_arg_is_not_initially_self_referential>{};
+    }
     else
     {
       return succeeded{};
@@ -69,11 +66,10 @@ namespace sqlpp
     [[nodiscard]] constexpr auto as(Statement s) const
     {
       constexpr auto check = check_cte_as_arg<Statement>();
-      if
-        constexpr(check)
-        {
-          return cte_t<AliasProvider, Statement>{s};
-        }
+      if constexpr (check)
+      {
+        return cte_t<AliasProvider, Statement>{s};
+      }
       else
       {
         return ::sqlpp::bad_statement_t{check};
@@ -86,11 +82,10 @@ namespace sqlpp
   template <typename AliasProvider>
   constexpr auto check_cte_arg()
   {
-    if
-      constexpr(!is_alias_provider_v<AliasProvider>)
-      {
-        return failed<assert_cte_arg_is_alias_provider>{};
-      }
+    if constexpr (!is_alias_provider_v<AliasProvider>)
+    {
+      return failed<assert_cte_arg_is_alias_provider>{};
+    }
     else
     {
       return succeeded{};
@@ -100,15 +95,13 @@ namespace sqlpp
   [[nodiscard]] constexpr auto cte(AliasProvider alias)
   {
     constexpr auto check = check_cte_arg<AliasProvider>();
-    if
-      constexpr(check)
-      {
-        return cte_alias_t<AliasProvider>{};
-      }
+    if constexpr (check)
+    {
+      return cte_alias_t<AliasProvider>{};
+    }
     else
     {
       return ::sqlpp::bad_statement_t{check};
     }
   }
 }
-

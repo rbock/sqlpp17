@@ -46,11 +46,10 @@ namespace sqlpp
         else
           context << ", ";
 
-        if
-          constexpr(is_optional(expr))
-          {
-            context << expr.value.column;
-          }
+        if constexpr (is_optional(expr))
+        {
+          context << expr.value.column;
+        }
         else
         {
           context << expr;

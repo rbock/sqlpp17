@@ -42,4 +42,3 @@ namespace sqlpp
                                    std::enable_if_t<sizeof...(LeftColumnSpecs) == sizeof...(RightColumnSpecs)>> =
           (true && ... && column_specs_are_compatible_v<LeftColumnSpecs, RightColumnSpecs>);
 }
-

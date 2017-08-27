@@ -51,11 +51,10 @@ namespace sqlpp
   constexpr auto operator&&(L l, R r)
   {
     constexpr auto check = check_and(value_type_of(l), value_type_of(r));
-    if
-      constexpr(check)
-      {
-        return and_t<L, R>{l, r};
-      }
+    if constexpr (check)
+    {
+      return and_t<L, R>{l, r};
+    }
     else
     {
       return ::sqlpp::bad_statement_t{check};

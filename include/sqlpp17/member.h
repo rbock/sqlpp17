@@ -33,4 +33,3 @@ namespace sqlpp
   template <typename Name, typename Type>
   using member_t = typename Name::_alias_t::template _member_t<Type>;
 }
-

@@ -70,4 +70,3 @@ namespace sqlpp
   constexpr auto provided_tables_of_v<join_t<Lhs, JoinType, Rhs, Condition>> =
       provided_tables_of_v<Lhs> | provided_tables_of_v<Rhs>;
 }
-

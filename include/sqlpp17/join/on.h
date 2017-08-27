@@ -49,4 +49,3 @@ namespace sqlpp
     return context;
   }
 }
-

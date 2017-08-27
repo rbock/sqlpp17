@@ -55,4 +55,3 @@ namespace sqlpp
     using type = make_char_sequence<name_of_v<Alias>>;
   };
 }
-

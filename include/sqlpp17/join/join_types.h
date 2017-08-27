@@ -84,4 +84,3 @@ namespace sqlpp
     static constexpr const char* _name = " RIGHT OUTER";
   };
 }
-

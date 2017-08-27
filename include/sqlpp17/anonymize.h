@@ -112,26 +112,22 @@ namespace sqlpp
   auto anonymize(T t)
   {
     using Context = typename Database::Context;
-    if
-      constexpr(!parameters_of<T>.empty())
-      {
-        return ::sqlpp::bad_statement_t<failed<assert_anonymize_arg_has_no_parameters>>{t};
-      }
-    else if
-      constexpr(::sqlpp::is_table_v<T>)
-      {
-        return anonymous_t<Context, tag::table>{t};
-      }
-    else if
-      constexpr(::sqlpp::is_alias_v<T>)
-      {
-        return ::sqlpp::bad_statement_t<failed<assert_anonymize_arg_has_no_alias>>{t};
-      }
-    else if
-      constexpr(::sqlpp::is_expression_v<T>)
-      {
-        return anonymous_t<Context, tag::expression<decltype(value_type_of_v<T>)>>{t};
-      }
+    if constexpr (!parameters_of<T>.empty())
+    {
+      return ::sqlpp::bad_statement_t<failed<assert_anonymize_arg_has_no_parameters>>{t};
+    }
+    else if constexpr (::sqlpp::is_table_v<T>)
+    {
+      return anonymous_t<Context, tag::table>{t};
+    }
+    else if constexpr (::sqlpp::is_alias_v<T>)
+    {
+      return ::sqlpp::bad_statement_t<failed<assert_anonymize_arg_has_no_alias>>{t};
+    }
+    else if constexpr (::sqlpp::is_expression_v<T>)
+    {
+      return anonymous_t<Context, tag::expression<decltype(value_type_of_v<T>)>>{t};
+    }
     else
     {
       return ::sqlpp::bad_statement_t<failed<assert_anonymize_arg_is_table_or_expression>>{t};

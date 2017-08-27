@@ -57,4 +57,3 @@ namespace sqlpp
     return failed<T>{};
   }
 }
-

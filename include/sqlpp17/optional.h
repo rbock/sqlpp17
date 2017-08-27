@@ -73,4 +73,3 @@ namespace sqlpp
     return t.value;
   }
 }
-

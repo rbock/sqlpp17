@@ -74,4 +74,3 @@ sqlpp::select() << sqlpp::selected_fields(test::tabPerson.id, test::tabPerson.is
   row.hansi;
   */
 }
-

@@ -74,11 +74,10 @@ namespace sqlpp
   constexpr auto check_clause_executable(const type_t<clause_base<offset_t<Number>, statement<Clauses...>>>& t)
   {
     constexpr auto _tag_set = type_set(clause_tag<Clauses>...);
-    if
-      constexpr(!_tag_set.template count<clause::order_by>())
-      {
-        return failed<assert_offset_used_with_order_by>{};
-      }
+    if constexpr (!_tag_set.template count<clause::order_by>())
+    {
+      return failed<assert_offset_used_with_order_by>{};
+    }
     else
     {
       return succeeded{};
@@ -101,11 +100,10 @@ namespace sqlpp
   template <typename T>
   constexpr auto check_offset_arg()
   {
-    if
-      constexpr(!std::is_integral_v<T>)
-      {
-        return failed<assert_offset_arg_is_integral_value>{};
-      }
+    if constexpr (!std::is_integral_v<T>)
+    {
+      return failed<assert_offset_arg_is_integral_value>{};
+    }
     else
       return succeeded{};
   }
@@ -129,11 +127,10 @@ namespace sqlpp
     [[nodiscard]] constexpr auto offset(Value value) const
     {
       constexpr auto check = check_offset_arg<remove_optional_t<Value>>();
-      if
-        constexpr(check)
-        {
-          return Statement::of(this).template replace_clause<no_offset_t>(offset_t<Value>{value});
-        }
+      if constexpr (check)
+      {
+        return Statement::of(this).template replace_clause<no_offset_t>(offset_t<Value>{value});
+      }
       else
       {
         return ::sqlpp::bad_statement_t{check};

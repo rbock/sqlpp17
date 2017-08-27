@@ -39,4 +39,3 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // arithmetic
 #include <sqlpp17/operator/plus.h>
-

@@ -53,11 +53,10 @@ namespace sqlpp
     template <typename Rhs>
     constexpr auto operator<<(const result_wrapper<Rhs>&)
     {
-      if
-        constexpr(is_result_clause_v<Rhs>)
-        {
-          return result_wrapper<Rhs>{};
-        }
+      if constexpr (is_result_clause_v<Rhs>)
+      {
+        return result_wrapper<Rhs>{};
+      }
       else
       {
         return result_wrapper<T>{};
@@ -133,11 +132,10 @@ namespace sqlpp
     {
       constexpr auto check = check_statement_executable<Connection>(type_v<statement>);
 
-      if
-        constexpr(check)
-        {
-          return _result_base::_run(connection);
-        }
+      if constexpr (check)
+      {
+        return _result_base::_run(connection);
+      }
       else
       {
         return ::sqlpp::bad_statement_t{check};
@@ -159,12 +157,11 @@ namespace sqlpp
   {
     constexpr auto count_untagged_clauses =
         (std::size_t{} + ... + std::is_same_v<std::decay_t<decltype(clause_tag<Clauses>)>, no_clause>);
-    if
-      constexpr((type_set(clause_tag<Clauses>...) - type_set<no_clause>()).size() !=
-                sizeof...(Clauses) - count_untagged_clauses)
-      {
-        return failed<assert_statement_contains_unique_clauses>{};
-      }
+    if constexpr ((type_set(clause_tag<Clauses>...) - type_set<no_clause>()).size() !=
+                  sizeof...(Clauses) - count_untagged_clauses)
+    {
+      return failed<assert_statement_contains_unique_clauses>{};
+    }
     else
       return succeeded{};
   }
@@ -179,15 +176,14 @@ namespace sqlpp
   constexpr auto operator<<(statement<LClauses...> l, statement<RClauses...> r)
   {
     constexpr auto check = check_statement_clauses<LClauses..., RClauses...>();
-    if
-      constexpr(check)
-      {
-        // remove non-clauses from left part
-        using clauses_t = decltype((type_vector<>{} + ... +
-                                    std::conditional_t<is_clause_v<LClauses>, type_vector<LClauses>, type_vector<>>{}) +
-                                   type_vector<RClauses...>{});
-        return algorithm::copy_t<clauses_t, statement>(detail::make_constructor_arg(l, r));
-      }
+    if constexpr (check)
+    {
+      // remove non-clauses from left part
+      using clauses_t = decltype(
+          (type_vector<>{} + ... + std::conditional_t<is_clause_v<LClauses>, type_vector<LClauses>, type_vector<>>{}) +
+          type_vector<RClauses...>{});
+      return algorithm::copy_t<clauses_t, statement>(detail::make_constructor_arg(l, r));
+    }
     else
     {
       return ::sqlpp::bad_statement_t{check};

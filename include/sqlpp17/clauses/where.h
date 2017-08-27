@@ -79,21 +79,18 @@ namespace sqlpp
   template <typename T>
   constexpr auto check_where_arg(const T&)
   {
-    if
-      constexpr(!is_expression_v<T>)
-      {
-        return failed<assert_where_arg_is_expression>{};
-      }
-    else if
-      constexpr(!is_boolean_v<T>)
-      {
-        return failed<assert_where_arg_is_boolean>{};
-      }
-    else if
-      constexpr(contains_aggregate_v<T>)
-      {
-        return failed<assert_where_arg_contains_no_aggregate>{};
-      }
+    if constexpr (!is_expression_v<T>)
+    {
+      return failed<assert_where_arg_is_expression>{};
+    }
+    else if constexpr (!is_boolean_v<T>)
+    {
+      return failed<assert_where_arg_is_boolean>{};
+    }
+    else if constexpr (contains_aggregate_v<T>)
+    {
+      return failed<assert_where_arg_contains_no_aggregate>{};
+    }
     else
       return succeeded{};
   }
@@ -117,11 +114,10 @@ namespace sqlpp
     [[nodiscard]] constexpr auto where(Condition condition) const
     {
       constexpr auto check = check_where_arg(condition);
-      if
-        constexpr(check)
-        {
-          return Statement::of(this).template replace_clause<no_where_t>(where_t<Condition>{condition});
-        }
+      if constexpr (check)
+      {
+        return Statement::of(this).template replace_clause<no_where_t>(where_t<Condition>{condition});
+      }
       else
       {
         return ::sqlpp::bad_statement_t{check};

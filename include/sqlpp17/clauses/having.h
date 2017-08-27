@@ -78,16 +78,14 @@ namespace sqlpp
   template <typename T>
   constexpr auto check_having_arg(const T&)
   {
-    if
-      constexpr(!is_expression_v<T>)
-      {
-        return failed<assert_having_arg_is_expression>{};
-      }
-    else if
-      constexpr(!is_boolean_v<T>)
-      {
-        return failed<assert_having_arg_is_boolean>{};
-      }
+    if constexpr (!is_expression_v<T>)
+    {
+      return failed<assert_having_arg_is_expression>{};
+    }
+    else if constexpr (!is_boolean_v<T>)
+    {
+      return failed<assert_having_arg_is_boolean>{};
+    }
     else
       return succeeded{};
   }
@@ -111,11 +109,10 @@ namespace sqlpp
     [[nodiscard]] constexpr auto having(Condition condition) const
     {
       constexpr auto check = check_having_arg(condition);
-      if
-        constexpr(check)
-        {
-          return Statement::of(this).template replace_clause<no_having_t>(having_t<Condition>{condition});
-        }
+      if constexpr (check)
+      {
+        return Statement::of(this).template replace_clause<no_having_t>(having_t<Condition>{condition});
+      }
       else
       {
         return ::sqlpp::bad_statement_t{check};
@@ -135,4 +132,3 @@ namespace sqlpp
     return statement<no_having_t>{}.having(std::forward<Condition>(condition));
   }
 }
-

@@ -45,11 +45,10 @@ namespace sqlpp
   template <typename Expr>
   constexpr decltype(auto) embrace(const Expr& expr)
   {
-    if
-      constexpr(requires_braces_v<Expr>)
-      {
-        return embrace_t<Expr>{expr};
-      }
+    if constexpr (requires_braces_v<Expr>)
+    {
+      return embrace_t<Expr>{expr};
+    }
     else
     {
       return expr;

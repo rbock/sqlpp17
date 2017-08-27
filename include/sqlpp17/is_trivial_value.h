@@ -33,4 +33,3 @@ namespace sqlpp
     return false;
   }
 }
-

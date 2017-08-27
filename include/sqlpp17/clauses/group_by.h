@@ -85,21 +85,18 @@ namespace sqlpp
   template <typename... T>
   constexpr auto check_group_by_arg(const T&...)
   {
-    if
-      constexpr(sizeof...(T) == 0)
-      {
-        return failed<assert_group_by_args_not_empty>{};
-      }
-    else if
-      constexpr(!(true && ... && is_selectable_v<T>))
-      {
-        return failed<assert_group_by_args_are_selectable>{};
-      }
-    else if
-      constexpr(type_set<char_sequence_of_t<T>...>().size() != sizeof...(T))
-      {
-        return failed<assert_group_by_args_have_unique_names>{};
-      }
+    if constexpr (sizeof...(T) == 0)
+    {
+      return failed<assert_group_by_args_not_empty>{};
+    }
+    else if constexpr (!(true && ... && is_selectable_v<T>))
+    {
+      return failed<assert_group_by_args_are_selectable>{};
+    }
+    else if constexpr (type_set<char_sequence_of_t<T>...>().size() != sizeof...(T))
+    {
+      return failed<assert_group_by_args_have_unique_names>{};
+    }
     else
       return succeeded{};
   }
@@ -123,12 +120,11 @@ namespace sqlpp
     [[nodiscard]] constexpr auto group_by(Columns... columns) const
     {
       constexpr auto check = check_group_by_arg(columns...);
-      if
-        constexpr(check)
-        {
-          return Statement::of(this).template replace_clause<no_group_by_t>(
-              group_by_t<Columns...>{std::make_tuple(columns...)});
-        }
+      if constexpr (check)
+      {
+        return Statement::of(this).template replace_clause<no_group_by_t>(
+            group_by_t<Columns...>{std::make_tuple(columns...)});
+      }
       else
       {
         return ::sqlpp::bad_statement_t{check};
@@ -139,11 +135,10 @@ namespace sqlpp
     [[nodiscard]] constexpr auto group_by(std::tuple<Columns...> columns) const
     {
       constexpr auto check = check_group_by_arg(std::declval<Columns>()...);
-      if
-        constexpr(check)
-        {
-          return Statement::of(this).template replace_clause<no_group_by_t>(group_by_t<Columns...>{columns});
-        }
+      if constexpr (check)
+      {
+        return Statement::of(this).template replace_clause<no_group_by_t>(group_by_t<Columns...>{columns});
+      }
       else
       {
         return ::sqlpp::bad_statement_t{check};
@@ -163,4 +158,3 @@ namespace sqlpp
     return statement<no_group_by_t>{}.group_by(std::forward<Columns>(columns)...);
   }
 }
-

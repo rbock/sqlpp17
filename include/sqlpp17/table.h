@@ -67,4 +67,3 @@ namespace sqlpp
     using type = make_char_sequence<TableSpec::_alias_t::name>;
   };
 }
-

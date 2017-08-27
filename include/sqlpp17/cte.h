@@ -29,4 +29,3 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/cte/cte.h>
 #include <sqlpp17/cte/no_cte.h>
 #include <sqlpp17/cte/recursive_cte.h>
-

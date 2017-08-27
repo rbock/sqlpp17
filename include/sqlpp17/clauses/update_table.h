@@ -80,21 +80,18 @@ namespace sqlpp
   template <typename T>
   constexpr auto check_update_table_arg(const T&)
   {
-    if
-      constexpr(is_join_v<T>)
-      {
-        return failed<assert_update_table_arg_is_not_join>{};
-      }
-    else if
-      constexpr(!is_table_v<T>)
-      {
-        return failed<assert_update_table_arg_is_table>{};
-      }
-    else if
-      constexpr(!required_tables_of_v<T>.empty())
-      {
-        return failed<assert_update_table_arg_no_required_tables>{};
-      }
+    if constexpr (is_join_v<T>)
+    {
+      return failed<assert_update_table_arg_is_not_join>{};
+    }
+    else if constexpr (!is_table_v<T>)
+    {
+      return failed<assert_update_table_arg_is_table>{};
+    }
+    else if constexpr (!required_tables_of_v<T>.empty())
+    {
+      return failed<assert_update_table_arg_no_required_tables>{};
+    }
     else
       return succeeded{};
   }
@@ -118,11 +115,10 @@ namespace sqlpp
     [[nodiscard]] constexpr auto table(Table t) const
     {
       constexpr auto check = check_update_table_arg(t);
-      if
-        constexpr(check)
-        {
-          return Statement::of(this).template replace_clause<no_update_table_t>(update_table_t<Table>{t});
-        }
+      if constexpr (check)
+      {
+        return Statement::of(this).template replace_clause<no_update_table_t>(update_table_t<Table>{t});
+      }
       else
       {
         return ::sqlpp::bad_statement_t{check};

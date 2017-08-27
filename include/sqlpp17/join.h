@@ -28,4 +28,3 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/join/conditionless_join.h>
 #include <sqlpp17/join/join_functions.h>
-

@@ -43,11 +43,11 @@ namespace sqlpp
   template <typename Context, typename Table, typename Alias, typename... ColumnSpecs>
   decltype(auto) operator<<(Context& context, const table_alias_t<Table, Alias, ColumnSpecs...>& t)
   {
-    if
-      constexpr(requires_braces<Table>) context << "(";
+    if constexpr (requires_braces<Table>)
+      context << "(";
     context << t._table;
-    if
-      constexpr(requires_braces<Table>) context << ")";
+    if constexpr (requires_braces<Table>)
+      context << ")";
     context << " AS " << name_of_v<Alias>;
     return context;
   }
@@ -65,4 +65,3 @@ namespace sqlpp
     using type = make_char_sequence<Alias::_alias_t::name>;
   };
 }
-

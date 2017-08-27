@@ -36,14 +36,12 @@ namespace sqlpp
     template <typename... Ts>
     auto any_to_be_used(const std::tuple<Ts...>& t) -> bool
     {
-      if
-        constexpr((true && ... && sqlpp::is_optional_v<Ts>))
-        {
-          return (false || ... || std::get<Ts>(t).to_be_used);
-        }
+      if constexpr ((true && ... && sqlpp::is_optional_v<Ts>))
+      {
+        return (false || ... || std::get<Ts>(t).to_be_used);
+      }
 
       return false;
     }
   }
 }
-

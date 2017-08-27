@@ -79,21 +79,18 @@ namespace sqlpp::mysql
   template <typename T>
   constexpr auto check_using_arg(const T&)
   {
-    if
-      constexpr(!is_table_v<T>)
-      {
-        return failed<assert_using_arg_is_table>{};
-      }
-    else if
-      constexpr(is_read_only_table_v<T>)
-      {
-        return failed<assert_using_arg_no_read_only_table>{};
-      }
-    else if
-      constexpr(!required_tables_of_v<T>.empty())
-      {
-        return failed<assert_using_arg_no_required_tables>{};
-      }
+    if constexpr (!is_table_v<T>)
+    {
+      return failed<assert_using_arg_is_table>{};
+    }
+    else if constexpr (is_read_only_table_v<T>)
+    {
+      return failed<assert_using_arg_no_read_only_table>{};
+    }
+    else if constexpr (!required_tables_of_v<T>.empty())
+    {
+      return failed<assert_using_arg_no_required_tables>{};
+    }
     else
       return succeeded{};
   }
@@ -117,11 +114,10 @@ namespace sqlpp::mysql
     [[nodiscard]] constexpr auto using_(Table t) const
     {
       constexpr auto check = check_using_arg(t);
-      if
-        constexpr(check)
-        {
-          return Statement::of(this).template replace_clause<no_using_t>(using_t<Table>{t});
-        }
+      if constexpr (check)
+      {
+        return Statement::of(this).template replace_clause<no_using_t>(using_t<Table>{t});
+      }
       else
       {
         return ::sqlpp::bad_statement_t{check};
@@ -141,4 +137,3 @@ namespace sqlpp::mysql
     return statement<no_using_t>{}.using_(std::forward<Table>(t));
   }
 }
-

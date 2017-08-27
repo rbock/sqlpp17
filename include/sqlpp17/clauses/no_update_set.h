@@ -42,26 +42,22 @@ namespace sqlpp
   template <typename... Assignments>
   constexpr auto check_update_set_arg()
   {
-    if
-      constexpr(sizeof...(Assignments))
-      {
-        return failed<assert_update_set_at_least_one_arg>{};
-      }
-    else if
-      constexpr(!(true && ... && is_assignment_v<Assignments>))
-      {
-        return failed<assert_update_set_args_are_assignments>{};
-      }
-    else if
-      constexpr(type_set<char_sequence_of_t<Assignments>...>().size() != sizeof...(Assignments))
-      {
-        return failed<assert_update_set_args_contain_no_duplicates>{};
-      }
-    else if
-      constexpr(!(true && ... && is_update_allowed_v<column_of_t<Assignments>>))
-      {
-        return failed<assert_update_set_assignments_are_allowed>{};
-      }
+    if constexpr (sizeof...(Assignments))
+    {
+      return failed<assert_update_set_at_least_one_arg>{};
+    }
+    else if constexpr (!(true && ... && is_assignment_v<Assignments>))
+    {
+      return failed<assert_update_set_args_are_assignments>{};
+    }
+    else if constexpr (type_set<char_sequence_of_t<Assignments>...>().size() != sizeof...(Assignments))
+    {
+      return failed<assert_update_set_args_contain_no_duplicates>{};
+    }
+    else if constexpr (!(true && ... && is_update_allowed_v<column_of_t<Assignments>>))
+    {
+      return failed<assert_update_set_assignments_are_allowed>{};
+    }
     else
       return succeeded{};
   }
@@ -85,12 +81,11 @@ namespace sqlpp
     [[nodiscard]] constexpr auto update_set(Assignments... assignments) const
     {
       constexpr auto check = check_update_set_arg<Assignments...>();
-      if
-        constexpr(check)
-        {
-          return Statement::of(this).template replace_clause<no_update_set_t>(
-              update_set_t<Assignments...>{assignments...});
-        }
+      if constexpr (check)
+      {
+        return Statement::of(this).template replace_clause<no_update_set_t>(
+            update_set_t<Assignments...>{assignments...});
+      }
       else
       {
         return ::sqlpp::bad_statement_t{check};
@@ -110,4 +105,3 @@ namespace sqlpp
     return statement<no_update_set_t>{}.update_set(std::forward<Assignments>(assignments)...);
   }
 }
-

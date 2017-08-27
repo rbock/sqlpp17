@@ -42,16 +42,14 @@ namespace sqlpp
     template <typename ConditionlessJoin, typename Expr>
     constexpr auto check_join(const ConditionlessJoin&, const Expr&)
     {
-      if
-        constexpr(!is_expression<Expr> || !is_boolean<Expr>)
-        {
-          return failed<assert_on_is_boolean_expression>{};
-        }
-      else if
-        constexpr(!(required_tables_of<Expr> <= provided_tables_of<ConditionlessJoin>))
-        {
-          return failed<assert_join_on_no_foreign_table_dependencies>{};
-        }
+      if constexpr (!is_expression<Expr> || !is_boolean<Expr>)
+      {
+        return failed<assert_on_is_boolean_expression>{};
+      }
+      else if constexpr (!(required_tables_of<Expr> <= provided_tables_of<ConditionlessJoin>))
+      {
+        return failed<assert_join_on_no_foreign_table_dependencies>{};
+      }
       else
         return succeeded{};
     }
@@ -69,11 +67,10 @@ namespace sqlpp
     [[nodiscard]] auto on(const Expr& expr) const
     {
       constexpr auto check = check_join(*this, expr);
-      if
-        constexpr(check)
-        {
-          return join_t{_lhs, JoinType{}, _rhs, on_t<Expr>{expr}};
-        }
+      if constexpr (check)
+      {
+        return join_t{_lhs, JoinType{}, _rhs, on_t<Expr>{expr}};
+      }
       else
       {
         return ::sqlpp::bad_statement_t{check};
@@ -96,4 +93,3 @@ namespace sqlpp
   constexpr auto provided_tables_of_v<conditionless_join_t<Lhs, JoinType, Rhs>> =
       provided_tables_of_v<Lhs> | provided_tables_of_v<Rhs>;
 }
-

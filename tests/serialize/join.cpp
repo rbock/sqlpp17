@@ -44,4 +44,3 @@ int main()
   }
 #warning : need to test results
 }
-

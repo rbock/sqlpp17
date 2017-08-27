@@ -66,4 +66,3 @@ int main()
   row.hansi;
   */
 }
-

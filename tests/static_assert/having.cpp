@@ -69,4 +69,3 @@ int main()
   test_bad_statement(sqlpp::assert_from_arg_is_table{}, sqlpp::from(std::string("mytable")));
 #endif
 }
-

@@ -25,12 +25,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <iostream>
+#include <tables/TabDepartment.h>
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
-#include <tables/TabDepartment.h>
 
-#include <sqlpp17/operator.h>
 #include <sqlpp17/data_type.h>
+#include <sqlpp17/operator.h>
 
 int main()
 {
@@ -59,4 +59,3 @@ int main()
   }
 #warning : need to test results
 }
-
