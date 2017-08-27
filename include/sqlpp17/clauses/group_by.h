@@ -122,8 +122,7 @@ namespace sqlpp
       constexpr auto check = check_group_by_arg(columns...);
       if constexpr (check)
       {
-        return Statement::of(this).template replace_clause<no_group_by_t>(
-            group_by_t<Columns...>{std::tuple(columns...)});
+        return Statement::replace_clause(this, group_by_t<Columns...>{std::tuple(columns...)});
       }
       else
       {
@@ -137,7 +136,7 @@ namespace sqlpp
       constexpr auto check = check_group_by_arg(std::declval<Columns>()...);
       if constexpr (check)
       {
-        return Statement::of(this).template replace_clause<no_group_by_t>(group_by_t<Columns...>{columns});
+        return Statement::replace_clause(this, group_by_t<Columns...>{columns});
       }
       else
       {

@@ -310,7 +310,7 @@ namespace sqlpp
 
     [[nodiscard]] constexpr auto default_values() const
     {
-      return Statement::of(this).template replace_clause<no_insert_values_t>(insert_default_values_t{});
+      return Statement::replace_clause(this, insert_default_values_t{});
     }
 
     template <typename... Assignments>
@@ -320,8 +320,7 @@ namespace sqlpp
       if constexpr (check)
       {
         using row_t = std::tuple<Assignments...>;
-        return Statement::of(this).template replace_clause<no_insert_values_t>(
-            insert_values_t<row_t>{row_t{assignments...}});
+        return Statement::replace_clause(this, insert_values_t<row_t>{row_t{assignments...}});
       }
       else
       {
@@ -335,8 +334,7 @@ namespace sqlpp
       constexpr auto check = check_insert_set_args<remove_optional_t<Assignments>...>();
       if constexpr (check)
       {
-        return Statement::of(this).template replace_clause<no_insert_values_t>(
-            insert_multi_values_t<Assignments...>{assignments});
+        return Statement::replace_clause(this, insert_multi_values_t<Assignments...>{assignments});
       }
       else
       {

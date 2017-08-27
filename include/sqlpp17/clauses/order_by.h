@@ -124,7 +124,7 @@ namespace sqlpp
       constexpr auto check = check_order_by_arg(expressions...);
       if constexpr (check)
       {
-        return Statement::of(this).template replace_clause<no_order_by_t>(order_by_t{std::tuple{expressions...}});
+        return Statement::replace_clause(this, order_by_t{std::tuple{expressions...}});
       }
       else
       {
@@ -138,7 +138,7 @@ namespace sqlpp
       constexpr auto check = check_order_by_arg(std::declval<Expressions>()...);
       if constexpr (check)
       {
-        return Statement::of(this).template replace_clause<no_order_by_t>(order_by_t{expressions});
+        return Statement::replace_clause(this, order_by_t{expressions});
       }
       else
       {

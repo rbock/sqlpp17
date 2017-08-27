@@ -190,8 +190,8 @@ namespace sqlpp
     constexpr auto check = check_union_args(l, r);
     if constexpr (check)
     {
-      return statement<no_union_t>{}.template replace_clause<no_union_t>(
-          union_t<all_t, LeftSelect, RightSelect>{all, l, r});
+      using u = union_t<all_t, LeftSelect, RightSelect>;
+      return statement<u>{detail::statement_constructor_arg(u{all, l, r})};
     }
     else
     {
@@ -205,8 +205,8 @@ namespace sqlpp
     constexpr auto check = check_union_args(l, r);
     if constexpr (check)
     {
-      return statement<no_union_t>{}.template replace_clause<no_union_t>(
-          union_t<distinct_t, LeftSelect, RightSelect>{distinct, l, r});
+      using u = union_t<distinct_t, LeftSelect, RightSelect>;
+      return statement<u>{detail::statement_constructor_arg(u{distinct, l, r})};
     }
     else
     {

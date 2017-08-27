@@ -115,7 +115,7 @@ namespace sqlpp
       constexpr auto check = check_into_arg(t);
       if constexpr (check)
       {
-        return Statement::of(this).template replace_clause<no_into_t>(into_t<Table>{t});
+        return Statement::replace_clause(this, into_t<Table>{t});
       }
       else
       {

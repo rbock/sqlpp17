@@ -116,7 +116,7 @@ namespace sqlpp
       constexpr auto check = check_where_arg(condition);
       if constexpr (check)
       {
-        return Statement::of(this).template replace_clause<no_where_t>(where_t<Condition>{condition});
+        return Statement::replace_clause(this, where_t<Condition>{condition});
       }
       else
       {

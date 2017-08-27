@@ -117,7 +117,7 @@ namespace sqlpp
       constexpr auto check = check_update_table_arg(t);
       if constexpr (check)
       {
-        return Statement::of(this).template replace_clause<no_update_table_t>(update_table_t<Table>{t});
+        return Statement::replace_clause(this, update_table_t<Table>{t});
       }
       else
       {

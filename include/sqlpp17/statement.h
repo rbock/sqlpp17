@@ -109,22 +109,22 @@ namespace sqlpp
       return static_cast<const statement&>(*base);
     }
 
+    template <typename OldClause, typename NewClause>
+    static auto replace_clause(const clause_base<OldClause, statement>* base, NewClause newClause)
+    {
+      const auto& old_statement = statement::of(base);
+      using new_clauses = algorithm::replace_t<_clauses, OldClause, NewClause>;
+      return algorithm::copy_t<new_clauses, new_statement>{detail::statement_constructor_arg(old_statement, newClause)};
+    }
+
   public:
     constexpr statement()
     {
     }
 
     template <typename Arg>
-    constexpr statement(Arg&& arg) : clause_base<Clauses, statement>(arg)...
+    constexpr statement(Arg arg) : clause_base<Clauses, statement>(arg)...
     {
-    }
-
-    template <typename OldClause, typename NewClause>
-    auto replace_clause(NewClause&& newClause) const
-    {
-      using new_clauses = algorithm::replace_t<_clauses, OldClause, std::decay_t<NewClause>>;
-      return algorithm::copy_t<new_clauses, new_statement>{
-          detail::make_constructor_arg(*this, std::forward<NewClause>(newClause))};
     }
 
     template <typename Connection>
@@ -182,7 +182,7 @@ namespace sqlpp
       using clauses_t = decltype(
           (type_vector<>{} + ... + std::conditional_t<is_clause_v<LClauses>, type_vector<LClauses>, type_vector<>>{}) +
           type_vector<RClauses...>{});
-      return algorithm::copy_t<clauses_t, statement>(detail::make_constructor_arg(l, r));
+      return algorithm::copy_t<clauses_t, statement>(detail::statement_constructor_arg(l, r));
     }
     else
     {

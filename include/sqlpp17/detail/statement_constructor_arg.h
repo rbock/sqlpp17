@@ -43,16 +43,9 @@ namespace sqlpp
     template <typename... Fragments>
     struct statement_constructor_arg : Fragments...
     {
-      template <typename... Ts>
-      constexpr statement_constructor_arg(Ts&&... ts) : Fragments{std::forward<Ts>(ts)}...
+      constexpr statement_constructor_arg(Fragments... fragments) : Fragments{fragments}...
       {
       }
     };
-
-    template <typename... Fragments>
-    constexpr auto make_constructor_arg(Fragments&&... fragments)
-    {
-      return statement_constructor_arg<std::decay_t<Fragments>...>{std::forward<Fragments>(fragments)...};
-    }
   }
 }

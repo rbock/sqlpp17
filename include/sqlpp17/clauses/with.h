@@ -131,8 +131,7 @@ namespace sqlpp
       constexpr auto check = check_with_args<with_mode::flat>(ctes...);
       if constexpr (check)
       {
-        return Statement::of(this).template replace_clause<no_with_t>(
-            with_t<with_mode::flat, CommonTableExpressions...>{ctes...});
+        return Statement::replace_clause(this, with_t<with_mode::flat, CommonTableExpressions...>{ctes...});
       }
       else
       {
@@ -146,8 +145,7 @@ namespace sqlpp
       constexpr auto check = check_with_args<with_mode::recursive>(ctes...);
       if constexpr (check)
       {
-        return Statement::of(this).template replace_clause<no_with_t>(
-            with_t<with_mode::recursive, CommonTableExpressions...>{ctes...});
+        return Statement::replace_clause(this, with_t<with_mode::recursive, CommonTableExpressions...>{ctes...});
       }
       else
       {

@@ -117,7 +117,7 @@ namespace sqlpp
       constexpr auto check = check_remove_table_arg(t);
       if constexpr (check)
       {
-        return Statement::of(this).template replace_clause<no_remove_table_t>(remove_table_t<Table>{t});
+        return Statement::replace_clause(*this, remove_table_t<Table>{t});
       }
       else
       {

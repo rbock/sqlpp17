@@ -83,8 +83,7 @@ namespace sqlpp
       constexpr auto check = check_update_set_arg<Assignments...>();
       if constexpr (check)
       {
-        return Statement::of(this).template replace_clause<no_update_set_t>(
-            update_set_t<Assignments...>{assignments...});
+        return Statement::replace_clause(this, update_set_t<Assignments...>{assignments...});
       }
       else
       {

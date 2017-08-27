@@ -117,8 +117,7 @@ namespace sqlpp
       constexpr auto check = check_select_flags_arg(flags...);
       if constexpr (check)
       {
-        return Statement::of(this).template replace_clause<no_select_flags_t>(
-            select_flags_t<Fields...>{std::tuple(flags...)});
+        return Statement::replace_clause(this, select_flags_t<Fields...>{std::tuple(flags...)});
       }
       else
       {
@@ -132,7 +131,7 @@ namespace sqlpp
       constexpr auto check = check_select_flags_arg(std::declval<Fields>()...);
       if constexpr (check)
       {
-        return Statement::of(this).template replace_clause<no_select_flags_t>(select_flags_t<Fields...>{flags});
+        return Statement::replace_clause(this, select_flags_t<Fields...>{flags});
       }
       else
       {
