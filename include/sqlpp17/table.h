@@ -62,8 +62,6 @@ namespace sqlpp
       type_set<table_t<TableSpec, ColumnSpecs...>>();
 
   template <typename TableSpec, typename... ColumnSpecs>
-  struct char_sequence_of_impl<table_t<TableSpec, ColumnSpecs...>>
-  {
-    using type = make_char_sequence_t<TableSpec::_alias_t::name>;
-  };
+  constexpr auto char_sequence_of_v<table_t<TableSpec, ColumnSpecs...>> =
+      make_char_sequence_t<name_of_v<table_t<TableSpec, ColumnSpecs...>>>{};
 }

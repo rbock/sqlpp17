@@ -479,13 +479,10 @@ namespace sqlpp
   }
 
   template <typename T>
-  struct char_sequence_of_impl
-  {
-    static_assert(wrong<T>, "No valid specialization of get_name_type_of found");
-  };
+  constexpr auto char_sequence_of_v = char_sequence<>{};
 
   template <typename T>
-  using char_sequence_of_t = typename char_sequence_of_impl<T>::type;
+  using char_sequence_of_t = std::decay_t<decltype(char_sequence_of_v<T>)>;
 
   template <typename T>
   constexpr auto char_sequence_of(const T&)

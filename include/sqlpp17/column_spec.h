@@ -55,7 +55,7 @@ namespace sqlpp
             tag::type RightTags>
   constexpr auto column_specs_are_compatible_v<column_spec<LeftAlias, LeftValueType, LeftTags>,
                                                column_spec<RightAlias, RightValueType, RightTags>> =
-      (std::is_same_v<make_char_sequence_t<LeftAlias::name>, make_char_sequence_t<RightAlias::name>> &&
+      (char_sequence_of_v<LeftAlias> == char_sequence_of_v<RightAlias> &&
        std::is_same_v<LeftValueType, RightValueType>);
 
   template <typename Statement, typename OptColumn>
