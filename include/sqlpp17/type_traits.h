@@ -118,7 +118,7 @@ namespace sqlpp
   constexpr auto is_failed(const T&)
   {
     return is_failed_v<T>;
-  };
+  }
 
   template <typename T>
   constexpr auto clause_tag = no_clause{};
@@ -130,7 +130,7 @@ namespace sqlpp
   constexpr auto is_clause(const T&)
   {
     return is_clause_v<T>;
-  };
+  }
 
   template <typename T>
   constexpr auto contains_aggregate_v = false;

@@ -62,6 +62,6 @@ namespace sqlpp
   template <typename Table, typename Alias, typename... ColumnSpecs>
   struct char_sequence_of_impl<table_alias_t<Table, Alias, ColumnSpecs...>>
   {
-    using type = make_char_sequence<Alias::_alias_t::name>;
+    using type = make_char_sequence_t<Alias::_alias_t::name>;
   };
 }

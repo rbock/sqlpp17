@@ -52,6 +52,6 @@ namespace sqlpp
   template <typename Expression, typename Alias>
   struct char_sequence_of_impl<alias_t<Expression, Alias>>
   {
-    using type = make_char_sequence<name_of_v<Alias>>;
+    using type = make_char_sequence_t<name_of_v<Alias>>;
   };
 }

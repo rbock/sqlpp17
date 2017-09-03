@@ -41,7 +41,7 @@ namespace sqlpp
     template <typename Alias>
     constexpr auto as(const Alias&) const
     {
-      return alias_t<Alias, column_t>{{}};
+      return alias_t<column_t, Alias>{{}};
     }
   };
 
@@ -88,7 +88,7 @@ namespace sqlpp
   template <typename Table, typename ColumnSpec>
   struct char_sequence_of_impl<column_t<Table, ColumnSpec>>
   {
-    using type = make_char_sequence<name_of_v<ColumnSpec>>;
+    using type = make_char_sequence_t<name_of_v<ColumnSpec>>;
   };
 
   template <typename Table, typename ColumnSpec>

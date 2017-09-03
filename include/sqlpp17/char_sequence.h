@@ -28,44 +28,44 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <utility>
 
+#include <sqlpp17/wrong.h>
+
 namespace sqlpp
 {
   template <char...>
   struct char_sequence
   {
-    constexpr bool operator==(const char_sequence&) const
-    {
-      return true;
-    }
-
     template <char... Cs>
-    constexpr bool operator==(const char_sequence<Cs...>&) const
+    constexpr bool operator==(const char_sequence<Cs...>& rhs) const
     {
-      return true;
+      return std::is_same_v<char_sequence, std::decay_t<decltype(rhs)>>;
     }
   };
 
   namespace detail
   {
     template <const auto& StringLiteral, typename IndexSequence>
-    struct make_char_sequence_impl;
+    struct make_char_sequence;
 
     template <const auto& StringLiteral, std::size_t... Is>
-    struct make_char_sequence_impl<StringLiteral, std::index_sequence<Is...>>
+    struct make_char_sequence<StringLiteral, std::index_sequence<Is...>>
     {
       using type = char_sequence<StringLiteral[Is]...>;
     };
-
-    template <const auto& Value>
-    struct make_char_sequence;
-
-    template <std::size_t N, const char (&StringLiteral)[N]>
-    struct make_char_sequence<StringLiteral>
-    {
-      using type = typename detail::make_char_sequence_impl<StringLiteral, std::make_index_sequence<N>>::type;
-    };
   }
 
+  template <const auto& Value>
+  struct make_char_sequence
+  {
+    static_assert(wrong<decltype(Value)>, "argument needs to be reference to const char[N]");
+  };
+
+  template <std::size_t N, const char (&StringLiteral)[N]>
+  struct make_char_sequence<StringLiteral>
+  {
+    using type = typename detail::make_char_sequence<StringLiteral, std::make_index_sequence<N>>::type;
+  };
+
   template <const auto& StringLiteral>
-  using make_char_sequence = typename detail::make_char_sequence<StringLiteral>::type;
+  using make_char_sequence_t = typename make_char_sequence<StringLiteral>::type;
 }

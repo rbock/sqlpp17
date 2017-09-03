@@ -31,24 +31,39 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 SQLPP_ALIAS_PROVIDER(foo);
 
-// Tables
-static_assert(char_sequence_of(test::tabEmpty) ==
-              ::sqlpp::char_sequence<'t', 'a', 'b', '_', 'e', 'm', 'p', 't', 'y', '\x00'>{});
+template <char... Ls, char... Rs>
+constexpr auto compare(::sqlpp::char_sequence<Ls...> lhs, ::sqlpp::char_sequence<Rs...> rhs) -> bool
+{
+  if constexpr (lhs == rhs)
+  {
+    return true;
+  }
+  else
+  {
+    lhs.print_me;
+    rhs.print_me;
+    return false;
+  }
+}
 
-static_assert(char_sequence_of(test::tabPerson) ==
-              ::sqlpp::char_sequence<'t', 'a', 'b', '_', 'p', 'e', 'r', 's', 'o', 'n', '\x00'>{});
+// Tables
+static_assert(compare(char_sequence_of(test::tabEmpty),
+                      ::sqlpp::char_sequence<'t', 'a', 'b', '_', 'e', 'm', 'p', 't', 'y', '\x00'>{}));
+
+static_assert(compare(char_sequence_of(test::tabPerson),
+                      ::sqlpp::char_sequence<'t', 'a', 'b', '_', 'p', 'e', 'r', 's', 'o', 'n', '\x00'>{}));
 
 // Columns
-static_assert(char_sequence_of(test::tabPerson.id) == ::sqlpp::char_sequence<'i', 'd', '\x00'>{});
-static_assert(char_sequence_of(test::tabDepartment.id) == ::sqlpp::char_sequence<'i', 'd', '\x00'>{});
+static_assert(compare(char_sequence_of(test::tabPerson.id), ::sqlpp::char_sequence<'i', 'd', '\x00'>{}));
+static_assert(compare(char_sequence_of(test::tabDepartment.id), ::sqlpp::char_sequence<'i', 'd', '\x00'>{}));
 
 // Table aliases
-static_assert(char_sequence_of(test::tabPerson.as(foo)) == ::sqlpp::char_sequence<'f', 'o', 'o', '\x00'>{});
-static_assert(char_sequence_of(test::tabPerson.as(test::tabDepartment.id)) ==
-              ::sqlpp::char_sequence<'i', 'd', '\x00'>{});
+static_assert(compare(char_sequence_of(test::tabPerson.as(foo)), ::sqlpp::char_sequence<'f', 'o', 'o', '\x00'>{}));
+static_assert(compare(char_sequence_of(test::tabPerson.as(test::tabDepartment.id)),
+                      ::sqlpp::char_sequence<'i', 'd', '\x00'>{}));
 
 // Column aliases
-static_assert(char_sequence_of(test::tabPerson.id.as(foo)) == ::sqlpp::char_sequence<'f', 'o', 'o', '\x00'>{});
+static_assert(compare(char_sequence_of(test::tabPerson.id.as(foo)), ::sqlpp::char_sequence<'f', 'o', 'o', '\x00'>{}));
 
 int main()
 {
