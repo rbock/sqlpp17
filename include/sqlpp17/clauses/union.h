@@ -26,10 +26,9 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#warning : Need result_row here
 #include <sqlpp17/clause_fwd.h>
-#include <sqlpp17/clauses/select.h>  // This is for select and result_row
 #include <sqlpp17/flags.h>
+#include <sqlpp17/result_row.h>
 #include <sqlpp17/statement.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
