@@ -52,10 +52,10 @@ namespace sqlpp
       }
 
       template <typename Expr>
-      decltype(auto) operator()(const sqlpp::optional<Expr>& expr)
+      decltype(auto) operator()(const std::optional<Expr>& expr)
       {
-        if (expr.to_be_used)
-          operator()(expr.value);
+        if (expr.has_value())
+          operator()(expr.value());
       }
     };
   }

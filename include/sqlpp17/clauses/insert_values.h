@@ -34,6 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/detail/insert_column_printer.h>
 #include <sqlpp17/detail/insert_value_printer.h>
 #include <sqlpp17/exception.h>
+#include <sqlpp17/optional.h>
 #include <sqlpp17/statement.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
@@ -206,9 +207,9 @@ namespace sqlpp
           context << ", ";
         if constexpr (is_optional(expr))
         {
-          if (expr.to_be_used)
+          if (expr.has_value())
           {
-            context << expr.value;
+            context << expr.value();
           }
           else
           {

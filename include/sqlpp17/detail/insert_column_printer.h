@@ -41,18 +41,13 @@ namespace sqlpp
       template <typename Expr>
       decltype(auto) operator()(const Expr& expr)
       {
-        if (is_first)
-          is_first = false;
-        else
-          context << ", ";
-
-        if constexpr (is_optional(expr))
+        if (has_value(expr))
         {
-          context << expr.value.column;
-        }
-        else
-        {
-          context << expr;
+          if (is_first)
+            is_first = false;
+          else
+            context << ", ";
+          context << get_value(expr).column;
         }
       }
     };

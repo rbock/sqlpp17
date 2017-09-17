@@ -27,7 +27,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/clause_fwd.h>
-#include <sqlpp17/detail/unused.h>
 #include <sqlpp17/optional.h>
 #include <sqlpp17/statement.h>
 #include <sqlpp17/type_set.h>
@@ -88,10 +87,10 @@ namespace sqlpp
   template <typename Context, typename Number, typename Statement>
   decltype(auto) operator<<(Context& context, const clause_base<limit_t<Number>, Statement>& t)
   {
-    if (detail::unused(t._number))
+    if (has_value(t._number))
       return context;
 
-    context << " LIMIT " << de_optionalize(t._number);
+    context << " LIMIT " << get_value(t._number);
 
     return context;
   }

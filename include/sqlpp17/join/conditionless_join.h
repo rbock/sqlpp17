@@ -28,7 +28,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/join/join.h>
 #include <sqlpp17/join/on.h>
-#include <sqlpp17/optional.h>
 #include <sqlpp17/unconditional.h>
 
 namespace sqlpp

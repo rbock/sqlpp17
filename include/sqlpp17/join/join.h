@@ -26,8 +26,8 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/detail/unused.h>
 #include <sqlpp17/join/join_functions.h>
+#include <sqlpp17/optional.h>
 
 namespace sqlpp
 {
@@ -49,12 +49,12 @@ namespace sqlpp
   {
     context << t._lhs;
 
-    if (detail::unused(t._rhs))
+    if (has_value(t._rhs))
       return context;
 
     context << JoinType::_name;
     context << " JOIN ";
-    context << de_optionalize(t._rhs);
+    context << get_value(t._rhs);
     context << t._condition;
 
     return context;

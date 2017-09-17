@@ -26,24 +26,27 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <optional>
+#include <tuple>
+
 #include <sqlpp17/type_traits.h>
 
 namespace sqlpp
 {
   template <typename T>
-  struct optional
+  constexpr auto is_optional_v<std::optional<T>> = true;
+
+  template <typename Factory>
+  auto make_optional_if(bool condition, const Factory& factory)
   {
-    bool to_be_used;
-    T value;
-  };
+    using T = decltype(factory());
+    return condition ? std::optional<T>{} : std::make_optional(factory());
+  }
 
   template <typename T>
-  constexpr auto is_optional_v<optional<T>> = true;
-
-  template <typename T>
-  auto make_optional(bool to_be_used, T value)
+  auto make_optional_expr(bool condition, T value)
   {
-    return optional<T>{to_be_used, value};
+    return condition ? std::optional<T>{} : std::make_optional(value);
   }
 
   template <typename T>
@@ -53,7 +56,7 @@ namespace sqlpp
   };
 
   template <typename T>
-  struct remove_optional<sqlpp::optional<T>>
+  struct remove_optional<std::optional<T>>
   {
     using type = T;
   };
@@ -62,14 +65,31 @@ namespace sqlpp
   using remove_optional_t = typename remove_optional<T>::type;
 
   template <typename T>
-  decltype(auto) de_optionalize(const T& t)
+  decltype(auto) get_value(const T& t)
   {
     return t;
   }
 
   template <typename T>
-  decltype(auto) de_optionalize(const sqlpp::optional<T>& t)
+  decltype(auto) get_value(const std::optional<T>& t)
   {
-    return t.value;
+    return t.value();
+  }
+
+  template <typename T>
+  auto has_value(const T& t) -> bool
+  {
+    if constexpr (sqlpp::is_optional_v<T>)
+    {
+      return t.has_value();
+    }
+
+    return true;
+  }
+
+  template <typename... Ts>
+  constexpr auto any_has_value(const std::tuple<Ts...>& t) -> bool
+  {
+    return (false || ... || has_value(std::get<Ts>(t)));
   }
 }

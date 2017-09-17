@@ -49,16 +49,14 @@ namespace sqlpp
         else
           context << sep;
 
-        context << expr;
-      }
-
-      template <typename Expr>
-      decltype(auto) operator()(const sqlpp::optional<Expr>& expr)
-      {
-        if (expr.to_be_used)
-          operator()(expr.value);
+        if (has_value(expr))
+        {
+          context << get_value(expr);
+        }
         else
-          operator()(named_null_t<Expr>{});
+        {
+          context << named_null_t<remove_optional_t<Expr>>{};
+        }
       }
     };
   }

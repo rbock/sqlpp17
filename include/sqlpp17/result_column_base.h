@@ -27,6 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <optional>
+
 #include <sqlpp17/member.h>
 #include <sqlpp17/null_is_trivial.h>
 #include <sqlpp17/type_traits.h>

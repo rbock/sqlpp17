@@ -29,8 +29,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tuple>
 
 #include <sqlpp17/clause_fwd.h>
-#include <sqlpp17/detail/any_to_be_used.h>
 #include <sqlpp17/detail/list_printer.h>
+#include <sqlpp17/optional.h>
 #include <sqlpp17/statement.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
@@ -76,7 +76,7 @@ namespace sqlpp
     template <typename Connection>
     [[nodiscard]] auto _run(Connection& connection) const
     {
-      if (detail::any_to_be_used(static_cast<const update_set_t<Assignments...>&>(Statement::of(this))._assignments))
+      if (any_has_value(static_cast<const update_set_t<Assignments...>&>(Statement::of(this))._assignments))
       {
         return connection.update(Statement::of(this));
       }
