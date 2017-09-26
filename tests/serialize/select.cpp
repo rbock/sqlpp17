@@ -57,13 +57,13 @@ int main()
     auto row = s.run(conn);
   }
   {
-    auto s = sqlpp::select() << sqlpp::select_columns(test::tabPerson.id,
-                                                      make_optional_expr(false, test::tabPerson.isManager));
+    auto s = sqlpp::select() << sqlpp::select_columns(
+                 test::tabPerson.id, false ? std::make_optional(test::tabPerson.isManager) : std::nullopt);
     std::cout << s << std::endl;
   }
   {
-    auto s = sqlpp::select() << sqlpp::select_columns(test::tabPerson.id,
-                                                      make_optional_expr(true, test::tabPerson.isManager));
+    auto s = sqlpp::select() << sqlpp::select_columns(
+                 test::tabPerson.id, true ? std::make_optional(test::tabPerson.isManager) : std::nullopt);
     std::cout << s << std::endl;
   }
 #warning : need to test results

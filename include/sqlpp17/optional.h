@@ -36,19 +36,6 @@ namespace sqlpp
   template <typename T>
   constexpr auto is_optional_v<std::optional<T>> = true;
 
-  template <typename Factory>
-  auto make_optional_if(bool condition, const Factory& factory)
-  {
-    using T = decltype(factory());
-    return condition ? std::optional<T>{} : std::make_optional(factory());
-  }
-
-  template <typename T>
-  auto make_optional_expr(bool condition, T value)
-  {
-    return condition ? std::optional<T>{} : std::make_optional(value);
-  }
-
   template <typename T>
   struct remove_optional
   {

@@ -39,7 +39,7 @@ int main()
     std::cout << s << std::endl;
   }
   {
-    auto s = test::tabPerson.join(make_optional_expr(false, test::tabDepartment)).unconditionally();
+    auto s = test::tabPerson.join(false ? std::make_optional(test::tabDepartment) : std::nullopt).unconditionally();
     std::cout << s << std::endl;
   }
 #warning : need to test results

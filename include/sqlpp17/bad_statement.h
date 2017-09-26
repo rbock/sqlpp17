@@ -36,10 +36,7 @@ namespace sqlpp
   template <typename Failure>
   struct bad_statement_t
   {
-    constexpr bad_statement_t()
-    {
-      static_assert(wrong<Failure>, "Missing specialization");
-    }
+    static_assert(wrong<Failure>, "Missing specialization");
 
     constexpr bad_statement_t(const Failure);
   };
