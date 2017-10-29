@@ -121,8 +121,7 @@ namespace sqlpp
     template <typename... Expressions>
     [[nodiscard]] constexpr auto order_by(Expressions... expressions) const
     {
-      constexpr auto check = check_order_by_arg(expressions...);
-      if constexpr (check)
+      if constexpr (constexpr auto check = check_order_by_arg(expressions...); check)
       {
         return Statement::replace_clause(this, order_by_t{std::tuple{expressions...}});
       }
@@ -135,8 +134,7 @@ namespace sqlpp
     template <typename... Expressions>
     [[nodiscard]] constexpr auto order_by(std::tuple<Expressions...> expressions) const
     {
-      constexpr auto check = check_order_by_arg(std::declval<Expressions>()...);
-      if constexpr (check)
+      if constexpr (constexpr auto check = check_order_by_arg(std::declval<Expressions>()...); check)
       {
         return Statement::replace_clause(this, order_by_t{expressions});
       }

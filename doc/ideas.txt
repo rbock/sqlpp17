@@ -1,3 +1,32 @@
+#warning: To check if all columns are correct, we should compare provided and required columns
+#warning: (column being defined by TableSpec and ColumnSpec).
+
+Difficult decision:
+Tables and alias tables are defined by name and columns.
+Columns /could/ be defined by tables and column specifications.
+In that case they could uniquely identified. However, it would require
+columns types to contain the table type, which contains all column
+specifications.
+Thus, `select(all_of(tab))` would contain all columns, each of which
+would contain all column specs. This is quadratic in the number of
+columns. That seems non-sustainable.
+
+It seems more reasonable to just store the tables spec in the column
+type and then look for required and provided columns.
+
+Now, this would allow for
+
+```
+select(foo.id).from(bar.as(foo))
+```
+
+if `bar` happens to have an `id` column like `foo`.
+
+However, I think it would be possible to check that for each table name
+there is only one table. It remains to be seen how to do this exactly.
+
+
+
 No "dynamic_select" et al.
 ==========================
 In sqlpp11, we can add tables dynamically to the right. We can combine conditions dynamically via AND.

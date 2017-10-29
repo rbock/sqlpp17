@@ -58,10 +58,17 @@ namespace sqlpp
   constexpr auto is_table_v<table_t<TableSpec, ColumnSpecs...>> = true;
 
   template <typename TableSpec, typename... ColumnSpecs>
-  constexpr auto provided_tables_of_v<table_t<TableSpec, ColumnSpecs...>> =
-      type_set<table_t<TableSpec, ColumnSpecs...>>();
+  constexpr auto char_sequence_of_v<table_t<TableSpec, ColumnSpecs...>> = make_char_sequence_t<name_of_v<TableSpec>>{};
 
   template <typename TableSpec, typename... ColumnSpecs>
-  constexpr auto char_sequence_of_v<table_t<TableSpec, ColumnSpecs...>> =
-      make_char_sequence_t<name_of_v<table_t<TableSpec, ColumnSpecs...>>>{};
+  constexpr auto provided_table_names_of_v<table_t<TableSpec, ColumnSpecs...>> =
+      type_set(char_sequence_of_v<table_t<TableSpec, ColumnSpecs...>>);
+
+  template <typename TableSpec, typename... ColumnSpecs>
+  constexpr auto required_insert_columns_of_v<table_t<TableSpec, ColumnSpecs...>> =
+      type_set_if<is_insert_required, column_t<TableSpec, ColumnSpecs>...>();
+
+  template <typename TableSpec, typename... ColumnSpecs>
+  constexpr auto provided_columns_of_v<table_t<TableSpec, ColumnSpecs...>> =
+      type_set<column_t<TableSpec, ColumnSpecs>...>();
 }

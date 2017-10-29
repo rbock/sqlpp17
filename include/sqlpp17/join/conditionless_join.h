@@ -45,7 +45,7 @@ namespace sqlpp
       {
         return failed<assert_on_is_boolean_expression>{};
       }
-      else if constexpr (!(required_tables_of<Expr> <= provided_tables_of<ConditionlessJoin>))
+      else if constexpr (!(required_columns_of<Expr> <= provided_columns_of<ConditionlessJoin>))
       {
         return failed<assert_join_on_no_foreign_table_dependencies>{};
       }
@@ -89,6 +89,6 @@ namespace sqlpp
   constexpr auto is_conditionless_join_v<conditionless_join_t<Lhs, JoinType, Rhs>> = true;
 
   template <typename Lhs, typename JoinType, typename Rhs>
-  constexpr auto provided_tables_of_v<conditionless_join_t<Lhs, JoinType, Rhs>> =
-      provided_tables_of_v<Lhs> | provided_tables_of_v<Rhs>;
+  constexpr auto provided_columns_of_v<conditionless_join_t<Lhs, JoinType, Rhs>> =
+      provided_columns_of_v<Lhs> | provided_columns_of_v<Rhs>;
 }

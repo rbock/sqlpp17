@@ -45,7 +45,7 @@ namespace test
       };
     };
 
-    struct Table
+    struct _
     {
       struct _alias_t
       {
@@ -59,5 +59,5 @@ namespace test
     };
   }
 
-  constexpr auto tabDepartment = sqlpp::table_t<TabDepartment_::Table, TabDepartment_::Id>{};
+  constexpr auto tabDepartment = sqlpp::table_t<TabDepartment_::_, TabDepartment_::Id>{};
 }

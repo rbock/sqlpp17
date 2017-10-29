@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2016 - 2017, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -104,6 +104,15 @@ namespace sqlpp
 
   template <typename T>
   constexpr auto is_insert_allowed_v = false;
+
+  template <typename T>
+  constexpr auto is_insert_required_v = false;
+
+  template <typename T>
+  struct is_insert_required
+  {
+    static constexpr auto value = is_insert_required_v<T>;
+  };
 
   template <typename T>
   constexpr auto is_update_allowed_v = false;
@@ -331,15 +340,6 @@ namespace sqlpp
   }
 
   template <typename T>
-  constexpr auto require_insert_v = false;
-
-  template <typename T>
-  constexpr auto require_insert(const T&)
-  {
-    return require_insert_v<T>;
-  }
-
-  template <typename T>
   constexpr auto is_expression_v = false;
 
   template <typename T>
@@ -434,12 +434,12 @@ namespace sqlpp
   constexpr auto parameters_of = type_set_t<>();
 
   template <typename T>
-  constexpr auto required_tables_of_v = type_set_t<>();
+  constexpr auto required_columns_of_v = type_set_t<>();
 
   template <typename T>
-  constexpr auto required_tables_of(const T&)
+  constexpr auto required_columns_of(const T&)
   {
-    return required_tables_of_v<T>;
+    return required_columns_of_v<T>;
   }
 
   template <typename T>
@@ -461,21 +461,30 @@ namespace sqlpp
   }
 
   template <typename T>
-  constexpr auto required_columns_of_v = type_set_t<>();
+  constexpr auto required_insert_columns_of_v = type_set_t<>();
 
   template <typename T>
-  constexpr auto required_columns_of(const T&)
+  constexpr auto required_insert_columns_of(const T&)
   {
-    return required_columns_of_v<T>;
+    return required_insert_columns_of_v<T>;
   }
 
   template <typename T>
-  constexpr auto provided_tables_of_v = type_set<>();
+  constexpr auto provided_table_names_of_v = type_set<>();
 
   template <typename T>
-  constexpr auto provided_tables_of(const T&)
+  constexpr auto provided_table_names_of(const T&)
   {
-    return provided_tables_of_v<T>;
+    return provided_table_names_of_v<T>;
+  }
+
+  template <typename T>
+  constexpr auto provided_columns_of_v = type_set<>();
+
+  template <typename T>
+  constexpr auto provided_columns_of(const T&)
+  {
+    return provided_columns_of_v<T>;
   }
 
   template <typename T>
@@ -488,15 +497,6 @@ namespace sqlpp
   constexpr auto char_sequence_of(const T&)
   {
     return char_sequence_of_t<T>{};
-  }
-
-  template <typename T>
-  constexpr auto provided_table_names_of_v = ::sqlpp::transform<char_sequence_of_t>(provided_tables_of_v<T>);
-
-  template <typename T>
-  constexpr auto provided_table_names_of(const T&)
-  {
-    return provided_table_names_of_v<T>;
   }
 
   template <typename T>

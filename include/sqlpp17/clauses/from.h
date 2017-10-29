@@ -75,7 +75,7 @@ namespace sqlpp
   SQLPP_WRAPPED_STATIC_ASSERT(assert_from_arg_is_not_conditionless_join,
                               "from() arg must not be a conditionless join, use .on() or .unconditionally()");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_from_arg_is_table, "from() arg has to be a table or join");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_from_arg_no_required_tables, "from() arg must not depend on other tables");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_from_arg_no_required_columns, "from() arg must not depend on other tables");
 
   template <typename T>
   constexpr auto check_from_arg(const T&)
@@ -88,9 +88,9 @@ namespace sqlpp
     {
       return failed<assert_from_arg_is_table>{};
     }
-    else if constexpr (!required_tables_of_v<T>.empty())
+    else if constexpr (!required_columns_of_v<T>.empty())
     {
-      return failed<assert_from_arg_no_required_tables>{};
+      return failed<assert_from_arg_no_required_columns>{};
     }
     else
       return succeeded{};

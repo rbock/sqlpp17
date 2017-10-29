@@ -30,57 +30,29 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
+#warning : Need to inform the world about nullable columns
   struct cross_join_t
   {
-    /*
-    template <typename Lhs, typename Rhs>
-    using _provided_nullable_tables =
-        detail::make_joined_set_t<provided_nullable_tables_of<Lhs>, provided_nullable_tables_of<Rhs>>;
-        */
-
     static constexpr const char* _name = " CROSS";
   };
 
   struct inner_join_t
   {
-    /*
-    template <typename Lhs, typename Rhs>
-    using _provided_nullable_tables =
-        detail::make_joined_set_t<provided_nullable_tables_of<Lhs>, provided_nullable_tables_of<Rhs>>;
-        */
-
     static constexpr const char* _name = " INNER";
   };
 
   struct outer_join_t
   {
-    /*
-    template <typename Lhs, typename Rhs>
-    using _provided_nullable_tables = detail::make_joined_set_t<provided_tables_of<Lhs>, provided_tables_of<Rhs>>;
-    */
-
     static constexpr const char* _name = " OUTER";
   };
 
   struct left_outer_join_t
   {
-    /*
-  template <typename Lhs, typename Rhs>
-  using _provided_nullable_tables =
-      detail::make_joined_set_t<provided_nullable_tables_of<Lhs>, provided_tables_of<Rhs>>;
-      */
-
     static constexpr const char* _name = " LEFT OUTER";
   };
 
   struct right_outer_join_t
   {
-    /*
-      template <typename Lhs, typename Rhs>
-      using _provided_nullable_tables =
-          detail::make_joined_set_t<provided_tables_of<Lhs>, provided_nullable_tables_of<Rhs>>;
-          */
-
     static constexpr const char* _name = " RIGHT OUTER";
   };
 }

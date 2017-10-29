@@ -56,8 +56,8 @@ namespace sqlpp
   constexpr auto is_table_v<table_alias_t<Table, Alias, ColumnSpecs...>> = true;
 
   template <typename Table, typename Alias, typename... ColumnSpecs>
-  constexpr auto provided_tables_of_v<table_alias_t<Table, Alias, ColumnSpecs...>> =
-      type_set<table_alias_t<Table, Alias, ColumnSpecs...>>();
+  constexpr auto provided_columns_of_v<table_alias_t<Table, Alias, ColumnSpecs...>> =
+      type_set<column_t<Alias, ColumnSpecs>...>();
 
   template <typename Table, typename Alias, typename... ColumnSpecs>
   constexpr auto char_sequence_of_v<table_alias_t<Table, Alias, ColumnSpecs...>> =

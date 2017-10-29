@@ -30,4 +30,4 @@ endfunction()
 
 test_compile(char_sequence_of)
 test_compile(is_table)
-test_compile(provided_tables_of)
+test_compile(provided_columns_of)

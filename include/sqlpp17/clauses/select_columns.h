@@ -122,8 +122,10 @@ namespace sqlpp
                               "select columns() must be called with at least one argument");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_select_columns_args_are_selectable,
                               "select columns() args must be selectable (i.e. named expressions)");
+  /*
   SQLPP_WRAPPED_STATIC_ASSERT(assert_select_columns_args_have_unique_names,
                               "select columns() args must have unique names");
+  */
 
   template <typename... T>
   constexpr auto check_select_columns_arg()
@@ -136,10 +138,13 @@ namespace sqlpp
     {
       return failed<assert_select_columns_args_are_selectable>{};
     }
+#warning : The compiler would see this anyway
+    /*
     else if constexpr (type_set<char_sequence_of_t<T>...>().size() != sizeof...(T))
     {
       return failed<assert_select_columns_args_have_unique_names>{};
     }
+    */
     else
       return succeeded{};
   }

@@ -149,7 +149,14 @@ namespace sqlpp
     return (detail::_type_set<T>{} << ... << detail::_base<Ts>{});
   }
 
-  template <template <typename> class Transform, typename... Ts>
+  template <template <typename> typename Condition, typename... Ts>
+  constexpr auto type_set_if()
+  {
+    return (detail::_type_set<>{} | ... |
+            std::conditional_t<Condition<Ts>::value, detail::_type_set<Ts>, detail::_type_set<>>{});
+  }
+
+  template <template <typename> typename Transform, typename... Ts>
   [[nodiscard]] constexpr auto transform(const detail::_type_set<Ts...>&)
   {
     return type_set<Transform<Ts>...>();

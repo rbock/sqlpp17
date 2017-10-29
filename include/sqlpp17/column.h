@@ -27,7 +27,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/alias.h>
-#include <sqlpp17/char_sequence.h>
 #include <sqlpp17/type_traits.h>
 
 namespace sqlpp
@@ -76,7 +75,7 @@ namespace sqlpp
   constexpr auto has_default_v<column_t<Table, Spec>> = !!(Spec::tags & tag::has_default);
 
   template <typename Table, typename Spec>
-  constexpr auto require_insert_v<column_t<Table, Spec>> =
+  constexpr auto is_insert_required_v<column_t<Table, Spec>> =
       !(Spec::tags & tag::has_default) && !(Spec::tags & tag::must_not_insert);
 
   template <typename Context, typename Table, typename ColumnSpec>
@@ -84,10 +83,4 @@ namespace sqlpp
   {
     return context << name_of_v<Table> << '.' << name_of_v<ColumnSpec>;
   }
-
-  template <typename Table, typename ColumnSpec>
-  constexpr auto char_sequence_of_v<column_t<Table, ColumnSpec>> = make_char_sequence_t<name_of_v<ColumnSpec>>{};
-
-  template <typename Table, typename ColumnSpec>
-  constexpr auto required_tables_of_v<column_t<Table, ColumnSpec>> = type_set<column_t<Table, ColumnSpec>>();
 }
