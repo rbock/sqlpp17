@@ -38,25 +38,21 @@ namespace sqlpp
   template <typename L, typename R>
   struct plus_t
   {
-    constexpr plus_t(L left, R right) : l(left), r(right)
-    {
-    }
-
     using type = decltype(std::declval<value_type_of_t<L>&>() + std::declval<value_type_of_t<R>&>());
 
     L l;
     R r;
   };
 
-  template <typename ValueTypeLeft,
-            typename ValueTypeRight,
-            typename = decltype(std::declval<ValueTypeLeft&>() + std::declval<ValueTypeRight&>())>
-  constexpr auto check_plus(const ValueTypeLeft&, const ValueTypeRight&)
+  template <typename L,
+            typename R,
+            typename = decltype(std::declval<value_type_of_t<L>&>() + std::declval<value_type_of_t<R>&>())>
+  constexpr auto check_plus(type_t<L>, type_t<R>)
   {
     return succeeded{};
   }
 
-  template <typename ValueTypeLeft, typename ValueTypeRight>
+  template <typename L, typename R>
   constexpr auto check_plus(...)
   {
     return failed<assert_valid_plus_operands>{};
@@ -65,10 +61,9 @@ namespace sqlpp
   template <typename L, typename R>
   constexpr auto operator+(L l, R r)
   {
-#warning : Need to use a type wrapper here to ensure constructability
-    if constexpr (constexpr auto check = check_plus(value_type_of_t<L>{}, value_type_of_t<R>{}); check)
+    if constexpr (constexpr auto check = check_plus(type_v<L>, type_v<R>); check)
     {
-      return plus_t{l, r};
+      return plus_t<L, R>{l, r};
     }
     else
     {

@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2017, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -40,10 +40,10 @@ namespace sqlpp
     R r;
   };
 
-  template <typename ValueTypeLeft,
-            typename ValueTypeRight,
-            typename = decltype(std::declval<ValueTypeLeft&>() == std::declval<ValueTypeRight&>())>
-  constexpr auto check_equal(const ValueTypeLeft&, const ValueTypeRight&)
+  template <typename L,
+            typename R,
+            typename = decltype(std::declval<value_type_of_t<L>&>() == std::declval<value_type_of_t<R>&>())>
+  constexpr auto check_equal(type_t<L>, type_t<R>)
   {
     return succeeded{};
   }
@@ -56,8 +56,7 @@ namespace sqlpp
   template <typename L, typename R>
   constexpr auto operator==(L l, R r)
   {
-#warning : Need to use a type wrapper here to ensure constructability
-    if constexpr (constexpr auto check = check_equal(value_type_of_t<L>{}, value_type_of_t<R>{}); check)
+    if constexpr (constexpr auto check = check_equal(type_v<L>, type_v<R>); check)
     {
       return equal_t<L, R>{l, r};
     }

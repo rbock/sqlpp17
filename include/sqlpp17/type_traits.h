@@ -330,11 +330,6 @@ namespace sqlpp
     return is_select_flag<T>;
   }
 
-#warning : no_value_t still used?
-  struct no_value_t
-  {
-  };
-
   template <typename T>
   struct value_type_of
   {
@@ -343,6 +338,10 @@ namespace sqlpp
 
   template <typename T, typename Enable = void>
   using value_type_of_t = typename value_type_of<T>::type;
+
+  struct no_value_t
+  {
+  };
 
 #warning : table_of -> table_spec_of
   template <typename T, typename Enable = void>
