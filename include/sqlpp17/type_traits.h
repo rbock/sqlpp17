@@ -30,6 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <type_traits>
 
 #include <utility>
+#include <sqlpp17/char_sequence.h>
 #include <sqlpp17/type_set.h>
 #include <sqlpp17/wrong.h>
 
@@ -198,8 +199,9 @@ namespace sqlpp
   template <typename T, typename Enable = void>
   constexpr auto has_result_row_v = false;
 
+#warning : Want to avoid SFINAE
   template <typename T>
-  constexpr auto has_result_row_v<T, std::void_t<typename T::result_row_t>> = true;
+  constexpr auto has_result_row_v<T, std::void_t<typename T::_result_row_t>> = true;
 
   template <typename T>
   constexpr auto has_result_row(const T&)

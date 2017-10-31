@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
 #include <sqlpp17/alias_provider.h>
+#include <sqlpp17/operator/equal.h>
 
 SQLPP_ALIAS_PROVIDER(foo);
 SQLPP_ALIAS_PROVIDER(bar);
@@ -118,8 +119,6 @@ static_assert(provided_columns_of(test::tabPerson.as(foo)
               colsOfFooAndBarAndPingAndPong);
 
 // conditional joins
-#warning need to introduce comparison operators
-/*
 static_assert(provided_columns_of(tabDepartment.join(tabPerson).on(tabDepartment.id == tabPerson.id)) ==
               colsOfDepartmentAndPerson);
 static_assert(provided_columns_of(tabDepartment.inner_join(tabPerson).on(tabDepartment.id == tabPerson.id)) ==
@@ -130,7 +129,6 @@ static_assert(provided_columns_of(tabDepartment.right_outer_join(tabPerson).on(t
               colsOfDepartmentAndPerson);
 static_assert(provided_columns_of(tabDepartment.outer_join(tabPerson).on(tabDepartment.id == tabPerson.id)) ==
               colsOfDepartmentAndPerson);
-*/
 
 int main()
 {

@@ -45,7 +45,7 @@ int main()
   }
   {
     auto s = test::tabPerson.isManager or test::tabPerson.isManager or
-             test::tabPerson.isManager and test::tabPerson.isManager;
+             (test::tabPerson.isManager and test::tabPerson.isManager);
     std::cout << s << std::endl;
   }
   {

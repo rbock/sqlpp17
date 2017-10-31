@@ -100,12 +100,12 @@ namespace sqlpp
   class result_base<select_columns_t<Columns...>, Statement>
   {
   public:
-    using result_row_t = result_row_t<make_column_spec_t<Statement, Columns>...>;
+    using _result_row_t = result_row_t<make_column_spec_t<Statement, Columns>...>;
 
     template <typename Connection>
     [[nodiscard]] auto _run(Connection& connection) const
     {
-      return connection.select(Statement::of(this), result_row_t{});
+      return connection.select(Statement::of(this), _result_row_t{});
     }
   };
 

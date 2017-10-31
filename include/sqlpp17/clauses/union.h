@@ -108,7 +108,7 @@ namespace sqlpp
   {
   public:
     using result_row_t =
-        typename merge_result_row_specs<typename LeftSelect::result_row_t, typename RightSelect::result_row_t>::type;
+        typename merge_result_row_specs<typename LeftSelect::_result_row_t, typename RightSelect::_result_row_t>::type;
 
     template <typename Connection>
     [[nodiscard]] auto _run(Connection& connection) const
@@ -138,8 +138,8 @@ namespace sqlpp
     {
       return failed<assert_union_args_have_result_rows>{};
     }
-    else if constexpr (!result_rows_are_compatible_v<typename LeftSelect::result_row_t,
-                                                     typename RightSelect::result_row_t>)
+    else if constexpr (!result_rows_are_compatible_v<typename LeftSelect::_result_row_t,
+                                                     typename RightSelect::_result_row_t>)
     {
       return failed<assert_union_args_have_compatible_rows>{};
     }

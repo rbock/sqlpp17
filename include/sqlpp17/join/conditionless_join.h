@@ -39,13 +39,13 @@ namespace sqlpp
   namespace detail
   {
     template <typename ConditionlessJoin, typename Expr>
-    constexpr auto check_join(const ConditionlessJoin&, const Expr&)
+    constexpr auto check_join()
     {
-      if constexpr (!is_expression<Expr> || !is_boolean<Expr>)
+      if constexpr (!is_expression_v<Expr> || !is_boolean_v<Expr>)
       {
         return failed<assert_on_is_boolean_expression>{};
       }
-      else if constexpr (!(required_columns_of<Expr> <= provided_columns_of<ConditionlessJoin>))
+      else if constexpr (!(required_columns_of_v<Expr> <= provided_columns_of_v<ConditionlessJoin>))
       {
         return failed<assert_join_on_no_foreign_table_dependencies>{};
       }
@@ -63,9 +63,9 @@ namespace sqlpp
     }
 
     template <typename Expr>
-    [[nodiscard]] auto on(const Expr& expr) const
+    [[nodiscard]] constexpr auto on(const Expr& expr) const
     {
-      constexpr auto check = check_join(*this, expr);
+      constexpr auto check = detail::check_join<conditionless_join_t, Expr>();
       if constexpr (check)
       {
         return join_t{_lhs, JoinType{}, _rhs, on_t<Expr>{expr}};

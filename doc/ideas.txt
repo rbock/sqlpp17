@@ -22,9 +22,8 @@ select(foo.id).from(bar.as(foo))
 
 if `bar` happens to have an `id` column like `foo`.
 
-However, I think it would be possible to check that for each table name
-there is only one table. It remains to be seen how to do this exactly.
-
+While this construed example looks bad, I believe it is rather unlikely to happen.
+I am therefore willing to risk that in favor of quadraticly growing type names.
 
 
 No "dynamic_select" et al.

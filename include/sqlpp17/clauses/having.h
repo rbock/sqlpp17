@@ -70,7 +70,7 @@ namespace sqlpp
   decltype(auto) operator<<(Context& context, const clause_base<having_t<Condition>, Statement>& t)
   {
     return context << " HAVING " << t._condition;
-  };
+  }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_having_arg_is_expression, "having() arg has to be a boolean expression");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_having_arg_is_boolean, "having() arg has to be a boolean expression");
@@ -124,7 +124,7 @@ namespace sqlpp
   decltype(auto) operator<<(Context& context, const clause_base<no_having_t, Statement>&)
   {
     return context;
-  };
+  }
 
   template <typename Condition>
   [[nodiscard]] constexpr auto having(Condition&& condition)
