@@ -38,7 +38,10 @@ namespace sqlpp
   };
 
   template <typename Expression, typename Alias>
-  constexpr auto value_type_of_v<alias_t<Expression, Alias>> = value_type_of_v<Expression>;
+  struct value_type_of<alias_t<Expression, Alias>>
+  {
+    using type = value_type_of_t<Expression>;
+  };
 
   template <typename Expression, typename Alias>
   constexpr auto is_selectable_v<alias_t<Expression, Alias>> = true;
@@ -51,4 +54,4 @@ namespace sqlpp
 
   template <typename Expression, typename Alias>
   constexpr auto char_sequence_of_v<alias_t<Expression, Alias>> = make_char_sequence_t<name_of_v<Alias>>{};
-}
+}  // namespace sqlpp

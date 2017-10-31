@@ -45,12 +45,9 @@ namespace sqlpp
   };
 
   template <typename Table, typename Spec>
-  constexpr auto value_type_of_v<column_t<Table, Spec>> = typename Spec::value_type{};
-
-  template <typename Table, typename Spec>
-  struct cpp_type_of<column_t<Table, Spec>>
+  struct value_type_of<column_t<Table, Spec>>
   {
-    using type = typename cpp_type_of<typename Spec::value_type>::type;
+    using type = typename Spec::value_type;
   };
 
   template <typename Table, typename Spec>
@@ -58,12 +55,6 @@ namespace sqlpp
 
   template <typename Table, typename Spec>
   constexpr auto is_selectable_v<column_t<Table, Spec>> = true;
-
-  template <typename Table, typename Spec>
-  constexpr auto null_is_trivial_value_v<column_t<Table, Spec>> = !!(Spec::tags & tag::null_is_trivial_value);
-
-  template <typename Table, typename Spec>
-  constexpr auto can_be_null_v<column_t<Table, Spec>> = !!(Spec::tags & tag::can_be_null);
 
   template <typename Table, typename Spec>
   constexpr auto must_not_insert_v<column_t<Table, Spec>> = !!(Spec::tags & tag::must_not_insert);
@@ -83,4 +74,4 @@ namespace sqlpp
   {
     return context << name_of_v<Table> << '.' << name_of_v<ColumnSpec>;
   }
-}
+}  // namespace sqlpp

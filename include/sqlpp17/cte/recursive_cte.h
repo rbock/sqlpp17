@@ -39,8 +39,7 @@ namespace sqlpp
     using _alias_t = typename FieldSpec::_alias_t;
 
     using value_type = value_type_of_t<FieldSpec>;
-    static constexpr auto tags = sqlpp::tag::must_not_insert | sqlpp::tag::must_not_update |
-                                 (can_be_null_v<FieldSpec> ? sqlpp::tag::can_be_null : sqlpp::tag::none);
+    static constexpr auto tags = sqlpp::tag::must_not_insert | sqlpp::tag::must_not_update;
   };
 
   template <typename Cte, typename ResultRow>
@@ -66,4 +65,4 @@ namespace sqlpp
 #warning : the With clause must not use this one, it must serialize the statement, too.
     return context << name_of_v<AliasProvider>;
   }
-}
+}  // namespace sqlpp

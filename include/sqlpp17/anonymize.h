@@ -42,7 +42,7 @@ namespace sqlpp
     struct expression
     {
     };
-  }
+  }  // namespace tag
 
   template <typename Context, typename Tag>
   struct anonymous_t
@@ -126,7 +126,7 @@ namespace sqlpp
     }
     else if constexpr (::sqlpp::is_expression_v<T>)
     {
-      return anonymous_t<Context, tag::expression<decltype(value_type_of_v<T>)>>{t};
+      return anonymous_t<Context, tag::expression<value_type_of_t<T>>>{t};
     }
     else
     {
@@ -139,4 +139,4 @@ namespace sqlpp
   {
     return anonymize<Database>(t);
   }
-}
+}  // namespace sqlpp

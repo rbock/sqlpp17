@@ -35,19 +35,29 @@ namespace sqlpp
 {
   SQLPP_WRAPPED_STATIC_ASSERT(assert_valid_plus_operands, "invalid operands for operator plus");
 
-  template <typename ValueType, typename L, typename R>
+  template <typename L, typename R>
   struct plus_t
   {
-    constexpr plus_t(ValueType, L left, R right) : l(left), r(right)
+    constexpr plus_t(L left, R right) : l(left), r(right)
     {
     }
+
+    using type = decltype(std::declval<value_type_of_t<L>&>() + std::declval<value_type_of_t<R>&>());
 
     L l;
     R r;
   };
 
-  template <typename ValueTypeLeft, typename ValueTypeRight>
+  template <typename ValueTypeLeft,
+            typename ValueTypeRight,
+            typename = decltype(std::declval<ValueTypeLeft&>() + std::declval<ValueTypeRight&>())>
   constexpr auto check_plus(const ValueTypeLeft&, const ValueTypeRight&)
+  {
+    return succeeded{};
+  }
+
+  template <typename ValueTypeLeft, typename ValueTypeRight>
+  constexpr auto check_plus(...)
   {
     return failed<assert_valid_plus_operands>{};
   }
@@ -55,10 +65,10 @@ namespace sqlpp
   template <typename L, typename R>
   constexpr auto operator+(L l, R r)
   {
-    constexpr auto check = check_plus(value_type_of(l), value_type_of(r));
-    if constexpr (check)
+#warning : Need to use a type wrapper here to ensure constructability
+    if constexpr (constexpr auto check = check_plus(value_type_of_t<L>{}, value_type_of_t<R>{}); check)
     {
-      return plus_t{check.value_type, l, r};
+      return plus_t{l, r};
     }
     else
     {
@@ -66,21 +76,24 @@ namespace sqlpp
     }
   }
 
-  template <typename ValueType, typename L, typename R>
-  constexpr auto value_type_of_v<plus_t<ValueType, L, R>> = ValueType{};
+  template <typename L, typename R>
+  struct value_type_of<plus_t<L, R>>
+  {
+    using type = typename plus_t<L, R>::type;
+  };
 
-  template <typename ValueType, typename L, typename R>
-  constexpr auto requires_braces_v<plus_t<ValueType, L, R>> = true;
+  template <typename L, typename R>
+  constexpr auto requires_braces_v<plus_t<L, R>> = true;
 
-  template <typename Context, typename V, typename L, typename R>
-  constexpr decltype(auto) operator<<(Context& context, const plus_t<V, L, R>& t)
+  template <typename Context, typename L, typename R>
+  constexpr decltype(auto) operator<<(Context& context, const plus_t<L, R>& t)
   {
     return context << embrace(t.l) << " + " << embrace(t.r);
   }
 
-  template <typename Context, typename V1, typename L1, typename R1, typename V2, typename R2>
-  constexpr decltype(auto) operator<<(Context& context, const plus_t<V2, plus_t<V1, L1, R1>, R2>& t)
+  template <typename Context, typename L1, typename R1, typename R2>
+  constexpr decltype(auto) operator<<(Context& context, const plus_t<plus_t<L1, R1>, R2>& t)
   {
     return context << t.l << " + " << embrace(t.r);
   }
-}
+}  // namespace sqlpp

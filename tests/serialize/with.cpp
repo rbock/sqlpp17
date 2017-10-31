@@ -51,7 +51,7 @@ int main()
                           << sqlpp::select_columns(test::tabPerson.id, test::tabPerson.isManager,
                                                    test::tabPerson.address, test::tabPerson.name)
                           << sqlpp::from(test::tabPerson)
-                          << sqlpp::where(test::tabPerson.isManager and test::tabPerson.name == '\0')
+                          << sqlpp::where(test::tabPerson.isManager and test::tabPerson.name == "")
                           << sqlpp::having(test::tabPerson.id == test::tabPerson.id or test::tabPerson.id == 1);
 #warning : need to test results
   std::cout << s;

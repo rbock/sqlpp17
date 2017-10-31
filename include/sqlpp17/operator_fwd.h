@@ -40,6 +40,6 @@ namespace sqlpp
   struct equal_t;
 
   // arithmetic
-  template <typename ValueType, typename L, typename R>
+  template <typename L, typename R>
   struct plus_t;
-}
+}  // namespace sqlpp

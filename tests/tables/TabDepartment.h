@@ -26,7 +26,8 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/data_type.h>
+#include <cstdint>
+
 #include <sqlpp17/table.h>
 
 namespace test
@@ -44,7 +45,7 @@ namespace test
           T id;
         };
       };
-      using value_type = sqlpp::integral_t;
+      using value_type = std::int64_t;
       static constexpr auto tags = sqlpp::tag::must_not_insert | sqlpp::tag::must_not_update | sqlpp::tag::has_default;
     };
 
@@ -60,7 +61,7 @@ namespace test
         };
       };
     };
-  }
+  }  // namespace TabDepartment_
 
-  constexpr auto tabDepartment = sqlpp::table_t<TabDepartment_::_, TabDepartment_::Id>{};
-}
+  inline constexpr auto tabDepartment = sqlpp::table_t<TabDepartment_::_, TabDepartment_::Id>{};
+}  // namespace test

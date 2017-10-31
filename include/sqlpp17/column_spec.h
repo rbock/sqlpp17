@@ -39,13 +39,10 @@ namespace sqlpp
   };
 
   template <typename Alias, typename ValueType, tag::type Tags>
-  constexpr auto value_type_of_v<column_spec<Alias, ValueType, Tags>> = ValueType{};
-
-  template <typename Alias, typename ValueType, tag::type Tags>
-  constexpr auto can_be_null_v<column_spec<Alias, ValueType, Tags>> = !!(Tags & tag::can_be_null);
-
-  template <typename Alias, typename ValueType, tag::type Tags>
-  constexpr auto null_is_trivial_value_v<column_spec<Alias, ValueType, Tags>> = !!(Tags & tag::null_is_trivial_value);
+  struct value_type_of<column_spec<Alias, ValueType, Tags>>
+  {
+    using type = ValueType;
+  };
 
   template <typename LeftAlias,
             typename LeftValueType,
@@ -66,19 +63,11 @@ namespace sqlpp
     using _alias_t = typename _column_t::_alias_t;
     using _value_t = value_type_of_t<_column_t>;
 
+#warning : being in outer tables might be relevant -> optional
     static constexpr auto _outer_tables = outer_tables_of_v<Statement>;
-    static constexpr auto _column_can_be_null = can_be_null_v<_column_t>;
-    static constexpr auto _column_is_optional = is_optional_v<_opt_column_t>;
-    static constexpr auto _column_is_in_outer_table = can_be_null_v<_column_t>;
-    static constexpr auto _can_be_null_tag =
-        tag_if_v<tag::can_be_null, _column_can_be_null | _column_is_optional | _column_is_in_outer_table>;
-
-    static constexpr auto _null_is_trivial_value = null_is_trivial_value_v<_opt_column_t>;
-
-    static constexpr auto _null_is_trivial_value_tag = tag_if_v<tag::null_is_trivial_value, _null_is_trivial_value>;
-    using type = column_spec<_alias_t, _value_t, _can_be_null_tag | _null_is_trivial_value_tag>;
+    using type = column_spec<_alias_t, _value_t, 0>;
   };
 
   template <typename Statement, typename OptColumn>
   using make_column_spec_t = typename make_column_spec<Statement, OptColumn>::type;
-}
+}  // namespace sqlpp

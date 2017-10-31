@@ -49,7 +49,7 @@ namespace sqlpp
   {
     context << t._lhs;
 
-    if (has_value(t._rhs))
+    if (!has_value(t._rhs))
       return context;
 
     context << JoinType::_name;
@@ -69,4 +69,4 @@ namespace sqlpp
   template <typename Lhs, typename JoinType, typename Rhs, typename Condition>
   constexpr auto provided_columns_of_v<join_t<Lhs, JoinType, Rhs, Condition>> =
       provided_columns_of_v<Lhs> | provided_columns_of_v<Rhs>;
-}
+}  // namespace sqlpp

@@ -29,36 +29,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <optional>
 
 #include <sqlpp17/member.h>
-#include <sqlpp17/null_is_trivial.h>
-#include <sqlpp17/type_traits.h>
 
 namespace sqlpp
 {
   namespace detail
   {
-    template <typename ColumnSpec, bool CanBeNull, bool NullIsTrivialValue>
-    struct make_result_column_base;
-
-    template <typename ColumnSpec, bool NullIsTrivialValue>
-    struct make_result_column_base<ColumnSpec, false, NullIsTrivialValue>
-    {
-      using type = member_t<ColumnSpec, cpp_type_of_t<value_type_of_t<ColumnSpec>>>;
-    };
-
     template <typename ColumnSpec>
-    struct make_result_column_base<ColumnSpec, true, true>
+    struct make_result_column_base
     {
-      using type = member_t<ColumnSpec, null_is_trivial<cpp_type_of_t<value_type_of_t<ColumnSpec>>>>;
+      using type = member_t<ColumnSpec, value_type_of_t<ColumnSpec>>;
     };
 
-    template <typename ColumnSpec>
-    struct make_result_column_base<ColumnSpec, true, false>
-    {
-      using type = member_t<ColumnSpec, std::optional<cpp_type_of_t<value_type_of_t<ColumnSpec>>>>;
-    };
-  }
+  }  // namespace detail
 
   template <typename ColumnSpec>
-  using result_column_base = typename detail::
-      make_result_column_base<ColumnSpec, can_be_null_v<ColumnSpec>, null_is_trivial_value_v<ColumnSpec>>::type;
-}
+  using result_column_base = typename detail::make_result_column_base<ColumnSpec>::type;
+}  // namespace sqlpp

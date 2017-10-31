@@ -26,7 +26,9 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/data_type.h>
+#include <optional>
+#include <string>
+
 #include <sqlpp17/table.h>
 
 namespace test
@@ -44,7 +46,7 @@ namespace test
           T id;
         };
       };
-      using value_type = sqlpp::integral_t;
+      using value_type = std::int64_t;
       static constexpr auto tags = sqlpp::tag::must_not_insert | sqlpp::tag::must_not_update | sqlpp::tag::has_default;
     };
 
@@ -59,7 +61,7 @@ namespace test
           T isManager;
         };
       };
-      using value_type = sqlpp::boolean_t;
+      using value_type = bool;
       static constexpr auto tags = 0;
     };
 
@@ -74,8 +76,8 @@ namespace test
           T name;
         };
       };
-      using value_type = sqlpp::text_t;
-      static constexpr auto tags = sqlpp::tag::can_be_null | sqlpp::tag::null_is_trivial_value;
+      using value_type = std::string_view;
+      static constexpr auto tags = 0;
     };
 
     struct Address
@@ -89,8 +91,8 @@ namespace test
           T address;
         };
       };
-      using value_type = sqlpp::text_t;
-      static constexpr auto tags = sqlpp::tag::can_be_null;
+      using value_type = std::optional<std::string_view>;
+      static constexpr auto tags = ::sqlpp::tag::has_default;
     };
 
     struct _
@@ -105,8 +107,8 @@ namespace test
         };
       };
     };
-  }
+  }  // namespace TabPerson_
 
   constexpr auto tabPerson =
       sqlpp::table_t<TabPerson_::_, TabPerson_::Id, TabPerson_::IsManager, TabPerson_::Name, TabPerson_::Address>{};
-}
+}  // namespace test

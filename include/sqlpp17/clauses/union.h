@@ -40,7 +40,7 @@ namespace sqlpp
     struct union_
     {
     };
-  }
+  }  // namespace clause
 
   template <typename Flag, typename LeftSelect, typename RightSelect>
   struct union_t
@@ -82,13 +82,8 @@ namespace sqlpp
 
     using _alias_t = typename LeftColumnSpec::_alias_t;
     using _value_t = value_type_of_t<LeftColumnSpec>;
-    static constexpr auto _can_be_null_tag =
-        tag_if_v<tag::can_be_null, (can_be_null_v<LeftColumnSpec> || can_be_null_v<RightColumnSpec>)>;
-    static constexpr auto _null_is_trivial_value_tag =
-        tag_if_v<tag::null_is_trivial_value,
-                 (null_is_trivial_value_v<LeftColumnSpec> || null_is_trivial_value_v<RightColumnSpec>)>;
 
-    using type = column_spec<_alias_t, _value_t, _can_be_null_tag | _null_is_trivial_value_tag>;
+    using type = column_spec<_alias_t, _value_t, 0>;
   };
 
   template <typename LeftResultRow, typename RightResultRow>
@@ -212,4 +207,4 @@ namespace sqlpp
       return ::sqlpp::bad_statement_t{check};
     }
   }
-}
+}  // namespace sqlpp

@@ -27,7 +27,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <type_traits>
-#include <sqlpp17/is_trivial_value.h>
 #include <sqlpp17/operator_fwd.h>
 
 namespace sqlpp
@@ -41,8 +40,15 @@ namespace sqlpp
     R r;
   };
 
-  template <typename ValueTypeLeft, typename ValueTypeRight>
+  template <typename ValueTypeLeft,
+            typename ValueTypeRight,
+            typename = decltype(std::declval<ValueTypeLeft&>() == std::declval<ValueTypeRight&>())>
   constexpr auto check_equal(const ValueTypeLeft&, const ValueTypeRight&)
+  {
+    return succeeded{};
+  }
+
+  constexpr auto check_equal(...)
   {
     return failed<assert_valid_equal_operands>{};
   }
@@ -50,8 +56,8 @@ namespace sqlpp
   template <typename L, typename R>
   constexpr auto operator==(L l, R r)
   {
-    constexpr auto check = check_equal(value_type_of(l), value_type_of(r));
-    if constexpr (check)
+#warning : Need to use a type wrapper here to ensure constructability
+    if constexpr (constexpr auto check = check_equal(value_type_of_t<L>{}, value_type_of_t<R>{}); check)
     {
       return equal_t<L, R>{l, r};
     }
@@ -65,7 +71,10 @@ namespace sqlpp
   constexpr auto is_expression_v<equal_t<L, R>> = true;
 
   template <typename L, typename R>
-  constexpr auto value_type_of_v<equal_t<L, R>> = boolean_t{};
+  struct value_type_of<equal_t<L, R>>
+  {
+    using type = bool;
+  };
 
   template <typename L, typename R>
   constexpr auto requires_braces_v<equal_t<L, R>> = true;
@@ -73,13 +82,15 @@ namespace sqlpp
   template <typename Context, typename L, typename R>
   constexpr decltype(auto) operator<<(Context& context, const equal_t<L, R>& t)
   {
+#warning : Need to handle nullopt here
+    /*
     if (null_is_trivial_value(t.l) and is_trivial_value(t.r))
     {
       return context << embrace(t.l) << " IS NULL ";
     }
-    else
+    else*/
     {
       return context << embrace(t.l) << " = " << embrace(t.r);
     }
   }
-}
+}  // namespace sqlpp

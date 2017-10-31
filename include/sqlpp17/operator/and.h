@@ -41,8 +41,16 @@ namespace sqlpp
     R r;
   };
 
-  template <typename ValueTypeLeft, typename ValueTypeRight>
+  template <typename ValueTypeLeft,
+            typename ValueTypeRight,
+            typename = decltype(std::declval<ValueTypeLeft&>() and std::declval<ValueTypeRight&>())>
   constexpr auto check_and(const ValueTypeLeft&, const ValueTypeRight&)
+  {
+    return succeeded{};
+  }
+
+  template <typename ValueTypeLeft, typename ValueTypeRight>
+  constexpr auto check_and(...)
   {
     return failed<assert_valid_and_operands>{};
   }
@@ -50,8 +58,8 @@ namespace sqlpp
   template <typename L, typename R>
   constexpr auto operator&&(L l, R r)
   {
-    constexpr auto check = check_and(value_type_of(l), value_type_of(r));
-    if constexpr (check)
+#warning : Need to use a type wrapper here to ensure constructability
+    if constexpr (constexpr auto check = check_and(value_type_of_t<L>{}, value_type_of_t<R>{}); check)
     {
       return and_t<L, R>{l, r};
     }
@@ -65,7 +73,10 @@ namespace sqlpp
   constexpr auto is_expression_v<and_t<L, R>> = true;
 
   template <typename L, typename R>
-  constexpr auto value_type_of_v<and_t<L, R>> = boolean_t{};
+  struct value_type_of<and_t<L, R>>
+  {
+    using type = bool;
+  };
 
   template <typename L, typename R>
   constexpr auto requires_braces_v<and_t<L, R>> = true;
@@ -81,4 +92,4 @@ namespace sqlpp
   {
     return context << t.l << " AND " << embrace(t.r);
   }
-}
+}  // namespace sqlpp

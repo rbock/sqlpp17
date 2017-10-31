@@ -43,9 +43,7 @@ namespace sqlpp
     constexpr type must_not_insert = 1 << 0;
     constexpr type must_not_update = 1 << 1;
     constexpr type has_default = 1 << 2;
-    constexpr type can_be_null = 1 << 3;
-    constexpr type null_is_trivial_value = 1 << 4;
-  }
+  }  // namespace tag
 
   template <tag::type Tag, bool Condition>
   constexpr auto tag_if_v = Condition ? Tag : tag::none;
@@ -150,15 +148,6 @@ namespace sqlpp
   {
     return contains_aggregate_v<T>;
   }
-
-  template <typename T>
-  struct cpp_type_of
-  {
-    static_assert(wrong<T>, "cpp_type_of not implemented for T");
-  };
-
-  template <typename T>
-  using cpp_type_of_t = typename cpp_type_of<T>::type;
 
   template <typename Assert, typename T>
   constexpr auto is_alias_v = false;
@@ -297,24 +286,6 @@ namespace sqlpp
   }
 
   template <typename T>
-  constexpr auto null_is_trivial_value_v = false;
-
-  template <typename T>
-  constexpr auto null_is_trivial_value(const T&)
-  {
-    return null_is_trivial_value_v<T>;
-  }
-
-  template <typename T>
-  constexpr auto can_be_null_v = false;
-
-  template <typename T>
-  constexpr auto can_be_null(const T&)
-  {
-    return can_be_null_v<T>;
-  }
-
-  template <typename T>
   constexpr auto must_not_insert_v = false;
 
   template <typename T>
@@ -359,22 +330,21 @@ namespace sqlpp
     return is_select_flag<T>;
   }
 
+#warning : no_value_t still used?
   struct no_value_t
   {
   };
 
-  template <typename T, typename Enable = void>
-  constexpr auto value_type_of_v = no_value_t{};
-
   template <typename T>
-  using value_type_of_t = std::decay_t<decltype(value_type_of_v<T>)>;
-
-  template <typename T>
-  constexpr auto value_type_of(const T&)
+  struct value_type_of
   {
-    return value_type_of_v<T>;
-  }
+    using type = T;
+  };
 
+  template <typename T, typename Enable = void>
+  using value_type_of_t = typename value_type_of<T>::type;
+
+#warning : table_of -> table_spec_of
   template <typename T, typename Enable = void>
   constexpr auto table_of_v = no_value_t{};
 
@@ -400,7 +370,7 @@ namespace sqlpp
   }
 
   template <typename T>
-  constexpr auto is_boolean_v = std::is_same_v<std::decay_t<decltype(value_type_of_v<T>)>, boolean_t>;
+  constexpr auto is_boolean_v = std::is_same_v<value_type_of_t<T>, bool>;
 
   template <typename T>
   constexpr auto is_boolean(const T&)
@@ -503,4 +473,4 @@ namespace sqlpp
 
   template <typename T>
   constexpr auto& name_of_v = T::_alias_t::name;
-}
+}  // namespace sqlpp

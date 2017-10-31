@@ -1,3 +1,13 @@
+Value types:
+============
+sqlpp11 has types like integral, text, boolean, etc. The library needs to define in much detail
+how these types interact.
+
+sqlpp17 simply uses whatever type you want.
+
+
+Columns and tables:
+===================
 #warning: To check if all columns are correct, we should compare provided and required columns
 #warning: (column being defined by TableSpec and ColumnSpec).
 
@@ -100,10 +110,6 @@ row.x should be a value/optional, not a complex object.
 =======================================================
 auto x = row.x leads to too many surprises
 
-std::optional is not good if "trivial_is_null", though.
-
-Need something that represents a value and offers is_null.
-
 results.front() needs to throw is results.empty()
 =================================================
 It happens way too often that someone assumes that there is at least one result, when there isn't
@@ -120,11 +126,9 @@ Invert the logic from sqlpp11: Instead of expressions writing braces for themsel
 
 TrivialIsNull:
 ==============
-Evaluate "trivial_is_null" in a "if constexpr" instead of wrapping it in a type as in sqlpp11.
+This was one of the most controversial ideas in sqlpp11.
 
-trivial_is_null should not be a connection feature. This is just too confusing if you have different values for columns and connections.
-
-need a tvin function again, this should work for column_groups, too (nice for outer joins)
+Today, I agree with the critics: this requires the library to do so much "magic", it is just confusing.
 
 Custom statements:
 ==================
