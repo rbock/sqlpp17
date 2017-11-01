@@ -334,17 +334,16 @@ namespace sqlpp
   {
   };
 
-#warning : table_of -> table_spec_of
   template <typename T, typename Enable = void>
-  constexpr auto table_of_v = no_value_t{};
+  constexpr auto table_spec_of_v = no_value_t{};
 
   template <typename T>
-  using table_of_t = std::decay_t<decltype(table_of_v<T>)>;
+  using table_spec_of_t = std::decay_t<decltype(table_spec_of_v<T>)>;
 
   template <typename T>
-  constexpr auto table_of(const T&)
+  constexpr auto table_spec_of(const T&)
   {
-    return table_of_v<T>;
+    return table_spec_of_v<T>;
   }
 
   template <typename T, typename Enable = void>

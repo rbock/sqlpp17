@@ -282,12 +282,12 @@ namespace sqlpp
     {
       return failed<assert_insert_set_assignments_are_allowed>{};
     }
-    else if constexpr (type_set<table_of_t<column_of_t<Assignments>>...>().size() != 1)
+    else if constexpr (type_set<table_spec_of_t<column_of_t<Assignments>>...>().size() != 1)
     {
       return failed<assert_insert_set_args_affect_single_table>{};
     }
     else if constexpr (type_set<column_of_t<Assignments>...>() >=
-                       required_insert_columns_of_v<table_of_t<detail::first_t<Assignments...>>>)
+                       required_insert_columns_of_v<table_spec_of_t<detail::first_t<Assignments...>>>)
     {
       return failed<assert_insert_set_is_not_missing_assignment>{};
     }

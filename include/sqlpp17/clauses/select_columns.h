@@ -44,7 +44,7 @@ namespace sqlpp
     struct select_columns
     {
     };
-  }
+  }  // namespace clause
 
   template <typename... Columns>
   struct select_columns_t
@@ -204,4 +204,4 @@ namespace sqlpp
   {
     return statement<no_select_columns_t>{}.columns(std::forward<Columns>(columns)...);
   }
-}
+}  // namespace sqlpp
