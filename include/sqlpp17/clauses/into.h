@@ -38,7 +38,7 @@ namespace sqlpp
     struct into
     {
     };
-  }
+  }  // namespace clause
 
   template <typename Table>
   struct into_t
@@ -124,6 +124,20 @@ namespace sqlpp
     }
   };
 
+  template <typename Table>
+  constexpr auto is_result_clause_v<into_t<Table>> = true;
+
+  template <typename Table, typename Statement>
+  class result_base<into_t<Table>, Statement>
+  {
+  public:
+    template <typename Connection>
+    [[nodiscard]] auto _run(Connection& connection) const
+    {
+      return connection.insert(Statement::of(this));
+    }
+  };
+
   template <typename Context, typename Statement>
   decltype(auto) operator<<(Context& context, const clause_base<no_into_t, Statement>&)
   {
@@ -135,4 +149,4 @@ namespace sqlpp
   {
     return statement<no_into_t>{}.into(std::forward<Table>(t));
   }
-}
+}  // namespace sqlpp

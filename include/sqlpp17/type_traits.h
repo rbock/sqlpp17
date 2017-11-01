@@ -114,9 +114,6 @@ namespace sqlpp
   };
 
   template <typename T>
-  constexpr auto is_update_allowed_v = false;
-
-  template <typename T>
   constexpr auto is_alias_provider_v = false;
 
   template <typename T>
@@ -158,13 +155,13 @@ namespace sqlpp
     return is_alias_v<Assert, T>;
   }
 
-  template <typename Assert, typename T>
+  template <typename T>
   constexpr auto is_assignment_v = false;
 
-  template <typename Assert, typename T>
-  constexpr auto is_assignment(const Assert&, const T&)
+  template <typename T>
+  constexpr auto is_assignment(const T&)
   {
-    return is_assignment_v<Assert, T>;
+    return is_assignment_v<T>;
   }
 
   template <typename T>
@@ -346,17 +343,14 @@ namespace sqlpp
     return table_spec_of_v<T>;
   }
 
-  template <typename T, typename Enable = void>
-  constexpr auto column_of_v = no_value_t{};
-
   template <typename T>
-  using column_of_t = std::decay_t<decltype(column_of_v<T>)>;
-
-  template <typename T>
-  constexpr auto column_of(const T&)
+  struct column_of
   {
-    return column_of_v<T>;
-  }
+    using type = no_value_t;
+  };
+
+  template <typename T>
+  using column_of_t = typename column_of<T>::type;
 
   template <typename T>
   constexpr auto is_boolean_v = std::is_same_v<value_type_of_t<T>, bool>;

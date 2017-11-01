@@ -31,11 +31,33 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
+  template <typename L, typename R>
+  struct assignment_t
+  {
+    L l;
+    R r;
+  };
+
+  template <typename L, typename R>
+  constexpr auto is_assignment_v<assignment_t<L, R>> = true;
+
+  template <typename L, typename R>
+  struct column_of<assignment_t<L, R>>
+  {
+    using type = L;
+  };
+
   template <typename TableAlias, typename ColumnSpec>
   class column_t
   {
   public:
     using _alias_t = typename ColumnSpec::_alias_t;
+
+    template <typename T>
+    auto operator=(T t) const
+    {
+      return assignment_t<column_t, T>{*this, t};
+    }
 
     template <typename Alias>
     constexpr auto as(const Alias&) const

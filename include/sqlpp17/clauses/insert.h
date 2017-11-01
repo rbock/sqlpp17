@@ -38,7 +38,7 @@ namespace sqlpp
     struct insert
     {
     };
-  }
+  }  // namespace clause
 
   struct insert_t
   {
@@ -67,6 +67,6 @@ namespace sqlpp
 
   [[nodiscard]] constexpr auto insert()
   {
-    return statement<insert_t, no_into_t>{};
+    return statement<insert_t, no_into_t, no_insert_values_t>{};
   }
-}
+}  // namespace sqlpp

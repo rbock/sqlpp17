@@ -35,6 +35,24 @@ namespace test
   {
   public:
     template <typename Statement>
+    auto insert(const Statement& statement)
+    {
+      return 0ull;
+    }
+
+    template <typename Statement>
+    auto update(const Statement& statement)
+    {
+      return 0ull;
+    }
+
+    template <typename Statement>
+    auto erase(const Statement& statement)
+    {
+      return 0ull;
+    }
+
+    template <typename Statement>
     auto select(const Statement& statement)
     {
       return std::vector<typename Statement::_result_row_t>{};

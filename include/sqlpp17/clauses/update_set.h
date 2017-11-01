@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2016 - 2017, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -42,7 +42,7 @@ namespace sqlpp
     struct update_set
     {
     };
-  }
+  }  // namespace clause
 
   template <typename... Assignments>
   struct update_set_t
@@ -68,6 +68,9 @@ namespace sqlpp
 
     std::tuple<Assignments...> _assignments;
   };
+
+  template <typename... Assignments>
+  constexpr auto is_result_clause_v<update_set_t<Assignments...>> = true;
 
   template <typename... Assignments, typename Statement>
   class result_base<update_set_t<Assignments...>, Statement>
@@ -107,7 +110,7 @@ namespace sqlpp
   template <typename... Assignments>
   constexpr auto check_update_set_arg()
   {
-    if constexpr (sizeof...(Assignments))
+    if constexpr (sizeof...(Assignments) == 0)
     {
       return failed<assert_update_set_at_least_one_arg>{};
     }
@@ -119,7 +122,7 @@ namespace sqlpp
     {
       return failed<assert_update_set_args_contain_no_duplicates>{};
     }
-    else if constexpr (!(true && ... && is_update_allowed_v<column_of_t<Assignments>>))
+    else if constexpr ((false || ... || must_not_update_v<column_of_t<Assignments>>))
     {
       return failed<assert_update_set_assignments_are_allowed>{};
     }
@@ -143,7 +146,7 @@ namespace sqlpp
     constexpr clause_base() = default;
 
     template <typename... Assignments>
-    [[nodiscard]] constexpr auto update_set(Assignments... assignments) const
+    [[nodiscard]] constexpr auto set(Assignments... assignments) const
     {
       constexpr auto check = check_update_set_arg<Assignments...>();
       if constexpr (check)
@@ -166,6 +169,6 @@ namespace sqlpp
   template <typename... Assignments>
   [[nodiscard]] constexpr auto update_set(Assignments&&... assignments)
   {
-    return statement<no_update_set_t>{}.update_set(std::forward<Assignments>(assignments)...);
+    return statement<no_update_set_t>{}.set(std::forward<Assignments>(assignments)...);
   }
-}
+}  // namespace sqlpp

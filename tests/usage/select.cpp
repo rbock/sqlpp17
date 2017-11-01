@@ -39,11 +39,11 @@ int main()
   auto db = test::mock_db{};
 
   // default way of constructing a select statement
-  for (const auto& row : db(sqlpp::select(test::tabPerson.id, test::tabPerson.id, test::tabPerson.isManager,
-                                          test::tabPerson.address, test::tabPerson.name)
-                                .from(test::tabPerson)
-                                .where(test::tabPerson.isManager and test::tabPerson.name == "")
-                                .having(test::tabPerson.id == test::tabPerson.id or test::tabPerson.id == 1)))
+  for (const auto& row :
+       db(sqlpp::select(test::tabPerson.id, test::tabPerson.isManager, test::tabPerson.address, test::tabPerson.name)
+              .from(test::tabPerson)
+              .where(test::tabPerson.isManager and test::tabPerson.name == "")
+              .having(test::tabPerson.id == test::tabPerson.id or test::tabPerson.id == 1)))
   {
     std::cout << row.id << std::endl;
     std::cout << row.isManager << std::endl;

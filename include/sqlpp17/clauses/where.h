@@ -38,7 +38,7 @@ namespace sqlpp
     struct where
     {
     };
-  }
+  }  // namespace clause
 
   template <typename Condition>
   struct where_t
@@ -69,6 +69,33 @@ namespace sqlpp
   decltype(auto) operator<<(Context& context, const clause_base<where_t<Condition>, Statement>& t)
   {
     return context << " WHERE " << t._condition;
+  }
+
+  struct unconditionally_t
+  {
+  };
+
+  template <>
+  constexpr auto clause_tag<unconditionally_t> = clause::where{};
+
+  template <typename Statement>
+  class clause_base<unconditionally_t, Statement>
+  {
+  public:
+    template <typename OtherStatement>
+    clause_base(const clause_base<unconditionally_t, OtherStatement>& s)
+    {
+    }
+
+    clause_base(const unconditionally_t& f)
+    {
+    }
+  };
+
+  template <typename Context, typename Statement>
+  decltype(auto) operator<<(Context& context, const clause_base<unconditionally_t, Statement>& t)
+  {
+    return context;
   }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_where_arg_is_expression, "where() arg has to be a boolean expression");
@@ -110,6 +137,11 @@ namespace sqlpp
 
     constexpr clause_base() = default;
 
+    [[nodiscard]] constexpr auto unconditionally() const
+    {
+      return Statement::replace_clause(this, unconditionally_t{});
+    }
+
     template <typename Condition>
     [[nodiscard]] constexpr auto where(Condition condition) const
     {
@@ -136,4 +168,4 @@ namespace sqlpp
   {
     return statement<no_where_t>{}.where(std::forward<Condition>(condition));
   }
-}
+}  // namespace sqlpp

@@ -29,5 +29,7 @@ function(test_usage name)
 	add_test(${target} ${target})
 endfunction()
 
+test_usage(insert)
+test_usage(update)
 test_usage(select)
 

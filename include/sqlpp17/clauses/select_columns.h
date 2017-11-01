@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2016 - 2017, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -53,9 +53,6 @@ namespace sqlpp
   };
 
   template <typename... Columns>
-  constexpr auto is_result_clause_v<select_columns_t<Columns...>> = true;
-
-  template <typename... Columns>
   constexpr auto clause_tag<select_columns_t<Columns...>> = clause::select_columns{};
 
   template <typename... Columns, typename Statement>
@@ -95,6 +92,9 @@ namespace sqlpp
       return succeeded{};
     }
   }
+
+  template <typename... Columns>
+  constexpr auto is_result_clause_v<select_columns_t<Columns...>> = true;
 
   template <typename... Columns, typename Statement>
   class result_base<select_columns_t<Columns...>, Statement>

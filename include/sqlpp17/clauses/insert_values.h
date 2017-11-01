@@ -73,17 +73,6 @@ namespace sqlpp
     std::tuple<Assignments...> _assignments;
   };
 
-  template <typename... Assignments, typename Statement>
-  class result_base<insert_values_t<Assignments...>, Statement>
-  {
-  public:
-    template <typename Connection>
-    [[nodiscard]] auto _run(Connection& connection) const
-    {
-      return connection.insert(Statement::of(this));
-    }
-  };
-
   template <typename Context, typename Statement, typename... Assignments>
   decltype(auto) operator<<(Context& context, const clause_base<insert_values_t<Assignments...>, Statement>& t)
   {
@@ -127,17 +116,6 @@ namespace sqlpp
     }
   };
 
-  template <typename Statement>
-  class result_base<insert_default_values_t, Statement>
-  {
-  public:
-    template <typename Connection>
-    [[nodiscard]] auto _run(Connection& connection) const
-    {
-      return connection.insert(Statement::of(this));
-    }
-  };
-
   template <typename Context, typename Statement>
   decltype(auto) operator<<(Context& context, const clause_base<insert_default_values_t, Statement>& t)
   {
@@ -152,9 +130,6 @@ namespace sqlpp
 
   template <typename... Assignments>
   constexpr auto clause_tag<insert_multi_values_t<Assignments...>> = clause::insert_values{};
-
-  template <typename... Assignments>
-  constexpr auto is_result_clause_v<insert_multi_values_t<Assignments...>> = true;
 
   template <typename Statement, typename... Assignments>
   class clause_base<insert_multi_values_t<Assignments...>, Statement>
@@ -171,6 +146,9 @@ namespace sqlpp
 
     std::vector<std::tuple<Assignments...>> _rows;
   };
+
+  template <typename... Assignments>
+  constexpr auto is_result_clause_v<insert_multi_values_t<Assignments...>> = true;
 
   template <typename... Assignments, typename Statement>
   class result_base<insert_multi_values_t<Assignments...>, Statement>
