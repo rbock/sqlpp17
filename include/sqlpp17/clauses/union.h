@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2016 - 2017, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -75,35 +75,11 @@ namespace sqlpp
     RightSelect _right;
   };
 
-  template <typename LeftColumnSpec, typename RightColumnSpec>
-  struct merge_column_spec
-  {
-    static_assert(column_specs_are_compatible_v<LeftColumnSpec, RightColumnSpec>);
-
-    using _alias_t = typename LeftColumnSpec::_alias_t;
-    using _value_t = value_type_of_t<LeftColumnSpec>;
-
-    using type = column_spec<_alias_t, _value_t, 0>;
-  };
-
-  template <typename LeftResultRow, typename RightResultRow>
-  struct merge_result_row_specs
-  {
-    static_assert(wrong<merge_result_row_specs>, "Invalid arguments for merge_result_row_specs");
-  };
-
-  template <typename... LeftColumnSpecs, typename... RightColumnSpecs>
-  struct merge_result_row_specs<result_row_t<LeftColumnSpecs...>, result_row_t<RightColumnSpecs...>>
-  {
-    using type = result_row_t<typename merge_column_spec<LeftColumnSpecs, RightColumnSpecs>::type...>;
-  };
-
   template <typename Flag, typename LeftSelect, typename RightSelect, typename Statement>
   class result_base<union_t<Flag, LeftSelect, RightSelect>, Statement>
   {
   public:
-    using result_row_t =
-        typename merge_result_row_specs<typename LeftSelect::_result_row_t, typename RightSelect::_result_row_t>::type;
+    using _result_row_t = typename LeftSelect::_result_row_t;
 
     template <typename Connection>
     [[nodiscard]] auto _run(Connection& connection) const

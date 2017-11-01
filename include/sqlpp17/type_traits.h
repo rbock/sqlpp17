@@ -198,29 +198,20 @@ namespace sqlpp
     return has_result_row_v<T>;
   }
 
-  template <typename Left, typename Right, typename Enable = void>
-  constexpr auto result_rows_are_compatible_v = false;
+  template <typename Left, typename Right>
+  struct result_rows_are_compatible
+  {
+    static constexpr auto result_rows_are_compatible_v = false;
+  };
 
   template <typename Left, typename Right>
-  constexpr auto result_rows_are_compatible(const Left&, const Right&)
-  {
-    return result_rows_are_compatible_v<Left, Right>;
-  }
+  constexpr auto result_rows_are_compatible_v = result_rows_are_compatible<Left, Right>::value;
 
   template <typename T>
   struct result_row_of;
 
   template <typename T>
   using result_row_of_t = typename result_row_of<T>::type;
-
-  template <typename Left, typename Right>
-  constexpr auto column_specs_are_compatible_v = false;
-
-  template <typename Left, typename Right>
-  constexpr auto column_specs_are_compatible(const Left&, const Right&)
-  {
-    return column_specs_are_compatible_v<Left, Right>;
-  }
 
   template <typename Assert, typename T>
   constexpr auto is_bad_statement_v = false;

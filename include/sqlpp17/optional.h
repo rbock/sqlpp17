@@ -52,6 +52,15 @@ namespace sqlpp
   using remove_optional_t = typename remove_optional<T>::type;
 
   template <typename T>
+  struct add_optional
+  {
+    using type = std::optional<T>;
+  };
+
+  template <typename T>
+  using add_optional_t = typename add_optional<T>::type;
+
+  template <typename T>
   decltype(auto) get_value(const T& t)
   {
     return t;
@@ -79,4 +88,4 @@ namespace sqlpp
   {
     return (false || ... || has_value(std::get<Ts>(t)));
   }
-}
+}  // namespace sqlpp

@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2016 - 2017, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,22 +26,19 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <optional>
-
 #include <sqlpp17/member.h>
+
+namespace sqlpp::detail
+{
+  template <typename ColumnSpec>
+  struct make_result_column_base
+  {
+    using type = member_t<ColumnSpec, value_type_of_t<ColumnSpec>>;
+  };
+}  // namespace sqlpp::detail
 
 namespace sqlpp
 {
-  namespace detail
-  {
-    template <typename ColumnSpec>
-    struct make_result_column_base
-    {
-      using type = member_t<ColumnSpec, value_type_of_t<ColumnSpec>>;
-    };
-
-  }  // namespace detail
-
   template <typename ColumnSpec>
   using result_column_base = typename detail::make_result_column_base<ColumnSpec>::type;
 }  // namespace sqlpp

@@ -36,9 +36,22 @@ namespace sqlpp
   };
 
   template <typename... LeftColumnSpecs, typename... RightColumnSpecs>
-  constexpr auto
-      result_rows_are_compatible_v<result_row_t<LeftColumnSpecs...>,
-                                   result_row_t<RightColumnSpecs...>,
-                                   std::enable_if_t<sizeof...(LeftColumnSpecs) == sizeof...(RightColumnSpecs)>> =
-          (true && ... && column_specs_are_compatible_v<LeftColumnSpecs, RightColumnSpecs>);
-}
+  struct result_rows_are_compatible<result_row_t<LeftColumnSpecs...>, result_row_t<RightColumnSpecs...>>
+  {
+    static constexpr auto get_value()
+    {
+      if constexpr (sizeof...(LeftColumnSpecs) != sizeof...(RightColumnSpecs))
+      {
+        return false;
+      }
+      else
+      {
+        return (true && ... &&
+                (char_sequence_of_v<LeftColumnSpecs> == char_sequence_of_v<RightColumnSpecs> and
+                 std::is_same_v<value_type_of_t<LeftColumnSpecs>, value_type_of_t<RightColumnSpecs>>));
+      }
+    }
+
+    static constexpr auto value = get_value();
+  };
+}  // namespace sqlpp
