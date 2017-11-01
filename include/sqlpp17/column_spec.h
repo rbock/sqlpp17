@@ -64,7 +64,7 @@ namespace sqlpp
     using _value_t = value_type_of_t<_column_t>;
 
 #warning : being in outer tables might be relevant -> optional
-    static constexpr auto _outer_tables = outer_tables_of_v<Statement>;
+    // static constexpr auto _outer_tables = outer_tables_of_v<Statement>;
     using type = column_spec<_alias_t, _value_t, 0>;
   };
 

@@ -396,10 +396,22 @@ namespace sqlpp
   constexpr auto is_optional_v = false;
 
   template <typename T>
-  constexpr auto is_optional(const T&)
+  struct is_optional
+  {
+    static constexpr auto value = is_optional_v<T>;
+  };
+
+  template <typename T>
+  constexpr auto is_optional_f(const T&)
   {
     return is_optional_v<T>;
   }
+
+  template <typename T>
+  struct is_value_type_optional
+  {
+    static constexpr auto value = is_optional_v<value_type_of<T>>;
+  };
 
   template <typename T>
   constexpr auto parameters_of = type_set_t<>();
@@ -414,12 +426,12 @@ namespace sqlpp
   }
 
   template <typename T>
-  constexpr auto outer_tables_of_v = type_set_t<>();
+  constexpr auto optional_columns_of_v = type_set_t<>();
 
   template <typename T>
-  constexpr auto outer_tables_of(const T&)
+  constexpr auto optional_columns_of(const T&)
   {
-    return outer_tables_of_v<T>;
+    return optional_columns_of_v<T>;
   }
 
   template <typename T>
@@ -441,21 +453,21 @@ namespace sqlpp
   }
 
   template <typename T>
-  constexpr auto provided_table_names_of_v = type_set<>();
+  constexpr auto table_names_of_v = type_set<>();
 
   template <typename T>
-  constexpr auto provided_table_names_of(const T&)
+  constexpr auto table_names_of(const T&)
   {
-    return provided_table_names_of_v<T>;
+    return table_names_of_v<T>;
   }
 
   template <typename T>
-  constexpr auto provided_columns_of_v = type_set<>();
+  constexpr auto columns_of_v = type_set<>();
 
   template <typename T>
-  constexpr auto provided_columns_of(const T&)
+  constexpr auto columns_of(const T&)
   {
-    return provided_columns_of_v<T>;
+    return columns_of_v<T>;
   }
 
   template <typename T>

@@ -57,8 +57,7 @@ namespace sqlpp
       {
         return failed<assert_conditionless_join_rhs_table>{};
       }
-      else if constexpr (!provided_table_names_of_v<Lhs>.is_disjoint_from(
-                             provided_table_names_of_v<remove_optional_t<Rhs>>))
+      else if constexpr (!table_names_of_v<Lhs>.is_disjoint_from(table_names_of_v<remove_optional_t<Rhs>>))
       {
         return failed<assert_conditionless_join_unique_names>{};
       }
@@ -83,7 +82,7 @@ namespace sqlpp
         return ::sqlpp::bad_statement_t{check};
       }
     }
-  }
+  }  // namespace detail
 
   template <typename Lhs, typename Rhs>
   [[nodiscard]] constexpr auto inner_join(Lhs lhs, Rhs rhs)
@@ -130,7 +129,7 @@ namespace sqlpp
         return ::sqlpp::bad_statement_t{check};
       }
     }
-  }
+  }  // namespace detail
 
   template <typename Lhs, typename Rhs>
   [[nodiscard]] constexpr auto cross_join(Lhs lhs, Rhs rhs)
@@ -183,4 +182,4 @@ namespace sqlpp
       return ::sqlpp::cross_join(ref(), t);
     }
   };
-}
+}  // namespace sqlpp

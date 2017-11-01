@@ -74,4 +74,5 @@ namespace sqlpp
   {
     return context << name_of_v<Table> << '.' << name_of_v<ColumnSpec>;
   }
+
 }  // namespace sqlpp

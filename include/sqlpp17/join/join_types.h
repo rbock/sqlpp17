@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2016 - 2017, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -30,29 +30,43 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-#warning : Need to inform the world about nullable columns
   struct cross_join_t
   {
+    template <typename Lhs, typename Rhs>
+    static constexpr auto _optional_columns_of = (optional_columns_of_v<Lhs> | optional_columns_of_v<Rhs>);
+
     static constexpr const char* _name = " CROSS";
   };
 
   struct inner_join_t
   {
+    template <typename Lhs, typename Rhs>
+    static constexpr auto _optional_columns_of = (optional_columns_of_v<Lhs> | optional_columns_of_v<Rhs>);
+
     static constexpr const char* _name = " INNER";
   };
 
   struct outer_join_t
   {
+    template <typename Lhs, typename Rhs>
+    static constexpr auto _optional_columns_of = (columns_of_v<Lhs> | columns_of_v<Rhs>);
+
     static constexpr const char* _name = " OUTER";
   };
 
   struct left_outer_join_t
   {
+    template <typename Lhs, typename Rhs>
+    static constexpr auto _optional_columns_of = (optional_columns_of_v<Lhs> | columns_of_v<Rhs>);
+
     static constexpr const char* _name = " LEFT OUTER";
   };
 
   struct right_outer_join_t
   {
+    template <typename Lhs, typename Rhs>
+    static constexpr auto _optional_columns_of = (columns_of_v<Lhs> | optional_columns_of_v<Rhs>);
+
     static constexpr const char* _name = " RIGHT OUTER";
   };
-}
+}  // namespace sqlpp

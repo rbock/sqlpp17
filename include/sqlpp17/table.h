@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2016 - 2017, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -61,7 +61,7 @@ namespace sqlpp
   constexpr auto char_sequence_of_v<table_t<TableSpec, ColumnSpecs...>> = make_char_sequence_t<name_of_v<TableSpec>>{};
 
   template <typename TableSpec, typename... ColumnSpecs>
-  constexpr auto provided_table_names_of_v<table_t<TableSpec, ColumnSpecs...>> =
+  constexpr auto table_names_of_v<table_t<TableSpec, ColumnSpecs...>> =
       type_set(char_sequence_of_v<table_t<TableSpec, ColumnSpecs...>>);
 
   template <typename TableSpec, typename... ColumnSpecs>
@@ -69,6 +69,10 @@ namespace sqlpp
       type_set_if<is_insert_required, column_t<TableSpec, ColumnSpecs>...>();
 
   template <typename TableSpec, typename... ColumnSpecs>
-  constexpr auto provided_columns_of_v<table_t<TableSpec, ColumnSpecs...>> =
-      type_set<column_t<TableSpec, ColumnSpecs>...>();
-}
+  constexpr auto columns_of_v<table_t<TableSpec, ColumnSpecs...>> = type_set<column_t<TableSpec, ColumnSpecs>...>();
+
+  template <typename TableSpec, typename... ColumnSpecs>
+  constexpr auto optional_columns_of_v<table_t<TableSpec, ColumnSpecs...>> =
+      type_set_if<is_value_type_optional, column_t<TableSpec, ColumnSpecs>...>();
+
+}  // namespace sqlpp

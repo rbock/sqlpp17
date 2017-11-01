@@ -46,7 +46,7 @@ namespace sqlpp
     struct insert_values
     {
     };
-  }
+  }  // namespace clause
 
   template <typename... Assignments>
   struct insert_values_t
@@ -205,7 +205,7 @@ namespace sqlpp
           is_first = false;
         else
           context << ", ";
-        if constexpr (is_optional(expr))
+        if constexpr (is_optional_f(expr))
         {
           if (expr.has_value())
           {
@@ -218,7 +218,8 @@ namespace sqlpp
         }
       }
     };
-  }
+
+  }  // namespace detail
 
   template <typename Context, typename Statement, typename... Assignments>
   decltype(auto) operator<<(Context& context, const clause_base<insert_multi_values_t<Assignments...>, Statement>& t)
@@ -349,4 +350,4 @@ namespace sqlpp
   {
     return context;
   }
-}
+}  // namespace sqlpp
