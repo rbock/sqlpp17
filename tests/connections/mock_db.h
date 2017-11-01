@@ -1,5 +1,7 @@
+#pragma once
+
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2017, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -24,33 +26,25 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <iostream>
-#include <tables/TabDepartment.h>
-#include <tables/TabEmpty.h>
-#include <tables/TabPerson.h>
+#warning : This is really just a bad mock
+#include <vector>
 
-#include <sqlpp17/clauses/select.h>
-#include <sqlpp17/operator.h>
-
-int main()
+namespace test
 {
-#warning : s should be a constexpr
+  class mock_db
   {
-    auto s = sqlpp::select() << sqlpp::select_columns(test::tabPerson.id, test::tabPerson.isManager,
-                                                      test::tabPerson.address, test::tabPerson.name)
-                             << sqlpp::from(test::tabPerson)
-                             << sqlpp::where(test::tabPerson.isManager and test::tabPerson.name == "")
-                             << sqlpp::having(test::tabPerson.id == test::tabPerson.id or test::tabPerson.id == 1);
-    std::cout << s << std::endl;
-  }
-  {
-    auto s = sqlpp::select() << sqlpp::select_columns(
-                 test::tabPerson.id, false ? std::make_optional(test::tabPerson.isManager) : std::nullopt);
-    std::cout << s << std::endl;
-  }
-  {
-    auto s = sqlpp::select() << sqlpp::select_columns(
-                 test::tabPerson.id, true ? std::make_optional(test::tabPerson.isManager) : std::nullopt);
-    std::cout << s << std::endl;
-  }
-}
+  public:
+    template <typename Statement>
+    auto select(const Statement& statement)
+    {
+      return std::vector<typename Statement::_result_row_t>{};
+    }
+
+    template <typename Statement>
+    auto operator()(const Statement& statement)
+    {
+      // Need to do a final consistency check here
+      return statement.run(*this);
+    }
+  };
+}  // namespace test

@@ -44,35 +44,38 @@ namespace sqlpp
     }
   };
 
-  template <typename Table, typename Spec>
-  struct value_type_of<column_t<Table, Spec>>
+  template <typename TableSpec, typename ColumnSpec>
+  struct value_type_of<column_t<TableSpec, ColumnSpec>>
   {
-    using type = typename Spec::value_type;
+    using type = typename ColumnSpec::value_type;
   };
 
-  template <typename Table, typename Spec>
-  constexpr auto is_expression_v<column_t<Table, Spec>> = true;
+  template <typename TableSpec, typename ColumnSpec>
+  constexpr auto char_sequence_of_v<column_t<TableSpec, ColumnSpec>> = make_char_sequence_t<name_of_v<ColumnSpec>>{};
 
-  template <typename Table, typename Spec>
-  constexpr auto is_selectable_v<column_t<Table, Spec>> = true;
+  template <typename TableSpec, typename ColumnSpec>
+  constexpr auto is_expression_v<column_t<TableSpec, ColumnSpec>> = true;
 
-  template <typename Table, typename Spec>
-  constexpr auto must_not_insert_v<column_t<Table, Spec>> = !!(Spec::tags & tag::must_not_insert);
+  template <typename TableSpec, typename ColumnSpec>
+  constexpr auto is_selectable_v<column_t<TableSpec, ColumnSpec>> = true;
 
-  template <typename Table, typename Spec>
-  constexpr auto must_not_update_v<column_t<Table, Spec>> = !!(Spec::tags & tag::must_not_update);
+  template <typename TableSpec, typename ColumnSpec>
+  constexpr auto must_not_insert_v<column_t<TableSpec, ColumnSpec>> = !!(ColumnSpec::tags & tag::must_not_insert);
 
-  template <typename Table, typename Spec>
-  constexpr auto has_default_v<column_t<Table, Spec>> = !!(Spec::tags & tag::has_default);
+  template <typename TableSpec, typename ColumnSpec>
+  constexpr auto must_not_update_v<column_t<TableSpec, ColumnSpec>> = !!(ColumnSpec::tags & tag::must_not_update);
 
-  template <typename Table, typename Spec>
-  constexpr auto is_insert_required_v<column_t<Table, Spec>> =
-      !(Spec::tags & tag::has_default) && !(Spec::tags & tag::must_not_insert);
+  template <typename TableSpec, typename ColumnSpec>
+  constexpr auto has_default_v<column_t<TableSpec, ColumnSpec>> = !!(ColumnSpec::tags & tag::has_default);
 
-  template <typename Context, typename Table, typename ColumnSpec>
-  decltype(auto) operator<<(Context& context, const column_t<Table, ColumnSpec>& t)
+  template <typename TableSpec, typename ColumnSpec>
+  constexpr auto is_insert_required_v<column_t<TableSpec, ColumnSpec>> =
+      !(ColumnSpec::tags & tag::has_default) && !(ColumnSpec::tags & tag::must_not_insert);
+
+  template <typename Context, typename TableSpec, typename ColumnSpec>
+  decltype(auto) operator<<(Context& context, const column_t<TableSpec, ColumnSpec>& t)
   {
-    return context << name_of_v<Table> << '.' << name_of_v<ColumnSpec>;
+    return context << name_of_v<TableSpec> << '.' << name_of_v<ColumnSpec>;
   }
 
 }  // namespace sqlpp

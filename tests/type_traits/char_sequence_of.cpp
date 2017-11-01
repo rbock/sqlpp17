@@ -58,6 +58,12 @@ static_assert(compare(char_sequence_of(test::tabPerson.as(foo)), ::sqlpp::char_s
 static_assert(compare(char_sequence_of(test::tabPerson.as(test::tabDepartment.id)),
                       ::sqlpp::char_sequence<'i', 'd', '\x00'>{}));
 
+// Columns
+static_assert(compare(char_sequence_of(test::tabPerson.id), ::sqlpp::char_sequence<'i', 'd', '\x00'>{}));
+
+// Column aliases
+static_assert(compare(char_sequence_of(test::tabPerson.id.as(foo)), ::sqlpp::char_sequence<'f', 'o', 'o', '\x00'>{}));
+
 int main()
 {
 }
