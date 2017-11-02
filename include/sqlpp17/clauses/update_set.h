@@ -79,7 +79,8 @@ namespace sqlpp
     template <typename Connection>
     [[nodiscard]] auto _run(Connection& connection) const
     {
-      if (any_has_value(static_cast<const update_set_t<Assignments...>&>(Statement::of(this))._assignments))
+      if (any_has_value(static_cast<const clause_base<update_set_t<Assignments...>, Statement>&>(Statement::of(this))
+                            ._assignments))
       {
         return connection.update(Statement::of(this));
       }

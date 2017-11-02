@@ -1,5 +1,3 @@
-#pragma once
-
 /*
 Copyright (c) 2017, Roland Bock
 All rights reserved.
@@ -26,43 +24,36 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#warning : This is really just a bad mock
-#include <vector>
+#include <iostream>
 
-namespace test
+#include <connections/mock_db.h>
+#include <tables/TabDepartment.h>
+#include <tables/TabEmpty.h>
+#include <tables/TabPerson.h>
+
+#include <sqlpp17/clauses/insert.h>
+#include <sqlpp17/operator.h>
+
+int main()
 {
-  class mock_db
+  auto db = test::mock_db{};
+
+  // default way of constructing an insert statement
+  const auto id = db(sqlpp::insert().into(test::tabPerson).default_values());
+
+  // using << concatenation
+  /*
+  for (const auto& row :
+       db(sqlpp::select() << sqlpp::select_columns(test::tabPerson.id, test::tabPerson.isManager,
+                                                   test::tabPerson.address, test::tabPerson.name)
+                          << sqlpp::from(test::tabPerson)
+                          << sqlpp::where(test::tabPerson.isManager and test::tabPerson.name == "")
+                          << sqlpp::having(test::tabPerson.id == test::tabPerson.id or test::tabPerson.id == 1)))
   {
-  public:
-    template <typename Statement>
-    [[nodiscard]] auto insert(const Statement& statement)
-    {
-      return 0ull;
-    }
-
-    template <typename Statement>
-    [[nodiscard]] auto update(const Statement& statement)
-    {
-      return 0ull;
-    }
-
-    template <typename Statement>
-    [[nodiscard]] auto erase(const Statement& statement)
-    {
-      return 0ull;
-    }
-
-    template <typename Statement>
-    [[nodiscard]] auto select(const Statement& statement)
-    {
-      return std::vector<typename Statement::_result_row_t>{};
-    }
-
-    template <typename Statement>
-    [[nodiscard]] auto operator()(const Statement& statement)
-    {
-      // Need to do a final consistency check here
-      return statement.run(*this);
-    }
-  };
-}  // namespace test
+    std::cout << row.id << std::endl;
+    std::cout << row.isManager << std::endl;
+    std::cout << row.name << std::endl;
+    std::cout << row.address.value_or("") << std::endl;
+  }
+  */
+}

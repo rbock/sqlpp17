@@ -1,7 +1,5 @@
-#pragma once
-
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2017, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,53 +24,36 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/clause_fwd.h>
-#include <sqlpp17/clauses/remove_table.h>
-#include <sqlpp17/clauses/where.h>
-#include <sqlpp17/type_traits.h>
+#include <iostream>
 
-namespace sqlpp
+#include <connections/mock_db.h>
+#include <tables/TabDepartment.h>
+#include <tables/TabEmpty.h>
+#include <tables/TabPerson.h>
+
+#include <sqlpp17/clauses/update.h>
+#include <sqlpp17/operator.h>
+
+int main()
 {
-  namespace clause
+  auto db = test::mock_db{};
+
+  // default way of constructing an insert statement
+  const auto id = db(sqlpp::update(test::tabPerson).set(test::tabPerson.isManager = true).unconditionally());
+
+  // using << concatenation
+  /*
+  for (const auto& row :
+       db(sqlpp::select() << sqlpp::select_columns(test::tabPerson.id, test::tabPerson.isManager,
+                                                   test::tabPerson.address, test::tabPerson.name)
+                          << sqlpp::from(test::tabPerson)
+                          << sqlpp::where(test::tabPerson.isManager and test::tabPerson.name == "")
+                          << sqlpp::having(test::tabPerson.id == test::tabPerson.id or test::tabPerson.id == 1)))
   {
-    struct remove
-    {
-    };
+    std::cout << row.id << std::endl;
+    std::cout << row.isManager << std::endl;
+    std::cout << row.name << std::endl;
+    std::cout << row.address.value_or("") << std::endl;
   }
-
-  struct remove_t
-  {
-  };
-
-  template <>
-  constexpr auto clause_tag<remove_t> = clause::remove{};
-
-  template <typename Statement>
-  class clause_base<remove_t, Statement>
-  {
-  public:
-    template <typename OtherStatement>
-    clause_base(const clause_base<remove_t, OtherStatement>&)
-    {
-    }
-
-    clause_base() = default;
-  };
-
-  template <typename Context, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<remove_t, Statement>& t)
-  {
-    return context << "DELETE";
-  }
-
-  [[nodiscard]] constexpr auto remove()
-  {
-    return statement<remove_t, no_remove_table_t, no_where_t>{};
-  }
-
-  template <typename Table>
-  [[nodiscard]] constexpr auto remove_from(Table&& table)
-  {
-    return remove().from(std::forward<Table>(table));
-  }
+  */
 }
