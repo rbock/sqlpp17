@@ -54,4 +54,5 @@ namespace sqlpp
 
     static constexpr auto value = get_value();
   };
+
 }  // namespace sqlpp

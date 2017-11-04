@@ -29,8 +29,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #warning : This is really just a bad mock
 #include <vector>
 
+#include <sqlpp17/result.h>
+
 namespace test
 {
+  class mock_handle
+  {
+  };
+
+  template <typename Row>
+  mock_handle* get_next_result_row(mock_handle*, Row& row)
+  {
+    return nullptr;
+  }
+
   class mock_db
   {
   public:
