@@ -26,9 +26,6 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#warning : This is really just a bad mock
-#include <vector>
-
 #include <sqlpp17/result.h>
 
 namespace test
@@ -38,9 +35,9 @@ namespace test
   };
 
   template <typename Row>
-  mock_handle* get_next_result_row(mock_handle*, Row& row)
+  void get_next_result_row(std::unique_ptr<mock_handle>& handle, Row& row)
   {
-    return nullptr;
+    handle.reset();  // indicates that there are no more result rows to be read
   }
 
   class mock_db
@@ -67,7 +64,7 @@ namespace test
     template <typename Statement>
     [[nodiscard]] auto select(const Statement& statement)
     {
-      return std::vector<typename Statement::_result_row_t>{};
+      return ::sqlpp::result_t<typename Statement::_result_row_t, mock_handle>{std::make_unique<mock_handle>()};
     }
 
     template <typename Statement>

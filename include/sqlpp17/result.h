@@ -32,6 +32,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
+  class result_end_t
+  {
+  };
+
   template <typename Row, typename Handle>
   struct result_t
   {
@@ -44,7 +48,7 @@ namespace sqlpp
   public:
     result_t() = default;
 
-    result_t(std::unique_ptr<_handle_t>&& handle) : _handle(_handle)
+    result_t(std::unique_ptr<_handle_t>&& handle) : _handle(std::move(handle))
     {
     }
 
@@ -54,9 +58,6 @@ namespace sqlpp
     result_t& operator=(result_t&&) = default;
     ~result_t() = default;
 
-    class end_iterator;
-
-    // Iterator
     class iterator
     {
       result_t& _result;
@@ -68,43 +69,43 @@ namespace sqlpp
       using reference = const _row_t&;
       using difference_type = std::ptrdiff_t;
 
-      iterator(result_t& result) : _result(result)
+      iterator(result_t& result)
+          : _result(result){}
+
+                [[nodiscard]] auto
+                operator*() const -> reference
       {
+        return *(_result._row);
       }
 
-      reference operator*() const
+      [[nodiscard]] auto operator-> () const -> pointer
       {
-        return _result._row;
+        return &(_result._row);
       }
 
-      pointer operator->() const
-      {
-        return &_result._row;
-      }
-
-      bool operator==(const iterator& rhs) const
+      [[nodiscard]] auto operator==(const iterator& rhs) const -> bool
       {
         return false;
       }
 
-      bool operator==(const end_iterator& rhs) const
+      [[nodiscard]] auto operator==(const result_end_t& rhs) const -> bool
       {
         return not _result._handle;
       }
 
       template <typename T>
-      bool operator!=(const T& rhs) const
+      auto operator!=(const T& rhs) const -> bool
       {
         return not(operator==(rhs));
       }
 
-      iterator& operator++()
+      auto operator++() -> iterator&
       {
-        get_next_row(_result._handle, _result._row);
+        get_next_result_row(_result._handle, *_result._row);
         return *this;
       }
 
-      iterator operator++(int)
+      auto operator++(int) -> iterator
       {
         auto previous_it = *this;
         ++(*this);
@@ -112,67 +113,32 @@ namespace sqlpp
       }
     };
 
-    // End iterator
-    class end_iterator
-    {
-    public:
-      using iterator_category = std::input_iterator_tag;
-      using value_type = _row_t;
-      using pointer = const _row_t*;
-      using reference = const _row_t&;
-      using difference_type = std::ptrdiff_t;
-
-      reference operator*() const = delete;
-
-      pointer operator->() const = delete;
-
-      bool operator==(const iterator& rhs) const
-      {
-        return rhs == *this;
-      }
-
-      bool operator==(const end_iterator& rhs) const
-      {
-        return true;
-      }
-
-      template <typename T>
-      bool operator!=(const T& rhs) const
-      {
-        return not(operator==(rhs));
-      }
-
-      iterator& operator++() = delete;
-
-      iterator operator++(int) = delete;
-    };
-
-    iterator begin()
+    [[nodiscard]] auto begin() -> iterator
     {
       if (!_row)
       {
         _row.emplace();
-        get_next_row(_handle, *_row);
+        get_next_result_row(_handle, *_row);
       }
-      return iterator(_handle, *_row);
+      return {*this};
     }
 
-    iterator end()
+    [[nodiscard]] constexpr auto end() const -> result_end_t
     {
-      return end_iterator();
+      return {};
     }
 
-    bool empty() const
+    [[nodiscard]] auto empty() const -> bool
     {
       return begin() == end();
     }
 
-    const _row_t& front() const
+    [[nodiscard]] auto front() const -> const _row_t&
     {
       return *begin();
     }
 
-    void pop_front()
+    auto pop_front() -> void
     {
       ++(begin());
     }
