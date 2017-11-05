@@ -26,66 +26,47 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <optional>
-#include <tuple>
-
-#include <sqlpp17/type_traits.h>
+#include <type_traits>
+#include <sqlpp17/operator_fwd.h>
 
 namespace sqlpp
 {
-  template <typename T>
-  constexpr auto is_optional_v<std::optional<T>> = true;
-
-  template <typename T>
-  struct remove_optional
+  template <typename L>
+  struct not_t
   {
-    using type = T;
+    L l;
   };
 
-  template <typename T>
-  struct remove_optional<std::optional<T>>
+  template <typename L>
+  constexpr auto operator!(L l) -> std::enable_if_t<has_boolean_value_v<L>, not_t<L>>
   {
-    using type = T;
-  };
-
-  template <typename T>
-  using remove_optional_t = typename remove_optional<T>::type;
-
-  template <typename T>
-  struct add_optional
-  {
-    using type = std::optional<T>;
-  };
-
-  template <typename T>
-  using add_optional_t = typename add_optional<T>::type;
-
-  template <typename T>
-  decltype(auto) get_value(const T& t)
-  {
-    return t;
+    return not_t<L>{l};
   }
 
-  template <typename T>
-  decltype(auto) get_value(const std::optional<T>& t)
-  {
-    return t.value();
-  }
+  template <typename L>
+  constexpr auto is_expression_v<not_t<L>> = true;
 
-  template <typename T>
-  auto has_value(const T& t) -> bool
+  template <typename L>
+  struct value_type_of<not_t<L>>
   {
-    if constexpr (sqlpp::is_optional_v<T>)
+    using type = bool;
+  };
+
+  template <typename L>
+  constexpr auto requires_braces_v<not_t<L>> = true;
+
+  template <typename Context, typename L>
+  constexpr decltype(auto) operator<<(Context& context, const not_t<L>& t)
+  {
+#warning : Need to handle nullopt here?
+    /*
+    if (null_is_trivial_value(t.l) and is_trivial_value(t.r))
     {
-      return t.has_value();
+      return context << embrace(t.l) << " IS NULL ";
     }
-
-    return true;
-  }
-
-  template <typename... Ts>
-  constexpr auto any_has_value(const std::tuple<Ts...>& t) -> bool
-  {
-    return (false || ... || has_value(std::get<Ts>(t)));
+    else*/
+    {
+      return context << " NOT " << embrace(t.l);
+    }
   }
 }  // namespace sqlpp

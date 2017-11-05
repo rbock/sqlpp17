@@ -27,7 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <utility>
-#include <sqlpp17/optional.h>
+#include <sqlpp17/type_traits.h>
 
 namespace sqlpp
 {
@@ -58,5 +58,5 @@ namespace sqlpp
           operator()(expr.value());
       }
     };
-  }
-}
+  }  // namespace detail
+}  // namespace sqlpp

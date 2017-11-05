@@ -110,7 +110,7 @@ namespace sqlpp
     {
       return failed<assert_where_arg_is_expression>{};
     }
-    else if constexpr (!is_boolean_v<T>)
+    else if constexpr (!has_boolean_value_v<T>)
     {
       return failed<assert_where_arg_is_boolean>{};
     }

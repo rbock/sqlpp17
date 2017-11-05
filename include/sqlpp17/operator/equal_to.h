@@ -31,10 +31,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_valid_equal_operands, "invalid operands for operator equal");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_valid_equal_to_operands, "invalid operands for operator==");
 
   template <typename L, typename R>
-  struct equal_t
+  struct equal_to_t
   {
     L l;
     R r;
@@ -43,22 +43,22 @@ namespace sqlpp
   template <typename L,
             typename R,
             typename = decltype(std::declval<value_type_of_t<L>&>() == std::declval<value_type_of_t<R>&>())>
-  constexpr auto check_equal(type_t<L>, type_t<R>)
+  constexpr auto check_equal_to(type_t<L>, type_t<R>)
   {
     return succeeded{};
   }
 
-  constexpr auto check_equal(...)
+  constexpr auto check_equal_to(...)
   {
-    return failed<assert_valid_equal_operands>{};
+    return failed<assert_valid_equal_to_operands>{};
   }
 
   template <typename L, typename R>
   constexpr auto operator==(L l, R r)
   {
-    if constexpr (constexpr auto check = check_equal(type_v<L>, type_v<R>); check)
+    if constexpr (constexpr auto check = check_equal_to(type_v<L>, type_v<R>); check)
     {
-      return equal_t<L, R>{l, r};
+      return equal_to_t<L, R>{l, r};
     }
     else
     {
@@ -67,19 +67,19 @@ namespace sqlpp
   }
 
   template <typename L, typename R>
-  constexpr auto is_expression_v<equal_t<L, R>> = true;
+  constexpr auto is_expression_v<equal_to_t<L, R>> = true;
 
   template <typename L, typename R>
-  struct value_type_of<equal_t<L, R>>
+  struct value_type_of<equal_to_t<L, R>>
   {
     using type = bool;
   };
 
   template <typename L, typename R>
-  constexpr auto requires_braces_v<equal_t<L, R>> = true;
+  constexpr auto requires_braces_v<equal_to_t<L, R>> = true;
 
   template <typename Context, typename L, typename R>
-  constexpr decltype(auto) operator<<(Context& context, const equal_t<L, R>& t)
+  constexpr decltype(auto) operator<<(Context& context, const equal_to_t<L, R>& t)
   {
 #warning : Need to handle nullopt here
     /*

@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2017, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -28,42 +28,68 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <type_traits>
 #include <sqlpp17/operator_fwd.h>
-#include <sqlpp17/type_traits.h>
 
 namespace sqlpp
 {
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_valid_not_equal_to_operands, "invalid operands for operator!=");
+
   template <typename L, typename R>
-  struct plus_t
+  struct not_equal_to_t
   {
     L l;
     R r;
   };
 
-  template <typename L, typename R>
-  constexpr auto operator+(L l, R r)
-      -> std::enable_if_t<has_numeric_value_v<L> and has_numeric_value_v<R>, plus_t<L, R>>
+  template <typename L,
+            typename R,
+            typename = decltype(std::declval<value_type_of_t<L>&>() != std::declval<value_type_of_t<R>&>())>
+  constexpr auto check_not_equal_to(type_t<L>, type_t<R>)
   {
-    return plus_t<L, R>{l, r};
+    return succeeded{};
+  }
+
+  constexpr auto check_not_equal_to(...)
+  {
+    return failed<assert_valid_not_equal_to_operands>{};
   }
 
   template <typename L, typename R>
-  struct value_type_of<plus_t<L, R>>
+  constexpr auto operator!=(L l, R r)
   {
-    using type = numeric_t;
+    if constexpr (constexpr auto check = check_not_equal_to(type_v<L>, type_v<R>); check)
+    {
+      return not_equal_to_t<L, R>{l, r};
+    }
+    else
+    {
+      return ::sqlpp::bad_statement_t{check};
+    }
+  }
+
+  template <typename L, typename R>
+  constexpr auto is_expression_v<not_equal_to_t<L, R>> = true;
+
+  template <typename L, typename R>
+  struct value_type_of<not_equal_to_t<L, R>>
+  {
+    using type = bool;
   };
 
   template <typename L, typename R>
-  constexpr auto requires_braces_v<plus_t<L, R>> = true;
+  constexpr auto requires_braces_v<not_equal_to_t<L, R>> = true;
 
   template <typename Context, typename L, typename R>
-  constexpr decltype(auto) operator<<(Context& context, const plus_t<L, R>& t)
+  constexpr decltype(auto) operator<<(Context& context, const not_equal_to_t<L, R>& t)
   {
-    return context << embrace(t.l) << " + " << embrace(t.r);
-  }
-
-  template <typename Context, typename L1, typename R1, typename R2>
-  constexpr decltype(auto) operator<<(Context& context, const plus_t<plus_t<L1, R1>, R2>& t)
-  {
-    return context << t.l << " + " << embrace(t.r);
+#warning : Need to handle nullopt here
+    /*
+    if (null_is_trivial_value(t.l) and is_trivial_value(t.r))
+    {
+      return context << embrace(t.l) << " IS NULL ";
+    }
+    else*/
+    {
+      return context << embrace(t.l) << " <> " << embrace(t.r);
+    }
   }
 }  // namespace sqlpp

@@ -28,7 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
 #include <sqlpp17/alias_provider.h>
-#include <sqlpp17/operator/equal.h>
+#include <sqlpp17/operator/equal_to.h>
 
 SQLPP_ALIAS_PROVIDER(foo);
 SQLPP_ALIAS_PROVIDER(bar);

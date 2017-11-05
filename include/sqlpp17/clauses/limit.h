@@ -27,9 +27,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/clause_fwd.h>
-#include <sqlpp17/optional.h>
 #include <sqlpp17/statement.h>
 #include <sqlpp17/type_set.h>
+#include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
 
 namespace sqlpp
@@ -41,7 +41,7 @@ namespace sqlpp
     };
 
     struct order_by;
-  }
+  }  // namespace clause
 
   template <typename Number>
   struct limit_t
@@ -149,4 +149,4 @@ namespace sqlpp
   {
     return statement<no_limit_t>{}.limit(std::forward<Value>(value));
   }
-}
+}  // namespace sqlpp

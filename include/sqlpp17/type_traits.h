@@ -29,7 +29,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cstdint>
 #include <type_traits>
 
+#include <optional>
 #include <utility>
+
 #include <sqlpp17/char_sequence.h>
 #include <sqlpp17/type_set.h>
 #include <sqlpp17/wrong.h>
@@ -353,31 +355,10 @@ namespace sqlpp
   using column_of_t = typename column_of<T>::type;
 
   template <typename T>
-  constexpr auto is_boolean_v = std::is_same_v<value_type_of_t<T>, bool>;
-
-  template <typename T>
-  constexpr auto is_boolean(const T&)
-  {
-    return is_boolean_v<T>;
-  }
-
-  template <typename T>
-  constexpr auto is_conditionless_dynamic_join = false;
-
-  template <typename T>
-  constexpr auto is_dynamic_join = false;
-
-  template <typename T>
-  constexpr auto requires_braces_v = false;
-
-  template <typename T>
-  constexpr auto requires_braces(const T&)
-  {
-    return requires_braces_v<T>;
-  }
-
-  template <typename T>
   constexpr auto is_optional_v = false;
+
+  template <typename T>
+  constexpr auto is_optional_v<std::optional<T>> = true;
 
   template <typename T>
   struct is_optional
@@ -396,6 +377,96 @@ namespace sqlpp
   {
     static constexpr auto value = is_optional_v<value_type_of<T>>;
   };
+
+  template <typename T>
+  struct remove_optional
+  {
+    using type = T;
+  };
+
+  template <typename T>
+  struct remove_optional<std::optional<T>>
+  {
+    using type = T;
+  };
+
+  template <typename T>
+  using remove_optional_t = typename remove_optional<T>::type;
+
+  template <typename T>
+  struct add_optional
+  {
+    using type = std::optional<T>;
+  };
+
+  template <typename T>
+  using add_optional_t = typename add_optional<T>::type;
+
+  template <typename T>
+  decltype(auto) get_value(const T& t)
+  {
+    return t;
+  }
+
+  template <typename T>
+  decltype(auto) get_value(const std::optional<T>& t)
+  {
+    return t.value();
+  }
+
+  template <typename T>
+  auto has_value(const T& t) -> bool
+  {
+    if constexpr (sqlpp::is_optional_v<T>)
+    {
+      return t.has_value();
+    }
+
+    return true;
+  }
+
+  template <typename... Ts>
+  constexpr auto any_has_value(const std::tuple<Ts...>& t) -> bool
+  {
+    return (false || ... || has_value(std::get<Ts>(t)));
+  }
+  template <typename T>
+  constexpr auto is_boolean_v = std::is_same_v<T, bool>;
+
+  template <typename T>
+  constexpr auto has_boolean_value_v = is_boolean_v<remove_optional_t<value_type_of_t<T>>>;
+
+  template <typename T>
+  constexpr auto is_boolean(const T&)
+  {
+    return is_boolean_v<T>;
+  }
+
+  struct numeric_t;
+
+  template <typename T>
+  constexpr auto is_numeric_v = std::is_arithmetic_v<T>;
+
+  template <>
+  constexpr auto is_numeric_v<numeric_t> = true;
+
+  template <typename T>
+  constexpr auto has_numeric_value_v = is_numeric_v<remove_optional_t<value_type_of_t<T>>>;
+
+  template <typename T>
+  constexpr auto is_conditionless_dynamic_join = false;
+
+  template <typename T>
+  constexpr auto is_dynamic_join = false;
+
+  template <typename T>
+  constexpr auto requires_braces_v = false;
+
+  template <typename T>
+  constexpr auto requires_braces(const T&)
+  {
+    return requires_braces_v<T>;
+  }
 
   template <typename T>
   constexpr auto parameters_of = type_set_t<>();

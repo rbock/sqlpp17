@@ -32,8 +32,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_valid_or_operands, "invalid operands for operator or");
-
   template <typename L, typename R>
   struct or_t
   {
@@ -41,31 +39,10 @@ namespace sqlpp
     R r;
   };
 
-  template <typename L,
-            typename R,
-            typename = decltype(std::declval<value_type_of_t<L>&>() or std::declval<value_type_of_t<R>&>())>
-  constexpr auto check_or(type_t<L>, type_t<R>)
-  {
-    return succeeded{};
-  }
-
   template <typename L, typename R>
-  constexpr auto check_or()
+  constexpr auto operator||(L l, R r) -> std::enable_if_t<has_boolean_value_v<L> and has_boolean_value_v<R>, or_t<L, R>>
   {
-    return failed<assert_valid_or_operands>{};
-  }
-
-  template <typename L, typename R>
-  constexpr auto operator||(L l, R r)
-  {
-    if constexpr (constexpr auto check = check_or(type_v<L>, type_v<R>); check)
-    {
-      return or_t<L, R>{l, r};
-    }
-    else
-    {
-      return ::sqlpp::bad_statement_t{check};
-    }
+    return or_t<L, R>{l, r};
   }
 
   template <typename L, typename R>

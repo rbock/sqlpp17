@@ -39,7 +39,7 @@ namespace sqlpp
     struct having
     {
     };
-  }
+  }  // namespace clause
 
   template <typename Condition>
   struct having_t
@@ -82,7 +82,7 @@ namespace sqlpp
     {
       return failed<assert_having_arg_is_expression>{};
     }
-    else if constexpr (!is_boolean_v<T>)
+    else if constexpr (!has_boolean_value_v<T>)
     {
       return failed<assert_having_arg_is_boolean>{};
     }
@@ -131,4 +131,4 @@ namespace sqlpp
   {
     return statement<no_having_t>{}.having(std::forward<Condition>(condition));
   }
-}
+}  // namespace sqlpp

@@ -32,8 +32,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_valid_and_operands, "invalid operands for operator and");
-
   template <typename L, typename R>
   struct and_t
   {
@@ -41,31 +39,11 @@ namespace sqlpp
     R r;
   };
 
-  template <typename L,
-            typename R,
-            typename = decltype(std::declval<value_type_of_t<L>&>() and std::declval<value_type_of_t<R>&>())>
-  constexpr auto check_and(type_t<L>, type_t<R>)
-  {
-    return succeeded{};
-  }
-
-  template <typename L, typename R>
-  constexpr auto check_and(...)
-  {
-    return failed<assert_valid_and_operands>{};
-  }
-
   template <typename L, typename R>
   constexpr auto operator&&(L l, R r)
+      -> std::enable_if_t<has_boolean_value_v<L> and has_boolean_value_v<R>, and_t<L, R>>
   {
-    if constexpr (constexpr auto check = check_and(type_v<L>, type_v<R>); check)
-    {
-      return and_t<L, R>{l, r};
-    }
-    else
-    {
-      return ::sqlpp::bad_statement_t{check};
-    }
+    return and_t<L, R>{l, r};
   }
 
   template <typename L, typename R>

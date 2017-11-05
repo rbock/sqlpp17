@@ -56,8 +56,15 @@ namespace sqlpp
     template <typename T>
     auto operator=(T t) const
     {
+#warning : Need to check the type
       return assignment_t<column_t, T>{*this, t};
     }
+
+#warning : Need to implement
+    /*
+    template <typename T>
+    auto like(T t) const
+    */
 
     template <typename Alias>
     constexpr auto as(const Alias&) const

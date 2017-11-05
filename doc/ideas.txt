@@ -6,6 +6,11 @@ how these types interact.
 sqlpp17 simply uses whatever type you want.
 
 
+Selectable:
+===========
+operators +-/*% are must not be in selectable expressions. That avoids all the type nonsense, i.e. what is the value type of adding two ints? int? long? SQL says long, C++ says int, for instance.
+
+
 Columns and tables:
 ===================
 #warning: To check if all columns are correct, we should compare provided and required columns
@@ -66,7 +71,7 @@ Tables can be optional in a join, but they themselves are static.
 
 Most of the time, anyway.
 
-Thus, with 
+Thus, with
 
 {{{
 		auto make_optbool useOption, Expression e)
@@ -84,7 +89,7 @@ we could say something like :
         .from(t.join(make_opt(wantBar, f).on(t.fId = f.id)))
         .unconditionally();
 
-All compile time checks are made as if all conditionals actually hold a value. 
+All compile time checks are made as if all conditionals actually hold a value.
 Optional columns will always yield NULL (no database interaction).
 Optional joins will not be serialized
 
@@ -92,7 +97,7 @@ providing flags and columns:
 ============================
 select(all_of(t)).flags(sqlpp::distinct)...
 
-or 
+or
 
 select(sqlpp::distinct).columns(all_of(t))...
 

@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2017, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -31,10 +31,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // boolean
 #include <sqlpp17/operator/and.h>
+#include <sqlpp17/operator/not.h>
 #include <sqlpp17/operator/or.h>
 
 // comparison
-#include <sqlpp17/operator/equal.h>
+#include <sqlpp17/operator/equal_to.h>
+#include <sqlpp17/operator/greater.h>
+#include <sqlpp17/operator/greater_equal.h>
+#include <sqlpp17/operator/less.h>
+#include <sqlpp17/operator/less_equal.h>
+#include <sqlpp17/operator/not_equal_to.h>
 
 // arithmetic
 #include <sqlpp17/operator/plus.h>

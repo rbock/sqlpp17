@@ -41,7 +41,7 @@ namespace sqlpp
     template <typename ConditionlessJoin, typename Expr>
     constexpr auto check_join()
     {
-      if constexpr (!is_expression_v<Expr> || !is_boolean_v<Expr>)
+      if constexpr (!is_expression_v<Expr> || !has_boolean_value_v<Expr>)
       {
         return failed<assert_on_is_boolean_expression>{};
       }
