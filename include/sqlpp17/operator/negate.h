@@ -26,25 +26,47 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/bad_statement.h>
-#include <sqlpp17/wrapped_static_assert.h>
+#include <type_traits>
+#include <sqlpp17/operator_fwd.h>
 
-// logical
-#include <sqlpp17/operator/logical_and.h>
-#include <sqlpp17/operator/logical_not.h>
-#include <sqlpp17/operator/logical_or.h>
+namespace sqlpp
+{
+  template <typename L>
+  struct negate_t
+  {
+    L l;
+  };
 
-// comparison
-#include <sqlpp17/operator/equal_to.h>
-#include <sqlpp17/operator/greater.h>
-#include <sqlpp17/operator/greater_equal.h>
-#include <sqlpp17/operator/less.h>
-#include <sqlpp17/operator/less_equal.h>
-#include <sqlpp17/operator/not_equal_to.h>
+  template <typename L>
+  constexpr auto operator-(L l) -> std::enable_if_t<has_numeric_value_v<L>, negate_t<L>>
+  {
+    return negate_t<L>{l};
+  }
 
-// arithmetic
-#include <sqlpp17/operator/divides.h>
-#include <sqlpp17/operator/minus.h>
-#include <sqlpp17/operator/multiplies.h>
-#include <sqlpp17/operator/negate.h>
-#include <sqlpp17/operator/plus.h>
+  template <typename L>
+  constexpr auto is_expression_v<negate_t<L>> = true;
+
+  template <typename L>
+  struct value_type_of<negate_t<L>>
+  {
+    using type = numeric_t;
+  };
+
+  template <typename L>
+  constexpr auto requires_braces_v<negate_t<L>> = true;
+
+  template <typename Context, typename L>
+  constexpr decltype(auto) operator<<(Context& context, const negate_t<L>& t)
+  {
+#warning : Need to handle nullopt here?
+    /*
+    if (null_is_trivial_value(t.l) and is_trivial_value(t.r))
+    {
+      return context << embrace(t.l) << " IS NULL ";
+    }
+    else*/
+    {
+      return context << " -" << embrace(t.l);
+    }
+  }
+}  // namespace sqlpp

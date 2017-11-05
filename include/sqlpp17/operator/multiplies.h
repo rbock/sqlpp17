@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2016 - 2017, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -28,45 +28,42 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <type_traits>
 #include <sqlpp17/operator_fwd.h>
+#include <sqlpp17/type_traits.h>
 
 namespace sqlpp
 {
-  template <typename L>
-  struct not_t
+  template <typename L, typename R>
+  struct multiplies_t
   {
     L l;
+    R r;
   };
 
-  template <typename L>
-  constexpr auto operator!(L l) -> std::enable_if_t<has_boolean_value_v<L>, not_t<L>>
+  template <typename L, typename R>
+  constexpr auto operator*(L l, R r)
+      -> std::enable_if_t<has_numeric_value_v<L> and has_numeric_value_v<R>, multiplies_t<L, R>>
   {
-    return not_t<L>{l};
+    return multiplies_t<L, R>{l, r};
   }
 
-  template <typename L>
-  constexpr auto is_expression_v<not_t<L>> = true;
-
-  template <typename L>
-  struct value_type_of<not_t<L>>
+  template <typename L, typename R>
+  struct value_type_of<multiplies_t<L, R>>
   {
-    using type = bool;
+    using type = numeric_t;
   };
 
-  template <typename L>
-  constexpr auto requires_braces_v<not_t<L>> = true;
+  template <typename L, typename R>
+  constexpr auto requires_braces_v<multiplies_t<L, R>> = true;
 
-  template <typename Context, typename L>
-  constexpr decltype(auto) operator<<(Context& context, const not_t<L>& t)
+  template <typename Context, typename L, typename R>
+  constexpr decltype(auto) operator<<(Context& context, const multiplies_t<L, R>& t)
   {
-#warning : Need to handle nullopt here?
-    /*
-    if (null_is_trivial_value(t.l) and is_trivial_value(t.r))
-    {
-      return context << embrace(t.l) << " IS NULL ";
-    }
-    else*/
-    {
-      return context << " NOT " << embrace(t.l);
-    }
+    return context << embrace(t.l) << " + " << embrace(t.r);
+  }
+
+  template <typename Context, typename L1, typename R1, typename R2>
+  constexpr decltype(auto) operator<<(Context& context, const multiplies_t<multiplies_t<L1, R1>, R2>& t)
+  {
+    return context << t.l << " * " << embrace(t.r);
   }
 }  // namespace sqlpp

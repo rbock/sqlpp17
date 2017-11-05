@@ -27,46 +27,46 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <type_traits>
-#include <sqlpp17/embrace.h>
 #include <sqlpp17/operator_fwd.h>
 
 namespace sqlpp
 {
-  template <typename L, typename R>
-  struct and_t
+  template <typename L>
+  struct logical_not_t
   {
     L l;
-    R r;
   };
 
-  template <typename L, typename R>
-  constexpr auto operator&&(L l, R r)
-      -> std::enable_if_t<has_boolean_value_v<L> and has_boolean_value_v<R>, and_t<L, R>>
+  template <typename L>
+  constexpr auto operator!(L l) -> std::enable_if_t<has_boolean_value_v<L>, logical_not_t<L>>
   {
-    return and_t<L, R>{l, r};
+    return logical_not_t<L>{l};
   }
 
-  template <typename L, typename R>
-  constexpr auto is_expression_v<and_t<L, R>> = true;
+  template <typename L>
+  constexpr auto is_expression_v<logical_not_t<L>> = true;
 
-  template <typename L, typename R>
-  struct value_type_of<and_t<L, R>>
+  template <typename L>
+  struct value_type_of<logical_not_t<L>>
   {
     using type = bool;
   };
 
-  template <typename L, typename R>
-  constexpr auto requires_braces_v<and_t<L, R>> = true;
+  template <typename L>
+  constexpr auto requires_braces_v<logical_not_t<L>> = true;
 
-  template <typename Context, typename L, typename R>
-  constexpr decltype(auto) operator<<(Context& context, const and_t<L, R>& t)
+  template <typename Context, typename L>
+  constexpr decltype(auto) operator<<(Context& context, const logical_not_t<L>& t)
   {
-    return context << embrace(t.l) << " AND " << embrace(t.r);
-  }
-
-  template <typename Context, typename L1, typename R1, typename R2>
-  constexpr decltype(auto) operator<<(Context& context, const and_t<and_t<L1, R1>, R2>& t)
-  {
-    return context << t.l << " AND " << embrace(t.r);
+#warning : Need to handle nullopt here?
+    /*
+    if (null_is_trivial_value(t.l) and is_trivial_value(t.r))
+    {
+      return context << embrace(t.l) << " IS NULL ";
+    }
+    else*/
+    {
+      return context << " NOT " << embrace(t.l);
+    }
   }
 }  // namespace sqlpp

@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2016 - 2017, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -27,45 +27,43 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <type_traits>
-#include <sqlpp17/embrace.h>
 #include <sqlpp17/operator_fwd.h>
+#include <sqlpp17/type_traits.h>
 
 namespace sqlpp
 {
   template <typename L, typename R>
-  struct or_t
+  struct divides_t
   {
     L l;
     R r;
   };
 
   template <typename L, typename R>
-  constexpr auto operator||(L l, R r) -> std::enable_if_t<has_boolean_value_v<L> and has_boolean_value_v<R>, or_t<L, R>>
+  constexpr auto operator/(L l, R r)
+      -> std::enable_if_t<has_numeric_value_v<L> and has_numeric_value_v<R>, divides_t<L, R>>
   {
-    return or_t<L, R>{l, r};
+    return divides_t<L, R>{l, r};
   }
 
   template <typename L, typename R>
-  constexpr auto is_expression_v<or_t<L, R>> = true;
-
-  template <typename L, typename R>
-  struct value_type_of<or_t<L, R>>
+  struct value_type_of<divides_t<L, R>>
   {
-    using type = bool;
+    using type = numeric_t;
   };
 
   template <typename L, typename R>
-  constexpr auto requires_braces_v<or_t<L, R>> = true;
+  constexpr auto requires_braces_v<divides_t<L, R>> = true;
 
   template <typename Context, typename L, typename R>
-  constexpr decltype(auto) operator<<(Context& context, const or_t<L, R>& t)
+  constexpr decltype(auto) operator<<(Context& context, const divides_t<L, R>& t)
   {
-    return context << embrace(t.l) << " OR " << embrace(t.r);
+    return context << embrace(t.l) << " + " << embrace(t.r);
   }
 
   template <typename Context, typename L1, typename R1, typename R2>
-  constexpr decltype(auto) operator<<(Context& context, const or_t<or_t<L1, R1>, R2>& t)
+  constexpr decltype(auto) operator<<(Context& context, const divides_t<divides_t<L1, R1>, R2>& t)
   {
-    return context << t.l << " OR " << embrace(t.r);
+    return context << t.l << " - " << embrace(t.r);
   }
 }  // namespace sqlpp

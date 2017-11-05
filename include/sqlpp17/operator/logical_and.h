@@ -26,25 +26,47 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/bad_statement.h>
-#include <sqlpp17/wrapped_static_assert.h>
+#include <type_traits>
+#include <sqlpp17/embrace.h>
+#include <sqlpp17/operator_fwd.h>
 
-// logical
-#include <sqlpp17/operator/logical_and.h>
-#include <sqlpp17/operator/logical_not.h>
-#include <sqlpp17/operator/logical_or.h>
+namespace sqlpp
+{
+  template <typename L, typename R>
+  struct logical_and_t
+  {
+    L l;
+    R r;
+  };
 
-// comparison
-#include <sqlpp17/operator/equal_to.h>
-#include <sqlpp17/operator/greater.h>
-#include <sqlpp17/operator/greater_equal.h>
-#include <sqlpp17/operator/less.h>
-#include <sqlpp17/operator/less_equal.h>
-#include <sqlpp17/operator/not_equal_to.h>
+  template <typename L, typename R>
+  constexpr auto operator&&(L l, R r)
+      -> std::enable_if_t<has_boolean_value_v<L> and has_boolean_value_v<R>, logical_and_t<L, R>>
+  {
+    return logical_and_t<L, R>{l, r};
+  }
 
-// arithmetic
-#include <sqlpp17/operator/divides.h>
-#include <sqlpp17/operator/minus.h>
-#include <sqlpp17/operator/multiplies.h>
-#include <sqlpp17/operator/negate.h>
-#include <sqlpp17/operator/plus.h>
+  template <typename L, typename R>
+  constexpr auto is_expression_v<logical_and_t<L, R>> = true;
+
+  template <typename L, typename R>
+  struct value_type_of<logical_and_t<L, R>>
+  {
+    using type = bool;
+  };
+
+  template <typename L, typename R>
+  constexpr auto requires_braces_v<logical_and_t<L, R>> = true;
+
+  template <typename Context, typename L, typename R>
+  constexpr decltype(auto) operator<<(Context& context, const logical_and_t<L, R>& t)
+  {
+    return context << embrace(t.l) << " AND " << embrace(t.r);
+  }
+
+  template <typename Context, typename L1, typename R1, typename R2>
+  constexpr decltype(auto) operator<<(Context& context, const logical_and_t<logical_and_t<L1, R1>, R2>& t)
+  {
+    return context << t.l << " AND " << embrace(t.r);
+  }
+}  // namespace sqlpp
