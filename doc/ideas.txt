@@ -10,6 +10,20 @@ Selectable:
 ===========
 operators +-/*% are must not be in selectable expressions. That avoids all the type nonsense, i.e. what is the value type of adding two ints? int? long? SQL says long, C++ says int, for instance.
 
+Member functions:
+=================
+like, is_null, is_not_null, in, not_in:
+
+Three options:
+  - create some CRTP base class that offers such functions
+	  drawback: Inheritance.
+  - make them free functions in general
+	  This has the drawback that the syntax looks unfamiliar in comparison to SQL
+	- make them member functions of column and some transparent expr-wrapper.
+	  This way, we do not have to inherit all operators into all expressions.
+
+Well, that should be an easy decision :-)
+
 
 Columns and tables:
 ===================

@@ -148,13 +148,13 @@ namespace sqlpp
     return contains_aggregate_v<T>;
   }
 
-  template <typename Assert, typename T>
+  template <typename T>
   constexpr auto is_alias_v = false;
 
-  template <typename Assert, typename T>
-  constexpr auto is_alias(const Assert&, const T&)
+  template <typename T>
+  constexpr auto is_alias(const T&)
   {
-    return is_alias_v<Assert, T>;
+    return is_alias_v<T>;
   }
 
   template <typename T>
