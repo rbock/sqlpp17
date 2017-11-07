@@ -24,6 +24,12 @@ Three options:
 
 Well, that should be an easy decision :-)
 
+char:
+=====
+How to serialize char? integral or character?
+
+I tend to consider char = text
+
 
 Columns and tables:
 ===================

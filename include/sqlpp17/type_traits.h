@@ -448,6 +448,9 @@ namespace sqlpp
   constexpr auto is_numeric_v = std::is_arithmetic_v<T>;
 
   template <>
+  constexpr auto is_numeric_v<char> = false;  // char is text
+
+  template <>
   constexpr auto is_numeric_v<numeric_t> = true;
 
   template <typename T>
