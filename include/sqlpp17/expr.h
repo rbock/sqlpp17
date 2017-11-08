@@ -42,6 +42,7 @@ namespace sqlpp
     // is_not_null
     // asc()
     // desc()
+    // sort(asc/desc)
     T t;
   };
 

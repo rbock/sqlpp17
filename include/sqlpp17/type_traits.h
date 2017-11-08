@@ -442,13 +442,30 @@ namespace sqlpp
     return is_boolean_v<T>;
   }
 
+  struct integral_t;
+
   struct numeric_t;
 
   template <typename T>
-  constexpr auto is_numeric_v = std::is_arithmetic_v<T>;
+  constexpr auto is_integral_v = std::is_integral_v<T>;
+
+  template <>
+  constexpr auto is_integral_v<char> = false;  // char is text
+
+  template <>
+  constexpr auto is_integral_v<integral_t> = true;
+
+  template <typename T>
+  constexpr auto has_integral_value_v = is_integral_v<remove_optional_t<value_type_of_t<T>>>;
+
+  template <typename T>
+  constexpr auto is_numeric_v = is_integral_v<T> || std::is_floating_point_v<T>;
 
   template <>
   constexpr auto is_numeric_v<char> = false;  // char is text
+
+  template <>
+  constexpr auto is_numeric_v<integral_t> = true;
 
   template <>
   constexpr auto is_numeric_v<numeric_t> = true;

@@ -40,9 +40,8 @@ namespace sqlpp
   };
 
   template <typename L, typename R>
-  constexpr auto operator+(L l, R r)
-      -> std::enable_if_t<std::is_integral_v<value_type_of<L>> and std::is_integral_v<value_type_of<R>>,
-                          modulus_t<L, R>>
+  constexpr auto operator%(L l, R r)
+      -> std::enable_if_t<has_integral_value_v<L> and has_integral_value_v<R>, modulus_t<L, R>>
   {
     return modulus_t<L, R>{l, r};
   }
@@ -50,7 +49,7 @@ namespace sqlpp
   template <typename L, typename R>
   struct value_type_of<modulus_t<L, R>>
   {
-    using type = numeric_t;
+    using type = integral_t;
   };
 
   template <typename L, typename R>

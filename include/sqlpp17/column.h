@@ -62,10 +62,15 @@ namespace sqlpp
     }
 
 #warning : Need to implement
-    /*
-    template <typename T>
-    auto like(T t) const
-    */
+    // as()
+    // like()
+    // in
+    // not_in
+    // is_null
+    // is_not_null
+    // asc()
+    // desc()
+    // sort(asc/desc)
 
     template <typename Alias>
     constexpr auto as(const Alias&) const
