@@ -54,16 +54,9 @@ namespace sqlpp
   }
 
   template <typename L, typename R>
-  constexpr auto operator!=(L l, R r)
+  constexpr auto operator!=(L l, R r) -> std::enable_if_t<are_value_types_comparable_v<L, R>, not_equal_to_t<L, R>>
   {
-    if constexpr (constexpr auto check = check_not_equal_to(type_v<L>, type_v<R>); check)
-    {
-      return not_equal_to_t<L, R>{l, r};
-    }
-    else
-    {
-      return ::sqlpp::bad_statement_t{check};
-    }
+    return not_equal_to_t<L, R>{l, r};
   }
 
   template <typename L, typename R>
@@ -81,15 +74,6 @@ namespace sqlpp
   template <typename Context, typename L, typename R>
   constexpr decltype(auto) operator<<(Context& context, const not_equal_to_t<L, R>& t)
   {
-#warning : Need to handle nullopt here
-    /*
-    if (null_is_trivial_value(t.l) and is_trivial_value(t.r))
-    {
-      return context << embrace(t.l) << " IS NULL ";
-    }
-    else*/
-    {
-      return context << embrace(t.l) << " <> " << embrace(t.r);
-    }
+    return context << embrace(t.l) << " <> " << embrace(t.r);
   }
 }  // namespace sqlpp

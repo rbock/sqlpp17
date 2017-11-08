@@ -30,6 +30,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <type_traits>
 
 #include <optional>
+#include <string>
+#include <string_view>
 #include <utility>
 
 #include <sqlpp17/char_sequence.h>
@@ -472,6 +474,34 @@ namespace sqlpp
 
   template <typename T>
   constexpr auto has_numeric_value_v = is_numeric_v<remove_optional_t<value_type_of_t<T>>>;
+
+  template <typename T>
+  constexpr auto is_text_v = false;
+
+  template <>
+  constexpr auto is_text_v<char> = true;
+
+  template <>
+  constexpr auto is_text_v<const char*> = true;
+
+  template <>
+  constexpr auto is_text_v<std::string> = true;
+
+  template <>
+  constexpr auto is_text_v<std::string_view> = true;
+
+  template <typename L, typename R, typename Enable = void>
+  constexpr auto are_comparable_v = false;
+
+  template <typename L, typename R>
+  constexpr auto are_comparable_v<L, R, std::enable_if_t<is_numeric_v<L> and is_numeric_v<R>>> = true;
+
+  template <typename L, typename R>
+  constexpr auto are_comparable_v<L, R, std::enable_if_t<is_text_v<L> and is_text_v<R>>> = true;
+
+  template <typename L, typename R>
+  constexpr auto are_value_types_comparable_v =
+      are_comparable_v<remove_optional_t<value_type_of_t<L>>, remove_optional_t<value_type_of_t<R>>>;
 
   template <typename T>
   constexpr auto is_conditionless_dynamic_join = false;

@@ -58,15 +58,6 @@ namespace sqlpp
   template <typename Context, typename L>
   constexpr decltype(auto) operator<<(Context& context, const negate_t<L>& t)
   {
-#warning : Need to handle nullopt here?
-    /*
-    if (null_is_trivial_value(t.l) and is_trivial_value(t.r))
-    {
-      return context << embrace(t.l) << " IS NULL ";
-    }
-    else*/
-    {
-      return context << " -" << embrace(t.l);
-    }
+    return context << " -" << embrace(t.l);
   }
 }  // namespace sqlpp

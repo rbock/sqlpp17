@@ -31,8 +31,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_valid_less_operands, "invalid operands for operator<");
-
   template <typename L, typename R>
   struct less_t
   {
@@ -40,30 +38,10 @@ namespace sqlpp
     R r;
   };
 
-  template <typename L,
-            typename R,
-            typename = decltype(std::declval<value_type_of_t<L>&>() < std::declval<value_type_of_t<R>&>())>
-  constexpr auto check_less(type_t<L>, type_t<R>)
-  {
-    return succeeded{};
-  }
-
-  constexpr auto check_less(...)
-  {
-    return failed<assert_valid_less_operands>{};
-  }
-
   template <typename L, typename R>
-  constexpr auto operator<(L l, R r)
+  constexpr auto operator<(L l, R r) -> std::enable_if_t<are_value_types_comparable_v<L, R>, less_t<L, R>>
   {
-    if constexpr (constexpr auto check = check_less(type_v<L>, type_v<R>); check)
-    {
-      return less_t<L, R>{l, r};
-    }
-    else
-    {
-      return ::sqlpp::bad_statement_t{check};
-    }
+    return less_t<L, R>{l, r};
   }
 
   template <typename L, typename R>
@@ -81,15 +59,6 @@ namespace sqlpp
   template <typename Context, typename L, typename R>
   constexpr decltype(auto) operator<<(Context& context, const less_t<L, R>& t)
   {
-#warning : Need to handle nullopt here, throw?
-    /*
-    if (null_is_trivial_value(t.l) and is_trivial_value(t.r))
-    {
-      return context << embrace(t.l) << " IS NULL ";
-    }
-    else*/
-    {
-      return context << embrace(t.l) << " = " << embrace(t.r);
-    }
+    return context << embrace(t.l) << " = " << embrace(t.r);
   }
 }  // namespace sqlpp
