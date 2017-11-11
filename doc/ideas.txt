@@ -1,3 +1,20 @@
+case_when:
+==========
+sqlpp11 tries to be clever with NULL: if a column x was marked as trivial_is_null and you said
+x == 0, it translates this into x IS NULL.
+
+If you really are in that situation, you could say
+
+case_when(q == 0).then(x.is_null()).else_(x == q)
+
+Or you might want to say 
+
+case_when(cond).then(x == q).else_(true)
+
+What about x == std::nullopt?
+=============================
+x == NULL is always false, even if `x IS NULL`
+
 Value types:
 ============
 sqlpp11 has types like integral, text, boolean, etc. The library needs to define in much detail
@@ -63,15 +80,18 @@ I am therefore willing to risk that in favor of quadraticly growing type names.
 
 No "dynamic_select" et al.
 ==========================
-In sqlpp11, we can add tables dynamically to the right. We can combine conditions dynamically via AND.
-In sqlpp17, we can anonymize tables/joins and expressions so that we can combine static and dynamic parts more fluently.
-
-There will also be several versions of select: With a static tuple, or with a vector of variants of fields.
-
+For dynamically selected columns, we can use optional, see below.
+For dynamically joined tables, we can use optional, too.
+For dynamic conditions, we can
+  - use variants of true_type and some boolean expression
+	  (optional is not useful here, because `A and NULL` should be what is expected in SQL: NULL
+	- serialize stuff to strings with value types to join expressions together at will.
 
 vector of variants, pros and cons:
 ----------------------------------
-It would be a variant of things that represent named value types. We could add any number of these in a vector.
+There was the idea of dynamically selecting columns using a vector of variants of potential candidate columns.
+
+We could add any number of these in a vector.
 
 Pros:
 - we could dynamically select ANY number of columns
@@ -91,22 +111,10 @@ Tables can be optional in a join, but they themselves are static.
 
 Most of the time, anyway.
 
-Thus, with
+Thus, we could say something like :
 
-{{{
-		auto make_optbool useOption, Expression e)
-		{
-			if (useOption)
-				return std::optional<Expression>{e};
-			else
-				return std::optional<Expression>{};
-		}
-}}}
-
-we could say something like :
-
-    select(t.foo, make_opt(wantBar, f.bar))
-        .from(t.join(make_opt(wantBar, f).on(t.fId = f.id)))
+    select(t.foo, wantBar ? f.bar : std::nullopt))
+        .from(t.join(wantBar ? f : std::nullopt).on(t.fId = f.id)))
         .unconditionally();
 
 All compile time checks are made as if all conditionals actually hold a value.

@@ -28,7 +28,6 @@ function(test_compile name)
   target_link_libraries(${target} PRIVATE sqlpp17 sqlpp17_testing)
 endfunction()
 
-test_compile(anonymize)
 test_compile(insert_columns)
 test_compile(insert_column_values)
 test_compile(insert_default_values)
