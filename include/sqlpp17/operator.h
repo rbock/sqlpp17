@@ -55,3 +55,21 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/operator/bit_and.h>
 #include <sqlpp17/operator/bit_or.h>
 #include <sqlpp17/operator/bit_xor.h>
+
+// assignment
+#include <sqlpp17/operator/assign.h>
+
+// misc
+#include <sqlpp17/operator/as.h>
+
+#include <sqlpp17/operator/asc.h>
+#include <sqlpp17/operator/desc.h>
+
+#include <sqlpp17/operator/in.h>
+#include <sqlpp17/operator/not_in.h>
+
+#include <sqlpp17/operator/is_not_null.h>
+#include <sqlpp17/operator/is_null.h>
+
+#include <sqlpp17/operator/like.h>
+

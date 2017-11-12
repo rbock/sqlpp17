@@ -31,34 +31,42 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  template <typename L, typename R>
-  struct greater_t
+  template <typename L, typename... Args>
+  struct in_t
   {
     L l;
-    R r;
+    std::tuple<Args...> args;
   };
 
-  template <typename L, typename R>
-  constexpr auto operator>(L l, R r) -> std::enable_if_t<are_value_types_comparable_v<L, R>, greater_t<L, R>>
+  template <typename L, typename... Args>
+  constexpr auto in(L l, Args... args)
+      -> std::enable_if_t<((sizeof...(Args) > 0) and ... and are_value_types_comparable_v<L, Args>), in_t<L, Args...>>
   {
-    return greater_t<L, R>{l, r};
+    return in_t<L, Args...>{l, std::tuple{args...}};
   }
 
-  template <typename L, typename R>
-  constexpr auto is_expression_v<greater_t<L, R>> = true;
+  template <typename L, typename... Args>
+  constexpr auto is_expression_v<in_t<L, Args...>> = true;
 
-  template <typename L, typename R>
-  struct value_type_of<greater_t<L, R>>
+  template <typename L, typename... Args>
+  struct value_type_of<in_t<L, Args...>>
   {
     using type = bool;
   };
 
-  template <typename L, typename R>
-  constexpr auto requires_braces_v<greater_t<L, R>> = true;
+  template <typename L, typename... Args>
+  constexpr auto requires_braces_v<in_t<L, Args...>> = true;
 
-  template <typename DbConnection, typename L, typename R>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const greater_t<L, R>& t)
+  template <typename DbConnection, typename L, typename... Args>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const in_t<L, Args...>& t)
   {
-    return to_sql_string(connection, embrace(t.l)) + " > " + to_sql_string(connection, embrace(t.r));
+    if constexpr (sizeof...(Args) == 1)
+    {
+      return to_sql_string(connection, embrace(t.l)) + " IN(" + to_sql_string(connection, std::get<0>(t.args)) + ")";
+    }
+    else
+    {
+      return to_sql_string(connection, embrace(t.l)) + " IN(" + tuple_to_sql_string(connection, ", ", t.args) + ")";
+    }
   }
 }  // namespace sqlpp

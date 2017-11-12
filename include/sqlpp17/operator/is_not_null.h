@@ -31,34 +31,33 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  template <typename L, typename R>
-  struct greater_t
+  template <typename L>
+  struct is_not_null_t
   {
     L l;
-    R r;
   };
 
-  template <typename L, typename R>
-  constexpr auto operator>(L l, R r) -> std::enable_if_t<are_value_types_comparable_v<L, R>, greater_t<L, R>>
+  template <typename L>
+  constexpr auto is_not_null(L l) -> std::enable_if_t<has_boolean_value_v<L>, is_not_null_t<L>>
   {
-    return greater_t<L, R>{l, r};
+    return is_not_null_t<L>{l};
   }
 
-  template <typename L, typename R>
-  constexpr auto is_expression_v<greater_t<L, R>> = true;
+  template <typename L>
+  constexpr auto is_expression_v<is_not_null_t<L>> = true;
 
-  template <typename L, typename R>
-  struct value_type_of<greater_t<L, R>>
+  template <typename L>
+  struct value_type_of<is_not_null_t<L>>
   {
     using type = bool;
   };
 
-  template <typename L, typename R>
-  constexpr auto requires_braces_v<greater_t<L, R>> = true;
+  template <typename L>
+  constexpr auto requires_braces_v<is_not_null_t<L>> = true;
 
-  template <typename DbConnection, typename L, typename R>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const greater_t<L, R>& t)
+  template <typename DbConnection, typename L>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const is_not_null_t<L>& t)
   {
-    return to_sql_string(connection, embrace(t.l)) + " > " + to_sql_string(connection, embrace(t.r));
+    return to_sql_string(embrace(t.l)) + " IS NOT NULL";
   }
 }  // namespace sqlpp

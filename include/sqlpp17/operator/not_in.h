@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016-2017, Roland Bock
+Copyright (c) 2017, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,24 +26,48 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/alias.h>
-#include <sqlpp17/char_sequence.h>
-#include <sqlpp17/type_traits.h>
+#include <type_traits>
+#include <sqlpp17/to_sql_string.h>
 
 namespace sqlpp
 {
-  namespace detail
+  template <typename L, typename... Args>
+  struct not_in_t
   {
-#warning : Do we need this?
-    template <typename NamedExpr>
-    class named_null_t
-    {
-    };
+    L l;
+    std::tuple<Args...> args;
+  };
 
-    template <typename DbConnection, typename NamedExpr>
-    [[nodiscard]] auto to_sql_string(const DbConnection& connection, const named_null_t<NamedExpr>&)
+  template <typename L, typename... Args>
+  constexpr auto not_in(L l, Args... args)
+      -> std::enable_if_t<((sizeof...(Args) > 0) and ... and are_value_types_comparable_v<L, Args>),
+                          not_in_t<L, Args...>>
+  {
+    return not_in_t<L, Args...>{l, std::tuple{args...}};
+  }
+
+  template <typename L, typename... Args>
+  constexpr auto is_expression_v<not_in_t<L, Args...>> = true;
+
+  template <typename L, typename... Args>
+  struct value_type_of<not_in_t<L, Args...>>
+  {
+    using type = bool;
+  };
+
+  template <typename L, typename... Args>
+  constexpr auto requires_braces_v<not_in_t<L, Args...>> = true;
+
+  template <typename DbConnection, typename L, typename... Args>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const not_in_t<L, Args...>& t)
+  {
+    if constexpr (sizeof...(Args) == 1)
     {
-      return std::string{name_of_v<NamedExpr>};
+      return to_sql_string(connection, embrace(t.l)) + " IN(" + to_sql_string(connection, std::get<0>(t.args)) + ")";
     }
-  }  // namespace detail
+    else
+    {
+      return to_sql_string(connection, embrace(t.l)) + " IN(" + tuple_to_sql_string(connection, ", ", t.args) + ")";
+    }
+  }
 }  // namespace sqlpp

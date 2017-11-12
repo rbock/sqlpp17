@@ -26,6 +26,7 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <sqlpp17/operator.h>
 #include <sqlpp17/type_traits.h>
 
 namespace sqlpp
@@ -33,16 +34,58 @@ namespace sqlpp
   template <typename T>
   struct expr_t
   {
-#warning : implement
-    // as()
-    // like()
-    // in
-    // not_in
-    // is_null
-    // is_not_null
-    // asc()
-    // desc()
-    // sort(asc/desc)
+    template <typename Pattern>
+    [[nodiscard]] constexpr auto like(Pattern pattern) const
+    {
+      using ::sqlpp::like;
+      return like(t, pattern);
+    }
+
+    template <typename... Exprs>
+    [[nodiscard]] constexpr auto in(Exprs... exprs) const
+    {
+      using ::sqlpp::in;
+      return in(t, exprs...);
+    }
+
+    template <typename... Exprs>
+    [[nodiscard]] constexpr auto not_in(Exprs... exprs) const
+    {
+      using ::sqlpp::not_in;
+      return not_in(t, exprs...);
+    }
+
+    [[nodiscard]] constexpr auto is_null() const
+    {
+      using ::sqlpp::is_null;
+      return is_null(t);
+    }
+
+    [[nodiscard]] constexpr auto is_not_null() const
+    {
+      using ::sqlpp::is_not_null;
+      return is_not_null(t);
+    }
+
+    [[nodiscard]] constexpr auto asc() const
+    {
+      using ::sqlpp::asc;
+      return asc(t);
+    }
+
+    [[nodiscard]] constexpr auto desc() const
+    {
+      using ::sqlpp::desc;
+      return desc(t);
+    }
+
+    template <typename Alias>
+    [[nodiscard]] constexpr auto as(const Alias& alias) const
+    {
+      using ::sqlpp::as;
+      return as(t, alias);
+    }
+
     T t;
   };
 

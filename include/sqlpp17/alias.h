@@ -27,6 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/char_sequence.h>
+#include <sqlpp17/to_sql_string.h>
 #include <sqlpp17/type_traits.h>
 
 namespace sqlpp

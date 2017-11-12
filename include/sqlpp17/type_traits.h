@@ -448,6 +448,8 @@ namespace sqlpp
 
   struct numeric_t;
 
+  struct text_t;
+
   template <typename T>
   constexpr auto is_integral_v = std::is_integral_v<T>;
 
@@ -489,6 +491,9 @@ namespace sqlpp
 
   template <>
   constexpr auto is_text_v<std::string_view> = true;
+
+  template <typename T>
+  constexpr auto has_text_value_v = is_text_v<remove_optional_t<value_type_of_t<T>>>;
 
   template <typename L, typename R, typename Enable = void>
   constexpr auto are_comparable_v = false;

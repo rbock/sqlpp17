@@ -27,38 +27,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <type_traits>
+#include <sqlpp17/alias.h>
 #include <sqlpp17/to_sql_string.h>
 
 namespace sqlpp
 {
-  template <typename L, typename R>
-  struct greater_t
+  template <typename Expr, typename Alias>
+  constexpr auto as(Expr expr, const Alias&)
   {
-    L l;
-    R r;
-  };
-
-  template <typename L, typename R>
-  constexpr auto operator>(L l, R r) -> std::enable_if_t<are_value_types_comparable_v<L, R>, greater_t<L, R>>
-  {
-    return greater_t<L, R>{l, r};
+    return alias_t<Expr, Alias>{expr};
   }
 
-  template <typename L, typename R>
-  constexpr auto is_expression_v<greater_t<L, R>> = true;
-
-  template <typename L, typename R>
-  struct value_type_of<greater_t<L, R>>
-  {
-    using type = bool;
-  };
-
-  template <typename L, typename R>
-  constexpr auto requires_braces_v<greater_t<L, R>> = true;
-
-  template <typename DbConnection, typename L, typename R>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const greater_t<L, R>& t)
-  {
-    return to_sql_string(connection, embrace(t.l)) + " > " + to_sql_string(connection, embrace(t.r));
-  }
 }  // namespace sqlpp

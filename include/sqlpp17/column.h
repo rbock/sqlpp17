@@ -29,26 +29,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/alias.h>
 #include <sqlpp17/expr.h>
 #include <sqlpp17/name_to_sql_string.h>
+#include <sqlpp17/operator.h>
 #include <sqlpp17/type_traits.h>
 
 namespace sqlpp
 {
-  template <typename L, typename R>
-  struct assignment_t
-  {
-    L l;
-    R r;
-  };
-
-  template <typename L, typename R>
-  constexpr auto is_assignment_v<assignment_t<L, R>> = true;
-
-  template <typename L, typename R>
-  struct column_of<assignment_t<L, R>>
-  {
-    using type = L;
-  };
-
   template <typename TableAlias, typename ColumnSpec>
   class column_t
   {
@@ -56,29 +41,63 @@ namespace sqlpp
     using _alias_t = typename ColumnSpec::_alias_t;
 
     template <typename T>
-    auto operator=(T t) const
+    [[nodiscard]] auto operator=(T t) const
     {
-#warning : Need to check the type
-      return assignment_t<column_t, T>{*this, t};
+      return assign(*this, t);
     }
 
-#warning : Need to implement
-    // as()
-    // like()
-    // in
-    // not_in
-    // is_null
-    // is_not_null
-    // asc()
-    // desc()
-    // sort(asc/desc)
+    template <typename Pattern>
+    [[nodiscard]] constexpr auto like(Pattern pattern) const
+    {
+      using ::sqlpp::like;
+      return like(*this, pattern);
+    }
+
+    template <typename... Exprs>
+    [[nodiscard]] constexpr auto in(Exprs... exprs) const
+    {
+      using ::sqlpp::in;
+      return in(*this, exprs...);
+    }
+
+    template <typename... Exprs>
+    [[nodiscard]] constexpr auto not_in(Exprs... exprs) const
+    {
+      using ::sqlpp::not_in;
+      return not_in(*this, exprs...);
+    }
+
+    [[nodiscard]] constexpr auto is_null() const
+    {
+      using ::sqlpp::is_null;
+      return is_null(*this);
+    }
+
+    [[nodiscard]] constexpr auto is_not_null() const
+    {
+      using ::sqlpp::is_not_null;
+      return is_not_null(*this);
+    }
+
+    [[nodiscard]] constexpr auto asc() const
+    {
+      using ::sqlpp::asc;
+      return asc(*this);
+    }
+
+    [[nodiscard]] constexpr auto desc() const
+    {
+      using ::sqlpp::desc;
+      return desc(*this);
+    }
 
     template <typename Alias>
-    constexpr auto as(const Alias&) const
+    [[nodiscard]] constexpr auto as(const Alias& alias) const
     {
-      return alias_t<column_t, Alias>{{}};
+      using ::sqlpp::as;
+      return as(*this, alias);
     }
-  };
+  };  // namespace sqlpp
 
   template <typename TableSpec, typename ColumnSpec>
   struct value_type_of<column_t<TableSpec, ColumnSpec>>

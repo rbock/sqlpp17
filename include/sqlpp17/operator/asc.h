@@ -31,34 +31,47 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  template <typename L, typename R>
-  struct greater_t
+  enum class sort_order
+  {
+    asc,
+    desc,
+  };
+
+  template <typename L>
+  struct sort_order_t
   {
     L l;
-    R r;
+    sort_order order;
   };
 
-  template <typename L, typename R>
-  constexpr auto operator>(L l, R r) -> std::enable_if_t<are_value_types_comparable_v<L, R>, greater_t<L, R>>
+  template <typename L>
+  constexpr auto asc(L l) -> std::enable_if_t<has_boolean_value_v<L>, sort_order_t<L>>
   {
-    return greater_t<L, R>{l, r};
+    return sort_order_t<L>{l, sort_order::asc};
   }
 
-  template <typename L, typename R>
-  constexpr auto is_expression_v<greater_t<L, R>> = true;
+  template <typename L>
+  constexpr auto is_expression_v<sort_order_t<L>> = false;
 
-  template <typename L, typename R>
-  struct value_type_of<greater_t<L, R>>
+  template <typename L>
+  constexpr auto requires_braces_v<sort_order_t<L>> = false;
+
+  template <typename DbConnection>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const sort_order& t)
   {
-    using type = bool;
-  };
-
-  template <typename L, typename R>
-  constexpr auto requires_braces_v<greater_t<L, R>> = true;
-
-  template <typename DbConnection, typename L, typename R>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const greater_t<L, R>& t)
-  {
-    return to_sql_string(connection, embrace(t.l)) + " > " + to_sql_string(connection, embrace(t.r));
+    switch (t)
+    {
+      case sort_order::asc:
+        return std::string("ASC");
+      case sort_order::desc:
+        return std::string("DESC");
+    }
   }
+
+  template <typename DbConnection, typename L>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const sort_order_t<L>& t)
+  {
+    return to_sql_string(embrace(t.l)) + to_sql_string(connection, t.order);
+  }
+
 }  // namespace sqlpp

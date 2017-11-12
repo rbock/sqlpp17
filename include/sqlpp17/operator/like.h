@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2017, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,20 +26,39 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <type_traits>
+#include <sqlpp17/to_sql_string.h>
+
 namespace sqlpp
 {
-  // boolean
   template <typename L, typename R>
-  struct and_t;
+  struct like_t
+  {
+    L l;
+    R r;
+  };
 
   template <typename L, typename R>
-  struct or_t;
+  constexpr auto like(L l, R r) -> std::enable_if_t<has_text_value_v<L> and has_text_value_v<R>, like_t<L, R>>
+  {
+    return like_t<L, R>{l, r};
+  }
 
-  // comparison
   template <typename L, typename R>
-  struct equal_t;
+  constexpr auto is_expression_v<like_t<L, R>> = true;
 
-  // arithmetic
   template <typename L, typename R>
-  struct plus_t;
+  struct value_type_of<like_t<L, R>>
+  {
+    using type = bool;
+  };
+
+  template <typename L, typename R>
+  constexpr auto requires_braces_v<like_t<L, R>> = true;
+
+  template <typename DbConnection, typename L, typename R>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const like_t<L, R>& t)
+  {
+    return to_sql_string(connection, embrace(t.l)) + " LIKE " + to_sql_string(connection, embrace(t.r));
+  }
 }  // namespace sqlpp

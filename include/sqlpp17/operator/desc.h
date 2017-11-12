@@ -26,39 +26,14 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <type_traits>
-#include <sqlpp17/to_sql_string.h>
+#include <sqlpp17/operator/asc.h>
 
 namespace sqlpp
 {
-  template <typename L, typename R>
-  struct greater_t
+  template <typename L>
+  constexpr auto desc(L l) -> std::enable_if_t<has_boolean_value_v<L>, sort_order_t<L>>
   {
-    L l;
-    R r;
-  };
-
-  template <typename L, typename R>
-  constexpr auto operator>(L l, R r) -> std::enable_if_t<are_value_types_comparable_v<L, R>, greater_t<L, R>>
-  {
-    return greater_t<L, R>{l, r};
+    return sort_order_t<L>{l, sort_order::desc};
   }
 
-  template <typename L, typename R>
-  constexpr auto is_expression_v<greater_t<L, R>> = true;
-
-  template <typename L, typename R>
-  struct value_type_of<greater_t<L, R>>
-  {
-    using type = bool;
-  };
-
-  template <typename L, typename R>
-  constexpr auto requires_braces_v<greater_t<L, R>> = true;
-
-  template <typename DbConnection, typename L, typename R>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const greater_t<L, R>& t)
-  {
-    return to_sql_string(connection, embrace(t.l)) + " > " + to_sql_string(connection, embrace(t.r));
-  }
 }  // namespace sqlpp

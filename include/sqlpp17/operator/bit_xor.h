@@ -27,7 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <type_traits>
-#include <sqlpp17/operator_fwd.h>
+#include <sqlpp17/to_sql_string.h>
 #include <sqlpp17/type_traits.h>
 
 namespace sqlpp

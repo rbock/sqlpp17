@@ -32,33 +32,33 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace sqlpp
 {
   template <typename L, typename R>
-  struct greater_t
+  struct assign_t
   {
     L l;
     R r;
   };
 
   template <typename L, typename R>
-  constexpr auto operator>(L l, R r) -> std::enable_if_t<are_value_types_comparable_v<L, R>, greater_t<L, R>>
+  constexpr auto assign(L l, R r) -> std::enable_if_t<are_value_types_comparable_v<L, R>, assign_t<L, R>>
   {
-    return greater_t<L, R>{l, r};
+    return assign_t<L, R>{l, r};
   }
 
   template <typename L, typename R>
-  constexpr auto is_expression_v<greater_t<L, R>> = true;
+  constexpr auto is_assignment_v<assign_t<L, R>> = true;
 
   template <typename L, typename R>
-  struct value_type_of<greater_t<L, R>>
+  struct column_of<assign_t<L, R>>
   {
-    using type = bool;
+    using type = L;
   };
 
   template <typename L, typename R>
-  constexpr auto requires_braces_v<greater_t<L, R>> = true;
+  constexpr auto requires_braces_v<assign_t<L, R>> = true;
 
   template <typename DbConnection, typename L, typename R>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const greater_t<L, R>& t)
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const assign_t<L, R>& t)
   {
-    return to_sql_string(connection, embrace(t.l)) + " > " + to_sql_string(connection, embrace(t.r));
+    return to_sql_string(connection, t.l) + " = " + to_sql_string(connection, embrace(t.r));
   }
 }  // namespace sqlpp
