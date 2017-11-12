@@ -30,9 +30,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/clause_fwd.h>
 #include <sqlpp17/column_spec.h>
-#include <sqlpp17/detail/select_column_printer.h>
 #include <sqlpp17/result_row.h>
 #include <sqlpp17/statement.h>
+#include <sqlpp17/tuple_to_sql_string.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
 
@@ -54,6 +54,30 @@ namespace sqlpp
   template <typename... Columns>
   constexpr auto clause_tag<select_columns_t<Columns...>> = clause::select_columns{};
 
+  template <typename Column>
+  struct select_column_t
+  {
+    constexpr select_column_t(Column column) : _column(column)
+    {
+    }
+
+    constexpr select_column_t(const select_column_t&) = default;
+    constexpr select_column_t(select_column_t&&) = default;
+    select_column_t& operator=(const select_column_t&) = default;
+    select_column_t& operator=(select_column_t&&) = default;
+    ~select_column_t() = default;
+
+    Column _column;
+  };
+
+  template <typename DbConnection, typename Column>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const select_column_t<Column>& t)
+  {
+    return has_value(t._column)
+               ? to_sql_string(connection, get_value(t._column))
+               : std::string("NULL AS ") + name_to_sql_string(connection, name_of_v<remove_optional_t<Column>>);
+  }
+
   template <typename... Columns, typename Statement>
   class clause_base<select_columns_t<Columns...>, Statement>
   {
@@ -67,7 +91,7 @@ namespace sqlpp
     {
     }
 
-    std::tuple<Columns...> _columns;
+    std::tuple<select_column_t<Columns>...> _columns;
   };
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_selected_columns_all_aggregates_or_none,
@@ -109,13 +133,11 @@ namespace sqlpp
     using _result_row_t = result_row_t<make_column_spec_t<Statement, Columns>...>;
   };
 
-  template <typename Context, typename... Columns, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<select_columns_t<Columns...>, Statement>& t)
+  template <typename DbConnection, typename... Columns, typename Statement>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection,
+                                   const clause_base<select_columns_t<Columns...>, Statement>& t)
   {
-    auto print = detail::select_column_printer<Context>{context, ", "};
-    context << ' ';
-    (..., print(std::get<Columns>(t._columns)));
-    return context;
+    return tuple_to_string(connection, ", ", t._columns);
   }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_select_columns_args_not_empty,
@@ -162,8 +184,7 @@ namespace sqlpp
     template <typename... Columns>
     [[nodiscard]] constexpr auto columns(Columns... columns) const
     {
-      constexpr auto check = check_select_columns_arg<remove_optional_t<Columns>...>();
-      if constexpr (check)
+      if constexpr (constexpr auto check = check_select_columns_arg<remove_optional_t<Columns>...>(); check)
       {
         return Statement::replace_clause(this, select_columns_t<Columns...>{std::tuple(columns...)});
       }
@@ -176,8 +197,7 @@ namespace sqlpp
     template <typename... Columns>
     [[nodiscard]] constexpr auto columns(std::tuple<Columns...> columns) const
     {
-      constexpr auto check = check_select_columns_arg<remove_optional_t<Columns>...>();
-      if constexpr (check)
+      if constexpr (constexpr auto check = check_select_columns_arg<remove_optional_t<Columns>...>(); check)
       {
         return Statement::replace_clause(this, select_columns_t<Columns...>{columns});
       }
@@ -188,10 +208,10 @@ namespace sqlpp
     }
   };
 
-  template <typename Context, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<no_select_columns_t, Statement>& t)
+  template <typename DbConnection, typename Statement>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<no_select_columns_t, Statement>& t)
   {
-    return context;
+    return std::string{};
   }
 
   template <typename... Columns>

@@ -66,10 +66,10 @@ namespace sqlpp
     Condition _condition;
   };
 
-  template <typename Context, typename Condition, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<having_t<Condition>, Statement>& t)
+  template <typename DbConnection, typename Condition, typename Statement>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<having_t<Condition>, Statement>& t)
   {
-    return context << " HAVING " << t._condition;
+    return std::string(" HAVING ") + to_sql_string(connection, t._condition);
   }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_having_arg_is_expression, "having() arg has to be a boolean expression");
@@ -120,10 +120,10 @@ namespace sqlpp
     }
   };
 
-  template <typename Context, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<no_having_t, Statement>&)
+  template <typename DbConnection, typename Statement>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<no_having_t, Statement>&)
   {
-    return context;
+    return std::string{};
   }
 
   template <typename Condition>

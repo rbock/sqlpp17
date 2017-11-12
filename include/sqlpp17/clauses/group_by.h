@@ -29,7 +29,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tuple>
 
 #include <sqlpp17/clause_fwd.h>
-#include <sqlpp17/detail/list_printer.h>
 #include <sqlpp17/statement.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
@@ -41,7 +40,7 @@ namespace sqlpp
     struct group_by
     {
     };
-  }
+  }  // namespace clause
 
   template <typename... Columns>
   struct group_by_t
@@ -68,13 +67,12 @@ namespace sqlpp
     std::tuple<Columns...> _columns;
   };
 
-  template <typename Context, typename... Columns, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<group_by_t<Columns...>, Statement>& t)
+  template <typename DbConnection, typename... Columns, typename Statement>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection,
+                                   const clause_base<group_by_t<Columns...>, Statement>& t)
   {
-    auto separate = detail::list_printer<Context>{context, ", "};
-    context << ' ';
-    (..., print(std::get<Columns>(t._columns)));
-    return context;
+#warning : There was a function print being called here. Is it still around?
+    return std::string{" "} + list_to_string(connection, ", ", std::get<Columns>(t._columns)...);
   }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_group_by_args_not_empty, "group_by() must be called with at least one argument");
@@ -145,10 +143,10 @@ namespace sqlpp
     }
   };
 
-  template <typename Context, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<no_group_by_t, Statement>& t)
+  template <typename DbConnection, typename Statement>
+  decltype(auto) operator<<(const DbConnection& connection, const clause_base<no_group_by_t, Statement>& t)
   {
-    return context;
+    return connection;
   }
 
   template <typename... Columns>
@@ -156,4 +154,4 @@ namespace sqlpp
   {
     return statement<no_group_by_t>{}.group_by(std::forward<Columns>(columns)...);
   }
-}
+}  // namespace sqlpp

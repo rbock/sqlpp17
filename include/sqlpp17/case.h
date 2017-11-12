@@ -27,6 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/embrace.h>
+#include <sqlpp17/tuple_to_sql_string.h>
 #include <sqlpp17/type_traits.h>
 
 namespace sqlpp
@@ -72,31 +73,29 @@ namespace sqlpp
     }
   };
 
-  template <typename Context, typename When, typename Then>
-  decltype(auto) operator<<(Context& context, const when_then_t<When, Then>& t)
+  template <typename DbConnection, typename When, typename Then>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const when_then_t<When, Then>& t)
   {
-    return context << " WHEN " << embrace(t._when) << " THEN " << embrace(t._then);
+    return std::string{" WHEN "} + to_sql_string(connection, embrace(t._when)) + " THEN " +
+           to_sql_string(connection, embrace(t._then));
   }
 
-  template <typename Context, typename... T, std::size_t... Is>
-  void tuple_print(Context& context, const std::tuple<T...>& t, std::integer_sequence<std::size_t, Is...>)
+  template <typename DbConnection, typename... T, std::size_t... Is>
+  void tuple_print(const DbConnection& connection, const std::tuple<T...>& t, std::integer_sequence<std::size_t, Is...>)
   {
-    (context << ... << std::get<Is>(t));
+    (connection << ... << std::get<Is>(t));
   }
 
-  template <typename Context, typename... WhenThen>
-  decltype(auto) operator<<(Context& context, const case_when_then_t<WhenThen...>& t)
+  template <typename DbConnection, typename... WhenThen>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const case_when_then_t<WhenThen...>& t)
   {
-    context << " CASE";
-    tuple_print(context, t._when_thens, std::make_index_sequence<sizeof...(WhenThen)>{});
-
-    return context;
+    return std::string{" CASE"} + tuple_to_string(connection, "", t._when_thens);
   }
 
-  template <typename Context, typename CaseWhenThen, typename Else>
-  decltype(auto) operator<<(Context& context, const case_when_then_else_t<CaseWhenThen, Else>& t)
+  template <typename DbConnection, typename CaseWhenThen, typename Else>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const case_when_then_else_t<CaseWhenThen, Else>& t)
   {
-    return context << t._case_when_then << " ELSE " << embrace(t._else);
+    return to_sql_string(connection, t._case_when_then) + " ELSE " + to_sql_string(connection, embrace(t._else));
   }
 
   template <typename Expr>

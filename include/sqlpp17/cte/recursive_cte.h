@@ -59,10 +59,10 @@ namespace sqlpp
     Statement _statement;
   };
 
-  template <typename Context, typename AliasProvider, typename Statement>
-  decltype(auto) operator<<(Context& context, const recursive_cte_t<AliasProvider, Statement>& t)
+  template <typename DbConnection, typename AliasProvider, typename Statement>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const recursive_cte_t<AliasProvider, Statement>& t)
   {
 #warning : the With clause must not use this one, it must serialize the statement, too.
-    return context << name_of_v<AliasProvider>;
+    return to_sql_string(connection, name_of_v<AliasProvider>);
   }
 }  // namespace sqlpp

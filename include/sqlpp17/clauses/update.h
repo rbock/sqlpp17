@@ -39,7 +39,7 @@ namespace sqlpp
     struct update
     {
     };
-  }
+  }  // namespace clause
 
   struct update_t
   {
@@ -60,10 +60,10 @@ namespace sqlpp
     clause_base() = default;
   };
 
-  template <typename Context, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<update_t, Statement>& t)
+  template <typename DbConnection, typename Statement>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<update_t, Statement>& t)
   {
-    return context << "UPDATE";
+    return std::string{"UPDATE"};
   }
 
   [[nodiscard]] constexpr auto update()
@@ -76,4 +76,4 @@ namespace sqlpp
   {
     return update().table(std::forward<Table>(t));
   }
-}
+}  // namespace sqlpp

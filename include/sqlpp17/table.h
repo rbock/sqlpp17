@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/char_sequence.h>
 #include <sqlpp17/join.h>
 #include <sqlpp17/member.h>
+#include <sqlpp17/name_to_sql_string.h>
 #include <sqlpp17/table_alias.h>
 #include <sqlpp17/type_traits.h>
 
@@ -48,10 +49,10 @@ namespace sqlpp
     }
   };
 
-  template <typename Context, typename TableSpec, typename... ColumnSpecs>
-  decltype(auto) operator<<(Context& context, const table_t<TableSpec, ColumnSpecs...>& t)
+  template <typename DbConnection, typename TableSpec, typename... ColumnSpecs>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const table_t<TableSpec, ColumnSpecs...>& t)
   {
-    return context << (name_of_v<TableSpec>);
+    return name_to_sql_string(connection, name_of_v<TableSpec>);
   }
 
   template <typename TableSpec, typename... ColumnSpecs>

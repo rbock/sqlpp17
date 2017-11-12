@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/alias.h>
 #include <sqlpp17/expr.h>
+#include <sqlpp17/name_to_sql_string.h>
 #include <sqlpp17/type_traits.h>
 
 namespace sqlpp
@@ -107,10 +108,11 @@ namespace sqlpp
   constexpr auto is_insert_required_v<column_t<TableSpec, ColumnSpec>> =
       !(ColumnSpec::tags & tag::has_default) && !(ColumnSpec::tags & tag::must_not_insert);
 
-  template <typename Context, typename TableSpec, typename ColumnSpec>
-  decltype(auto) operator<<(Context& context, const column_t<TableSpec, ColumnSpec>& t)
+  template <typename DbConnection, typename TableSpec, typename ColumnSpec>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const column_t<TableSpec, ColumnSpec>& t)
   {
-    return context << name_of_v<TableSpec> << '.' << name_of_v<ColumnSpec>;
+    return name_to_sql_string(connection, name_of_v<TableSpec>) + "." +
+           name_to_sql_string(connection, name_of_v<ColumnSpec>);
   }
 
 }  // namespace sqlpp

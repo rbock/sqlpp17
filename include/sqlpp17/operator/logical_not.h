@@ -55,9 +55,9 @@ namespace sqlpp
   template <typename L>
   constexpr auto requires_braces_v<logical_not_t<L>> = true;
 
-  template <typename Context, typename L>
-  constexpr decltype(auto) operator<<(Context& context, const logical_not_t<L>& t)
+  template <typename DbConnection, typename L>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const logical_not_t<L>& t)
   {
-    return context << " NOT " << embrace(t.l);
+    return std::string(" NOT ") + to_sql_string(embrace(t.l));
   }
 }  // namespace sqlpp

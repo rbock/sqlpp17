@@ -92,10 +92,10 @@ namespace sqlpp
     }
   };
 
-  template <typename Context, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<no_update_set_t, Statement>&)
+  template <typename DbConnection, typename Statement>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<no_update_set_t, Statement>&)
   {
-    return context;
+    return std::string{};
   }
 
   template <typename... Assignments>
@@ -103,4 +103,4 @@ namespace sqlpp
   {
     return statement<no_update_set_t>{}.update_set(std::forward<Assignments>(assignments)...);
   }
-}
+}  // namespace sqlpp

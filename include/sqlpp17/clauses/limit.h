@@ -84,15 +84,13 @@ namespace sqlpp
     }
   }
 
-  template <typename Context, typename Number, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<limit_t<Number>, Statement>& t)
+  template <typename DbConnection, typename Number, typename Statement>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<limit_t<Number>, Statement>& t)
   {
     if (has_value(t._number))
-      return context;
+      return std::string{};
 
-    context << " LIMIT " << get_value(t._number);
-
-    return context;
+    return std::string(" LIMIT ") + to_sql_string(get_value(t._number));
   }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_limit_arg_is_integral_value, "limit() arg has to be an integral value");
@@ -138,10 +136,10 @@ namespace sqlpp
     }
   };
 
-  template <typename Context, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<no_limit_t, Statement>&)
+  template <typename DbConnection, typename Statement>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<no_limit_t, Statement>&)
   {
-    return context;
+    return std::string{};
   }
 
   template <typename Value>

@@ -46,6 +46,7 @@ struct connection
 };
 int main()
 {
+  auto context = 0;
 #warning : s should be a constexpr
   auto s = sqlpp::with(1) << sqlpp::select()
                           << sqlpp::select_columns(test::tabPerson.id, test::tabPerson.isManager,
@@ -54,7 +55,7 @@ int main()
                           << sqlpp::where(test::tabPerson.isManager and test::tabPerson.name == "")
                           << sqlpp::having(test::tabPerson.id == test::tabPerson.id or test::tabPerson.id == 1);
 #warning : need to test results
-  std::cout << s;
+  std::cout << to_sql_string(context, s);
   /*
   auto conn = connection{};
   auto row = s.run(conn);

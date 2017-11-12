@@ -44,20 +44,20 @@ namespace sqlpp
     Condition _condition;
   };
 
-  template <typename Context, typename Lhs, typename JoinType, typename Rhs, typename Condition>
-  auto& operator<<(Context& context, const join_t<Lhs, JoinType, Rhs, Condition>& t)
+  template <typename DbConnection, typename Lhs, typename JoinType, typename Rhs, typename Condition>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const join_t<Lhs, JoinType, Rhs, Condition>& t)
   {
-    context << t._lhs;
+    auto ret = to_sql_string(connection, t._lhs);
 
-    if (!has_value(t._rhs))
-      return context;
+    if (has_value(t._rhs))
+    {
+      ret += JoinType::_name;
+      ret += " JOIN ";
+      ret += to_sql_string(connection, get_value(t._rhs));
+      ret += to_sql_string(connection, t._condition);
+    }
 
-    context << JoinType::_name;
-    context << " JOIN ";
-    context << get_value(t._rhs);
-    context << t._condition;
-
-    return context;
+    return ret;
   }
 
   template <typename Lhs, typename JoinType, typename Rhs, typename Condition>

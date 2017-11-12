@@ -31,8 +31,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/clause_fwd.h>
 #include <sqlpp17/detail/first.h>
-#include <sqlpp17/detail/insert_column_printer.h>
-#include <sqlpp17/detail/insert_value_printer.h>
 #include <sqlpp17/exception.h>
 #include <sqlpp17/statement.h>
 #include <sqlpp17/type_traits.h>
@@ -72,26 +70,26 @@ namespace sqlpp
     std::tuple<Assignments...> _assignments;
   };
 
-  template <typename Context, typename Statement, typename... Assignments>
-  decltype(auto) operator<<(Context& context, const clause_base<insert_values_t<Assignments...>, Statement>& t)
+  template <typename DbConnection, typename Statement, typename... Assignments>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection,
+                                   const clause_base<insert_values_t<Assignments...>, Statement>& t)
   {
+    auto ret = std::string{};
     // columns
     {
-      context << " (";
-      auto print = detail::insert_column_printer(context);
-      (..., print(std::get<Assignments>(t._assignments)));
-      context << ")";
+      ret += " (";
+      ret += list_to_string(connection, ", ", std::get<Assignments>(t._assignments).column...);
+      ret += ")";
     }
 
     // values
     {
-      context << " VALUES (";
-      auto print = detail::insert_value_printer(context);
-      (..., print(std::get<Assignments>(t._assignments)));
-      context << ')';
+      ret += " VALUES (";
+      ret += list_to_string(connection, ", ", std::get<Assignments>(t._assignments).value...);
+      ret += ")";
     }
 
-    return context;
+    return ret;
   }
 
   struct insert_default_values_t
@@ -115,10 +113,10 @@ namespace sqlpp
     }
   };
 
-  template <typename Context, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<insert_default_values_t, Statement>& t)
+  template <typename DbConnection, typename Statement>
+  decltype(auto) operator<<(const DbConnection& connection, const clause_base<insert_default_values_t, Statement>& t)
   {
-    return context << " DEFAULT_VALUES";
+    return connection << " DEFAULT_VALUES";
   }
 
   template <typename... Assignments>
@@ -169,10 +167,10 @@ namespace sqlpp
 
   namespace detail
   {
-    template <typename Context>
+    template <typename DbConnection>
     struct multi_row_insert_column_printer
     {
-      Context& context;
+      const DbConnection& connection;
       bool is_first = true;
 
       template <typename Expr>
@@ -181,16 +179,16 @@ namespace sqlpp
         if (is_first)
           is_first = false;
         else
-          context << ", ";
+          connection << ", ";
         if constexpr (is_optional_f(expr))
         {
           if (expr.has_value())
           {
-            context << expr.value();
+            connection << expr.value();
           }
           else
           {
-            context << "default";
+            connection << "default";
           }
         }
       }
@@ -198,34 +196,36 @@ namespace sqlpp
 
   }  // namespace detail
 
-  template <typename Context, typename Statement, typename... Assignments>
-  decltype(auto) operator<<(Context& context, const clause_base<insert_multi_values_t<Assignments...>, Statement>& t)
+  template <typename DbConnection, typename Statement, typename... Assignments>
+  decltype(auto) operator<<(const DbConnection& connection,
+                            const clause_base<insert_multi_values_t<Assignments...>, Statement>& t)
   {
     // the _run function is responsible for treating empty rows
+    auto ret = std::string{};
 
     // columns
     {
-      context << " (";
-      auto print = detail::insert_column_printer(context);
-      (..., print(std::get<Assignments>(t._assignments)));
-      context << ")";
+      ret += " (";
+      ret += list_to_string(connection, ", ", std::get<Assignments>(t._assignments).column...);
+      ret += ")";
     }
 
     // values
     {
-      context << " VALUES (";
-      auto separate_rows = separator(context, ",");
+      ret += " VALUES (";
+      auto first = true;
       for (const auto& row : t._rows)
       {
-        separate_rows();
-        context << '(';
-        auto print = detail::insert_value_printer(context);
-        (..., print(std::get<Assignments>(row)));
-        context << ')';
+        if (!first)
+          ret += ", ";
+        first = false;
+        ret += "(";
+        ret += list_to_string(connection, ", ", std::get<Assignments>(t._assignments).value...);
+        ret += ")";
       }
     }
 
-    return context;
+    return ret;
   }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_insert_set_at_least_one_arg, "at least one assignment required in set()");
@@ -322,9 +322,9 @@ namespace sqlpp
     }
   };
 
-  template <typename Context, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<no_insert_values_t, Statement>&)
+  template <typename DbConnection, typename Statement>
+  decltype(auto) operator<<(const DbConnection& connection, const clause_base<no_insert_values_t, Statement>&)
   {
-    return context;
+    return connection;
   }
 }  // namespace sqlpp

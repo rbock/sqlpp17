@@ -49,10 +49,10 @@ namespace sqlpp
   template <typename Expression, typename Alias>
   constexpr auto is_selectable_v<alias_t<Expression, Alias>> = true;
 
-  template <typename Context, typename Expression, typename Alias>
-  decltype(auto) operator<<(Context& context, const alias_t<Expression, Alias>& t)
+  template <typename DbConnection, typename Expression, typename Alias>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const alias_t<Expression, Alias>& t)
   {
-    return context << t._expression << " AS " << name_of_v<Alias>;
+    return to_sql_string(connection, t._expression) + " AS " + to_sql_string(connection, name_of_v<Alias>);
   }
 
   template <typename Expression, typename Alias>

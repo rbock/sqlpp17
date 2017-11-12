@@ -38,7 +38,7 @@ namespace sqlpp
     struct lock
     {
     };
-  }
+  }  // namespace clause
 
   struct for_update_t
   {
@@ -82,16 +82,16 @@ namespace sqlpp
     }
   };
 
-  template <typename Context, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<for_update_t, Statement>& t)
+  template <typename DbConnection, typename Statement>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<for_update_t, Statement>& t)
   {
-    return context << " FOR UPDATE";
+    return std::string(" FOR UPDATE");
   }
 
-  template <typename Context, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<for_share_t, Statement>& t)
+  template <typename DbConnection, typename Statement>
+  decltype(auto) operator<<(const DbConnection& connection, const clause_base<for_share_t, Statement>& t)
   {
-    return context << " FOR SHARE";
+    return connection << " FOR SHARE";
   }
 
   struct no_lock_t
@@ -120,10 +120,10 @@ namespace sqlpp
     }
   };
 
-  template <typename Context, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<no_lock_t, Statement>&)
+  template <typename DbConnection, typename Statement>
+  decltype(auto) operator<<(const DbConnection& connection, const clause_base<no_lock_t, Statement>&)
   {
-    return context;
+    return connection;
   }
 
   [[nodiscard]] constexpr auto for_update()
@@ -135,4 +135,4 @@ namespace sqlpp
   {
     return statement<no_lock_t>{}.for_share();
   }
-}
+}  // namespace sqlpp

@@ -33,28 +33,29 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 int main()
 {
+  auto context = 0;
 #warning : s should be a constexpr
   {
     auto s = test::tabPerson.isManager and (test::tabPerson.isManager and test::tabPerson.isManager);
-    std::cout << s << std::endl;
+    std::cout << to_sql_string(context, s) << std::endl;
   }
   {
     auto s = test::tabPerson.isManager or test::tabPerson.isManager or test::tabPerson.isManager;
-    std::cout << s << std::endl;
+    std::cout << to_sql_string(context, s) << std::endl;
   }
   {
     auto s = test::tabPerson.isManager or test::tabPerson.isManager or
              (test::tabPerson.isManager and test::tabPerson.isManager);
-    std::cout << s << std::endl;
+    std::cout << to_sql_string(context, s) << std::endl;
   }
   {
     auto s = (test::tabPerson.isManager or test::tabPerson.isManager or test::tabPerson.isManager) and
              test::tabPerson.isManager;
-    std::cout << s << std::endl;
+    std::cout << to_sql_string(context, s) << std::endl;
   }
   {
     auto s = test::tabPerson.id + test::tabPerson.id + test::tabPerson.id;
-    std::cout << s << std::endl;
+    std::cout << to_sql_string(context, s) << std::endl;
   }
 #warning : need to test results
 }

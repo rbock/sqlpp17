@@ -7,7 +7,7 @@ If you really are in that situation, you could say
 
 case_when(q == 0).then(x.is_null()).else_(x == q)
 
-Or you might want to say 
+Or you might want to say
 
 case_when(cond).then(x == q).else_(true)
 
@@ -21,6 +21,11 @@ sqlpp11 has types like integral, text, boolean, etc. The library needs to define
 how these types interact.
 
 sqlpp17 simply uses whatever type you want.
+
+to_string instead of operator<<
+===============================
+Might be faster (no funny stream buffering).
+Certainly easier to use (string streams in particular need to be cleaned before re-use, which has proven to be annoying in testing)
 
 
 Selectable:

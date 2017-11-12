@@ -37,15 +37,15 @@ namespace sqlpp
     Expression _expression;
   };
 
-  template <typename Context, typename Expression>
-  decltype(auto) operator<<(Context& context, const on_t<Expression>& t)
+  template <typename DbConnection, typename Expression>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const on_t<Expression>& t)
   {
-    return context << " ON " << t._expression;
+    return std::string{" ON "} + to_sql_string(connection, t._expression);
   }
 
-  template <typename Context>
-  decltype(auto) operator<<(Context& context, const on_t<unconditional_t>& t)
+  template <typename DbConnection>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const on_t<unconditional_t>& t)
   {
-    return context;
+    return std::string{};
   }
-}
+}  // namespace sqlpp

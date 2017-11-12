@@ -34,10 +34,10 @@ namespace sqlpp
 
   constexpr auto all = all_t{};
 
-  template <typename Context>
-  decltype(auto) operator<<(Context& context, const all_t& t)
+  template <typename DbConnection>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const all_t& t)
   {
-    return context << " ALL ";
+    return std::string{" ALL "};
   }
 
   struct distinct_t
@@ -46,9 +46,9 @@ namespace sqlpp
 
   constexpr auto distinct = distinct_t{};
 
-  template <typename Context>
-  decltype(auto) operator<<(Context& context, const distinct_t& t)
+  template <typename DbConnection>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const distinct_t& t)
   {
-    return context << " DISTINCT ";
+    return std::string{" DISTINCT "};
   }
-}
+}  // namespace sqlpp

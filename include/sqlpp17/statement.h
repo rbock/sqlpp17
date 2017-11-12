@@ -166,10 +166,11 @@ namespace sqlpp
       return succeeded{};
   }
 
-  template <typename Context, typename... Clauses>
-  decltype(auto) operator<<(Context& context, const statement<Clauses...>& t)
+  template <typename DbConnection, typename... Clauses>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const statement<Clauses...>& t)
   {
-    return (context << ... << static_cast<const clause_base<Clauses, statement<Clauses...>>&>(t));
+    return (std::string{} + ... +
+            to_sql_string(connection, static_cast<const clause_base<Clauses, statement<Clauses...>>&>(t)));
   }
 
   template <typename... LClauses, typename... RClauses>
@@ -189,4 +190,4 @@ namespace sqlpp
       return ::sqlpp::bad_statement_t{check};
     }
   }
-}
+}  // namespace sqlpp

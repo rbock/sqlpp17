@@ -38,7 +38,7 @@ namespace sqlpp
     struct remove_table
     {
     };
-  }
+  }  // namespace clause
 
   template <typename Table>
   struct remove_table_t
@@ -65,10 +65,11 @@ namespace sqlpp
     Table _table;
   };
 
-  template <typename Context, typename Table, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<remove_table_t<Table>, Statement>& t)
+  template <typename DbConnection, typename Table, typename Statement>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection,
+                                   const clause_base<remove_table_t<Table>, Statement>& t)
   {
-    return context << " INTO " << t._table;
+    return std::to_sql_string(" FROM ") + to_sql_string(connection, t._table);
   }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_remove_table_arg_is_table, "remove_table() arg has to be a table");
@@ -126,10 +127,10 @@ namespace sqlpp
     }
   };
 
-  template <typename Context, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<no_remove_table_t, Statement>&)
+  template <typename DbConnection, typename Statement>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<no_remove_table_t, Statement>&)
   {
-    return context;
+    return std::string{};
   }
 
   template <typename Table>
@@ -137,4 +138,4 @@ namespace sqlpp
   {
     return statement<no_remove_table_t>{}.from(std::forward<Table>(t));
   }
-}
+}  // namespace sqlpp

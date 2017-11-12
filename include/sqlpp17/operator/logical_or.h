@@ -58,15 +58,15 @@ namespace sqlpp
   template <typename L, typename R>
   constexpr auto requires_braces_v<logical_or_t<L, R>> = true;
 
-  template <typename Context, typename L, typename R>
-  constexpr decltype(auto) operator<<(Context& context, const logical_or_t<L, R>& t)
+  template <typename DbConnection, typename L, typename R>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const logical_or_t<L, R>& t)
   {
-    return context << embrace(t.l) << " OR " << embrace(t.r);
+    return to_sql_string(connection, embrace(t.l)) + " OR " + to_sql_string(connection, embrace(t.r));
   }
 
-  template <typename Context, typename L1, typename R1, typename R2>
-  constexpr decltype(auto) operator<<(Context& context, const logical_or_t<logical_or_t<L1, R1>, R2>& t)
+  template <typename DbConnection, typename L1, typename R1, typename R2>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const logical_or_t<logical_or_t<L1, R1>, R2>& t)
   {
-    return context << t.l << " OR " << embrace(t.r);
+    return to_sql_string(connection, t.l) + " OR " + to_sql_string(connection, embrace(t.r));
   }
 }  // namespace sqlpp

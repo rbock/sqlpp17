@@ -56,7 +56,7 @@ namespace sqlpp
     struct select
     {
     };
-  }
+  }  // namespace clause
 
   struct select_t
   {
@@ -77,10 +77,10 @@ namespace sqlpp
     clause_base() = default;
   };
 
-  template <typename Context, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<select_t, Statement>& t)
+  template <typename DbConnection, typename Statement>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<select_t, Statement>& t)
   {
-    return context << "SELECT";
+    return std::string{"SELECT"};
   }
 
   // select with no args or an empty tuple yields a blank select statement
@@ -132,4 +132,4 @@ namespace sqlpp
       return ::sqlpp::bad_statement_t<typename select_failure<Fs...>::type>{};
     }
   }
-}
+}  // namespace sqlpp

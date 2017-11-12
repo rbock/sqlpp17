@@ -29,7 +29,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tuple>
 
 #include <sqlpp17/clause_fwd.h>
-#include <sqlpp17/detail/list_printer.h>
 #include <sqlpp17/statement.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
@@ -41,7 +40,7 @@ namespace sqlpp
     struct order_by
     {
     };
-  }
+  }  // namespace clause
 
   template <typename... Columns>
   struct order_by_t
@@ -70,13 +69,11 @@ namespace sqlpp
     std::tuple<Columns...> _columns;
   };
 
-  template <typename Context, typename... Columns, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<order_by_t<Columns...>, Statement>& t)
+  template <typename DbConnection, typename... Columns, typename Statement>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection,
+                                   const clause_base<order_by_t<Columns...>, Statement>& t)
   {
-    auto separate = detail::list_printer<Context>{context, ", "};
-    context << ' ';
-    (..., print(std::get<Columns>(t._columns)));
-    return context;
+    return std::string{" ORDER BY "} + list_to_string(connection, ", ", std::get<Columns>(t._columns)...);
   }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_order_by_args_not_empty, "order_by() must be called with at least one argument");
@@ -145,10 +142,10 @@ namespace sqlpp
     }
   };
 
-  template <typename Context, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<no_order_by_t, Statement>& t)
+  template <typename DbConnection, typename Statement>
+  decltype(auto) operator<<(const DbConnection& connection, const clause_base<no_order_by_t, Statement>& t)
   {
-    return context;
+    return connection;
   }
 
   template <typename... Expressions>
@@ -156,4 +153,4 @@ namespace sqlpp
   {
     return statement<no_order_by_t>{}.order_by(std::forward<Expressions>(expressions)...);
   }
-}
+}  // namespace sqlpp

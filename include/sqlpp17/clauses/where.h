@@ -65,10 +65,10 @@ namespace sqlpp
     Condition _condition;
   };
 
-  template <typename Context, typename Condition, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<where_t<Condition>, Statement>& t)
+  template <typename DbConnection, typename Condition, typename Statement>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<where_t<Condition>, Statement>& t)
   {
-    return context << " WHERE " << t._condition;
+    return std::string(" WHERE ") + to_sql_string(connection, t._condition);
   }
 
   struct unconditionally_t
@@ -92,10 +92,10 @@ namespace sqlpp
     }
   };
 
-  template <typename Context, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<unconditionally_t, Statement>& t)
+  template <typename DbConnection, typename Statement>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<unconditionally_t, Statement>& t)
   {
-    return context;
+    return std::string{};
   }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_where_arg_is_expression, "where() arg has to be a boolean expression");
@@ -157,10 +157,10 @@ namespace sqlpp
     }
   };
 
-  template <typename Context, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<no_where_t, Statement>&)
+  template <typename DbConnection, typename Statement>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<no_where_t, Statement>&)
   {
-    return context;
+    return std::string{};
   }
 
   template <typename Condition>

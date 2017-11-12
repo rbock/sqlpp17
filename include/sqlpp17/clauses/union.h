@@ -88,10 +88,11 @@ namespace sqlpp
     }
   };
 
-  template <typename Context, typename Flag, typename LeftSelect, typename RightSelect, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<union_t<Flag, LeftSelect, RightSelect>, Statement>& t)
+  template <typename DbConnection, typename Flag, typename LeftSelect, typename RightSelect, typename Statement>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection,
+                                   const clause_base<union_t<Flag, LeftSelect, RightSelect>, Statement>& t)
   {
-    return context << embrace(t._left) << " UNION " << embrace(t._right);
+    return to_sql_string(connection, embrace(t._left)) + " UNION " + to_sql_string(connection, embrace(t._right));
   }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_union_args_are_statements, "union_() args must be sql statements");
@@ -148,10 +149,10 @@ namespace sqlpp
     }
   };
 
-  template <typename Context, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<no_union_t, Statement>&)
+  template <typename DbConnection, typename Statement>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<no_union_t, Statement>&)
   {
-    return context;
+    return std::string{};
   }
 
   template <typename LeftSelect, typename RightSelect>

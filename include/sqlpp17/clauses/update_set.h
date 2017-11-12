@@ -29,7 +29,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tuple>
 
 #include <sqlpp17/clause_fwd.h>
-#include <sqlpp17/detail/list_printer.h>
 #include <sqlpp17/statement.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
@@ -90,13 +89,11 @@ namespace sqlpp
     }
   };
 
-  template <typename Context, typename... Assignments, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<update_set_t<Assignments...>, Statement>& t)
+  template <typename DbConnection, typename... Assignments, typename Statement>
+  decltype(auto) operator<<(const DbConnection& connection,
+                            const clause_base<update_set_t<Assignments...>, Statement>& t)
   {
-    auto print = detail::list_printer<Context>{context, ", "};
-    context << " SET ";
-    (..., print(std::get<Assignments>(t._assignments)));
-    return context;
+    return std::string{" SET "} + list_to_string(connection, ", ", std::get<Assignments>(t._assignments)...);
   }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_update_set_at_least_one_arg, "at least one assignment required in set()");
@@ -160,10 +157,10 @@ namespace sqlpp
     }
   };
 
-  template <typename Context, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<no_update_set_t, Statement>&)
+  template <typename DbConnection, typename Statement>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<no_update_set_t, Statement>&)
   {
-    return context;
+    return std::string{};
   }
 
   template <typename... Assignments>

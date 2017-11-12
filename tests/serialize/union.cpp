@@ -45,6 +45,7 @@ struct connection
 };
 int main()
 {
+  auto context = 0;
 /*
 std::cout << true
         << " As of now, I need to print a bool before I can print complex statements (don't ask me why, but "
@@ -62,7 +63,7 @@ sqlpp::select() << sqlpp::selected_fields(test::tabPerson.id, test::tabPerson.is
                          << sqlpp::having(test::tabPerson.id == test::tabPerson.id or test::tabPerson.id == 1);
                          */
 #warning : need to test results
-  std::cout << s;
+  std::cout << to_sql_string(context, s);
   auto conn = connection{};
   auto row = s.run(conn);
   /*

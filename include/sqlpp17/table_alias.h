@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2016 - 2017, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -40,16 +40,19 @@ namespace sqlpp
     Table _table;
   };
 
-  template <typename Context, typename Table, typename Alias, typename... ColumnSpecs>
-  decltype(auto) operator<<(Context& context, const table_alias_t<Table, Alias, ColumnSpecs...>& t)
+  template <typename DbConnection, typename Table, typename Alias, typename... ColumnSpecs>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const table_alias_t<Table, Alias, ColumnSpecs...>& t)
   {
+    auto ret = std::string{};
+
     if constexpr (requires_braces<Table>)
-      context << "(";
-    context << t._table;
+      ret += "(";
+    ret += to_sql_string(t._table);
     if constexpr (requires_braces<Table>)
-      context << ")";
-    context << " AS " << name_of_v<Alias>;
-    return context;
+      ret += ")";
+    ret += " AS " + name_of_v<Alias>;
+
+    return ret;
   }
 
   template <typename Table, typename Alias, typename... ColumnSpecs>

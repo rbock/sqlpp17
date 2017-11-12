@@ -34,15 +34,16 @@ namespace sqlpp
 {
   namespace detail
   {
+#warning : Do we need this?
     template <typename NamedExpr>
     class named_null_t
     {
     };
 
-    template <typename Context, typename NamedExpr>
-    decltype(auto) operator<<(Context& context, const named_null_t<NamedExpr>&)
+    template <typename DbConnection, typename NamedExpr>
+    [[nodiscard]] auto to_sql_string(const DbConnection& connection, const named_null_t<NamedExpr>&)
     {
-      return context << name_of_v<NamedExpr>;
+      return std::string{name_of_v<NamedExpr>};
     }
-  }
-}
+  }  // namespace detail
+}  // namespace sqlpp

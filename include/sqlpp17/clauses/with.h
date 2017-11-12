@@ -38,7 +38,7 @@ namespace sqlpp
     struct with
     {
     };
-  }
+  }  // namespace clause
 
   enum class with_mode
   {
@@ -68,12 +68,13 @@ namespace sqlpp
     std::tuple<CommonTableExpressions...> _ctes;
   };
 
-  template <typename Context, with_mode Mode, typename... CommonTableExpressions, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<with_t<Mode, CommonTableExpressions...>, Statement>& t)
+  template <typename DbConnection, with_mode Mode, typename... CommonTableExpressions, typename Statement>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection,
+                                   const clause_base<with_t<Mode, CommonTableExpressions...>, Statement>& t)
   {
 #warning : WITH cannot occur after a compound operator like UNION
 #warning : THis is not complete!
-    return context << "WITH ";
+    return std::string{"WITH "};
   }
 
 #warning : Need to add CTE checks for with
@@ -154,10 +155,10 @@ namespace sqlpp
     }
   };
 
-  template <typename Context, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<no_with_t, Statement>&)
+  template <typename DbConnection, typename Statement>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<no_with_t, Statement>&)
   {
-    return context;
+    return std::string{};
   }
 
   template <typename... CommonTableExpressions>
@@ -171,4 +172,4 @@ namespace sqlpp
   {
     return statement<no_with_t>{}.with(std::forward<CommonTableExpressions...>(ctes...));
   }
-}
+}  // namespace sqlpp

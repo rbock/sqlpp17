@@ -100,10 +100,10 @@ namespace sqlpp
     }
   };
 
-  template <typename Context, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<erase_t, Statement>& t)
+  template <typename DbConnection, typename Statement>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<erase_t, Statement>& t)
   {
-    return context << "DELETE";
+    return std::string{"DELETE"};
   }
 
   [[nodiscard]] constexpr auto erase()

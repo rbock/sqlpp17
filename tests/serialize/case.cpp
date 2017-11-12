@@ -34,10 +34,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 int main()
 {
+  auto context = 0;
   using test::tabPerson;
   constexpr auto c = case_when(tabPerson.id % 3 == 2, then(tabPerson.id > 7))
                          .when(tabPerson.id % 3 == 1, then(tabPerson.id > 9))
                          .else_(tabPerson.id > 17);
-  std::cout << c << std::endl;
+  std::cout << to_sql_string(context, c) << std::endl;
 #warning : need to test results
 }

@@ -56,9 +56,9 @@ namespace sqlpp
   template <typename L, typename R>
   constexpr auto requires_braces_v<greater_equal_t<L, R>> = true;
 
-  template <typename Context, typename L, typename R>
-  constexpr decltype(auto) operator<<(Context& context, const greater_equal_t<L, R>& t)
+  template <typename DbConnection, typename L, typename R>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const greater_equal_t<L, R>& t)
   {
-    return context << embrace(t.l) << " = " << embrace(t.r);
+    return to_sql_string(connection, embrace(t.l)) + " >= " + to_sql_string(connection, embrace(t.r));
   }
 }  // namespace sqlpp

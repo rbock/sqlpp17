@@ -34,13 +34,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 int main()
 {
 #warning : s should be a constexpr
+  auto context = 0;
   {
     auto s = test::tabPerson.join(test::tabDepartment).unconditionally();
-    std::cout << s << std::endl;
+    std::cout << to_sql_string(context, s) << std::endl;
   }
   {
     auto s = test::tabPerson.join(false ? std::make_optional(test::tabDepartment) : std::nullopt).unconditionally();
-    std::cout << s << std::endl;
+    std::cout << to_sql_string(context, s) << std::endl;
   }
 #warning : need to test results
 }

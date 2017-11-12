@@ -29,7 +29,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tuple>
 
 #include <sqlpp17/clause_fwd.h>
-#include <sqlpp17/detail/list_printer.h>
 #include <sqlpp17/result_row.h>
 #include <sqlpp17/statement.h>
 #include <sqlpp17/type_traits.h>
@@ -42,7 +41,7 @@ namespace sqlpp
     struct select_flags
     {
     };
-  }
+  }  // namespace clause
 
   template <typename... Flags>
   struct select_flags_t
@@ -69,13 +68,11 @@ namespace sqlpp
     std::tuple<Flags...> _flags;
   };
 
-  template <typename Context, typename... Flags, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<select_flags_t<Flags...>, Statement>& t)
+  template <typename DbConnection, typename... Flags, typename Statement>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection,
+                                   const clause_base<select_flags_t<Flags...>, Statement>& t)
   {
-    auto separate = detail::list_printer<Context>{context, " "};
-    context << ' ';
-    (..., print(std::get<Flags>(t._flags)));
-    return context;
+    return (std::string{} + ... + to_sql_string(connection, std::get<Flags>(t._flags)));
   }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_select_flags_args_are_valid, "select flags() args must be valid select_flags");
@@ -140,10 +137,10 @@ namespace sqlpp
     }
   };
 
-  template <typename Context, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<no_select_flags_t, Statement>& t)
+  template <typename DbConnection, typename Statement>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<no_select_flags_t, Statement>& t)
   {
-    return context;
+    return std::string{};
   }
 
   template <typename... Fields>
@@ -151,4 +148,4 @@ namespace sqlpp
   {
     return statement<no_select_flags_t>{}.flags(std::forward<Fields>(flags)...);
   }
-}
+}  // namespace sqlpp

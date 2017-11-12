@@ -1,7 +1,5 @@
-#pragma once
-
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2016 - 2017, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,35 +24,32 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/type_traits.h>
+#include <iostream>
 
-namespace sqlpp
+#include <sqlpp17/to_sql_string.h>
+
+int main()
 {
-  namespace detail
-  {
-    template <typename Context>
-    struct insert_value_printer
-    {
-      Context& context;
-      bool is_first = true;
+  auto context = 0;
 
-      template <typename Expr>
-      auto operator()(const Expr& expr) -> void
-      {
-        if (is_first)
-          is_first = false;
-        else
-          context << ", ";
+  std::cout << sqlpp::to_sql_string(context, true) << std::endl;
+  std::cout << sqlpp::to_sql_string(context, false) << std::endl;
 
-        if (expr.has_value())
-        {
-          context << get_value(expr);
-        }
-        else
-        {
-          context << "default";
-        }
-      }
-    };
-  }
+  std::cout << sqlpp::to_sql_string(context, 1234567890) << std::endl;
+  std::cout << sqlpp::to_sql_string(context, 42) << std::endl;
+  std::cout << sqlpp::to_sql_string(context, 0) << std::endl;
+
+  std::cout << sqlpp::to_sql_string(context, 12345678901234567890ull) << std::endl;
+  std::cout << sqlpp::to_sql_string(context, 42ull) << std::endl;
+  std::cout << sqlpp::to_sql_string(context, 0ull) << std::endl;
+
+  std::cout << sqlpp::to_sql_string(context, 1234567890.1234567890) << std::endl;
+  std::cout << sqlpp::to_sql_string(context, -1234567890.1234567890) << std::endl;
+
+  std::cout << sqlpp::to_sql_string(context, 'c') << std::endl;
+  std::cout << sqlpp::to_sql_string(context, "char*") << std::endl;
+  std::cout << sqlpp::to_sql_string(context, std::string_view("string_view")) << std::endl;
+  std::cout << sqlpp::to_sql_string(context, std::string("string")) << std::endl;
+
+#warning : need to test results
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2016 - 2017, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,37 +26,13 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <utility>
-#include <sqlpp17/type_traits.h>
+#include <string>
 
 namespace sqlpp
 {
-  namespace detail
+  template <typename DbConnection>
+  [[nodiscard]] auto name_to_sql_string(const DbConnection& connection, const char* const name)
   {
-    template <typename Context>
-    struct list_printer
-    {
-      Context& context;
-      const char* sep;
-      bool is_first = true;
-
-      template <typename Expr>
-      auto operator()(const Expr& expr) -> void
-      {
-        if (is_first)
-          is_first = false;
-        else
-          context << sep;
-
-        context << expr;
-      }
-
-      template <typename Expr>
-      decltype(auto) operator()(const std::optional<Expr>& expr)
-      {
-        if (expr.has_value())
-          operator()(expr.value());
-      }
-    };
-  }  // namespace detail
+    return std::string{name};
+  }
 }  // namespace sqlpp

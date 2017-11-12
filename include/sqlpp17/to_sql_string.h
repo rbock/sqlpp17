@@ -26,40 +26,53 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <type_traits>
-#include <sqlpp17/operator_fwd.h>
-#include <sqlpp17/type_traits.h>
+#include <iomanip>
+#include <optional>
+#include <sstream>
+#include <string>
 
 namespace sqlpp
 {
-  template <typename L, typename R>
-  struct bit_xor_t
+  template <typename DbConnection, typename T>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const std::optional<T>& o)
   {
-    L l;
-    R r;
-  };
-
-  template <typename L, typename R>
-  constexpr auto operator^(L l, R r)
-      -> std::enable_if_t<has_integral_value_v<L> and has_integral_value_v<R>, bit_xor_t<L, R>>
-  {
-    return bit_xor_t<L, R>{l, r};
+    return o ? to_sql_string(connection, o.value()) : "NULL";
   }
 
-  template <typename L, typename R>
-  struct value_type_of<bit_xor_t<L, R>>
+  template <typename DbConnection>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const char& c)
   {
-    using type = integral_t;
-  };
-
-  template <typename L, typename R>
-  constexpr auto requires_braces_v<bit_xor_t<L, R>> = true;
-
-  template <typename DbConnection, typename L, typename R>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const bit_xor_t<L, R>& t)
-  {
-#warning : postgresql is using '#' instead ('^' is for exponent)
-    return to_sql_string(connection, embrace(t.l)) + " ^ " + to_sql_string(connection, embrace(t.r));
+    return std::string(1, c);
   }
 
+  template <typename DbConnection>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const std::string_view& s)
+  {
+    auto ret = std::string{"'"};
+    for (const auto c : s)
+    {
+      if (c == '\'')
+        ret.push_back(c);  // Escaping
+      ret.push_back(c);
+    }
+    ret.push_back('\'');
+    return ret;
+  }
+
+  template <typename DbConnection, typename T>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const T& i)
+      -> std::enable_if_t<std::is_integral_v<T>, std::string>
+  {
+    return std::to_string(i);
+  }
+
+  template <typename DbConnection, typename T>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const T& f)
+      -> std::enable_if_t<std::is_floating_point_v<T>, std::string>
+  {
+    // TODO: Once gcc and clang support to_chars, try that
+    auto oss = std::ostringstream{};
+    oss << std::setprecision(std::numeric_limits<long double>::digits10 + 1) << f;
+    return oss.str();
+  }
 }  // namespace sqlpp
