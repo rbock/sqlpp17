@@ -182,3 +182,23 @@ CTE:
 CTEs can be self-referential. In order to do that, we need to know the columns of a CTE.
 
 Thus, we need to create the non-recursive part first and then union-all with the second part.
+
+
+MYSQL:
+======
+MySQL requires three resources to be managed:
+
+a) mysql_library_init/mysql_library_end:
+   These are not thread safe.
+	 => Provide an RAII struct that can be used as a global static
+	 => Even better: Provide a function with a static member that initializes that RAII struct
+b) mysql_thread_init/mysql_thread_end
+   These must be called once per thread
+	 => Offer thread local storage raii (this would be the default)
+	 => Offer a way to turn off the thread local storage raii
+c) new/delete MYSQL, mysql_init/mysql_close
+   => offer a connection raii object
+
+Offer a connection_view which takes a MYSQL connection pointer and assumes that it is initialized and threading is taken care of.
+
+

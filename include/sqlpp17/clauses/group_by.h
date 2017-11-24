@@ -71,7 +71,6 @@ namespace sqlpp
   [[nodiscard]] auto to_sql_string(const DbConnection& connection,
                                    const clause_base<group_by_t<Columns...>, Statement>& t)
   {
-#warning : There was a function print being called here. Is it still around?
     return std::string{" "} + list_to_string(connection, ", ", std::get<Columns>(t._columns)...);
   }
 

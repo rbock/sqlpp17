@@ -26,61 +26,9 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/result.h>
-#include <sqlpp17/statement.h>
+#include <sqlpp17/bad_statement.h>
+#include <sqlpp17/wrapped_static_assert.h>
 
-namespace test
-{
-  class mock_handle
-  {
-  };
+// binary
+#include <sqlpp17/operator/bit_xor.h>
 
-  template <typename Row>
-  void get_next_result_row(std::unique_ptr<mock_handle>& handle, Row& row)
-  {
-    handle.reset();  // indicates that there are no more result rows to be read
-  }
-
-  class mock_db
-  {
-    template <typename... Clauses>
-    friend class ::sqlpp::statement;
-
-    template <typename Clause, typename Statement>
-    friend class ::sqlpp::result_base;
-
-  public:
-    template <typename Statement>
-    auto operator()(const Statement& statement)
-    {
-      // Need to do a final consistency check here
-      return statement.run(*this);
-    }
-
-  private:
-    template <typename Statement>
-    auto insert(const Statement& statement)
-    {
-      return 0ull;
-    }
-
-    template <typename Statement>
-    auto update(const Statement& statement)
-    {
-      return 0ull;
-    }
-
-    template <typename Statement>
-    auto erase(const Statement& statement)
-    {
-      return 0ull;
-    }
-
-    template <typename Statement>
-    auto select(const Statement& statement)
-    {
-      return ::sqlpp::result_t<typename Statement::_result_row_t, mock_handle>{std::make_unique<mock_handle>()};
-    }
-  };
-
-}  // namespace test

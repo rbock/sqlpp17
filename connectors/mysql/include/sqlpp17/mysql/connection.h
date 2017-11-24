@@ -26,30 +26,37 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/result.h>
-#include <sqlpp17/statement.h>
+#include <type_traits>
+#include <sqlpp17/type_vector.h>
+#include <sqlpp17/wrong.h>
 
-namespace test
+namespace sqlpp::mysql::detail
 {
-  class mock_handle
+  auto get_handle(const connection_config& config) -> std::unique_ptr<MYSQL, void (*)(MYSQL*)>;
+}
+
+namespace sqlpp::mysql
+{
+  class connection
   {
-  };
-
-  template <typename Row>
-  void get_next_result_row(std::unique_ptr<mock_handle>& handle, Row& row)
-  {
-    handle.reset();  // indicates that there are no more result rows to be read
-  }
-
-  class mock_db
-  {
-    template <typename... Clauses>
-    friend class ::sqlpp::statement;
-
-    template <typename Clause, typename Statement>
-    friend class ::sqlpp::result_base;
-
   public:
+    connection() = delete;
+
+    connection(const connection_config& config) : _handle(detail::get_handle(config))
+    {
+    }
+
+    template <typename Destructor>
+    connection(unique_ptr<MYSQL, Destructor>&& handle) : _handle(std::move(handle))
+    {
+    }
+
+    connection(const connection&) = delete;
+    connection(connection&&) = default;
+    connection& operator=(const connection&) = delete;
+    connection& operator=(connection&&) = default;
+    ~connection() = default;
+
     template <typename Statement>
     auto operator()(const Statement& statement)
     {
@@ -61,26 +68,32 @@ namespace test
     template <typename Statement>
     auto insert(const Statement& statement)
     {
+#warning implement
       return 0ull;
     }
 
     template <typename Statement>
     auto update(const Statement& statement)
     {
+#warning implement
       return 0ull;
     }
 
     template <typename Statement>
     auto erase(const Statement& statement)
     {
+#warning implement
       return 0ull;
     }
 
     template <typename Statement>
-    auto select(const Statement& statement)
+    [[nodiscard]] auto select(const Statement& statement)
     {
+#warning implement
       return ::sqlpp::result_t<typename Statement::_result_row_t, mock_handle>{std::make_unique<mock_handle>()};
     }
+
+    std::unique_ptr<MYSQL, void (*)(MYSQL*)> _handle;
   };
 
-}  // namespace test
+}  // namespace sqlpp::mysql

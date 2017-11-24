@@ -58,7 +58,6 @@ namespace sqlpp
   template <typename DbConnection, typename L, typename R>
   [[nodiscard]] auto to_sql_string(const DbConnection& connection, const bit_xor_t<L, R>& t)
   {
-#warning : postgresql is using '#' instead ('^' is for exponent)
     return to_sql_string(connection, embrace(t.l)) + " ^ " + to_sql_string(connection, embrace(t.r));
   }
 

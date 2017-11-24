@@ -165,42 +165,12 @@ namespace sqlpp
     }
   };
 
-  namespace detail
-  {
-    template <typename DbConnection>
-    struct multi_row_insert_column_printer
-    {
-      const DbConnection& connection;
-      bool is_first = true;
-
-      template <typename Expr>
-      decltype(auto) operator()(const Expr& expr)
-      {
-        if (is_first)
-          is_first = false;
-        else
-          connection << ", ";
-        if constexpr (is_optional_f(expr))
-        {
-          if (expr.has_value())
-          {
-            connection << expr.value();
-          }
-          else
-          {
-            connection << "default";
-          }
-        }
-      }
-    };
-
-  }  // namespace detail
-
+  // this function assumes that there is something to do
+  // the check if there is at least one row has to be performed elsewhere
   template <typename DbConnection, typename Statement, typename... Assignments>
-  decltype(auto) operator<<(const DbConnection& connection,
-                            const clause_base<insert_multi_values_t<Assignments...>, Statement>& t)
+  [[nodiscard]] auto to_string(const DbConnection& connection,
+                               const clause_base<insert_multi_values_t<Assignments...>, Statement>& t)
   {
-    // the _run function is responsible for treating empty rows
     auto ret = std::string{};
 
     // columns

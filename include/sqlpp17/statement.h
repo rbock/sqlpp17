@@ -27,9 +27,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/algorithm.h>
+#include <sqlpp17/bad_statement.h>
 #include <sqlpp17/clause_fwd.h>
 #include <sqlpp17/detail/statement_constructor_arg.h>
+#include <sqlpp17/succeeded.h>
 #include <sqlpp17/type_traits.h>
+#include <sqlpp17/wrapped_static_assert.h>
 
 namespace sqlpp
 {

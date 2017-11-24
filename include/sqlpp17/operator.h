@@ -51,7 +51,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/operator/plus.h>
 
 // binary
-#warning : Is that part of the SQL standard?
 #include <sqlpp17/operator/bit_and.h>
 #include <sqlpp17/operator/bit_or.h>
 #include <sqlpp17/operator/bit_xor.h>

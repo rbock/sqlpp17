@@ -26,61 +26,40 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/result.h>
-#include <sqlpp17/statement.h>
-
-namespace test
+namespace sqlpp::mysql::detail
 {
-  class mock_handle
+  void handle_cleanup(MYSQL* mysql)
   {
-  };
+    mysql_close(mysql);
+    delete mysql;
+  }
+}  // namespace sqlpp::mysql::detail
 
-  template <typename Row>
-  void get_next_result_row(std::unique_ptr<mock_handle>& handle, Row& row)
+namespace sqlpp::mysql
+{
+  connection_handle_t::connection_handle_t(const std::shared_ptr<connection_config>& conf)
+      : config(conf), mysql(mysql_init(nullptr), handle_cleanup)
   {
-    handle.reset();  // indicates that there are no more result rows to be read
+    if (not mysql)
+    {
+      throw sqlpp::exception("MySQL: could not init mysql data structure");
+    }
+
+    if (config->auto_reconnect)
+    {
+      my_bool my_true = true;
+      if (mysql_options(mysql.get(), MYSQL_OPT_RECONNECT, &my_true))
+      {
+        throw sqlpp::exception("MySQL: could not set option MYSQL_OPT_RECONNECT");
+      }
+    }
+
+    if (!mysql_real_connect(mysql.get(), config->host.empty() ? nullptr : config->host.c_str(),
+                            config->user.empty() ? nullptr : config->user.c_str(),
+                            config->password.empty() ? nullptr : config->password.c_str(), nullptr, config->port,
+                            config->unix_socket.empty() ? nullptr : config->unix_socket.c_str(), config->client_flag))
+    {
+      throw sqlpp::exception("MySQL: could not connect to server: " + std::string(mysql_error(mysql.get())));
+    }
   }
 
-  class mock_db
-  {
-    template <typename... Clauses>
-    friend class ::sqlpp::statement;
-
-    template <typename Clause, typename Statement>
-    friend class ::sqlpp::result_base;
-
-  public:
-    template <typename Statement>
-    auto operator()(const Statement& statement)
-    {
-      // Need to do a final consistency check here
-      return statement.run(*this);
-    }
-
-  private:
-    template <typename Statement>
-    auto insert(const Statement& statement)
-    {
-      return 0ull;
-    }
-
-    template <typename Statement>
-    auto update(const Statement& statement)
-    {
-      return 0ull;
-    }
-
-    template <typename Statement>
-    auto erase(const Statement& statement)
-    {
-      return 0ull;
-    }
-
-    template <typename Statement>
-    auto select(const Statement& statement)
-    {
-      return ::sqlpp::result_t<typename Statement::_result_row_t, mock_handle>{std::make_unique<mock_handle>()};
-    }
-  };
-
-}  // namespace test
