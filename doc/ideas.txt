@@ -202,3 +202,7 @@ c) new/delete MYSQL, mysql_init/mysql_close
 Offer a connection_view which takes a MYSQL connection pointer and assumes that it is initialized and threading is taken care of.
 
 
+Auto-reconnect needs to be turned off by default. It is just too crazy.
+Transactions are lost, session settings are lost, prepared statements are lost
+see https://dev.mysql.com/doc/refman/5.7/en/c-api-auto-reconnect.html
+
