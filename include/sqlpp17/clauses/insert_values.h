@@ -33,6 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/detail/first.h>
 #include <sqlpp17/exception.h>
 #include <sqlpp17/statement.h>
+#include <sqlpp17/tuple_to_sql_string.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
 
@@ -78,14 +79,14 @@ namespace sqlpp
     // columns
     {
       ret += " (";
-      ret += list_to_string(connection, ", ", std::get<Assignments>(t._assignments).column...);
+      ret += tuple_to_sql_string(connection, ", ", std::tie(std::get<Assignments>(t._assignments).column...));
       ret += ")";
     }
 
     // values
     {
       ret += " VALUES (";
-      ret += list_to_string(connection, ", ", std::get<Assignments>(t._assignments).value...);
+      ret += tuple_to_sql_string(connection, ", ", std::tie(std::get<Assignments>(t._assignments).value...));
       ret += ")";
     }
 
@@ -177,7 +178,7 @@ namespace sqlpp
     // columns
     {
       ret += " (";
-      ret += list_to_string(connection, ", ", std::get<Assignments>(t._assignments).column...);
+      ret += tuple_to_sql_string(connection, ", ", std::tie(std::get<Assignments>(t._assignments).column...));
       ret += ")";
     }
 
@@ -191,7 +192,7 @@ namespace sqlpp
           ret += ", ";
         first = false;
         ret += "(";
-        ret += list_to_string(connection, ", ", std::get<Assignments>(t._assignments).value...);
+        ret += tuple_to_sql_string(connection, ", ", std::tie(std::get<Assignments>(t._assignments).value...));
         ret += ")";
       }
     }
@@ -214,7 +215,7 @@ namespace sqlpp
   template <typename... Assignments>
   constexpr auto check_insert_set_args()
   {
-    if constexpr (sizeof...(Assignments))
+    if constexpr (sizeof...(Assignments) == 0)
     {
       return failed<assert_insert_set_at_least_one_arg>{};
     }
@@ -226,7 +227,7 @@ namespace sqlpp
     {
       return failed<assert_insert_set_args_contain_no_duplicates>{};
     }
-    else if constexpr (!(true && ... && is_insert_allowed_v<column_of_t<Assignments>>))
+    else if constexpr ((false || ... || must_not_insert_v<column_of_t<Assignments>>))
     {
       return failed<assert_insert_set_assignments_are_allowed>{};
     }
@@ -234,8 +235,8 @@ namespace sqlpp
     {
       return failed<assert_insert_set_args_affect_single_table>{};
     }
-    else if constexpr (type_set<column_of_t<Assignments>...>() >=
-                       required_insert_columns_of_v<table_spec_of_t<detail::first_t<Assignments...>>>)
+    else if constexpr (not(type_set<column_of_t<Assignments>...>() >=
+                           required_insert_columns_of_v<table_spec_of_t<detail::first_t<Assignments...>>>))
     {
       return failed<assert_insert_set_is_not_missing_assignment>{};
     }
@@ -270,7 +271,7 @@ namespace sqlpp
       if constexpr (check)
       {
         using row_t = std::tuple<Assignments...>;
-        return Statement::replace_clause(this, insert_values_t<row_t>{row_t{assignments...}});
+        return Statement::replace_clause(this, insert_values_t<Assignments...>{row_t{assignments...}});
       }
       else
       {

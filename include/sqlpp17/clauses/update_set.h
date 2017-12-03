@@ -30,6 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/clause_fwd.h>
 #include <sqlpp17/statement.h>
+#include <sqlpp17/tuple_to_sql_string.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
 
@@ -93,7 +94,8 @@ namespace sqlpp
   decltype(auto) operator<<(const DbConnection& connection,
                             const clause_base<update_set_t<Assignments...>, Statement>& t)
   {
-    return std::string{" SET "} + list_to_string(connection, ", ", std::get<Assignments>(t._assignments)...);
+    return std::string{" SET "} +
+           tuple_to_sql_string(connection, ", ", std::tie(std::get<Assignments>(t._assignments)...));
   }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_update_set_at_least_one_arg, "at least one assignment required in set()");

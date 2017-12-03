@@ -138,7 +138,7 @@ namespace sqlpp
   [[nodiscard]] auto to_sql_string(const DbConnection& connection,
                                    const clause_base<select_columns_t<Columns...>, Statement>& t)
   {
-    return " " + tuple_to_string(connection, ", ", t._columns);
+    return " " + tuple_to_sql_string(connection, ", ", t._columns);
   }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_select_columns_args_not_empty,

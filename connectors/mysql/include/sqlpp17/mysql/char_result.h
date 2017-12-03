@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <functional>
 #include <memory>
+#include <optional>
 #include <string_view>
 
 #include <mysql.h>
@@ -81,6 +82,11 @@ namespace sqlpp ::mysql
       return _data;
     }
 
+    auto* get_lengths() const
+    {
+      return _lengths;
+    }
+
     auto debug() const
     {
       return _debug;
@@ -105,7 +111,9 @@ namespace sqlpp ::mysql
     }
   }
 
-  auto bind_field(char_result_t& result, std::int64_t& value, size_t index) -> void;
+  auto bind_field(char_result_t& result, std::int64_t& value, std::size_t index) -> void;
+  auto bind_field(char_result_t& result, std::string_view& value, std::size_t index) -> void;
+  auto bind_field(char_result_t& result, std::optional<std::string_view>& value, std::size_t index) -> void;
 
 }  // namespace sqlpp::mysql
 

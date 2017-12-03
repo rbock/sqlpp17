@@ -34,10 +34,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace sqlpp ::detail
 {
   template <typename DbConnection, typename... Ts, std::size_t... Is>
-  [[nodiscard]] auto tuple_to_string_impl(const DbConnection& connection,
-                                          const std::string& separator,
-                                          const std::tuple<Ts...>& t,
-                                          std::integer_sequence<std::size_t, Is...>)
+  [[nodiscard]] auto tuple_to_sql_string_impl(const DbConnection& connection,
+                                              const std::string& separator,
+                                              const std::tuple<Ts...>& t,
+                                              std::integer_sequence<std::size_t, Is...>)
   {
     return (std::string{} + ... + ((Is ? separator : "") + to_sql_string(connection, std::get<Is>(t))));
   }
@@ -46,10 +46,10 @@ namespace sqlpp ::detail
 namespace sqlpp
 {
   template <typename DbConnection, typename... Ts>
-  [[nodiscard]] auto tuple_to_string(const DbConnection& connection,
-                                     const std::string& separator,
-                                     const std::tuple<Ts...>& t)
+  [[nodiscard]] auto tuple_to_sql_string(const DbConnection& connection,
+                                         const std::string& separator,
+                                         const std::tuple<Ts...>& t)
   {
-    return detail::tuple_to_string_impl(connection, separator, t, std::make_index_sequence<sizeof...(Ts)>());
+    return detail::tuple_to_sql_string_impl(connection, separator, t, std::make_index_sequence<sizeof...(Ts)>());
   }
 }  // namespace sqlpp

@@ -30,6 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/clause_fwd.h>
 #include <sqlpp17/statement.h>
+#include <sqlpp17/tuple_to_sql_string.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
 
@@ -71,7 +72,7 @@ namespace sqlpp
   [[nodiscard]] auto to_sql_string(const DbConnection& connection,
                                    const clause_base<group_by_t<Columns...>, Statement>& t)
   {
-    return std::string{" "} + list_to_string(connection, ", ", std::get<Columns>(t._columns)...);
+    return std::string{" "} + tuple_to_sql_string(connection, ", ", std::tie(std::get<Columns>(t._columns)...));
   }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_group_by_args_not_empty, "group_by() must be called with at least one argument");

@@ -65,13 +65,18 @@ int main()
     db.execute(R"(DROP TABLE IF EXISTS tab_department)");
     db.execute(R"(CREATE TABLE tab_department (
 			id bigint(20) AUTO_INCREMENT,
+			name varchar(255),
 			PRIMARY KEY (id)
 			))");
 
     auto id = db(sqlpp::insert().into(test::tabDepartment).default_values());
-    for (const auto& row : db(sqlpp::select(test::tabDepartment.id).from(test::tabDepartment).unconditionally()))
+    id = db(sqlpp::insert().into(test::tabDepartment).set(test::tabDepartment.name = "hansi"));
+
+    for (const auto& row : db(sqlpp::select(test::tabDepartment.id, test::tabDepartment.name)
+                                  .from(test::tabDepartment)
+                                  .unconditionally()))
     {
-      std::cout << row.id << std::endl;
+      std::cout << row.id << ", " << row.name.value_or("NULL") << std::endl;
     }
   }
   catch (const std::exception& e)

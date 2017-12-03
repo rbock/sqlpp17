@@ -64,6 +64,7 @@ int main()
     db.execute(R"(DROP TABLE IF EXISTS tab_department)");
     db.execute(R"(CREATE TABLE tab_department (
 			id bigint(20) AUTO_INCREMENT,
+			name varchar(255) NOT NULL,
 			PRIMARY KEY (id)
 			))");
 

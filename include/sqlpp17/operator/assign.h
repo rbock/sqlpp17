@@ -34,14 +34,14 @@ namespace sqlpp
   template <typename L, typename R>
   struct assign_t
   {
-    L l;
-    R r;
+    L column;
+    R value;
   };
 
   template <typename L, typename R>
-  constexpr auto assign(L l, R r) -> std::enable_if_t<are_value_types_comparable_v<L, R>, assign_t<L, R>>
+  constexpr auto assign(L column, R value) -> std::enable_if_t<are_value_types_comparable_v<L, R>, assign_t<L, R>>
   {
-    return assign_t<L, R>{l, r};
+    return assign_t<L, R>{column, value};
   }
 
   template <typename L, typename R>
@@ -59,6 +59,6 @@ namespace sqlpp
   template <typename DbConnection, typename L, typename R>
   [[nodiscard]] auto to_sql_string(const DbConnection& connection, const assign_t<L, R>& t)
   {
-    return to_sql_string(connection, t.l) + " = " + to_sql_string(connection, embrace(t.r));
+    return to_sql_string(connection, t.column) + " = " + to_sql_string(connection, embrace(t.value));
   }
 }  // namespace sqlpp

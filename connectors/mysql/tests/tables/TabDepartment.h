@@ -42,6 +42,13 @@ namespace test
       static constexpr auto tags = sqlpp::tag::must_not_insert | sqlpp::tag::must_not_update | sqlpp::tag::has_default;
     };
 
+    struct Name
+    {
+      SQLPP_ALIAS(name)
+      using value_type = std::optional<std::string_view>;
+      static constexpr auto tags = sqlpp::tag::none;
+    };
+
     struct _
     {
       struct _alias_t
@@ -56,5 +63,6 @@ namespace test
     };
   }  // namespace TabDepartment_
 
-  inline constexpr auto tabDepartment = sqlpp::table_t<TabDepartment_::_, TabDepartment_::Id>{};
+  inline constexpr auto tabDepartment = sqlpp::table_t<TabDepartment_::_, TabDepartment_::Id, TabDepartment_::Name>{};
+
 }  // namespace test

@@ -40,13 +40,42 @@ namespace sqlpp::mysql::detail
   }
 }  // namespace sqlpp::mysql::detail
 
+namespace
+{
+  auto assert_row(sqlpp::mysql::char_result_t& result) -> void
+  {
+    if (!result.get_data())
+      throw std::logic_error("Trying to obtain value from non-existing row");
+  }
+
+  auto assert_field(sqlpp::mysql::char_result_t& result, std::size_t index) -> void
+  {
+    assert_row(result);
+    if (!result.get_data()[index])
+      throw std::logic_error("Trying to obtain NULL for non-nullable value");
+  }
+}  // namespace
+
 namespace sqlpp::mysql
 {
-  auto bind_field(char_result_t& result, std::int64_t& value, size_t index) -> void
+  auto bind_field(char_result_t& result, std::int64_t& value, std::size_t index) -> void
   {
-    const auto* data = result.get_data();
-    if (!(data and data[index]))
-      throw std::logic_error("Trying to obtain NULL for non-nullable value");
-    value = std::strtoll(data[index], nullptr, 10);
+    assert_field(result, index);
+    value = std::strtoll(result.get_data()[index], nullptr, 10);
+  }
+
+  auto bind_field(char_result_t& result, std::string_view& value, std::size_t index) -> void
+  {
+    assert_field(result, index);
+    value = std::string_view(result.get_data()[index], result.get_lengths()[index]);
+  }
+
+  auto bind_field(char_result_t& result, std::optional<std::string_view>& value, std::size_t index) -> void
+  {
+    assert_row(result);
+    value =
+        result.get_data()[index]
+            ? std::optional<std::string_view>{std::string_view(result.get_data()[index], result.get_lengths()[index])}
+            : std::nullopt;
   }
 }  // namespace sqlpp::mysql

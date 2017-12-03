@@ -106,9 +106,6 @@ namespace sqlpp
   constexpr auto provided_aggregates_v = type_set_t<>{};
 
   template <typename T>
-  constexpr auto is_insert_allowed_v = false;
-
-  template <typename T>
   constexpr auto is_insert_required_v = false;
 
   template <typename T>
