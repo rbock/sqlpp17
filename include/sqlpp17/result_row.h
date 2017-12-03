@@ -31,8 +31,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace sqlpp
 {
   template <typename... ColumnSpecs>
-  struct result_row_t : result_column_base<ColumnSpecs>...
+  class result_row_t : public result_column_base<ColumnSpecs>...
   {
+  public:
+    template <typename ResultRow>
+    auto bind(ResultRow& row) -> void
+    {
+      std::size_t index = 0;
+      (bind_field(row, result_column_base<ColumnSpecs>::operator()(), index++), ...);
+    }
   };
 
   template <typename... LeftColumnSpecs, typename... RightColumnSpecs>

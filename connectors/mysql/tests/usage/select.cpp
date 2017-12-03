@@ -26,6 +26,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <iostream>
 
+#include <sqlpp17/clauses/insert.h>
 #include <sqlpp17/clauses/select.h>
 
 #include <sqlpp17/mysql/connection.h>
@@ -67,6 +68,7 @@ int main()
 			PRIMARY KEY (id)
 			))");
 
+    auto id = db(sqlpp::insert().into(test::tabDepartment).default_values());
     for (const auto& row : db(sqlpp::select(test::tabDepartment.id).from(test::tabDepartment).unconditionally()))
     {
       std::cout << row.id << std::endl;

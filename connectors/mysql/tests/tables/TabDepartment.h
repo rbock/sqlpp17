@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <cstdint>
 
+#include <sqlpp17/alias_provider.h>
 #include <sqlpp17/table.h>
 
 namespace test
@@ -36,15 +37,7 @@ namespace test
   {
     struct Id
     {
-      struct _alias_t
-      {
-        static constexpr char name[] = "id";
-        template <typename T>
-        struct _member_t
-        {
-          T id;
-        };
-      };
+      SQLPP_ALIAS(id)
       using value_type = std::int64_t;
       static constexpr auto tags = sqlpp::tag::must_not_insert | sqlpp::tag::must_not_update | sqlpp::tag::has_default;
     };

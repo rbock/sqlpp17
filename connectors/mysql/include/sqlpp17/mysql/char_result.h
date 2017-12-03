@@ -76,6 +76,11 @@ namespace sqlpp ::mysql
       return _handle.get();
     }
 
+    auto* get_data() const
+    {
+      return _data;
+    }
+
     auto debug() const
     {
       return _debug;
@@ -92,14 +97,15 @@ namespace sqlpp ::mysql
   {
     if (detail::get_next_result_row(result))
     {
-#warning implement
-      // row.bind(result);
+      row.bind(result);
     }
     else
     {
       result.invalidate();
     }
   }
+
+  auto bind_field(char_result_t& result, std::int64_t& value, size_t index) -> void;
 
 }  // namespace sqlpp::mysql
 

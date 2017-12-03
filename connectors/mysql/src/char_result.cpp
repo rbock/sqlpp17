@@ -40,3 +40,13 @@ namespace sqlpp::mysql::detail
   }
 }  // namespace sqlpp::mysql::detail
 
+namespace sqlpp::mysql
+{
+  auto bind_field(char_result_t& result, std::int64_t& value, size_t index) -> void
+  {
+    const auto* data = result.get_data();
+    if (!(data and data[index]))
+      throw std::logic_error("Trying to obtain NULL for non-nullable value");
+    value = std::strtoll(data[index], nullptr, 10);
+  }
+}  // namespace sqlpp::mysql
