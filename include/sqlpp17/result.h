@@ -36,19 +36,18 @@ namespace sqlpp
   {
   };
 
-  template <typename Row, typename Handle>
+  template <typename Row, typename ResultHandle>
   struct result_t
   {
     using _row_t = Row;
-    using _handle_t = Handle;
 
     std::optional<_row_t> _row;
-    std::unique_ptr<_handle_t> _handle;
+    ResultHandle _handle;
 
   public:
     result_t() = default;
 
-    result_t(std::unique_ptr<_handle_t>&& handle) : _handle(std::move(handle))
+    result_t(ResultHandle&& handle) : _handle(std::move(handle))
     {
     }
 
@@ -69,11 +68,11 @@ namespace sqlpp
       using reference = const _row_t&;
       using difference_type = std::ptrdiff_t;
 
-      iterator(result_t& result)
-          : _result(result){}
+      iterator(result_t& result) : _result(result)
+			{ //
+			}
 
-                [[nodiscard]] auto
-                operator*() const -> reference
+      [[nodiscard]] auto operator*() const -> reference
       {
         return *(_result._row);
       }

@@ -30,6 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/clause_fwd.h>
 #include <sqlpp17/column_spec.h>
+#include <sqlpp17/name_to_sql_string.h>
 #include <sqlpp17/result_row.h>
 #include <sqlpp17/statement.h>
 #include <sqlpp17/tuple_to_sql_string.h>
@@ -137,7 +138,7 @@ namespace sqlpp
   [[nodiscard]] auto to_sql_string(const DbConnection& connection,
                                    const clause_base<select_columns_t<Columns...>, Statement>& t)
   {
-    return tuple_to_string(connection, ", ", t._columns);
+    return " " + tuple_to_string(connection, ", ", t._columns);
   }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_select_columns_args_not_empty,

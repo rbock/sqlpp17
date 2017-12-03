@@ -1,5 +1,3 @@
-#pragma once
-
 /*
 Copyright (c) 2017, Roland Bock
 All rights reserved.
@@ -26,64 +24,19 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/result.h>
-#include <sqlpp17/statement.h>
+#include <sqlpp17/mysql/char_result.h>
 
-namespace test
+namespace sqlpp::mysql::detail
 {
-  struct mock_result
+  auto get_next_result_row(char_result_t& result) -> bool
   {
-    [[nodiscard]] operator bool() const
-    {
-      return false;  // no more rows available
-    }
-  };
+    if (result.debug())
+      result.debug()("Reading row");
 
-  template <typename Row>
-  auto get_next_result_row(mock_result& result, Row& row)
-  {
+    result._data = mysql_fetch_row(result.get());
+    result._lengths = mysql_fetch_lengths(result.get());
+
+    return !!result._data;
   }
+}  // namespace sqlpp::mysql::detail
 
-  class mock_db
-  {
-    template <typename... Clauses>
-    friend class ::sqlpp::statement;
-
-    template <typename Clause, typename Statement>
-    friend class ::sqlpp::result_base;
-
-  public:
-    template <typename Statement>
-    auto operator()(const Statement& statement)
-    {
-      // Need to do a final consistency check here
-      return statement.run(*this);
-    }
-
-  private:
-    template <typename Statement>
-    auto insert(const Statement& statement)
-    {
-      return 0ull;
-    }
-
-    template <typename Statement>
-    auto update(const Statement& statement)
-    {
-      return 0ull;
-    }
-
-    template <typename Statement>
-    auto erase(const Statement& statement)
-    {
-      return 0ull;
-    }
-
-    template <typename Statement>
-    auto select(const Statement& statement)
-    {
-      return ::sqlpp::result_t<typename Statement::_result_row_t, mock_handle>{std::make_unique<mock_handle>()};
-    }
-  };
-
-}  // namespace test

@@ -185,7 +185,7 @@ namespace sqlpp::mysql
     [[nodiscard]] auto select(const Statement& statement)
     {
       return ::sqlpp::result_t<typename Statement::_result_row_t, char_result_t>{
-          detail::select(*this, to_sql_string(statement, *this))};
+          detail::select(*this, to_sql_string(*this, statement))};
     }
 
     template <typename Statement>
@@ -199,7 +199,7 @@ namespace sqlpp::mysql
     [[nodiscard]] auto run_prepared_select(const PreparedStatement& statement)
     {
       return ::sqlpp::result_t<typename PreparedStatement::_result_row_t, bind_result_t>{
-          detail::select(*this, to_sql_string(statement, *this))};
+          detail::select(*this, to_sql_string(*this, statement))};
     }
 
     std::function<void(std::string_view)> _debug;

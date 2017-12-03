@@ -34,10 +34,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp ::mysql
 {
+  class char_result_t;
+}
+
+namespace sqlpp ::mysql::detail
+{
+  auto get_next_result_row(char_result_t& result) -> bool;
+}
+
+namespace sqlpp ::mysql
+{
   class char_result_t
   {
     std::unique_ptr<MYSQL_RES, void (*)(MYSQL_RES*)> _handle;
     std::function<void(std::string_view)> _debug;
+    MYSQL_ROW _data = nullptr;
+    unsigned long* _lengths = nullptr;
+
+    friend auto sqlpp ::mysql::detail::get_next_result_row(char_result_t& result) -> bool;
 
   public:
     char_result_t() = default;
@@ -51,6 +65,41 @@ namespace sqlpp ::mysql
     char_result_t& operator=(const char_result_t&) = delete;
     char_result_t& operator=(char_result_t&&) = default;
     ~char_result_t() = default;
+
+    [[nodiscard]] operator bool() const
+    {
+      return !!_handle;
+    }
+
+    auto* get() const
+    {
+      return _handle.get();
+    }
+
+    auto debug() const
+    {
+      return _debug;
+    }
+
+    auto invalidate()
+    {
+      _handle.reset(nullptr);
+    }
   };
+
+  template <typename Row>
+  auto get_next_result_row(char_result_t& result, Row& row) -> void
+  {
+    if (detail::get_next_result_row(result))
+    {
+#warning implement
+      // row.bind(result);
+    }
+    else
+    {
+      result.invalidate();
+    }
+  }
+
 }  // namespace sqlpp::mysql
 

@@ -143,9 +143,9 @@ namespace sqlpp
   };
 
   template <typename DbConnection, typename Statement>
-  decltype(auto) operator<<(const DbConnection& connection, const clause_base<no_group_by_t, Statement>& t)
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<no_group_by_t, Statement>& t)
   {
-    return connection;
+    return std::string{};
   }
 
   template <typename... Columns>

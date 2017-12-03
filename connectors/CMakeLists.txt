@@ -22,13 +22,4 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-function(test_usage name)
-  set(target sqlpp17_connector_mysql_usage_${name})
-  add_executable(${target} ${name}.cpp)
-  target_link_libraries(${target} PRIVATE sqlpp17-connector-mysql sqlpp17-connector-mysql-testing)
-	add_test(${target} ${target})
-endfunction()
-
-test_usage(insert)
-test_usage(select)
-
+add_subdirectory(mysql)

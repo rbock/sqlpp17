@@ -1,5 +1,3 @@
-#pragma once
-
 /*
 Copyright (c) 2017, Roland Bock
 All rights reserved.
@@ -26,64 +24,58 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/result.h>
-#include <sqlpp17/statement.h>
+#include <iostream>
 
-namespace test
+#include <sqlpp17/clauses/select.h>
+
+#include <sqlpp17/mysql/connection.h>
+
+#include <tables/TabDepartment.h>
+
+auto print_debug(std::string_view message)
 {
-  struct mock_result
-  {
-    [[nodiscard]] operator bool() const
-    {
-      return false;  // no more rows available
-    }
-  };
+  std::cout << "Debug: " << message << std::endl;
+}
 
-  template <typename Row>
-  auto get_next_result_row(mock_result& result, Row& row)
+namespace mysql = sqlpp::mysql;
+int main()
+{
+  mysql::global_library_init();
+
+  auto config = mysql::connection_config_t{};
+  config.user = "root";
+#warning : This needs to be configurable
+  config.password = "test";
+  config.database = "sqlpp_mysql";
+  config.debug = print_debug;
+  try
   {
+    auto db = mysql::connection_t{config};
   }
-
-  class mock_db
+  catch (const sqlpp::exception& e)
   {
-    template <typename... Clauses>
-    friend class ::sqlpp::statement;
+    std::cerr << "For testing, you'll need to create a database sqlpp_mysql for user root (no password)" << std::endl;
+    std::cerr << e.what() << std::endl;
+    return 1;
+  }
+  try
+  {
+    auto db = mysql::connection_t{config};
+    db.execute(R"(DROP TABLE IF EXISTS tab_department)");
+    db.execute(R"(CREATE TABLE tab_department (
+			id bigint(20) AUTO_INCREMENT,
+			PRIMARY KEY (id)
+			))");
 
-    template <typename Clause, typename Statement>
-    friend class ::sqlpp::result_base;
-
-  public:
-    template <typename Statement>
-    auto operator()(const Statement& statement)
+    for (const auto& row : db(sqlpp::select(test::tabDepartment.id).from(test::tabDepartment).unconditionally()))
     {
-      // Need to do a final consistency check here
-      return statement.run(*this);
+      std::cout << row.id << std::endl;
     }
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << "Exception: " << e.what() << std::endl;
+    return 1;
+  }
+}
 
-  private:
-    template <typename Statement>
-    auto insert(const Statement& statement)
-    {
-      return 0ull;
-    }
-
-    template <typename Statement>
-    auto update(const Statement& statement)
-    {
-      return 0ull;
-    }
-
-    template <typename Statement>
-    auto erase(const Statement& statement)
-    {
-      return 0ull;
-    }
-
-    template <typename Statement>
-    auto select(const Statement& statement)
-    {
-      return ::sqlpp::result_t<typename Statement::_result_row_t, mock_handle>{std::make_unique<mock_handle>()};
-    }
-  };
-
-}  // namespace test
