@@ -77,7 +77,20 @@ namespace sqlpp
   using get_result_clause_t = typename get_result_clause<Clauses...>::type;
 
   template <typename Db, typename Clause, typename Statement>
-  constexpr auto check_clause_executable(const type_t<clause_base<Clause, Statement>>&)
+  constexpr auto check_clause_preparable(const type_t<clause_base<Clause, Statement>>&)
+  {
+    return succeeded{};
+  }
+
+  template <typename Db, typename... Clauses>
+  constexpr auto check_statement_preparable(const type_t<statement<Clauses...>>& s)
+  {
+    using _statement_t = statement<Clauses...>;
+    return (succeeded{} && ... && check_clause_preparable<Db>(type_v<clause_base<Clauses, _statement_t>>));
+  }
+
+  template <typename Db, typename Clause, typename Statement>
+  constexpr auto check_clause_has_no_parameters(const type_t<clause_base<Clause, Statement>>&)
   {
     return succeeded{};
   }
@@ -86,7 +99,8 @@ namespace sqlpp
   constexpr auto check_statement_executable(const type_t<statement<Clauses...>>& s)
   {
     using _statement_t = statement<Clauses...>;
-    return (succeeded{} && ... && check_clause_executable<Db>(type_v<clause_base<Clauses, _statement_t>>));
+    return (check_statement_preparable<Db>(s) && ... &&
+            check_clause_has_no_parameters<Db>(type_v<clause_base<Clauses, _statement_t>>));
   }
 
   template <typename... Clauses>
@@ -133,9 +147,20 @@ namespace sqlpp
     template <typename Connection>
     [[nodiscard]] auto run(Connection& connection) const
     {
-      constexpr auto check = check_statement_executable<Connection>(type_v<statement>);
+      if constexpr (constexpr auto check = check_statement_executable<Connection>(type_v<statement>); check)
+      {
+        return _result_base::_run(connection);
+      }
+      else
+      {
+        return ::sqlpp::bad_statement_t{check};
+      }
+    }
 
-      if constexpr (check)
+    template <typename Connection>
+    [[nodiscard]] auto prepare(Connection& connection) const
+    {
+      if constexpr (constexpr auto check = check_statement_preparable<Connection>(type_v<statement>); check)
       {
         return _result_base::_run(connection);
       }

@@ -26,31 +26,39 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <functional>
-#include <memory>
-#include <string_view>
+#include <optional>
 
 #include <mysql/mysql.h>
 
-namespace sqlpp ::mysql
+namespace sqlpp::mysql
 {
-  class char_result_t
+  struct ssl_config_t
   {
-    std::function<void(std::string_view)> _debug;
-    std::unique_ptr<MYSQL_RES, void (*)(MYSQL_RES*)> _handle;
-
-  public:
-    char_result_t() = default;
-    char_result_t(std::unique_ptr<MYSQL_RES, void (*)(MYSQL_RES*)>&& handle,
-                  std::function<void(std::string_view)> debug)
-        : _handle(std::move(handle)), _debug(debug)
-    {
-    }
-    char_result_t(const char_result_t&) = delete;
-    char_result_t(char_result_t&& rhs) = default;
-    char_result_t& operator=(const char_result_t&) = delete;
-    char_result_t& operator=(char_result_t&&) = default;
-    ~char_result_t() = default;
+    std::string key;
+    std::string cert;
+    std::string ca;
+    std::string caPath;
+    std::string cipher;
   };
-}  // namespace sqlpp::mysql
 
+  struct connection_config_t
+  {
+    std::function<void(MYSQL*)> pre_connect;
+    std::function<void(MYSQL*)> post_connect;
+    std::string host;
+    std::string user;
+    std::string password;
+    int port = 0;
+    std::string unix_socket;
+    unsigned long client_flag = 0;
+    std::optional<ssl_config_t> ssl;
+
+    connection_config_t() = default;
+    connection_config_t(const connection_config_t&) = default;
+    connection_config_t(connection_config_t&& rhs) = default;
+    connection_config_t& operator=(const connection_config_t&) = default;
+    connection_config_t& operator=(connection_config_t&&) = default;
+    ~connection_config_t() = default;
+  };
+
+}  // namespace sqlpp::mysql

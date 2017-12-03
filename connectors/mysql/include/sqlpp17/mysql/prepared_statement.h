@@ -26,31 +26,53 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <functional>
 #include <memory>
-#include <string_view>
+#include <vector>
 
 #include <mysql/mysql.h>
 
 namespace sqlpp ::mysql
 {
-  class char_result_t
+  class prepared_statement_t
   {
+    std::unique_ptr<MYSQL_STMT, void (*)(MYSQL_STMT*)> _handle;
+    std::size_t _number_of_parameters;
+    std::size_t _number_of_columns;
+    std::vector<MYSQL_BIND> _bind;
     std::function<void(std::string_view)> _debug;
-    std::unique_ptr<MYSQL_RES, void (*)(MYSQL_RES*)> _handle;
 
   public:
-    char_result_t() = default;
-    char_result_t(std::unique_ptr<MYSQL_RES, void (*)(MYSQL_RES*)>&& handle,
-                  std::function<void(std::string_view)> debug)
-        : _handle(std::move(handle)), _debug(debug)
+    prepared_statement_t() = default;
+    prepared_statement_t(std::unique_ptr<MYSQL_STMT, void (*)(MYSQL_STMT*)>&& handle,
+                         std::size_t number_of_parameters,
+                         std::size_t number_of_columns,
+                         std::function<void(std::string_view)> debug)
+        : _handle(std::move(handle)),
+          _number_of_parameters(number_of_parameters),
+          _number_of_columns(number_of_columns),
+          _debug(debug)
     {
     }
-    char_result_t(const char_result_t&) = delete;
-    char_result_t(char_result_t&& rhs) = default;
-    char_result_t& operator=(const char_result_t&) = delete;
-    char_result_t& operator=(char_result_t&&) = default;
-    ~char_result_t() = default;
+    prepared_statement_t(const prepared_statement_t&) = delete;
+    prepared_statement_t(prepared_statement_t&& rhs) = default;
+    prepared_statement_t& operator=(const prepared_statement_t&) = delete;
+    prepared_statement_t& operator=(prepared_statement_t&&) = default;
+    ~prepared_statement_t() = default;
+
+    auto* get() const
+    {
+      return _handle.get();
+    }
+
+    auto* get_bind_data()
+    {
+      return _bind.data();
+    }
+
+    auto debug() const
+    {
+      return _debug;
+    }
   };
 }  // namespace sqlpp::mysql
 

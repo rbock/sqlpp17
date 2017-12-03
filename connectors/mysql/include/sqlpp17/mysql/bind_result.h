@@ -26,31 +26,26 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <functional>
 #include <memory>
-#include <string_view>
 
 #include <mysql/mysql.h>
 
-namespace sqlpp ::mysql
+namespace sqlpp::mysql
 {
-  class char_result_t
+  class bind_result_t
   {
-    std::function<void(std::string_view)> _debug;
-    std::unique_ptr<MYSQL_RES, void (*)(MYSQL_RES*)> _handle;
+    MYSQL_STMT* _handle;
 
   public:
-    char_result_t() = default;
-    char_result_t(std::unique_ptr<MYSQL_RES, void (*)(MYSQL_RES*)>&& handle,
-                  std::function<void(std::string_view)> debug)
-        : _handle(std::move(handle)), _debug(debug)
+    bind_result_t() = default;
+    bind_result_t(MYSQL_STMT* handle) : _handle(handle)
     {
     }
-    char_result_t(const char_result_t&) = delete;
-    char_result_t(char_result_t&& rhs) = default;
-    char_result_t& operator=(const char_result_t&) = delete;
-    char_result_t& operator=(char_result_t&&) = default;
-    ~char_result_t() = default;
+    bind_result_t(const bind_result_t&) = delete;
+    bind_result_t(bind_result_t&& rhs) = default;
+    bind_result_t& operator=(const bind_result_t&) = delete;
+    bind_result_t& operator=(bind_result_t&&) = default;
+    ~bind_result_t() = default;
   };
-}  // namespace sqlpp::mysql
 
+}  // namespace sqlpp::mysql

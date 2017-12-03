@@ -39,3 +39,4 @@ install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/sqlpp17"
 )
 
 add_subdirectory(tests)
+add_subdirectory(connectors/mysql)

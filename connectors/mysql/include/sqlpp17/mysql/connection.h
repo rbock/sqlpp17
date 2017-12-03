@@ -26,9 +26,21 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <functional>
 #include <type_traits>
-#include <sqlpp17/type_vector.h>
-#include <sqlpp17/wrong.h>
+
+#include <sqlpp17/result.h>
+#include <sqlpp17/statement.h>
+
+#include <sqlpp17/mysql/bind_result.h>
+#include <sqlpp17/mysql/char_result.h>
+#include <sqlpp17/mysql/connection_config.h>
+#include <sqlpp17/mysql/prepared_statement.h>
+
+namespace sqlpp::mysql
+{
+  class connection_t;
+};
 
 namespace sqlpp::mysql::detail
 {
@@ -53,7 +65,7 @@ namespace sqlpp::mysql::detail
 
 namespace sqlpp::mysql
 {
-  class connection
+  class connection_t
   {
     template <typename... Clauses>
     friend class ::sqlpp::statement;
@@ -62,19 +74,25 @@ namespace sqlpp::mysql
     friend class ::sqlpp::result_base;
 
   public:
-    connection() = delete;
-    connection(const connection_config& config);
-    connection(const connection&) = delete;
-    connection(connection&&) = default;
-    connection& operator=(const connection&) = delete;
-    connection& operator=(connection&&) = default;
-    ~connection() = default;
+    connection_t() = delete;
+    connection_t(const connection_config_t& config);
+    connection_t(const connection_t&) = delete;
+    connection_t(connection_t&&) = default;
+    connection_t& operator=(const connection_t&) = delete;
+    connection_t& operator=(connection_t&&) = default;
+    ~connection_t() = default;
 
     template <typename Statement>
     auto operator()(const Statement& statement)
     {
-#warning Need to do a final consistency check here
-      return statement.run(*this);
+      if constexpr (constexpr auto check = check_statement_executable<connection_t>(type_v<Statement>); check)
+      {
+        return statement.run(*this);
+      }
+      else
+      {
+        return ::sqlpp::bad_statement_t{check};
+      }
     }
 
     auto execute(const std::string& query)
@@ -82,13 +100,25 @@ namespace sqlpp::mysql
       return detail::execute(*this, query);
     }
 
-#warning : Need to implement
     template <typename Statement>
     auto prepare(const Statement& statement)
     {
+      if constexpr (constexpr auto check = check_statement_preparable<connection_t>(type_v<Statement>); check)
+      {
+        return statement.prepare(*this);
+      }
+      else
+      {
+        return ::sqlpp::bad_statement_t{check};
+      }
     }
 
-    MYSQL* get() const
+    auto debug() const
+    {
+      return _debug;
+    }
+
+    auto* get() const
     {
       return _handle.get();
     }
@@ -97,87 +127,79 @@ namespace sqlpp::mysql
     template <typename Statement>
     auto insert(const Statement& statement)
     {
-#warning implement
-      return 0ull;
+      return detail::insert(*this, to_sql_string(*this, statement));
     }
 
     template <typename Statement>
     [[nodiscard]] auto prepare_insert(const Statement& statement)
     {
-#warning implement
-      return 0ull;
+      return detail::prepare(*this, to_sql_string(*this, statement), statement._get_no_of_parameters(), 0);
     }
 
     template <typename PreparedStatement>
     [[nodiscard]] auto run_prepared_insert(const PreparedStatement& statement)
     {
-#warning implement
-      return 0ull;
+      return detail::run_prepared_insert(*this, statement.get());
     }
 
     template <typename Statement>
     auto update(const Statement& statement)
     {
-#warning implement
-      return 0ull;
+      return detail::update(*this, to_sql_string(*this, statement));
     }
 
     template <typename Statement>
     [[nodiscard]] auto prepare_update(const Statement& statement)
     {
-#warning implement
-      return 0ull;
+      return detail::prepare(*this, to_sql_string(*this, statement), statement._get_no_of_parameters(), 0);
     }
 
     template <typename PreparedStatement>
     [[nodiscard]] auto run_prepared_update(const PreparedStatement& statement)
     {
-#warning implement
-      return 0ull;
+      return detail::run_prepared_update(*this, statement.get());
     }
 
     template <typename Statement>
     auto erase(const Statement& statement)
     {
-#warning implement
-      return 0ull;
+      return detail::erase(*this, to_sql_string(*this, statement));
     }
 
     template <typename Statement>
     [[nodiscard]] auto prepare_erase(const Statement& statement)
     {
-#warning implement
-      return 0ull;
+      return detail::prepare(*this, to_sql_string(*this, statement), statement._get_no_of_parameters(), 0);
     }
 
     template <typename PreparedStatement>
     [[nodiscard]] auto run_prepared_erase(const PreparedStatement& statement)
     {
-#warning implement
-      return 0ull;
+      return detail::run_prepared_erase(*this, statement.get());
     }
 
     template <typename Statement>
     [[nodiscard]] auto select(const Statement& statement)
     {
-#warning implement
-      return ::sqlpp::result_t<typename Statement::_result_row_t, mock_handle>{std::make_unique<mock_handle>()};
+      return ::sqlpp::result_t<typename Statement::_result_row_t, char_result_t>{
+          detail::select(*this, to_sql_string(statement, *this))};
     }
 
     template <typename Statement>
     [[nodiscard]] auto prepare_select(const Statement& statement)
     {
-#warning implement
-      return ::sqlpp::result_t<typename Statement::_result_row_t, mock_handle>{std::make_unique<mock_handle>()};
+      return detail::prepare(*this, to_sql_string(*this, statement), statement._get_no_of_parameters(),
+                             statement.get_no_of_result_columns());
     }
 
     template <typename PreparedStatement>
     [[nodiscard]] auto run_prepared_select(const PreparedStatement& statement)
     {
-#warning implement
-      return ::sqlpp::result_t<typename PreparedStatement::_result_row_t, mock_handle>{std::make_unique<mock_handle>()};
+      return ::sqlpp::result_t<typename PreparedStatement::_result_row_t, bind_result_t>{
+          detail::select(*this, to_sql_string(statement, *this))};
     }
 
+    std::function<void(std::string_view)> _debug;
     std::unique_ptr<MYSQL, void (*)(MYSQL*)> _handle;
   };
 
