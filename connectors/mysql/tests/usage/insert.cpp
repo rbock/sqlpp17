@@ -1,5 +1,3 @@
-#pragma once
-
 /*
 Copyright (c) 2017, Roland Bock
 All rights reserved.
@@ -26,42 +24,55 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <optional>
+#include <iostream>
 
-#include <mysql.h>
+#include <sqlpp17/clauses/insert.h>
 
-namespace sqlpp::mysql
+#include <sqlpp17/mysql/connection.h>
+
+#include <tables/TabDepartment.h>
+
+auto print_debug(std::string_view message)
 {
-  struct ssl_config_t
+  std::cout << "Debug: " << message << std::endl;
+}
+
+namespace mysql = sqlpp::mysql;
+int main()
+{
+  mysql::global_library_init();
+
+  auto config = mysql::connection_config_t{};
+  config.user = "root";
+#warning : This needs to be configurable
+  config.password = "test";
+  config.database = "sqlpp_mysql";
+  config.debug = print_debug;
+  try
   {
-    std::string key;
-    std::string cert;
-    std::string ca;
-    std::string caPath;
-    std::string cipher;
-  };
-
-  struct connection_config_t
+    auto db = mysql::connection_t{config};
+  }
+  catch (const sqlpp::exception& e)
   {
-    std::function<void(MYSQL*)> pre_connect;
-    std::function<void(MYSQL*)> post_connect;
-    std::string host;
-    std::string user;
-    std::string password;
-    int port = 0;
-    std::string unix_socket;
-    std::optional<ssl_config_t> ssl;
-    unsigned long client_flag = 0;
-    std::string database;
-    std::string charset = "utf8";
-    std::function<void(std::string_view)> debug;
+    std::cerr << "For testing, you'll need to create a database sqlpp_mysql for user root (no password)" << std::endl;
+    std::cerr << e.what() << std::endl;
+    return 1;
+  }
+  try
+  {
+    auto db = mysql::connection_t{config};
+    db.execute(R"(DROP TABLE IF EXISTS tab_department)");
+    db.execute(R"(CREATE TABLE tab_department (
+			id bigint(20) AUTO_INCREMENT,
+			PRIMARY KEY (id)
+			))");
 
-    connection_config_t() = default;
-    connection_config_t(const connection_config_t&) = default;
-    connection_config_t(connection_config_t&& rhs) = default;
-    connection_config_t& operator=(const connection_config_t&) = default;
-    connection_config_t& operator=(connection_config_t&&) = default;
-    ~connection_config_t() = default;
-  };
+    auto id = db(sqlpp::insert().into(test::tabDepartment).default_values());
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << "Exception: " << e.what() << std::endl;
+    return 1;
+  }
+}
 
-}  // namespace sqlpp::mysql

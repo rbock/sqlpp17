@@ -32,13 +32,27 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace
 {
+  class scoped_library_initializer_t
+  {
+  public:
+    scoped_library_initializer_t(int argc, char** argv, char** groups)
+    {
+      mysql_library_init(argc, argv, groups);
+    }
+
+    ~scoped_library_initializer_t()
+    {
+      mysql_library_end();
+    }
+  };
+
   struct MySqlThreadInitializer
   {
     MySqlThreadInitializer()
     {
       if (!mysql_thread_safe())
       {
-        throw sqlpp::exception("MySQL error: Operating on a non-threadsafe client");
+        throw sqlpp::exception("MySQL: Operating on a non-threadsafe client");
       }
       mysql_thread_init();
     }
@@ -89,12 +103,12 @@ namespace sqlpp::mysql::detail
     thread_init();
 
     if (connection.debug())
-      connection.debug()("MySQL debug: Executing: '" + query + "'");
+      connection.debug()("Executing: '" + query + "'");
 
     if (mysql_real_query(connection.get(), query.c_str(), query.size()))
     {
-      throw sqlpp::exception("MySQL error: Could not execute MySQL-query: " +
-                             std::string(mysql_error(connection.get())) + " (query was >>" + query + "<<\n");
+      throw sqlpp::exception("MySQL: Could not execute query: " + std::string(mysql_error(connection.get())) +
+                             " (query was >>" + query + "<<\n");
     }
   }
 
@@ -105,7 +119,7 @@ namespace sqlpp::mysql::detail
                                                                    result_cleanup);
     if (!result_handle)
     {
-      throw sqlpp::exception("MySQL error: Could not store result set: " + std::string(mysql_error(connection.get())));
+      throw sqlpp::exception("MySQL: Could not store result set: " + std::string(mysql_error(connection.get())));
     }
 
     return {std::move(result_handle), connection.debug()};
@@ -143,17 +157,17 @@ namespace sqlpp::mysql::detail
     thread_init();
 
     if (connection.debug())
-      connection.debug()("MySQL debug: Preparing: '" + statement + "'");
+      connection.debug()("Preparing: '" + statement + "'");
 
     auto statement_handle =
         std::unique_ptr<MYSQL_STMT, void (*)(MYSQL_STMT*)>(mysql_stmt_init(connection.get()), statement_cleanup);
     if (not statement_handle)
     {
-      throw sqlpp::exception("MySQL error: Could not allocate prepared statement\n");
+      throw sqlpp::exception("MySQL: Could not allocate prepared statement\n");
     }
     if (mysql_stmt_prepare(statement_handle.get(), statement.data(), statement.size()))
     {
-      throw sqlpp::exception("MySQL error: Could not prepare statement: " + std::string(mysql_error(connection.get())) +
+      throw sqlpp::exception("MySQL: Could not prepare statement: " + std::string(mysql_error(connection.get())) +
                              " (statement was >>" + statement + "<<\n");
     }
 
@@ -165,17 +179,17 @@ namespace sqlpp::mysql::detail
     thread_init();
 
     if (prepared_statement.debug())
-      prepared_statement.debug()("MySQL debug: Executing prepared_statement");
+      prepared_statement.debug()("Executing prepared_statement");
 
     if (mysql_stmt_bind_param(prepared_statement.get(), prepared_statement.get_bind_data()))
     {
-      throw sqlpp::exception(std::string("MySQL error: Could not bind parameters to statement") +
+      throw sqlpp::exception(std::string("MySQL: Could not bind parameters to statement") +
                              mysql_stmt_error(prepared_statement.get()));
     }
 
     if (mysql_stmt_execute(prepared_statement.get()))
     {
-      throw sqlpp::exception(std::string("MySQL error: Could not execute prepared statement: ") +
+      throw sqlpp::exception(std::string("MySQL: Could not execute prepared statement: ") +
                              mysql_stmt_error(prepared_statement.get()));
     }
   }
@@ -208,8 +222,13 @@ namespace sqlpp::mysql::detail
 
 namespace sqlpp::mysql
 {
+  void global_library_init(int argc, char** argv, char** groups)
+  {
+    static const auto global_init_and_end = scoped_library_initializer_t(argc, argv, groups);
+  }
+
   connection_t::connection_t(const connection_config_t& config)
-      : _handle(mysql_init(nullptr), detail::connection_cleanup)
+      : _handle(mysql_init(nullptr), detail::connection_cleanup), _debug(config.debug)
   {
     if (not _handle)
     {
@@ -235,6 +254,16 @@ namespace sqlpp::mysql
                             config.unix_socket.empty() ? nullptr : config.unix_socket.c_str(), config.client_flag))
     {
       throw sqlpp::exception("MySQL: could not connect to server: " + std::string(mysql_error(_handle.get())));
+    }
+
+    if (mysql_set_character_set(_handle.get(), config.charset.c_str()))
+    {
+      throw sqlpp::exception("MySQL: can't set character set " + config.charset);
+    }
+
+    if (mysql_select_db(_handle.get(), config.database.c_str()))
+    {
+      throw sqlpp::exception("MySQL: can't select database '" + config.database + "'");
     }
 
     if (config.post_connect)

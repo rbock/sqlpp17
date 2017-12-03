@@ -114,9 +114,10 @@ namespace sqlpp
   };
 
   template <typename DbConnection, typename Statement>
-  decltype(auto) operator<<(const DbConnection& connection, const clause_base<insert_default_values_t, Statement>& t)
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection,
+                                   const clause_base<insert_default_values_t, Statement>& t)
   {
-    return connection << " DEFAULT_VALUES";
+    return std::string{" DEFAULT_VALUES"};
   }
 
   template <typename... Assignments>

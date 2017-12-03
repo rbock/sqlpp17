@@ -1,4 +1,4 @@
-# Copyright (c) 2016, Roland Bock
+# Copyright (c) 2017, Roland Bock
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without modification,
@@ -22,21 +22,14 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
-project(sqlpp17 VERSION 0.1 LANGUAGES CXX)
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -Wpedantic")
 
-enable_testing()
+add_library(sqlpp17-connector-mysql-testing INTERFACE)
 
-add_library(sqlpp17 INTERFACE)
-
-target_include_directories(sqlpp17 INTERFACE
-  $<BUILD_INTERFACE:${sqlpp17_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
+target_include_directories(sqlpp17-connector-mysql-testing INTERFACE
+  $<BUILD_INTERFACE:${sqlpp17_SOURCE_DIR}/connectors/mysql/tests>
   )
+target_link_libraries(sqlpp17-connector-mysql-testing INTERFACE "${MYSQL_LIBRARIES}")
 
-install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/sqlpp17"
-        DESTINATION include
-)
+add_subdirectory(usage)
 
-#add_subdirectory(tests)
-add_subdirectory(connectors)

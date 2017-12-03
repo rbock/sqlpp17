@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2016, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,42 +26,42 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <optional>
+#include <cstdint>
 
-#include <mysql.h>
+#include <sqlpp17/table.h>
 
-namespace sqlpp::mysql
+namespace test
 {
-  struct ssl_config_t
+  namespace TabDepartment_
   {
-    std::string key;
-    std::string cert;
-    std::string ca;
-    std::string caPath;
-    std::string cipher;
-  };
+    struct Id
+    {
+      struct _alias_t
+      {
+        static constexpr char name[] = "id";
+        template <typename T>
+        struct _member_t
+        {
+          T id;
+        };
+      };
+      using value_type = std::int64_t;
+      static constexpr auto tags = sqlpp::tag::must_not_insert | sqlpp::tag::must_not_update | sqlpp::tag::has_default;
+    };
 
-  struct connection_config_t
-  {
-    std::function<void(MYSQL*)> pre_connect;
-    std::function<void(MYSQL*)> post_connect;
-    std::string host;
-    std::string user;
-    std::string password;
-    int port = 0;
-    std::string unix_socket;
-    std::optional<ssl_config_t> ssl;
-    unsigned long client_flag = 0;
-    std::string database;
-    std::string charset = "utf8";
-    std::function<void(std::string_view)> debug;
+    struct _
+    {
+      struct _alias_t
+      {
+        static constexpr char name[] = "tab_department";
+        template <typename T>
+        struct _member_t
+        {
+          T tabDepartment;
+        };
+      };
+    };
+  }  // namespace TabDepartment_
 
-    connection_config_t() = default;
-    connection_config_t(const connection_config_t&) = default;
-    connection_config_t(connection_config_t&& rhs) = default;
-    connection_config_t& operator=(const connection_config_t&) = default;
-    connection_config_t& operator=(connection_config_t&&) = default;
-    ~connection_config_t() = default;
-  };
-
-}  // namespace sqlpp::mysql
+  inline constexpr auto tabDepartment = sqlpp::table_t<TabDepartment_::_, TabDepartment_::Id>{};
+}  // namespace test

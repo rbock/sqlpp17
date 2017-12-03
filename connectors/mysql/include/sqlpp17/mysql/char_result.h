@@ -30,14 +30,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <memory>
 #include <string_view>
 
-#include <mysql/mysql.h>
+#include <mysql.h>
 
 namespace sqlpp ::mysql
 {
   class char_result_t
   {
-    std::function<void(std::string_view)> _debug;
     std::unique_ptr<MYSQL_RES, void (*)(MYSQL_RES*)> _handle;
+    std::function<void(std::string_view)> _debug;
 
   public:
     char_result_t() = default;

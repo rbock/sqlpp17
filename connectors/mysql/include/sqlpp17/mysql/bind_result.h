@@ -28,7 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <memory>
 
-#include <mysql/mysql.h>
+#include <mysql.h>
 
 namespace sqlpp::mysql
 {

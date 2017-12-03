@@ -26,42 +26,19 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <optional>
-
-#include <mysql.h>
+#include <sqlpp17/clauses/insert_values.h>
 
 namespace sqlpp::mysql
 {
-  struct ssl_config_t
+  class connection_t;
+}
+
+namespace sqlpp
+{
+  template <typename Statement>
+  [[nodiscard]] auto to_sql_string(const mysql::connection_t& connection,
+                                   const clause_base<insert_default_values_t, Statement>& t)
   {
-    std::string key;
-    std::string cert;
-    std::string ca;
-    std::string caPath;
-    std::string cipher;
-  };
-
-  struct connection_config_t
-  {
-    std::function<void(MYSQL*)> pre_connect;
-    std::function<void(MYSQL*)> post_connect;
-    std::string host;
-    std::string user;
-    std::string password;
-    int port = 0;
-    std::string unix_socket;
-    std::optional<ssl_config_t> ssl;
-    unsigned long client_flag = 0;
-    std::string database;
-    std::string charset = "utf8";
-    std::function<void(std::string_view)> debug;
-
-    connection_config_t() = default;
-    connection_config_t(const connection_config_t&) = default;
-    connection_config_t(connection_config_t&& rhs) = default;
-    connection_config_t& operator=(const connection_config_t&) = default;
-    connection_config_t& operator=(connection_config_t&&) = default;
-    ~connection_config_t() = default;
-  };
-
-}  // namespace sqlpp::mysql
+    return std::string{" () VALUES()"};
+  }
+}  // namespace sqlpp

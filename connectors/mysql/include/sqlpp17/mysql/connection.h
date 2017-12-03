@@ -34,6 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/mysql/bind_result.h>
 #include <sqlpp17/mysql/char_result.h>
+#include <sqlpp17/mysql/clauses.h>
 #include <sqlpp17/mysql/connection_config.h>
 #include <sqlpp17/mysql/prepared_statement.h>
 
@@ -65,6 +66,8 @@ namespace sqlpp::mysql::detail
 
 namespace sqlpp::mysql
 {
+  void global_library_init(int argc = 0, char** argv = nullptr, char** groups = nullptr);
+
   class connection_t
   {
     template <typename... Clauses>
