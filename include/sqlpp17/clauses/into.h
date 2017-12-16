@@ -27,6 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/clause_fwd.h>
+#include <sqlpp17/prepared_statement.h>
 #include <sqlpp17/statement.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
@@ -135,6 +136,12 @@ namespace sqlpp
     [[nodiscard]] auto _run(Connection& connection) const
     {
       return connection.insert(Statement::of(this));
+    }
+
+    template <typename Connection>
+    [[nodiscard]] auto _prepare(Connection& connection) const
+    {
+      return prepared_statement_t{*this, connection.prepare_insert(Statement::of(this))};
     }
   };
 

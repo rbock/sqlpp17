@@ -165,6 +165,20 @@ namespace sqlpp
         return connection.insert(Statement::of(this));
       }
     }
+
+    template <typename Connection>
+    [[nodiscard]] auto _prepare(Connection& connection) const
+    {
+      if (static_cast<const insert_multi_values_t<Assignments...>&>(Statement::of(this))._rows.empty())
+      {
+#warning : Maybe return a thing that returns 0 upon run()
+        throw ::sqlpp::exception("Cannot prepare zero-line insert");
+      }
+      else
+      {
+        return connection.prepare_insert(Statement::of(this));
+      }
+    }
   };
 
   // this function assumes that there is something to do

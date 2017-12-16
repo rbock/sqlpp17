@@ -194,28 +194,28 @@ namespace sqlpp::mysql::detail
     }
   }
 
-  auto run_prepared_select(prepared_statement_t& prepared_statement) -> bind_result_t
+  auto prepared_select_t::run() -> bind_result_t
   {
-    execute_prepared_statement(prepared_statement);
-    return {prepared_statement.get()};
+    execute_prepared_statement(_statement);
+    return {_statement.get()};
   }
 
-  auto run_prepared_insert(prepared_statement_t& prepared_statement) -> size_t
+  auto prepared_insert_t::run() -> size_t
   {
-    execute_prepared_statement(prepared_statement);
-    return mysql_stmt_insert_id(prepared_statement.get());
+    execute_prepared_statement(_statement);
+    return mysql_stmt_insert_id(_statement.get());
   }
 
-  auto run_prepared_update(prepared_statement_t& prepared_statement) -> size_t
+  auto prepared_update_t::run() -> size_t
   {
-    execute_prepared_statement(prepared_statement);
-    return mysql_stmt_affected_rows(prepared_statement.get());
+    execute_prepared_statement(_statement);
+    return mysql_stmt_affected_rows(_statement.get());
   }
 
-  auto run_prepared_remove(prepared_statement_t& prepared_statement) -> size_t
+  auto prepared_erase_t::run() -> size_t
   {
-    execute_prepared_statement(prepared_statement);
-    return mysql_stmt_affected_rows(prepared_statement.get());
+    execute_prepared_statement(_statement);
+    return mysql_stmt_affected_rows(_statement.get());
   }
 
 }  // namespace sqlpp::mysql::detail

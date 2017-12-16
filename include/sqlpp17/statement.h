@@ -30,6 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/bad_statement.h>
 #include <sqlpp17/clause_fwd.h>
 #include <sqlpp17/detail/statement_constructor_arg.h>
+#include <sqlpp17/prepared_statement.h>
 #include <sqlpp17/succeeded.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
@@ -115,8 +116,6 @@ namespace sqlpp
 
     using _clauses = type_vector<Clauses...>;
 
-    using _result_base = result_base<get_result_clause_t<Clauses...>, statement<Clauses...>>;
-
     template <typename... Cs>
     using new_statement = statement<Cs...>;
 
@@ -144,12 +143,21 @@ namespace sqlpp
     {
     }
 
+    using result_base_t = result_base<get_result_clause_t<Clauses...>, statement<Clauses...>>;
+
+#warning : Maybe make private?
+    [[nodiscard]] constexpr auto get_no_of_parameters() const
+    {
+#warning : implement
+      return 0;
+    }
+
     template <typename Connection>
     [[nodiscard]] auto run(Connection& connection) const
     {
       if constexpr (constexpr auto check = check_statement_executable<Connection>(type_v<statement>); check)
       {
-        return _result_base::_run(connection);
+        return result_base_t::_run(connection);
       }
       else
       {
@@ -162,7 +170,7 @@ namespace sqlpp
     {
       if constexpr (constexpr auto check = check_statement_preparable<Connection>(type_v<statement>); check)
       {
-        return _result_base::_run(connection);
+        return result_base_t::_prepare(connection);
       }
       else
       {

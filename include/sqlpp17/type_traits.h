@@ -578,6 +578,9 @@ namespace sqlpp
   }
 
   template <typename T>
+  constexpr auto has_result_rows_v = false;
+
+  template <typename T>
   constexpr auto char_sequence_of_v = char_sequence<>{};
 
   template <typename T>

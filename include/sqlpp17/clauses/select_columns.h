@@ -31,6 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/clause_fwd.h>
 #include <sqlpp17/column_spec.h>
 #include <sqlpp17/name_to_sql_string.h>
+#include <sqlpp17/result.h>
 #include <sqlpp17/result_row.h>
 #include <sqlpp17/statement.h>
 #include <sqlpp17/tuple_to_sql_string.h>
@@ -127,12 +128,28 @@ namespace sqlpp
     template <typename Connection>
     [[nodiscard]] auto _run(Connection& connection) const
     {
-      return connection.select(Statement::of(this));
+      using _result_handle_t = decltype(connection.select(Statement::of(this)));
+      return ::sqlpp::result_t<_result_row_t, _result_handle_t>{connection.select(Statement::of(this))};
+    }
+
+    template <typename Connection>
+    [[nodiscard]] auto _prepare(Connection& connection) const
+    {
+      return prepared_statement_t{*this, connection.prepare_select(Statement::of(this))};
     }
 
   public:
+    [[nodiscard]] constexpr auto get_no_of_result_columns() const
+    {
+#warning : implement
+      return 0;
+    }
+
     using _result_row_t = result_row_t<make_column_spec_t<Statement, Columns>...>;
   };
+
+  template <typename... Columns, typename Statement>
+  constexpr auto has_result_rows_v<result_base<select_columns_t<Columns...>, Statement>> = true;
 
   template <typename DbConnection, typename... Columns, typename Statement>
   [[nodiscard]] auto to_sql_string(const DbConnection& connection,

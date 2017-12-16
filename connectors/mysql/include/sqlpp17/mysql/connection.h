@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <functional>
 #include <type_traits>
 
+#include <sqlpp17/prepared_statement.h>
 #include <sqlpp17/result.h>
 #include <sqlpp17/statement.h>
 
@@ -46,21 +47,63 @@ namespace sqlpp::mysql
 namespace sqlpp::mysql::detail
 {
   // direct execution
-  char_result_t select(const connection_t&, const std::string& statement);
-  size_t insert(const connection_t&, const std::string& statement);
-  size_t update(const connection_t&, const std::string& statement);
-  size_t erase(const connection_t&, const std::string& statement);
-  void execute(const connection_t&, const std::string& statement);
+  auto select(const connection_t&, const std::string& statement) -> char_result_t;
+  auto insert(const connection_t&, const std::string& statement) -> std::size_t;
+  auto update(const connection_t&, const std::string& statement) -> std::size_t;
+  auto erase(const connection_t&, const std::string& statement) -> std::size_t;
+  auto execute(const connection_t&, const std::string& statement) -> void;
 
   // prepared execution
-  prepared_statement_t prepare(const connection_t&,
-                               const std::string& statement,
-                               size_t no_of_parameters,
-                               size_t no_of_columns);
-  bind_result_t run_prepared_select(const connection_t&, prepared_statement_t& prepared_statement);
-  size_t run_prepared_insert(const connection_t&, prepared_statement_t& prepared_statement);
-  size_t run_prepared_update(const connection_t&, prepared_statement_t& prepared_statement);
-  size_t run_prepared_erase(const connection_t&, prepared_statement_t& prepared_statement);
+  auto prepare(const connection_t&, const std::string& statement, size_t no_of_parameters, size_t no_of_columns)
+      -> prepared_statement_t;
+
+  class prepared_select_t
+  {
+    prepared_statement_t _statement;
+
+  public:
+    prepared_select_t(prepared_statement_t&& statement) : _statement(std::move(statement))
+    {
+    }
+
+    auto run() -> bind_result_t;
+  };
+
+  class prepared_insert_t
+  {
+    prepared_statement_t _statement;
+
+  public:
+    prepared_insert_t(prepared_statement_t&& statement) : _statement(std::move(statement))
+    {
+    }
+
+    auto run() -> std::size_t;
+  };
+
+  class prepared_update_t
+  {
+    prepared_statement_t _statement;
+
+  public:
+    prepared_update_t(prepared_statement_t&& statement) : _statement(std::move(statement))
+    {
+    }
+
+    auto run() -> std::size_t;
+  };
+
+  class prepared_erase_t
+  {
+    prepared_statement_t _statement;
+
+  public:
+    prepared_erase_t(prepared_statement_t&& statement) : _statement(std::move(statement))
+    {
+    }
+
+    auto run() -> std::size_t;
+  };
 
 }  // namespace sqlpp::mysql::detail
 
@@ -85,10 +128,12 @@ namespace sqlpp::mysql
     connection_t& operator=(connection_t&&) = default;
     ~connection_t() = default;
 
-    template <typename Statement>
-    auto operator()(const Statement& statement)
+    template <typename... Clauses>
+    auto operator()(const ::sqlpp::statement<Clauses...>& statement)
     {
-      if constexpr (constexpr auto check = check_statement_executable<connection_t>(type_v<Statement>); check)
+      if constexpr (constexpr auto check =
+                        check_statement_executable<connection_t>(type_v<::sqlpp::statement<Clauses...>>);
+                    check)
       {
         return statement.run(*this);
       }
@@ -136,13 +181,8 @@ namespace sqlpp::mysql
     template <typename Statement>
     [[nodiscard]] auto prepare_insert(const Statement& statement)
     {
-      return detail::prepare(*this, to_sql_string(*this, statement), statement._get_no_of_parameters(), 0);
-    }
-
-    template <typename PreparedStatement>
-    [[nodiscard]] auto run_prepared_insert(const PreparedStatement& statement)
-    {
-      return detail::run_prepared_insert(*this, statement.get());
+      return detail::prepared_insert_t{
+          detail::prepare(*this, to_sql_string(*this, statement), statement.get_no_of_parameters(), 0)};
     }
 
     template <typename Statement>
@@ -154,13 +194,8 @@ namespace sqlpp::mysql
     template <typename Statement>
     [[nodiscard]] auto prepare_update(const Statement& statement)
     {
-      return detail::prepare(*this, to_sql_string(*this, statement), statement._get_no_of_parameters(), 0);
-    }
-
-    template <typename PreparedStatement>
-    [[nodiscard]] auto run_prepared_update(const PreparedStatement& statement)
-    {
-      return detail::run_prepared_update(*this, statement.get());
+      return detail::prepared_update_t{
+          detail::prepare(*this, to_sql_string(*this, statement), statement.get_no_of_parameters(), 0)};
     }
 
     template <typename Statement>
@@ -172,38 +207,26 @@ namespace sqlpp::mysql
     template <typename Statement>
     [[nodiscard]] auto prepare_erase(const Statement& statement)
     {
-      return detail::prepare(*this, to_sql_string(*this, statement), statement._get_no_of_parameters(), 0);
-    }
-
-    template <typename PreparedStatement>
-    [[nodiscard]] auto run_prepared_erase(const PreparedStatement& statement)
-    {
-      return detail::run_prepared_erase(*this, statement.get());
+      return detail::prepared_erase_t{
+          detail::prepare(*this, to_sql_string(*this, statement), statement.get_no_of_parameters(), 0)};
     }
 
     template <typename Statement>
     [[nodiscard]] auto select(const Statement& statement)
     {
-      return ::sqlpp::result_t<typename Statement::_result_row_t, char_result_t>{
-          detail::select(*this, to_sql_string(*this, statement))};
+      return detail::select(*this, to_sql_string(*this, statement));
     }
 
     template <typename Statement>
     [[nodiscard]] auto prepare_select(const Statement& statement)
     {
-      return detail::prepare(*this, to_sql_string(*this, statement), statement._get_no_of_parameters(),
-                             statement.get_no_of_result_columns());
-    }
-
-    template <typename PreparedStatement>
-    [[nodiscard]] auto run_prepared_select(const PreparedStatement& statement)
-    {
-      return ::sqlpp::result_t<typename PreparedStatement::_result_row_t, bind_result_t>{
-          detail::select(*this, to_sql_string(*this, statement))};
+      return detail::prepared_select_t{detail::prepare(*this, to_sql_string(*this, statement),
+                                                       statement.get_no_of_parameters(),
+                                                       statement.get_no_of_result_columns())};
     }
 
     std::function<void(std::string_view)> _debug;
     std::unique_ptr<MYSQL, void (*)(MYSQL*)> _handle;
-  };
+  };  // namespace sqlpp::mysql
 
 }  // namespace sqlpp::mysql
