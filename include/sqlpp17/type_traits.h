@@ -44,14 +44,17 @@ namespace sqlpp
   {
     using type = uint16_t;
     constexpr type none = 0;
-    constexpr type must_not_insert = 1 << 0;
-    constexpr type must_not_update = 1 << 1;
+    constexpr type primary_key = 1 << 0;
+    constexpr type auto_increment = 1 << 0;
     constexpr type can_be_null = 1 << 2;
-    constexpr type has_default = 1 << 3;
   }  // namespace tag
 
   template <tag::type Tag, bool Condition>
   constexpr auto tag_if_v = Condition ? Tag : tag::none;
+
+  struct none_t
+  {
+  };
 
   template <typename T>
   struct type_t

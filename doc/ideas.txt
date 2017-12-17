@@ -1,3 +1,11 @@
+tags:
+=====
+Instead of no_insert and no_update, use auto_increment.
+Instead of has_default: Specify the default value.
+
+The required information can be extracted from the new values.
+In addition, it should be possible to start writing `create table` calls.
+
 case_when:
 ==========
 sqlpp11 tries to be clever with NULL: if a column x was marked as trivial_is_null and you said

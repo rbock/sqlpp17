@@ -47,7 +47,8 @@ namespace test
         };
       };
       using value_type = std::int64_t;
-      static constexpr auto tags = sqlpp::tag::must_not_insert | sqlpp::tag::must_not_update | sqlpp::tag::has_default;
+      static constexpr auto tags = sqlpp::tag::primary_key | sqlpp::tag::auto_increment;
+      static constexpr auto default_value = ::sqlpp::none_t{};
     };
 
     struct IsManager
@@ -62,7 +63,8 @@ namespace test
         };
       };
       using value_type = bool;
-      static constexpr auto tags = 0;
+      static constexpr auto tags = sqlpp::tag::none;
+      static constexpr auto default_value = ::sqlpp::none_t{};
     };
 
     struct Name
@@ -77,7 +79,8 @@ namespace test
         };
       };
       using value_type = std::string_view;
-      static constexpr auto tags = 0;
+      static constexpr auto tags = sqlpp::tag::none;
+      static constexpr auto default_value = ::sqlpp::none_t{};
     };
 
     struct Address
@@ -92,7 +95,8 @@ namespace test
         };
       };
       using value_type = std::optional<std::string_view>;
-      static constexpr auto tags = ::sqlpp::tag::has_default;
+      static constexpr auto tags = ::sqlpp::tag::none;
+      static constexpr char default_value[] = "";
     };
 
     struct _

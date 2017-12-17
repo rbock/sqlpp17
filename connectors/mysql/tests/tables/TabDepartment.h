@@ -39,7 +39,8 @@ namespace test
     {
       SQLPP_ALIAS(id)
       using value_type = std::int64_t;
-      static constexpr auto tags = sqlpp::tag::must_not_insert | sqlpp::tag::must_not_update | sqlpp::tag::has_default;
+      static constexpr auto tags = sqlpp::tag::primary_key | sqlpp::tag::auto_increment;
+      static constexpr auto default_value = ::sqlpp::none_t{};
     };
 
     struct Name
@@ -47,6 +48,7 @@ namespace test
       SQLPP_ALIAS(name)
       using value_type = std::optional<std::string_view>;
       static constexpr auto tags = sqlpp::tag::can_be_null;
+      static constexpr auto default_value = ::sqlpp::none_t{};
     };
 
     struct _
