@@ -40,6 +40,20 @@ namespace sqlpp
       std::size_t index = 0;
       (bind_field(row, result_column_base<ColumnSpecs>::operator()(), index++), ...);
     }
+
+    template <typename ResultRow>
+    auto pre_bind(ResultRow& row) -> void
+    {
+      std::size_t index = 0;
+      (pre_bind_field(row, result_column_base<ColumnSpecs>::operator()(), index++), ...);
+    }
+
+    template <typename ResultRow>
+    auto post_bind(ResultRow& row) -> void
+    {
+      std::size_t index = 0;
+      (post_bind_field(row, result_column_base<ColumnSpecs>::operator()(), index++), ...);
+    }
   };
 
   template <typename... LeftColumnSpecs, typename... RightColumnSpecs>

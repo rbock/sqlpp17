@@ -26,19 +26,48 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <functional>
 #include <memory>
+#include <string_view>
 
 #include <mysql.h>
+
+#include <sqlpp17/mysql/prepared_statement.h>
+
+namespace sqlpp::mysql
+{
+  class bind_result_t;
+  class prepared_statement_t;
+}  // namespace sqlpp::mysql
+
+namespace sqlpp::mysql::detail
+{
+  auto bind_impl(bind_result_t& result) -> void;
+  auto get_next_result_row(bind_result_t& result) -> bool;
+}  // namespace sqlpp::mysql::detail
 
 namespace sqlpp::mysql
 {
   class bind_result_t
   {
     MYSQL_STMT* _handle;
+    std::vector<detail::bind_meta_data_t> _bind_meta_data;
+    std::vector<MYSQL_BIND> _bind_data;
+    std::function<void(std::string_view)> _debug;
+    void* _result_row_address = nullptr;
+
+    friend auto detail::bind_impl(bind_result_t& result) -> void;
+    friend auto detail::get_next_result_row(bind_result_t& result) -> bool;
+    template <typename Row>
+    friend auto get_next_result_row(bind_result_t& result, Row& row) -> void;
 
   public:
     bind_result_t() = default;
-    bind_result_t(MYSQL_STMT* handle) : _handle(handle)
+    bind_result_t(const ::sqlpp::mysql::prepared_statement_t& statement)
+        : _handle(statement.get()),
+          _bind_meta_data(statement.get_number_of_columns()),
+          _bind_data(statement.get_number_of_columns()),
+          _debug(statement.debug())
     {
     }
     bind_result_t(const bind_result_t&) = delete;
@@ -46,6 +75,64 @@ namespace sqlpp::mysql
     bind_result_t& operator=(const bind_result_t&) = delete;
     bind_result_t& operator=(bind_result_t&&) = default;
     ~bind_result_t() = default;
+
+    [[nodiscard]] operator bool() const
+    {
+      return !!_handle;
+    }
+
+    [[nodiscard]] auto* get() const
+    {
+      return _handle;
+    }
+
+    [[nodiscard]] auto debug() const
+    {
+      return _debug;
+    }
+
+#warning : This should be private
+    [[nodiscard]] auto& get_bind_meta_data()
+    {
+      return _bind_meta_data;
+    }
+
+#warning : This should be private
+    [[nodiscard]] auto& get_bind_data()
+    {
+      return _bind_data;
+    }
+
+    auto invalidate()
+    {
+      _handle = nullptr;
+    }
   };
 
+  template <typename Row>
+  auto get_next_result_row(bind_result_t& result, Row& row) -> void
+  {
+    // prepare bind
+    if (&row != result._result_row_address)
+    {
+      row.pre_bind(result);       // binds row data to statement data
+      detail::bind_impl(result);  // bind statement data
+      result._result_row_address = &row;
+    }
+
+    if (detail::get_next_result_row(result))
+    {
+      // post-process bound fields, where necessary
+      row.post_bind(result);
+    }
+    else
+    {
+      result.invalidate();
+    }
+  }
+
+  auto pre_bind_field(bind_result_t& result, std::int64_t& value, std::size_t index) -> void;
+  inline auto post_bind_field(bind_result_t& result, std::int64_t& value, std::size_t index) -> void
+  {
+  }
 }  // namespace sqlpp::mysql

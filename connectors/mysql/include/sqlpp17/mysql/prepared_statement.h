@@ -31,14 +31,27 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <mysql.h>
 
-namespace sqlpp ::mysql
+namespace sqlpp::mysql::detail
+{
+  struct bind_meta_data_t
+  {
+    unsigned long bound_len;
+    my_bool bound_is_null;
+    my_bool bound_error;
+    bool use_buffer = false;
+    std::vector<char> bound_buffer;
+  };
+}  // namespace sqlpp::mysql::detail
+
+namespace sqlpp::mysql
 {
   class prepared_statement_t
   {
     std::unique_ptr<MYSQL_STMT, void (*)(MYSQL_STMT*)> _handle;
     std::size_t _number_of_parameters;
     std::size_t _number_of_columns;
-    std::vector<MYSQL_BIND> _bind;
+    std::vector<detail::bind_meta_data_t> _bind_meta_data;
+    std::vector<MYSQL_BIND> _bind_data;
     std::function<void(std::string_view)> _debug;
 
   public:
@@ -50,6 +63,8 @@ namespace sqlpp ::mysql
         : _handle(std::move(handle)),
           _number_of_parameters(number_of_parameters),
           _number_of_columns(number_of_columns),
+          _bind_meta_data(number_of_parameters),
+          _bind_data(number_of_parameters),
           _debug(debug)
     {
     }
@@ -64,9 +79,19 @@ namespace sqlpp ::mysql
       return _handle.get();
     }
 
-    auto* get_bind_data()
+    auto get_number_of_parameters() const
     {
-      return _bind.data();
+      return _number_of_parameters;
+    }
+
+    auto get_number_of_columns() const
+    {
+      return _number_of_columns;
+    }
+
+    auto& get_bind_data()
+    {
+      return _bind_data;
     }
 
     auto debug() const

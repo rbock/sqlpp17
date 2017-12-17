@@ -1,4 +1,5 @@
 add_library(sqlpp17-connector-mysql
+		bind_result.cpp
 		char_result.cpp
 		connection.cpp
 )

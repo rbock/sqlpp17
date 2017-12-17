@@ -29,7 +29,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <functional>
 #include <type_traits>
 
-#include <sqlpp17/prepared_statement.h>
 #include <sqlpp17/result.h>
 #include <sqlpp17/statement.h>
 
@@ -55,14 +54,16 @@ namespace sqlpp::mysql::detail
 
   // prepared execution
   auto prepare(const connection_t&, const std::string& statement, size_t no_of_parameters, size_t no_of_columns)
-      -> prepared_statement_t;
+      -> ::sqlpp::mysql::prepared_statement_t;
 
   class prepared_select_t
   {
-    prepared_statement_t _statement;
+    ::sqlpp::mysql::prepared_statement_t _statement;
+    std::function<void(std::string_view)> _debug;
 
   public:
-    prepared_select_t(prepared_statement_t&& statement) : _statement(std::move(statement))
+    prepared_select_t(::sqlpp::mysql::prepared_statement_t&& statement, std::function<void(std::string_view)> debug)
+        : _statement(std::move(statement)), _debug(debug)
     {
     }
 
@@ -71,10 +72,10 @@ namespace sqlpp::mysql::detail
 
   class prepared_insert_t
   {
-    prepared_statement_t _statement;
+    ::sqlpp::mysql::prepared_statement_t _statement;
 
   public:
-    prepared_insert_t(prepared_statement_t&& statement) : _statement(std::move(statement))
+    prepared_insert_t(::sqlpp::mysql::prepared_statement_t&& statement) : _statement(std::move(statement))
     {
     }
 
@@ -83,10 +84,10 @@ namespace sqlpp::mysql::detail
 
   class prepared_update_t
   {
-    prepared_statement_t _statement;
+    ::sqlpp::mysql::prepared_statement_t _statement;
 
   public:
-    prepared_update_t(prepared_statement_t&& statement) : _statement(std::move(statement))
+    prepared_update_t(::sqlpp::mysql::prepared_statement_t&& statement) : _statement(std::move(statement))
     {
     }
 
@@ -95,10 +96,10 @@ namespace sqlpp::mysql::detail
 
   class prepared_erase_t
   {
-    prepared_statement_t _statement;
+    ::sqlpp::mysql::prepared_statement_t _statement;
 
   public:
-    prepared_erase_t(prepared_statement_t&& statement) : _statement(std::move(statement))
+    prepared_erase_t(::sqlpp::mysql::prepared_statement_t&& statement) : _statement(std::move(statement))
     {
     }
 
@@ -220,9 +221,10 @@ namespace sqlpp::mysql
     template <typename Statement>
     [[nodiscard]] auto prepare_select(const Statement& statement)
     {
-      return detail::prepared_select_t{detail::prepare(*this, to_sql_string(*this, statement),
-                                                       statement.get_no_of_parameters(),
-                                                       statement.get_no_of_result_columns())};
+      return detail::prepared_select_t{
+          detail::prepare(*this, to_sql_string(*this, statement), statement.get_no_of_parameters(),
+                          statement.get_no_of_result_columns()),
+          _debug};
     }
 
     std::function<void(std::string_view)> _debug;

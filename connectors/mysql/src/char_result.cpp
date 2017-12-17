@@ -31,7 +31,7 @@ namespace sqlpp::mysql::detail
   auto get_next_result_row(char_result_t& result) -> bool
   {
     if (result.debug())
-      result.debug()("Reading row");
+      result.debug()("Reading char row");
 
     result._data = mysql_fetch_row(result.get());
     result._lengths = mysql_fetch_lengths(result.get());

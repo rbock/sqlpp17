@@ -26,6 +26,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <iostream>
 
+#include <sqlpp17/clauses/insert.h>
 #include <sqlpp17/clauses/select.h>
 
 #include <sqlpp17/mysql/connection.h>
@@ -64,13 +65,19 @@ int main()
     db.execute(R"(DROP TABLE IF EXISTS tab_department)");
     db.execute(R"(CREATE TABLE tab_department (
 			id bigint(20) AUTO_INCREMENT,
-			name varchar(255) NOT NULL,
+			name varchar(255) NULL,
 			PRIMARY KEY (id)
 			))");
 
+    auto id = db(sqlpp::insert().into(test::tabDepartment).default_values());
+    id = db(sqlpp::insert().into(test::tabDepartment).set(test::tabDepartment.name = "hansi"));
+
     auto prepared_select =
         db.prepare(sqlpp::select(test::tabDepartment.id).from(test::tabDepartment).unconditionally());
-    auto x = prepared_select.run();
+    for (const auto& row : prepared_select.run())
+    {
+      std::cout << row.id << std::endl;
+    }
   }
   catch (const std::exception& e)
   {

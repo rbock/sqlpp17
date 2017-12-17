@@ -152,7 +152,7 @@ namespace sqlpp::mysql::detail
   auto prepare(const connection_t& connection,
                const std::string& statement,
                size_t no_of_parameters,
-               size_t no_of_columns) -> prepared_statement_t
+               size_t no_of_columns) -> ::sqlpp::mysql::prepared_statement_t
   {
     thread_init();
 
@@ -174,14 +174,14 @@ namespace sqlpp::mysql::detail
     return {std::move(statement_handle), no_of_parameters, no_of_columns, connection.debug()};
   }
 
-  auto execute_prepared_statement(prepared_statement_t& prepared_statement) -> void
+  auto execute_prepared_statement(::sqlpp::mysql::prepared_statement_t& prepared_statement) -> void
   {
     thread_init();
 
     if (prepared_statement.debug())
       prepared_statement.debug()("Executing prepared_statement");
 
-    if (mysql_stmt_bind_param(prepared_statement.get(), prepared_statement.get_bind_data()))
+    if (mysql_stmt_bind_param(prepared_statement.get(), prepared_statement.get_bind_data().data()))
     {
       throw sqlpp::exception(std::string("MySQL: Could not bind parameters to statement") +
                              mysql_stmt_error(prepared_statement.get()));
@@ -197,7 +197,7 @@ namespace sqlpp::mysql::detail
   auto prepared_select_t::run() -> bind_result_t
   {
     execute_prepared_statement(_statement);
-    return {_statement.get()};
+    return {_statement};
   }
 
   auto prepared_insert_t::run() -> size_t

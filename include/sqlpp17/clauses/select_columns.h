@@ -141,8 +141,7 @@ namespace sqlpp
   public:
     [[nodiscard]] constexpr auto get_no_of_result_columns() const
     {
-#warning : implement
-      return 0;
+      return sizeof...(Columns);
     }
 
     using _result_row_t = result_row_t<make_column_spec_t<Statement, Columns>...>;
