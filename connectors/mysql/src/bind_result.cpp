@@ -98,9 +98,9 @@ namespace sqlpp::mysql
     if (result.debug())
       result.debug()("Binding integral result at index " + std::to_string(index));
 
-    detail::bind_meta_data_t& meta_data = result.get_bind_meta_data()[index];
+    auto& meta_data = result.get_bind_meta_data()[index];
 
-    MYSQL_BIND& param = result.get_bind_data()[index];
+    auto& param = result.get_bind_data()[index];
     param.buffer_type = MYSQL_TYPE_LONGLONG;
     param.buffer = &value;
     param.buffer_length = sizeof(value);
@@ -108,6 +108,41 @@ namespace sqlpp::mysql
     param.is_null = &meta_data.bound_is_null;
     param.is_unsigned = false;
     param.error = &meta_data.bound_error;
+  }
+
+  auto pre_bind_field(bind_result_t& result, std::optional<std::string_view>& value, std::size_t index) -> void
+  {
+    if (result.debug())
+      result.debug()("Binding string_view result at index " + std::to_string(index));
+
+    auto& meta_data = result.get_bind_meta_data()[index];
+    meta_data.use_buffer = true;
+
+    auto& param = result.get_bind_data()[index];
+    param.buffer_type = MYSQL_TYPE_STRING;
+    param.buffer = meta_data.bound_buffer.data();
+    param.buffer_length = meta_data.bound_buffer.size();
+    param.length = &meta_data.bound_len;
+    param.is_null = &meta_data.bound_is_null;
+    param.is_unsigned = false;
+    param.error = &meta_data.bound_error;
+  }
+
+  auto post_bind_field(bind_result_t& result, std::optional<std::string_view>& value, std::size_t index) -> void
+  {
+    if (result.debug())
+      result.debug()("Assigning string_view result at index " + std::to_string(index));
+
+    const auto& meta_data = result.get_bind_meta_data()[index];
+
+    if (meta_data.bound_is_null)
+    {
+      value.reset();
+    }
+    else
+    {
+      value = std::string_view{meta_data.bound_buffer.data(), meta_data.bound_len};
+    }
   }
 }  // namespace sqlpp::mysql
 

@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <functional>
 #include <memory>
+#include <optional>
 #include <string_view>
 
 #include <mysql.h>
@@ -135,4 +136,7 @@ namespace sqlpp::mysql
   inline auto post_bind_field(bind_result_t& result, std::int64_t& value, std::size_t index) -> void
   {
   }
+
+  auto pre_bind_field(bind_result_t& result, std::optional<std::string_view>& value, std::size_t index) -> void;
+  auto post_bind_field(bind_result_t& result, std::optional<std::string_view>& value, std::size_t index) -> void;
 }  // namespace sqlpp::mysql

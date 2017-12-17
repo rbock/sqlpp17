@@ -72,11 +72,11 @@ int main()
     auto id = db(sqlpp::insert().into(test::tabDepartment).default_values());
     id = db(sqlpp::insert().into(test::tabDepartment).set(test::tabDepartment.name = "hansi"));
 
-    auto prepared_select =
-        db.prepare(sqlpp::select(test::tabDepartment.id).from(test::tabDepartment).unconditionally());
+    auto prepared_select = db.prepare(
+        sqlpp::select(test::tabDepartment.id, test::tabDepartment.name).from(test::tabDepartment).unconditionally());
     for (const auto& row : prepared_select.run())
     {
-      std::cout << row.id << std::endl;
+      std::cout << row.id << ", " << row.name.value_or("NULL") << std::endl;
     }
   }
   catch (const std::exception& e)
