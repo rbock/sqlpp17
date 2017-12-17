@@ -46,7 +46,7 @@ namespace test
     {
       SQLPP_ALIAS(name)
       using value_type = std::optional<std::string_view>;
-      static constexpr auto tags = sqlpp::tag::none;
+      static constexpr auto tags = sqlpp::tag::can_be_null;
     };
 
     struct _

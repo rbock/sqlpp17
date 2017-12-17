@@ -121,7 +121,10 @@ namespace sqlpp
   constexpr auto must_not_update_v<column_t<TableSpec, ColumnSpec>> = !!(ColumnSpec::tags & tag::must_not_update);
 
   template <typename TableSpec, typename ColumnSpec>
-  constexpr auto has_default_v<column_t<TableSpec, ColumnSpec>> = !!(ColumnSpec::tags & tag::has_default);
+  struct has_default<column_t<TableSpec, ColumnSpec>>
+  {
+    static constexpr auto value = !!(ColumnSpec::tags & (tag::has_default | tag::can_be_null));
+  };
 
   template <typename TableSpec, typename ColumnSpec>
   constexpr auto is_insert_required_v<column_t<TableSpec, ColumnSpec>> =

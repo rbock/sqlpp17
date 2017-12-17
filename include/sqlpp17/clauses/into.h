@@ -132,6 +132,8 @@ namespace sqlpp
   class result_base<into_t<Table>, Statement>
   {
   public:
+    using into_table_t = Table;
+
     template <typename Connection>
     [[nodiscard]] auto _run(Connection& connection) const
     {

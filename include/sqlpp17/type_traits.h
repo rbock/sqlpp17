@@ -46,7 +46,8 @@ namespace sqlpp
     constexpr type none = 0;
     constexpr type must_not_insert = 1 << 0;
     constexpr type must_not_update = 1 << 1;
-    constexpr type has_default = 1 << 2;
+    constexpr type can_be_null = 1 << 2;
+    constexpr type has_default = 1 << 3;
   }  // namespace tag
 
   template <tag::type Tag, bool Condition>
@@ -293,13 +294,10 @@ namespace sqlpp
   }
 
   template <typename T>
-  constexpr auto has_default_v = false;
-
-  template <typename T>
-  constexpr auto has_default(const T&)
+  struct has_default
   {
-    return has_default_v<T>;
-  }
+    static constexpr auto value = false;
+  };
 
   template <typename T>
   constexpr auto is_expression_v = false;
@@ -530,6 +528,15 @@ namespace sqlpp
   constexpr auto required_columns_of(const T&)
   {
     return required_columns_of_v<T>;
+  }
+
+  template <typename T>
+  constexpr auto default_columns_of_v = type_set_t<>();
+
+  template <typename T>
+  constexpr auto default_columns_of(const T&)
+  {
+    return default_columns_of_v<T>;
   }
 
   template <typename T>

@@ -70,6 +70,10 @@ namespace sqlpp
       type_set_if<is_insert_required, column_t<TableSpec, ColumnSpecs>...>();
 
   template <typename TableSpec, typename... ColumnSpecs>
+  constexpr auto default_columns_of_v<table_t<TableSpec, ColumnSpecs...>> =
+      type_set_if<has_default, column_t<TableSpec, ColumnSpecs>...>();
+
+  template <typename TableSpec, typename... ColumnSpecs>
   constexpr auto columns_of_v<table_t<TableSpec, ColumnSpecs...>> = type_set<column_t<TableSpec, ColumnSpecs>...>();
 
   template <typename TableSpec, typename... ColumnSpecs>

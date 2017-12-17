@@ -114,6 +114,26 @@ namespace sqlpp
     }
   };
 
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_default_values_require_all_defaults,
+                              "default_values() requires all columns to have a default value");
+
+  template <typename Db, typename Statement>
+  constexpr auto check_clause_preparable(const type_t<clause_base<insert_default_values_t, Statement>>&)
+  {
+    using _table_t = typename Statement::into_table_t;
+    constexpr auto _all_columns = columns_of_v<_table_t>;
+    constexpr auto _default_columns = default_columns_of_v<_table_t>;
+
+    if constexpr (_all_columns == _default_columns)
+    {
+      return succeeded{};
+    }
+    else
+    {
+      return failed<assert_default_values_require_all_defaults>{};
+    }
+  }
+
   template <typename DbConnection, typename Statement>
   [[nodiscard]] auto to_sql_string(const DbConnection& connection,
                                    const clause_base<insert_default_values_t, Statement>& t)
