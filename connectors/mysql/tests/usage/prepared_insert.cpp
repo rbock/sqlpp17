@@ -26,6 +26,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <iostream>
 
+#include <sqlpp17/clauses/create_table.h>
+#include <sqlpp17/clauses/drop_table.h>
 #include <sqlpp17/clauses/insert.h>
 
 #include <sqlpp17/mysql/connection.h>
@@ -61,12 +63,8 @@ int main()
   try
   {
     auto db = mysql::connection_t{config};
-    db.execute(R"(DROP TABLE IF EXISTS tab_department)");
-    db.execute(R"(CREATE TABLE tab_department (
-			id bigint(20) AUTO_INCREMENT,
-			name varchar(255) NULL,
-			PRIMARY KEY (id)
-			))");
+    db(drop_table(test::tabDepartment));
+    db(create_table(test::tabDepartment));
 
     auto prepared_insert = db.prepare(sqlpp::insert().into(test::tabDepartment).default_values());
     auto id = prepared_insert.run();
