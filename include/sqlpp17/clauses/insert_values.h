@@ -261,7 +261,7 @@ namespace sqlpp
     {
       return failed<assert_insert_set_args_contain_no_duplicates>{};
     }
-    else if constexpr ((false || ... || must_not_insert_v<column_of_t<Assignments>>))
+    else if constexpr ((false || ... || is_auto_value_v<column_of_t<Assignments>>))
     {
       return failed<assert_insert_set_assignments_are_allowed>{};
     }

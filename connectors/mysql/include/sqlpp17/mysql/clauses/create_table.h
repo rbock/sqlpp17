@@ -62,7 +62,7 @@ namespace sqlpp::mysql::detail
     auto ret = name_to_sql_string(connection, name_of_v<ColumnSpec>) +
                value_type_to_sql_string(typename ColumnSpec::value_type{});
 
-    if constexpr (!(ColumnSpec::tags & ::sqlpp::tag::can_be_null))
+    if constexpr (!ColumnSpec::can_be_null)
     {
       ret += " NOT NULL";
     }

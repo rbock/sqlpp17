@@ -39,7 +39,7 @@ namespace test
     {
       SQLPP_ALIAS(id)
       using value_type = std::int64_t;
-      static constexpr auto tags = sqlpp::tag::auto_value;
+      static constexpr auto can_be_null = false;
       static constexpr auto default_value = ::sqlpp::auto_increment_t{};
     };
 
@@ -47,7 +47,7 @@ namespace test
     {
       SQLPP_ALIAS(name)
       using value_type = std::string_view;
-      static constexpr auto tags = sqlpp::tag::can_be_null;
+      static constexpr auto can_be_null = true;
       static constexpr auto default_value = ::sqlpp::none_t{};
     };
 

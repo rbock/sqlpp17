@@ -39,7 +39,7 @@ namespace test
     {
       SQLPP_ALIAS(id)
       using value_type = std::int64_t;
-      static constexpr auto tags = sqlpp::tag::primary_key | sqlpp::tag::auto_value;
+      static constexpr auto can_be_null = false;
       static constexpr auto default_value = ::sqlpp::auto_increment_t{};
     };
 
@@ -47,7 +47,7 @@ namespace test
     {
       SQLPP_ALIAS(is_manager)
       using value_type = bool;
-      static constexpr auto tags = sqlpp::tag::none;
+      static constexpr auto can_be_null = false;
       static constexpr auto default_value = ::sqlpp::none_t{};
     };
 
@@ -55,7 +55,7 @@ namespace test
     {
       SQLPP_ALIAS(name)
       using value_type = std::string_view;
-      static constexpr auto tags = sqlpp::tag::none;
+      static constexpr auto can_be_null = false;
       static constexpr auto default_value = ::sqlpp::none_t{};
     };
 
@@ -63,7 +63,7 @@ namespace test
     {
       SQLPP_ALIAS(address)
       using value_type = std::optional<std::string_view>;
-      static constexpr auto tags = ::sqlpp::tag::none;
+      static constexpr auto can_be_null = false;
       static constexpr char default_value[] = "";
     };
 

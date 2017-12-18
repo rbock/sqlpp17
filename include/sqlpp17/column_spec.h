@@ -36,7 +36,6 @@ namespace sqlpp
     using _alias_t = Alias;
     using value_type = ValueType;
 #warning : Pseudo-tables need to be read-only
-    static constexpr auto tags = tag::none;
   };
 
   template <typename Alias, typename ValueType>

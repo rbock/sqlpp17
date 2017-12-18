@@ -40,24 +40,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  namespace tag
-  {
-    using type = uint16_t;
-    constexpr type none = 0;
-    constexpr type can_be_null = 1 << 0;
-    constexpr type auto_value = 1 << 1;
-  }  // namespace tag
-
-  template <tag::type Tag, bool Condition>
-  constexpr auto tag_if_v = Condition ? Tag : tag::none;
-
   struct none_t
   {
   };
 
+  template <typename T>
+  constexpr auto is_auto_value_v = false;
+
   struct auto_increment_t
   {
   };
+
+  template <>
+  constexpr auto is_auto_value_v<auto_increment_t> = true;
 
   template <typename T>
   struct type_t
@@ -282,24 +277,6 @@ namespace sqlpp
   constexpr auto is_conditionless_join(const T&)
   {
     return is_conditionless_join<T>;
-  }
-
-  template <typename T>
-  constexpr auto must_not_insert_v = false;
-
-  template <typename T>
-  constexpr auto must_not_insert(const T&)
-  {
-    return must_not_insert_v<T>;
-  }
-
-  template <typename T>
-  constexpr auto must_not_update_v = false;
-
-  template <typename T>
-  constexpr auto must_not_update(const T&)
-  {
-    return must_not_update_v<T>;
   }
 
   template <typename T>
