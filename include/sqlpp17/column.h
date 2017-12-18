@@ -115,15 +115,18 @@ namespace sqlpp
   constexpr auto is_selectable_v<column_t<TableSpec, ColumnSpec>> = true;
 
   template <typename TableSpec, typename ColumnSpec>
-  constexpr auto must_not_insert_v<column_t<TableSpec, ColumnSpec>> = !!(ColumnSpec::tags & tag::auto_increment);
+  constexpr auto can_be_null_v<column_t<TableSpec, ColumnSpec>> = !!(ColumnSpec::tags & tag::can_be_null);
 
   template <typename TableSpec, typename ColumnSpec>
-  constexpr auto must_not_update_v<column_t<TableSpec, ColumnSpec>> = !!(ColumnSpec::tags & tag::auto_increment);
+  constexpr auto must_not_insert_v<column_t<TableSpec, ColumnSpec>> = !!(ColumnSpec::tags & tag::auto_value);
+
+  template <typename TableSpec, typename ColumnSpec>
+  constexpr auto must_not_update_v<column_t<TableSpec, ColumnSpec>> = !!(ColumnSpec::tags & tag::auto_value);
 
   template <typename TableSpec, typename ColumnSpec>
   struct has_default<column_t<TableSpec, ColumnSpec>>
   {
-    static constexpr auto value = bool(ColumnSpec::tags & (tag::can_be_null | tag::auto_increment)) or
+    static constexpr auto value = bool(ColumnSpec::tags & (tag::can_be_null | tag::auto_value)) or
                                   not std::is_same_v<decltype(ColumnSpec::default_value), ::sqlpp::none_t>;
   };
 

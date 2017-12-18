@@ -47,8 +47,8 @@ namespace test
         };
       };
       using value_type = std::int64_t;
-      static constexpr auto tags = sqlpp::tag::primary_key | sqlpp::tag::auto_increment;
-      static constexpr auto default_value = ::sqlpp::none_t{};
+      static constexpr auto tags = sqlpp::tag::primary_key | sqlpp::tag::auto_value;
+      static constexpr auto default_value = ::sqlpp::auto_increment_t{};
     };
 
     struct IsManager

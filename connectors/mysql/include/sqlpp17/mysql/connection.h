@@ -174,6 +174,12 @@ namespace sqlpp::mysql
 
   private:
     template <typename Statement>
+    auto _execute(const Statement& statement)
+    {
+      return detail::execute(*this, to_sql_string(*this, statement));
+    }
+
+    template <typename Statement>
     auto insert(const Statement& statement)
     {
       return detail::insert(*this, to_sql_string(*this, statement));

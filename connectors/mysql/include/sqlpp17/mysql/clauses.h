@@ -26,5 +26,6 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <sqlpp17/mysql/clauses/create_table.h>
 #include <sqlpp17/mysql/clauses/insert_values.h>
 

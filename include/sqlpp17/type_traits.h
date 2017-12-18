@@ -45,14 +45,18 @@ namespace sqlpp
     using type = uint16_t;
     constexpr type none = 0;
     constexpr type primary_key = 1 << 0;
-    constexpr type auto_increment = 1 << 0;
-    constexpr type can_be_null = 1 << 2;
+    constexpr type can_be_null = 1 << 1;
+    constexpr type auto_value = 1 << 2;
   }  // namespace tag
 
   template <tag::type Tag, bool Condition>
   constexpr auto tag_if_v = Condition ? Tag : tag::none;
 
   struct none_t
+  {
+  };
+
+  struct auto_increment_t
   {
   };
 
@@ -74,6 +78,9 @@ namespace sqlpp
 
   template <typename T>
   constexpr auto is_aggregate_v = false;
+
+  template <typename T>
+  constexpr auto can_be_null_v = false;
 
   template <typename KnownAggregatesSet, typename... Ts>
   constexpr auto recursive_is_aggregate(const type_set_t<Ts...>&)

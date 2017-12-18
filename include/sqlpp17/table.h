@@ -56,6 +56,12 @@ namespace sqlpp
   }
 
   template <typename TableSpec, typename... ColumnSpecs>
+  [[nodiscard]] constexpr auto columns_of(const table_t<TableSpec, ColumnSpecs...>& t)
+  {
+    return std::tuple{static_cast<member_t<ColumnSpecs, column_t<TableSpec, ColumnSpecs>>>(t)()...};
+  }
+
+  template <typename TableSpec, typename... ColumnSpecs>
   constexpr auto is_table_v<table_t<TableSpec, ColumnSpecs...>> = true;
 
   template <typename TableSpec, typename... ColumnSpecs>
