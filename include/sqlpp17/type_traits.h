@@ -44,9 +44,8 @@ namespace sqlpp
   {
     using type = uint16_t;
     constexpr type none = 0;
-    constexpr type primary_key = 1 << 0;
-    constexpr type can_be_null = 1 << 1;
-    constexpr type auto_value = 1 << 2;
+    constexpr type can_be_null = 1 << 0;
+    constexpr type auto_value = 1 << 1;
   }  // namespace tag
 
   template <tag::type Tag, bool Condition>

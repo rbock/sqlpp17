@@ -39,7 +39,7 @@ namespace test
     {
       SQLPP_ALIAS(id)
       using value_type = std::int64_t;
-      static constexpr auto tags = sqlpp::tag::primary_key | sqlpp::tag::auto_value;
+      static constexpr auto tags = sqlpp::tag::auto_value;
       static constexpr auto default_value = ::sqlpp::auto_increment_t{};
     };
 
@@ -53,15 +53,8 @@ namespace test
 
     struct _
     {
-      struct _alias_t
-      {
-        static constexpr char name[] = "tab_department";
-        template <typename T>
-        struct _member_t
-        {
-          T tabDepartment;
-        };
-      };
+      SQLPP_ALIAS(tab_department)
+      using primary_key = Id;
     };
   }  // namespace TabDepartment_
 

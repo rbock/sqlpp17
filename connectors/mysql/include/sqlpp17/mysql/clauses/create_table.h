@@ -30,6 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/clauses/create_table.h>
 #include <sqlpp17/column.h>
+#include <sqlpp17/table.h>
 
 namespace sqlpp::mysql
 {
@@ -79,11 +80,6 @@ namespace sqlpp::mysql::detail
       // ret += " DEFAULT=" + to_sql_string(connection, c.default_value);
     }
 
-    if constexpr (!!(ColumnSpec::tags & ::sqlpp::tag::primary_key))
-    {
-      ret += " PRIMARY KEY";
-    }
-
     return ret;
   }
 
@@ -110,6 +106,21 @@ namespace sqlpp::mysql::detail
 
     return (std ::string{} + ... + (separator.to_string() + to_sql_column_spec_string(connection, ColumnSpecs{})));
   }
+
+  template <typename TableSpec, typename... ColumnSpecs>
+  [[nodiscard]] auto to_sql_primary_key(const mysql::connection_t& connection,
+                                        const ::sqlpp::table_t<TableSpec, ColumnSpecs...>& t)
+  {
+    using _primary_key = typename TableSpec::primary_key;
+    if constexpr (std::is_same_v<_primary_key, ::sqlpp::none_t>)
+    {
+      return "";
+    }
+    else
+    {
+      return ", PRIMARY KEY (" + name_to_sql_string(connection, name_of_v<_primary_key>) + ")";
+    }
+  }
 }  // namespace sqlpp::mysql::detail
 
 namespace sqlpp
@@ -118,7 +129,12 @@ namespace sqlpp
   [[nodiscard]] auto to_sql_string(const mysql::connection_t& connection,
                                    const clause_base<create_table_t<Table>, Statement>& t)
   {
-    return std::string{"CREATE TABLE "} + to_sql_string(connection, t._table) +  //
-           "(" + sqlpp::mysql::detail::to_sql_create_columns_string(connection, columns_of(t._table)) + ")";
+    auto ret = std::string{"CREATE TABLE "} + to_sql_string(connection, t._table);
+    ret += "(";
+    ret += ::sqlpp::mysql::detail::to_sql_create_columns_string(connection, columns_of(t._table));
+    ret += ::sqlpp::mysql::detail::to_sql_primary_key(connection, t._table);
+    ret += ")";
+
+    return ret;
   }
 }  // namespace sqlpp

@@ -37,15 +37,7 @@ namespace test
   {
     struct Id
     {
-      struct _alias_t
-      {
-        static constexpr char name[] = "id";
-        template <typename T>
-        struct _member_t
-        {
-          T id;
-        };
-      };
+      SQLPP_ALIAS(id)
       using value_type = std::int64_t;
       static constexpr auto tags = sqlpp::tag::primary_key | sqlpp::tag::auto_value;
       static constexpr auto default_value = ::sqlpp::auto_increment_t{};
@@ -53,15 +45,7 @@ namespace test
 
     struct IsManager
     {
-      struct _alias_t
-      {
-        static constexpr char name[] = "is_manager";
-        template <typename T>
-        struct _member_t
-        {
-          T isManager;
-        };
-      };
+      SQLPP_ALIAS(is_manager)
       using value_type = bool;
       static constexpr auto tags = sqlpp::tag::none;
       static constexpr auto default_value = ::sqlpp::none_t{};
@@ -69,15 +53,7 @@ namespace test
 
     struct Name
     {
-      struct _alias_t
-      {
-        static constexpr char name[] = "name";
-        template <typename T>
-        struct _member_t
-        {
-          T name;
-        };
-      };
+      SQLPP_ALIAS(name)
       using value_type = std::string_view;
       static constexpr auto tags = sqlpp::tag::none;
       static constexpr auto default_value = ::sqlpp::none_t{};
@@ -85,15 +61,7 @@ namespace test
 
     struct Address
     {
-      struct _alias_t
-      {
-        static constexpr char name[] = "address";
-        template <typename T>
-        struct _member_t
-        {
-          T address;
-        };
-      };
+      SQLPP_ALIAS(address)
       using value_type = std::optional<std::string_view>;
       static constexpr auto tags = ::sqlpp::tag::none;
       static constexpr char default_value[] = "";
@@ -101,15 +69,8 @@ namespace test
 
     struct _
     {
-      struct _alias_t
-      {
-        static constexpr char name[] = "tab_person";
-        template <typename T>
-        struct _member_t
-        {
-          T tabPerson;
-        };
-      };
+      SQLPP_ALIAS(tab_person)
+      using primary_key = Id;
     };
   }  // namespace TabPerson_
 
