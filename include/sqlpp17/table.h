@@ -82,9 +82,8 @@ namespace sqlpp
   template <typename TableSpec, typename... ColumnSpecs>
   constexpr auto columns_of_v<table_t<TableSpec, ColumnSpecs...>> = type_set<column_t<TableSpec, ColumnSpecs>...>();
 
-#warning : value_types are never optional
   template <typename TableSpec, typename... ColumnSpecs>
-  constexpr auto optional_columns_of_v<table_t<TableSpec, ColumnSpecs...>> =
-      type_set_if<is_value_type_optional, column_t<TableSpec, ColumnSpecs>...>();
+  constexpr auto can_be_null_columns_of_v<table_t<TableSpec, ColumnSpecs...>> =
+      type_set_if<can_be_null, column_t<TableSpec, ColumnSpecs>...>();
 
 }  // namespace sqlpp

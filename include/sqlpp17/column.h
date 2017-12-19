@@ -115,7 +115,10 @@ namespace sqlpp
   constexpr auto is_selectable_v<column_t<TableSpec, ColumnSpec>> = true;
 
   template <typename TableSpec, typename ColumnSpec>
-  constexpr auto can_be_null_v<column_t<TableSpec, ColumnSpec>> = ColumnSpec::can_be_null;
+  struct can_be_null<column_t<TableSpec, ColumnSpec>>
+  {
+    static constexpr auto value = ColumnSpec::can_be_null;
+  };
 
   template <typename TableSpec, typename ColumnSpec>
   constexpr auto is_auto_value_v<column_t<TableSpec, ColumnSpec>> =

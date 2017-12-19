@@ -58,7 +58,7 @@ namespace sqlpp
 
     static constexpr auto _is_optional =
         (is_optional_v<Column> or is_optional_v<_value_t> or can_be_null_v<_base_column> or
-         optional_columns_of_v<Statement>.template count<_base_column>());
+         can_be_null_columns_of_v<Statement>.template count<_base_column>());
 
     using _spec_value_t = std::conditional_t<_is_optional, add_optional_t<_base_value_t>, _base_value_t>;
 

@@ -74,7 +74,13 @@ namespace sqlpp
   constexpr auto is_aggregate_v = false;
 
   template <typename T>
-  constexpr auto can_be_null_v = false;
+  struct can_be_null
+  {
+    static constexpr auto value = false;
+  };
+
+  template <typename T>
+  constexpr auto can_be_null_v = can_be_null<T>::value;
 
   template <typename KnownAggregatesSet, typename... Ts>
   constexpr auto recursive_is_aggregate(const type_set_t<Ts...>&)
@@ -526,12 +532,12 @@ namespace sqlpp
   }
 
   template <typename T>
-  constexpr auto optional_columns_of_v = type_set_t<>();
+  constexpr auto can_be_null_columns_of_v = type_set_t<>();
 
   template <typename T>
-  constexpr auto optional_columns_of(const T&)
+  constexpr auto can_be_null_columns_of(const T&)
   {
-    return optional_columns_of_v<T>;
+    return can_be_null_columns_of_v<T>;
   }
 
   template <typename T>

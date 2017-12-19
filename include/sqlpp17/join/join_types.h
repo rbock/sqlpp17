@@ -33,7 +33,7 @@ namespace sqlpp
   struct cross_join_t
   {
     template <typename Lhs, typename Rhs>
-    static constexpr auto _optional_columns_of = (optional_columns_of_v<Lhs> | optional_columns_of_v<Rhs>);
+    static constexpr auto _can_be_null_columns_of = (can_be_null_columns_of_v<Lhs> | can_be_null_columns_of_v<Rhs>);
 
     static constexpr const char* _name = " CROSS";
   };
@@ -41,7 +41,7 @@ namespace sqlpp
   struct inner_join_t
   {
     template <typename Lhs, typename Rhs>
-    static constexpr auto _optional_columns_of = (optional_columns_of_v<Lhs> | optional_columns_of_v<Rhs>);
+    static constexpr auto _can_be_null_columns_of = (can_be_null_columns_of_v<Lhs> | can_be_null_columns_of_v<Rhs>);
 
     static constexpr const char* _name = " INNER";
   };
@@ -49,7 +49,7 @@ namespace sqlpp
   struct outer_join_t
   {
     template <typename Lhs, typename Rhs>
-    static constexpr auto _optional_columns_of = (columns_of_v<Lhs> | columns_of_v<Rhs>);
+    static constexpr auto _can_be_null_columns_of = (columns_of_v<Lhs> | columns_of_v<Rhs>);
 
     static constexpr const char* _name = " OUTER";
   };
@@ -57,7 +57,7 @@ namespace sqlpp
   struct left_outer_join_t
   {
     template <typename Lhs, typename Rhs>
-    static constexpr auto _optional_columns_of = (optional_columns_of_v<Lhs> | columns_of_v<Rhs>);
+    static constexpr auto _can_be_null_columns_of = (can_be_null_columns_of_v<Lhs> | columns_of_v<Rhs>);
 
     static constexpr const char* _name = " LEFT OUTER";
   };
@@ -65,7 +65,7 @@ namespace sqlpp
   struct right_outer_join_t
   {
     template <typename Lhs, typename Rhs>
-    static constexpr auto _optional_columns_of = (columns_of_v<Lhs> | optional_columns_of_v<Rhs>);
+    static constexpr auto _can_be_null_columns_of = (columns_of_v<Lhs> | can_be_null_columns_of_v<Rhs>);
 
     static constexpr const char* _name = " RIGHT OUTER";
   };
