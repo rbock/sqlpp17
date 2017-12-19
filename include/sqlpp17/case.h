@@ -89,7 +89,7 @@ namespace sqlpp
   template <typename DbConnection, typename... WhenThen>
   [[nodiscard]] auto to_sql_string(const DbConnection& connection, const case_when_then_t<WhenThen...>& t)
   {
-    return std::string{" CASE"} + tuple_to_string(connection, "", t._when_thens);
+    return std::string{" CASE"} + tuple_to_sql_string(connection, "", t._when_thens);
   }
 
   template <typename DbConnection, typename CaseWhenThen, typename Else>

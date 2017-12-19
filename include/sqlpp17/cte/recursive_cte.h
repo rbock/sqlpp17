@@ -39,7 +39,7 @@ namespace sqlpp
     using _alias_t = typename FieldSpec::_alias_t;
 
     using value_type = value_type_of_t<FieldSpec>;
-    static constexpr auto tags = sqlpp::tag::must_not_insert | sqlpp::tag::must_not_update;
+#warning ctes must be const
   };
 
   template <typename Cte, typename ResultRow>

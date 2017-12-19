@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <cstdint>
 
+#include <sqlpp17/alias_provider.h>
 #include <sqlpp17/table.h>
 
 namespace test
@@ -36,32 +37,27 @@ namespace test
   {
     struct Id
     {
-      struct _alias_t
-      {
-        static constexpr char name[] = "id";
-        template <typename T>
-        struct _member_t
-        {
-          T id;
-        };
-      };
+      SQLPP_ALIAS(id)
       using value_type = std::int64_t;
-      static constexpr auto tags = sqlpp::tag::must_not_insert | sqlpp::tag::must_not_update | sqlpp::tag::has_default;
+      static constexpr auto can_be_null = false;
+      static constexpr auto default_value = ::sqlpp::auto_increment_t{};
+    };
+
+    struct Name
+    {
+      SQLPP_ALIAS(name)
+      using value_type = std::string_view;
+      static constexpr auto can_be_null = true;
+      static constexpr auto default_value = ::sqlpp::none_t{};
     };
 
     struct _
     {
-      struct _alias_t
-      {
-        static constexpr char name[] = "tab_department";
-        template <typename T>
-        struct _member_t
-        {
-          T tabDepartment;
-        };
-      };
+      SQLPP_ALIAS(tab_department)
+      using primary_key = Id;
     };
   }  // namespace TabDepartment_
 
-  inline constexpr auto tabDepartment = sqlpp::table_t<TabDepartment_::_, TabDepartment_::Id>{};
+  inline constexpr auto tabDepartment = sqlpp::table_t<TabDepartment_::_, TabDepartment_::Id, TabDepartment_::Name>{};
+
 }  // namespace test

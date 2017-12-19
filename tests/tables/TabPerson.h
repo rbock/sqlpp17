@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <optional>
 #include <string>
 
+#include <sqlpp17/alias_provider.h>
 #include <sqlpp17/table.h>
 
 namespace test
@@ -37,75 +38,40 @@ namespace test
   {
     struct Id
     {
-      struct _alias_t
-      {
-        static constexpr char name[] = "id";
-        template <typename T>
-        struct _member_t
-        {
-          T id;
-        };
-      };
+      SQLPP_ALIAS(id)
       using value_type = std::int64_t;
-      static constexpr auto tags = sqlpp::tag::must_not_insert | sqlpp::tag::must_not_update | sqlpp::tag::has_default;
+      static constexpr auto can_be_null = false;
+      static constexpr auto default_value = ::sqlpp::auto_increment_t{};
     };
 
     struct IsManager
     {
-      struct _alias_t
-      {
-        static constexpr char name[] = "is_manager";
-        template <typename T>
-        struct _member_t
-        {
-          T isManager;
-        };
-      };
+      SQLPP_ALIAS2(is_manager, isManager)
       using value_type = bool;
-      static constexpr auto tags = 0;
+      static constexpr auto can_be_null = false;
+      static constexpr auto default_value = ::sqlpp::none_t{};
     };
 
     struct Name
     {
-      struct _alias_t
-      {
-        static constexpr char name[] = "name";
-        template <typename T>
-        struct _member_t
-        {
-          T name;
-        };
-      };
+      SQLPP_ALIAS(name)
       using value_type = std::string_view;
-      static constexpr auto tags = 0;
+      static constexpr auto can_be_null = false;
+      static constexpr auto default_value = ::sqlpp::none_t{};
     };
 
     struct Address
     {
-      struct _alias_t
-      {
-        static constexpr char name[] = "address";
-        template <typename T>
-        struct _member_t
-        {
-          T address;
-        };
-      };
-      using value_type = std::optional<std::string_view>;
-      static constexpr auto tags = ::sqlpp::tag::has_default;
+      SQLPP_ALIAS(address)
+      using value_type = std::string_view;
+      static constexpr auto can_be_null = true;
+      static constexpr char default_value[] = "";
     };
 
     struct _
     {
-      struct _alias_t
-      {
-        static constexpr char name[] = "tab_person";
-        template <typename T>
-        struct _member_t
-        {
-          T tabPerson;
-        };
-      };
+      SQLPP_ALIAS(tab_person)
+      using primary_key = Id;
     };
   }  // namespace TabPerson_
 

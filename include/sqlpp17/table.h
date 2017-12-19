@@ -56,7 +56,7 @@ namespace sqlpp
   }
 
   template <typename TableSpec, typename... ColumnSpecs>
-  [[nodiscard]] constexpr auto columns_of(const table_t<TableSpec, ColumnSpecs...>& t)
+  [[nodiscard]] constexpr auto column_tuple_of(const table_t<TableSpec, ColumnSpecs...>& t)
   {
     return std::tuple{static_cast<member_t<ColumnSpecs, column_t<TableSpec, ColumnSpecs>>>(t)()...};
   }
@@ -82,6 +82,7 @@ namespace sqlpp
   template <typename TableSpec, typename... ColumnSpecs>
   constexpr auto columns_of_v<table_t<TableSpec, ColumnSpecs...>> = type_set<column_t<TableSpec, ColumnSpecs>...>();
 
+#warning : value_types are never optional
   template <typename TableSpec, typename... ColumnSpecs>
   constexpr auto optional_columns_of_v<table_t<TableSpec, ColumnSpecs...>> =
       type_set_if<is_value_type_optional, column_t<TableSpec, ColumnSpecs>...>();

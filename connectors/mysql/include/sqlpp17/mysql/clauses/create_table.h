@@ -131,7 +131,7 @@ namespace sqlpp
   {
     auto ret = std::string{"CREATE TABLE "} + to_sql_string(connection, t._table);
     ret += "(";
-    ret += ::sqlpp::mysql::detail::to_sql_create_columns_string(connection, columns_of(t._table));
+    ret += ::sqlpp::mysql::detail::to_sql_create_columns_string(connection, column_tuple_of(t._table));
     ret += ::sqlpp::mysql::detail::to_sql_primary_key(connection, t._table);
     ret += ")";
 

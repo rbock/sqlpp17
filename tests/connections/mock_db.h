@@ -82,7 +82,7 @@ namespace test
     template <typename Statement>
     auto select(const Statement& statement)
     {
-      return ::sqlpp::result_t<typename Statement::_result_row_t, mock_handle>{std::make_unique<mock_handle>()};
+      return mock_result();
     }
   };
 

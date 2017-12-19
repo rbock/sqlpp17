@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <optional>
 #include <string>
 
+#include <sqlpp17/alias_provider.h>
 #include <sqlpp17/table.h>
 
 namespace test
@@ -45,7 +46,7 @@ namespace test
 
     struct IsManager
     {
-      SQLPP_ALIAS(is_manager)
+      SQLPP_ALIAS2(is_manager, isManager)
       using value_type = bool;
       static constexpr auto can_be_null = false;
       static constexpr auto default_value = ::sqlpp::none_t{};
@@ -62,8 +63,9 @@ namespace test
     struct Address
     {
       SQLPP_ALIAS(address)
-      using value_type = std::optional<std::string_view>;
-      static constexpr auto can_be_null = false;
+      using value_type = std::string_view;
+      static constexpr auto can_be_null = true;
+#warning The default value should be a string_view.
       static constexpr char default_value[] = "";
     };
 

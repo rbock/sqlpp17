@@ -38,5 +38,5 @@ install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/sqlpp17"
         DESTINATION include
 )
 
-#add_subdirectory(tests)
+add_subdirectory(tests)
 add_subdirectory(connectors)
