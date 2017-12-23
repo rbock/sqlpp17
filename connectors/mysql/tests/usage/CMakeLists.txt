@@ -25,7 +25,7 @@
 function(test_usage name)
   set(target sqlpp17_connector_mysql_usage_${name})
   add_executable(${target} ${name}.cpp)
-  target_link_libraries(${target} PRIVATE sqlpp17-connector-mysql sqlpp17-connector-mysql-testing)
+  target_link_libraries(${target} PRIVATE sqlpp17-connector-mysql sqlpp17-connector-mysql-testing ${additional_libraries} ${ARGV1})
 	add_test(${target} ${target})
 endfunction()
 
@@ -34,4 +34,6 @@ test_usage(select)
 
 test_usage(prepared_insert)
 test_usage(prepared_select)
+
+test_usage(connection_pool Threads::Threads)
 

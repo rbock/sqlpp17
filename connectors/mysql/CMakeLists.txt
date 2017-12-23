@@ -22,6 +22,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+find_package(Threads REQUIRED)
+
 #FIXME: It might be better to actually check if thread_local can be compiled and linked
 #       (one fine day, Apple will have thread_local, too, I assume)
 if (APPLE)

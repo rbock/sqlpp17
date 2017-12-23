@@ -41,10 +41,22 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace sqlpp::mysql
 {
   class connection_t;
-};
+  class connection_pool_t;
+
+};  // namespace sqlpp::mysql
 
 namespace sqlpp::mysql::detail
 {
+  class connection_cleanup
+  {
+  public:
+    auto operator()(MYSQL* handle) -> void
+    {
+      mysql_close(handle);
+    }
+  };
+  using unique_connection_ptr = std::unique_ptr<MYSQL, detail::connection_cleanup>;
+
   // direct execution
   auto select(const connection_t&, const std::string& statement) -> char_result_t;
   auto insert(const connection_t&, const std::string& statement) -> std::size_t;
@@ -114,11 +126,29 @@ namespace sqlpp::mysql
 
   class connection_t
   {
+    std::function<void(std::string_view)> _debug;
+    detail::unique_connection_ptr _handle;
+    connection_pool_t* _connection_pool = nullptr;
+
     template <typename... Clauses>
     friend class ::sqlpp::statement;
 
     template <typename Clause, typename Statement>
     friend class ::sqlpp::result_base;
+
+    friend class ::sqlpp::mysql::connection_pool_t;
+
+    connection_t(const connection_config_t& config,
+                 detail::unique_connection_ptr&& handle,
+                 connection_pool_t* connection_pool)
+        : _debug(config.debug), _handle(std::move(handle)), _connection_pool(connection_pool)
+    {
+    }
+
+    connection_t(const connection_config_t& config, connection_pool_t* connection_pool) : connection_t(config)
+    {
+      _connection_pool = connection_pool;
+    }
 
   public:
     connection_t() = delete;
@@ -127,7 +157,7 @@ namespace sqlpp::mysql
     connection_t(connection_t&&) = default;
     connection_t& operator=(const connection_t&) = delete;
     connection_t& operator=(connection_t&&) = default;
-    ~connection_t() = default;
+    ~connection_t();
 
     template <typename... Clauses>
     auto operator()(const ::sqlpp::statement<Clauses...>& statement)
@@ -232,9 +262,6 @@ namespace sqlpp::mysql
                           statement.get_no_of_result_columns()),
           _debug};
     }
-
-    std::function<void(std::string_view)> _debug;
-    std::unique_ptr<MYSQL, void (*)(MYSQL*)> _handle;
   };  // namespace sqlpp::mysql
 
 }  // namespace sqlpp::mysql

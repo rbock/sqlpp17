@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/mysql/bind_result.h>
 #include <sqlpp17/mysql/char_result.h>
 #include <sqlpp17/mysql/connection.h>
+#include <sqlpp17/mysql/connection_pool.h>
 
 namespace
 {
@@ -83,11 +84,6 @@ namespace
 
 namespace sqlpp::mysql::detail
 {
-  auto connection_cleanup(MYSQL* handle) -> void
-  {
-    mysql_close(handle);
-  }
-
   auto result_cleanup(MYSQL_RES* result) -> void
   {
     mysql_free_result(result);
@@ -228,7 +224,7 @@ namespace sqlpp::mysql
   }
 
   connection_t::connection_t(const connection_config_t& config)
-      : _handle(mysql_init(nullptr), detail::connection_cleanup), _debug(config.debug)
+      : _handle(mysql_init(nullptr), detail::connection_cleanup{}), _debug(config.debug)
   {
     if (not _handle)
     {
@@ -269,6 +265,14 @@ namespace sqlpp::mysql
     if (config.post_connect)
     {
       config.post_connect(_handle.get());
+    }
+  }
+
+  connection_t::~connection_t()
+  {
+    if (_connection_pool)
+    {
+      _connection_pool->put(std::move(_handle));
     }
   }
 }  // namespace sqlpp::mysql
