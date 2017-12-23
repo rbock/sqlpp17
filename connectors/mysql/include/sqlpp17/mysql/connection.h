@@ -202,6 +202,8 @@ namespace sqlpp::mysql
       return _handle.get();
     }
 
+    auto is_alive() -> bool;
+
   private:
     template <typename Statement>
     auto _execute(const Statement& statement)

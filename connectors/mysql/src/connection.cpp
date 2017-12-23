@@ -268,6 +268,11 @@ namespace sqlpp::mysql
     }
   }
 
+  auto connection_t::is_alive() -> bool
+  {
+    return mysql_ping(_handle.get()) == 0;
+  }
+
   connection_t::~connection_t()
   {
     if (_connection_pool)
