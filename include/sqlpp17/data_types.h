@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2017, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,39 +26,49 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <cstdint>
+#include <sqlpp17/type_traits.h>
 
-#include <sqlpp17/alias_provider.h>
-#include <sqlpp17/data_types.h>
-#include <sqlpp17/table.h>
-
-namespace test
+namespace sqlpp
 {
-  namespace TabDepartment_
+  template <uint8_t Size>
+  struct fixchar
   {
-    struct Id
-    {
-      SQLPP_ALIAS(id)
-      using value_type = std::int64_t;
-      static constexpr auto can_be_null = false;
-      static constexpr auto default_value = ::sqlpp::auto_increment_t{};
-    };
+  };
 
-    struct Name
-    {
-      SQLPP_ALIAS(name)
-      using value_type = ::sqlpp::varchar<255>;
-      static constexpr auto can_be_null = true;
-      static constexpr auto default_value = ::sqlpp::none_t{};
-    };
+  template <uint8_t Size>
+  constexpr auto is_text_v<fixchar<Size>> = true;
 
-    struct _
-    {
-      SQLPP_ALIAS(tab_department)
-      using primary_key = Id;
-    };
-  }  // namespace TabDepartment_
+  template <uint8_t Size>
+  struct cpp_type<fixchar<Size>>
+  {
+    using type = std::string_view;
+  };
 
-  inline constexpr auto tabDepartment = sqlpp::table_t<TabDepartment_::_, TabDepartment_::Id, TabDepartment_::Name>{};
+  template <uint8_t Size>
+  struct varchar
+  {
+  };
 
-}  // namespace test
+  template <uint8_t Size>
+  constexpr auto is_text_v<varchar<Size>> = true;
+
+  template <uint8_t Size>
+  struct cpp_type<varchar<Size>>
+  {
+    using type = std::string_view;
+  };
+
+  struct text
+  {
+  };
+
+  template <>
+  constexpr auto is_text_v<text> = true;
+
+  template <>
+  struct cpp_type<text>
+  {
+    using type = std::string_view;
+  };
+
+}  // namespace sqlpp

@@ -145,7 +145,6 @@ namespace sqlpp
 
     using result_base_t = result_base<get_result_clause_t<Clauses...>, statement<Clauses...>>;
 
-#warning : Maybe make private?
     [[nodiscard]] constexpr auto get_no_of_parameters() const
     {
 #warning : implement

@@ -30,6 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/clauses/create_table.h>
 #include <sqlpp17/column.h>
+#include <sqlpp17/data_types.h>
 #include <sqlpp17/table.h>
 
 namespace sqlpp::mysql
@@ -50,10 +51,10 @@ namespace sqlpp::mysql::detail
     return " BIGINT";
   }
 
-  [[nodiscard]] inline auto value_type_to_sql_string(const std::string_view&)
+  template <uint8_t Size>
+  [[nodiscard]] inline auto value_type_to_sql_string(const ::sqlpp::varchar<Size>&)
   {
-#warning : Need better text types
-    return " VARCHAR(255)";
+    return " VARCHAR(" + std::to_string(Size) + ")";
   }
 
   template <typename ColumnSpec>

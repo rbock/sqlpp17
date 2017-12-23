@@ -197,7 +197,6 @@ namespace sqlpp
   template <typename T, typename Enable = void>
   constexpr auto has_result_row_v = false;
 
-#warning : Want to avoid SFINAE
   template <typename T>
   constexpr auto has_result_row_v<T, std::void_t<typename T::_result_row_t>> = true;
 
@@ -578,6 +577,15 @@ namespace sqlpp
 
   template <typename T>
   constexpr auto has_result_rows_v = false;
+
+  template <typename T>
+  struct cpp_type
+  {
+    using type = T;
+  };
+
+  template <typename T>
+  using cpp_type_t = typename cpp_type<T>::type;
 
   template <typename T>
   constexpr auto char_sequence_of_v = char_sequence<>{};
