@@ -40,7 +40,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace mysql = ::sqlpp::mysql;
 namespace
 {
-  auto config = []() {
+  auto get_config()
+  {
     auto config = mysql::connection_config_t{};
     config.user = "root";
 #warning : This needs to be configurable
@@ -48,9 +49,9 @@ namespace
     config.database = "sqlpp_mysql";
     // config.debug = print_debug;
     return config;
-  }();
+  };
 
-  auto pool = mysql::connection_pool_t{5, config};
+  auto pool = mysql::connection_pool_t{5, get_config()};
 }  // namespace
 
 [[nodiscard]] auto test_setup()
@@ -143,10 +144,9 @@ namespace
 
   for (auto i = 0; i < thread_count; ++i)
   {
-    threads.push_back(std::thread([func = __func__]() {
+    threads.push_back(std::thread([func = __func__, call_count = uniform_dist(random_engine)]() {
       try
       {
-        const auto call_count = uniform_dist(random_engine);
         for (auto k = 0; k < call_count; ++k)
         {
           auto connection = pool.get();

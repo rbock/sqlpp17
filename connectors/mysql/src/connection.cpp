@@ -64,9 +64,13 @@ namespace
     }
   };
 
+}  // namespace
+
+namespace sqlpp::mysql::detail
+{
 #ifdef __APPLE__
   boost::thread_specific_ptr<MySqlThreadInitializer> mysqlThreadInit;
-  void thread_init()
+  auto thread_init() -> void
   {
     if (!mysqlThreadInit.get())
     {
@@ -74,16 +78,12 @@ namespace
     }
   }
 #else
-  void thread_init()
+  auto thread_init() -> void
   {
     thread_local MySqlThreadInitializer threadInitializer;
   }
 #endif
 
-}  // namespace
-
-namespace sqlpp::mysql::detail
-{
   auto result_cleanup(MYSQL_RES* result) -> void
   {
     mysql_free_result(result);
@@ -96,7 +96,7 @@ namespace sqlpp::mysql::detail
 
   auto execute_query(const connection_t& connection, const std::string& query) -> void
   {
-    thread_init();
+    detail::thread_init();
 
     if (connection.debug())
       connection.debug()("Executing: '" + query + "'");

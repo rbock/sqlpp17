@@ -81,7 +81,7 @@ namespace sqlpp::mysql
     connection_pool_t& operator=(connection_pool_t&&) = default;
     ~connection_pool_t() = default;
 
-    [[nodiscard]] auto get() -> ::sqlpp::mysql::connection_t;
+    [[nodiscard]] __attribute__((no_sanitize("memory"))) auto get() -> ::sqlpp::mysql::connection_t;
 
   private:
     auto put(detail::unique_connection_ptr handle) -> void;

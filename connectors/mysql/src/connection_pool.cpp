@@ -77,15 +77,17 @@ namespace sqlpp::mysql::detail
 
 namespace sqlpp::mysql
 {
-  [[nodiscard]] auto connection_pool_t::get() -> ::sqlpp::mysql::connection_t
+  [[nodiscard]] __attribute__((no_sanitize("memory"))) auto connection_pool_t::get() -> ::sqlpp::mysql::connection_t
   {
+    detail::thread_init();
+
     const auto lock = std::scoped_lock{_mutex};
 
     auto handle = detail::unique_connection_ptr(std::move(_handles.front()));
     _handles.pop_front();
 
     // destroy dead connections
-    if (handle and mysql_ping(handle.get()) != 0)
+    if (handle != nullptr and mysql_ping(handle.get()) != 0)
     {
       handle.reset();
     }

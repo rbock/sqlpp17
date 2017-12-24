@@ -57,6 +57,8 @@ namespace sqlpp::mysql::detail
   };
   using unique_connection_ptr = std::unique_ptr<MYSQL, detail::connection_cleanup>;
 
+  auto thread_init() -> void;
+
   // direct execution
   auto select(const connection_t&, const std::string& statement) -> char_result_t;
   auto insert(const connection_t&, const std::string& statement) -> std::size_t;
