@@ -40,7 +40,7 @@ namespace sqlpp
                   public member_t<ColumnSpecs, column_t<TableSpec, ColumnSpecs>>...
   {
   public:
-    using _alias_t = typename TableSpec::_alias_t;
+    // using _alias_t = typename TableSpec::_alias_t;
 
     template <typename Alias>
     constexpr auto as(const Alias&) const
@@ -48,6 +48,9 @@ namespace sqlpp
       return table_alias_t<table_t, Alias, ColumnSpecs...>{{}};
     }
   };
+
+  template <typename TableSpec, typename... ColumnSpecs>
+  constexpr auto& name_of_v<table_t<TableSpec, ColumnSpecs...>> = name_of_v<TableSpec>;
 
   template <typename DbConnection, typename TableSpec, typename... ColumnSpecs>
   [[nodiscard]] auto to_sql_string(const DbConnection& connection, const table_t<TableSpec, ColumnSpecs...>& t)
