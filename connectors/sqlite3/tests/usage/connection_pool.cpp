@@ -25,6 +25,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <iostream>
+#include <mutex>
 #include <random>
 #include <set>
 #include <thread>
@@ -42,13 +43,13 @@ namespace
   auto get_config()
   {
     auto config = ::sqlpp::sqlite3::connection_config_t{};
-    config.path_to_database = ":memory:";
+    config.path_to_database = "file::memory:?cache=shared";
     config.flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
 
     return config;
   };
 
-  auto pool = ::sqlpp::sqlite::connection_pool_t{5, get_config()};
+  auto pool = ::sqlpp::sqlite3::connection_pool_t{5, get_config()};
 }  // namespace
 
 [[nodiscard]] auto test_basic_functionality()
@@ -71,7 +72,7 @@ namespace
 
 [[nodiscard]] auto test_single_connection()
 {
-  MYSQL* handle = nullptr;
+  ::sqlite3* handle = nullptr;
   {
     auto db = pool.get();
     handle = db.get();
@@ -94,17 +95,24 @@ namespace
 {
   auto connections = std::vector<::sqlpp::sqlite3::connection_t>{};
   auto pointers = std::set<void*>{};
-  for (auto i = 0; i < 100; ++i)
+  try
   {
-    connections.push_back(pool.get());
-    if (pointers.count(connections.back().get()))
+    for (auto i = 0; i < 100; ++i)
     {
-      std::cerr << __func__
-                << ": Pool yielded connection twice (without getting it back in between): " << connections.back().get()
-                << "\n";
+      connections.push_back(pool.get());
+      if (pointers.count(connections.back().get()))
+      {
+        std::cerr << __func__ << ": Pool yielded connection twice (without getting it back in between): "
+                  << connections.back().get() << "\n";
+      }
+      pointers.insert(connections.back().get());
+      [[maybe_unused]] auto id = connections.back()(sqlpp::insert().into(test::tabDepartment).default_values());
     }
-    pointers.insert(connections.back().get());
-    [[maybe_unused]] auto id = connections.back()(sqlpp::insert().into(test::tabDepartment).default_values());
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << std::string(__func__) + ": Caught excetion: " << e.what() << "\n";
+    return 1;
   }
   return 0;
 }
@@ -113,25 +121,33 @@ namespace
 {
   std::random_device r;
   std::default_random_engine random_engine(r());
-  std::uniform_int_distribution<int> uniform_dist(1, 100);
+  std::uniform_int_distribution<int> uniform_dist(1, 20);
 }  // namespace
 
 [[nodiscard]] auto test_multithreaded()
 {
-  std::clog << "Run a random number [1,100] of threads\n";
-  std::clog << "Each with a random number [1,100] of {pool.get() & insert}\n";
+  if (not sqlite3_threadsafe())
+  {
+    std::clog << "sqlite3 not compiled with thread safety.\n";
+    std::clog << "Not running multi-threaded tests.\n";
+    return 0;
+  }
+  std::clog << "Run a random number [1,20] of threads\n";
+  std::clog << "Each with a random number [1,20] of {pool.get() & insert}\n";
 
   auto threads = std::vector<std::thread>{};
   const auto thread_count = uniform_dist(random_engine);
+  auto statement_mutex = std::mutex{};
 
   for (auto i = 0; i < thread_count; ++i)
   {
-    threads.push_back(std::thread([func = __func__, call_count = uniform_dist(random_engine)]() {
+    threads.push_back(std::thread([func = __func__, call_count = uniform_dist(random_engine), &statement_mutex]() {
       try
       {
         for (auto k = 0; k < call_count; ++k)
         {
           auto connection = pool.get();
+          const auto lock = std::scoped_lock(statement_mutex);
           [[maybe_unused]] auto id = connection(sqlpp::insert().into(test::tabDepartment).default_values());
         }
       }

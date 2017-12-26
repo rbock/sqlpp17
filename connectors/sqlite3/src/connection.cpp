@@ -42,11 +42,11 @@ namespace sqlpp::sqlite3::detail
 
     auto statement_cleanup(::sqlite3_stmt* statement) -> void
     {
-      sqlite3_finalize(statement);
+      if (statement)
+        sqlite3_finalize(statement);
     }
 
-    auto prepare_impl(const connection_t& connection, const std::string& statement)
-        -> std::unique_ptr<::sqlite3_stmt, void (*)(::sqlite3_stmt*)>
+    auto prepare_impl(const connection_t& connection, const std::string& statement) -> maybe_owning_stmt_ptr
     {
       if (connection.debug())
         connection.debug()("Preparing: '" + statement + "'");
@@ -56,20 +56,20 @@ namespace sqlpp::sqlite3::detail
       const auto rc = sqlite3_prepare_v2(connection.get(), statement.c_str(), static_cast<int>(statement.size()),
                                          &statement_ptr, nullptr);
 
-      auto statement_handle =
-          std::unique_ptr<::sqlite3_stmt, void (*)(::sqlite3_stmt*)>(statement_ptr, statement_cleanup);
+      auto statement_handle = maybe_owning_stmt_ptr(statement_ptr, statement_cleanup);
 
       if (rc != SQLITE_OK)
       {
         throw sqlpp::exception(
             "Sqlite3 error: Could not prepare statement: " + std::string(sqlite3_errmsg(connection.get())) +
-            " (statement was >>" + statement + "<<\n");
+            " (statement was >>" + statement + "<<)\n");
       }
 
       return statement_handle;
     }
   }  // namespace
 
+#warning : Need to have better names for the two versions of execute_prepared_statement
   auto execute_prepared_statement(::sqlite3_stmt* statement,
                                   ::sqlite3* connection,
                                   const std::function<void(std::string_view)>& debug) -> void
@@ -80,7 +80,9 @@ namespace sqlpp::sqlite3::detail
     switch (const auto rc = sqlite3_step(statement); rc)
     {
       case SQLITE_OK:
-      case SQLITE_ROW:  // might occur if execute is called with a select
+        [[fallthrough]];
+      case SQLITE_ROW:
+        [[fallthrough]];  // might occur if execute is called with a select
       case SQLITE_DONE:
         return;
       default:
@@ -91,6 +93,8 @@ namespace sqlpp::sqlite3::detail
 
   auto execute_prepared_statement(const prepared_statement_t& prepared_statement) -> void
   {
+    sqlite3_reset(prepared_statement.get());
+
     execute_prepared_statement(prepared_statement.get(), prepared_statement.connection(), prepared_statement.debug());
   }
 
@@ -102,9 +106,7 @@ namespace sqlpp::sqlite3::detail
 
   auto select(const connection_t& connection, const std::string& statement) -> bind_result_t
   {
-    auto prepared_statement = prepare_impl(connection, statement);
-
-    return {prepared_statement.release(), connection.debug(), statement_cleanup};
+    return {prepare_impl(connection, statement), connection.debug()};
   }
 
   auto insert(const connection_t& connection, const std::string& statement) -> size_t
@@ -137,8 +139,8 @@ namespace sqlpp::sqlite3::detail
 
   auto prepared_select_t::run() -> bind_result_t
   {
-    execute_prepared_statement(_statement);
-    return {_statement.get(), _statement.debug(), no_cleanup};
+    sqlite3_reset(_statement.get());
+    return {detail::maybe_owning_stmt_ptr(_statement.get(), no_cleanup), _statement.debug()};
   }
 
   auto prepared_insert_t::run() -> size_t

@@ -80,8 +80,6 @@ namespace sqlpp::sqlite3
 {
   [[nodiscard]] __attribute__((no_sanitize("memory"))) auto connection_pool_t::get() -> ::sqlpp::sqlite3::connection_t
   {
-    detail::thread_init();
-
     const auto lock = std::scoped_lock{_mutex};
 
     auto handle = detail::unique_connection_ptr(std::move(_handles.front()));

@@ -26,4 +26,28 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/sqlite3/clauses/create_table.h>
+#include <sqlpp17/name_to_sql_string.h>
+#include <sqlpp17/type_traits.h>
+
+namespace sqlpp
+{
+  template <typename TableSpec, typename ColumnSpec>
+  class column_t;
+
+  // free as in "without a table"
+  template <typename ColumnSpec>
+  struct free_column_t
+  {
+    template <typename TableSpec>
+    free_column_t(const column_t<TableSpec, ColumnSpec>&)
+    {
+    }
+  };
+
+  template <typename DbConnection, typename ColumnSpec>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const free_column_t<ColumnSpec>& t)
+  {
+    return name_to_sql_string(connection, name_of_v<ColumnSpec>);
+  }
+
+}  // namespace sqlpp

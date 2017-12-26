@@ -32,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/clause_fwd.h>
 #include <sqlpp17/detail/first.h>
 #include <sqlpp17/exception.h>
+#include <sqlpp17/free_column.h>
 #include <sqlpp17/statement.h>
 #include <sqlpp17/tuple_to_sql_string.h>
 #include <sqlpp17/type_traits.h>
@@ -79,7 +80,8 @@ namespace sqlpp
     // columns
     {
       ret += " (";
-      ret += tuple_to_sql_string(connection, ", ", std::tie(std::get<Assignments>(t._assignments).column...));
+      ret += tuple_to_sql_string(connection, ", ",
+                                 std::tuple(free_column_t{std::get<Assignments>(t._assignments).column}...));
       ret += ")";
     }
 
@@ -138,7 +140,7 @@ namespace sqlpp
   [[nodiscard]] auto to_sql_string(const DbConnection& connection,
                                    const clause_base<insert_default_values_t, Statement>& t)
   {
-    return std::string{" DEFAULT_VALUES"};
+    return std::string{" DEFAULT VALUES"};
   }
 
   template <typename... Assignments>
@@ -204,15 +206,16 @@ namespace sqlpp
   // this function assumes that there is something to do
   // the check if there is at least one row has to be performed elsewhere
   template <typename DbConnection, typename Statement, typename... Assignments>
-  [[nodiscard]] auto to_string(const DbConnection& connection,
-                               const clause_base<insert_multi_values_t<Assignments...>, Statement>& t)
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection,
+                                   const clause_base<insert_multi_values_t<Assignments...>, Statement>& t)
   {
     auto ret = std::string{};
 
     // columns
     {
       ret += " (";
-      ret += tuple_to_sql_string(connection, ", ", std::tie(std::get<Assignments>(t._assignments).column...));
+      ret += tuple_to_sql_string(connection, ", ",
+                                 std::tuple(free_column_t{std::get<Assignments>(t._assignments).column}...));
       ret += ")";
     }
 

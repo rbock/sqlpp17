@@ -51,7 +51,7 @@ namespace sqlpp::mysql
 {
   class bind_result_t
   {
-    MYSQL_STMT* _handle;
+    MYSQL_STMT* _handle = nullptr;
     std::vector<detail::bind_meta_data_t> _bind_meta_data;
     std::vector<MYSQL_BIND> _bind_data;
     std::function<void(std::string_view)> _debug;

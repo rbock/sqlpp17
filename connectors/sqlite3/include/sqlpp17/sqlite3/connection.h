@@ -60,8 +60,6 @@ namespace sqlpp::sqlite3::detail
   };
   using unique_connection_ptr = std::unique_ptr<::sqlite3, detail::connection_cleanup>;
 
-  auto thread_init() -> void;
-
   // direct execution
   auto select(const connection_t&, const std::string& statement) -> bind_result_t;
   auto insert(const connection_t&, const std::string& statement) -> std::size_t;
@@ -222,8 +220,7 @@ namespace sqlpp::sqlite3
     template <typename Statement>
     [[nodiscard]] auto prepare_insert(const Statement& statement)
     {
-      return detail::prepared_insert_t{
-          detail::prepare(*this, to_sql_string(*this, statement), statement.get_no_of_parameters(), 0)};
+      return detail::prepared_insert_t{detail::prepare(*this, to_sql_string(*this, statement))};
     }
 
     template <typename Statement>
@@ -235,8 +232,7 @@ namespace sqlpp::sqlite3
     template <typename Statement>
     [[nodiscard]] auto prepare_update(const Statement& statement)
     {
-      return detail::prepared_update_t{
-          detail::prepare(*this, to_sql_string(*this, statement), statement.get_no_of_parameters(), 0)};
+      return detail::prepared_update_t{detail::prepare(*this, to_sql_string(*this, statement))};
     }
 
     template <typename Statement>
@@ -248,8 +244,7 @@ namespace sqlpp::sqlite3
     template <typename Statement>
     [[nodiscard]] auto prepare_erase(const Statement& statement)
     {
-      return detail::prepared_erase_t{
-          detail::prepare(*this, to_sql_string(*this, statement), statement.get_no_of_parameters(), 0)};
+      return detail::prepared_erase_t{detail::prepare(*this, to_sql_string(*this, statement))};
     }
 
     template <typename Statement>
@@ -261,10 +256,7 @@ namespace sqlpp::sqlite3
     template <typename Statement>
     [[nodiscard]] auto prepare_select(const Statement& statement)
     {
-      return detail::prepared_select_t{
-          detail::prepare(*this, to_sql_string(*this, statement), statement.get_no_of_parameters(),
-                          statement.get_no_of_result_columns()),
-          _debug};
+      return detail::prepared_select_t{detail::prepare(*this, to_sql_string(*this, statement)), _debug};
     }
   };  // namespace sqlpp::sqlite3
 

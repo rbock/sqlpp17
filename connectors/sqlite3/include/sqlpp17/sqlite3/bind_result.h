@@ -47,6 +47,8 @@ namespace sqlpp::sqlite3
 
 namespace sqlpp::sqlite3::detail
 {
+  using maybe_owning_stmt_ptr = std::unique_ptr<::sqlite3_stmt, void (*)(::sqlite3_stmt*)>;
+
   auto get_next_result_row(bind_result_t& result) -> bool;
 }  // namespace sqlpp::sqlite3::detail
 
@@ -54,23 +56,17 @@ namespace sqlpp::sqlite3
 {
   class bind_result_t
   {
-    sqlite3_stmt* _handle;
+    detail::maybe_owning_stmt_ptr _handle;
     std::function<void(std::string_view)> _debug;
-    std::function<void(::sqlite3_stmt*)> _cleanup;
 
     friend auto detail::get_next_result_row(bind_result_t& result) -> bool;
     template <typename Row>
     friend auto get_next_result_row(bind_result_t& result, Row& row) -> void;
 
   public:
-    bind_result_t()
-    {
-      _cleanup(_handle);
-    }
-    bind_result_t(sqlite3_stmt* handle,
-                  std::function<void(std::string_view)> debug,
-                  std::function<void(::sqlite3_stmt*)> cleanup)
-        : _handle(handle), _debug(debug), _cleanup(cleanup)
+    bind_result_t() = default;
+    bind_result_t(detail::maybe_owning_stmt_ptr handle, std::function<void(std::string_view)> debug)
+        : _handle(std::move(handle)), _debug(debug)
     {
     }
     bind_result_t(const bind_result_t&) = delete;
@@ -86,7 +82,7 @@ namespace sqlpp::sqlite3
 
     [[nodiscard]] auto* get() const
     {
-      return _handle;
+      return _handle.get();
     }
 
     [[nodiscard]] auto debug() const
@@ -96,7 +92,7 @@ namespace sqlpp::sqlite3
 
     auto invalidate()
     {
-      _handle = nullptr;
+      _handle.reset();
     }
   };
 
