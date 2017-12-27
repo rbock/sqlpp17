@@ -29,15 +29,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/exception.h>
 #include <sqlpp17/postgresql/char_result.h>
 
-namespace sqlpp::postgresql::detail
-{
-  auto get_next_result_row(char_result_t& result) -> bool
-  {
-    return result.get_row_index() < result.get_row_count();
-  }
-
-}  // namespace sqlpp::postgresql::detail
-
 namespace sqlpp::postgresql
 {
   auto bind_field(char_result_t& result, std::int64_t& value, std::size_t index) -> void

@@ -87,40 +87,55 @@ namespace
 
 [[nodiscard]] auto test_single_connection()
 {
-  PGconn* handle = nullptr;
+  try
   {
-    auto db = pool.get();
-    handle = db.get();
-  }
-
-  for (auto i = 0; i < 100; ++i)
-  {
-    auto db = pool.get();
-    if (handle != db.get())
+    PGconn* handle = nullptr;
     {
-      std::cerr << std::string(__func__) + ": Pool acquired more than one connection " << handle << "!=" << db.get()
-                << "\n";
-      return 1;
+      auto db = pool.get();
+      handle = db.get();
     }
+
+    for (auto i = 0; i < 50; ++i)
+    {
+      auto db = pool.get();
+      if (handle != db.get())
+      {
+        std::cerr << std::string(__func__) + ": Pool acquired more than one connection " << handle << "!=" << db.get()
+                  << "\n";
+        return 1;
+      }
+    }
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << std::string(__func__) + "Exception: " << e.what() << "\n";
+    return 1;
   }
   return 0;
 }
 
 [[nodiscard]] auto test_multiple_connections()
 {
-  auto connections = std::vector<postgresql::connection_t>{};
-  auto pointers = std::set<void*>{};
-  for (auto i = 0; i < 100; ++i)
+  try
   {
-    connections.push_back(pool.get());
-    if (pointers.count(connections.back().get()))
+    auto connections = std::vector<postgresql::connection_t>{};
+    auto pointers = std::set<void*>{};
+    for (auto i = 0; i < 50; ++i)
     {
-      std::cerr << __func__
-                << ": Pool yielded connection twice (without getting it back in between): " << connections.back().get()
-                << "\n";
+      connections.push_back(pool.get());
+      if (pointers.count(connections.back().get()))
+      {
+        std::cerr << __func__ << ": Pool yielded connection twice (without getting it back in between): "
+                  << connections.back().get() << "\n";
+      }
+      pointers.insert(connections.back().get());
+      [[maybe_unused]] auto id = connections.back()(sqlpp::insert().into(test::tabDepartment).default_values());
     }
-    pointers.insert(connections.back().get());
-    [[maybe_unused]] auto id = connections.back()(sqlpp::insert().into(test::tabDepartment).default_values());
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << std::string(__func__) + "Exception: " << e.what() << "\n";
+    return 1;
   }
   return 0;
 }
@@ -129,38 +144,46 @@ namespace
 {
   std::random_device r;
   std::default_random_engine random_engine(r());
-  std::uniform_int_distribution<int> uniform_dist(1, 100);
+  std::uniform_int_distribution<int> uniform_dist(1, 50);
 }  // namespace
 
 [[nodiscard]] auto test_multithreaded()
 {
-  std::clog << "Run a random number [1,100] of threads\n";
-  std::clog << "Each with a random number [1,100] of {pool.get() & insert}\n";
-
-  auto threads = std::vector<std::thread>{};
-  const auto thread_count = uniform_dist(random_engine);
-
-  for (auto i = 0; i < thread_count; ++i)
+  try
   {
-    threads.push_back(std::thread([func = __func__, call_count = uniform_dist(random_engine)]() {
-      try
-      {
-        for (auto k = 0; k < call_count; ++k)
+    std::clog << "Run a random number [1,50] of threads\n";
+    std::clog << "Each with a random number [1,50] of {pool.get() & insert}\n";
+
+    auto threads = std::vector<std::thread>{};
+    const auto thread_count = uniform_dist(random_engine);
+
+    for (auto i = 0; i < thread_count; ++i)
+    {
+      threads.push_back(std::thread([func = __func__, call_count = uniform_dist(random_engine)]() {
+        try
         {
-          auto connection = pool.get();
-          [[maybe_unused]] auto id = connection(sqlpp::insert().into(test::tabDepartment).default_values());
+          for (auto k = 0; k < call_count; ++k)
+          {
+            auto connection = pool.get();
+            [[maybe_unused]] auto id = connection(sqlpp::insert().into(test::tabDepartment).default_values());
+          }
         }
-      }
-      catch (const std::exception& e)
-      {
-        std::cerr << std::string(func) + ": In-thread exception: " + e.what() + "\n";
-        std::abort();
-      }
-    }));
+        catch (const std::exception& e)
+        {
+          std::cerr << std::string(func) + ": In-thread exception: " + e.what() + "\n";
+          std::abort();
+        }
+      }));
+    }
+    for (auto&& t : threads)
+    {
+      t.join();
+    }
   }
-  for (auto&& t : threads)
+  catch (const std::exception& e)
   {
-    t.join();
+    std::cerr << std::string(__func__) + "Exception: " << e.what() << "\n";
+    return 1;
   }
   return 0;
 }

@@ -47,12 +47,11 @@ namespace sqlpp::postgresql::detail
 
 namespace sqlpp::postgresql
 {
-#warning : rename to `result`
   class char_result_t
   {
     std::unique_ptr<PGresult, detail::result_cleanup> _handle;
     std::function<void(std::string_view)> _debug;
-    int _row_index = 0;
+    int _row_index = -1;
     int _row_count;
 
   public:
@@ -80,6 +79,12 @@ namespace sqlpp::postgresql
       return _handle.get();
     }
 
+    auto increase_row_index()
+    {
+      if (_handle)
+        ++_row_index;
+    }
+
     auto get_row_index() const
     {
       return _row_index;
@@ -99,6 +104,7 @@ namespace sqlpp::postgresql
   template <typename Row>
   auto get_next_result_row(char_result_t& result, Row& row) -> void
   {
+    result.increase_row_index();
     if (result.get_row_index() < result.get_row_count())
     {
       row.bind(result);

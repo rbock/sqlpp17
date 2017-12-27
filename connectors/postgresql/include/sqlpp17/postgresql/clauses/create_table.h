@@ -60,25 +60,44 @@ namespace sqlpp::postgresql::detail
   template <typename ColumnSpec>
   [[nodiscard]] auto to_sql_column_spec_string(const postgresql::connection_t& connection, const ColumnSpec& c)
   {
-    auto ret = name_to_sql_string(connection, name_of_v<ColumnSpec>) +
-               value_type_to_sql_string(typename ColumnSpec::value_type{});
+    auto ret = name_to_sql_string(connection, name_of_v<ColumnSpec>);
 
-    if constexpr (!ColumnSpec::can_be_null)
+    if constexpr (std::is_same_v<std::decay_t<decltype(c.default_value)>, ::sqlpp::auto_increment_t>)
     {
-      ret += " NOT NULL";
-    }
-
-    if constexpr (std::is_same_v<std::decay_t<decltype(c.default_value)>, ::sqlpp::none_t>)
-    {
-    }
-    else if constexpr (std::is_same_v<std::decay_t<decltype(c.default_value)>, ::sqlpp::auto_increment_t>)
-    {
-      ret += " AUTO_INCREMENT";
+      if constexpr (std::is_same_v<typename ColumnSpec::value_type, int16_t>)
+      {
+        ret += " SMALLSERIAL";
+      }
+      else if constexpr (std::is_same_v<typename ColumnSpec::value_type, int32_t>)
+      {
+        ret += " SERIAL";
+      }
+      else if constexpr (std::is_same_v<typename ColumnSpec::value_type, int64_t>)
+      {
+        ret += " BIGSERIAL";
+      }
+      else
+      {
+        static_assert(::sqlpp::wrong<ColumnSpec>, "Unexpected type for auto increment");
+      }
     }
     else
     {
+      ret += value_type_to_sql_string(typename ColumnSpec::value_type{});
+
+      if constexpr (!ColumnSpec::can_be_null)
+      {
+        ret += " NOT NULL";
+      }
+
+      if constexpr (std::is_same_v<std::decay_t<decltype(c.default_value)>, ::sqlpp::none_t>)
+      {
+      }
+      else
+      {
 #warning need to implement default values
-      // ret += " DEFAULT=" + to_sql_string(connection, c.default_value);
+        // ret += " DEFAULT=" + to_sql_string(connection, c.default_value);
+      }
     }
 
     return ret;
