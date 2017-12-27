@@ -22,6 +22,18 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-add_subdirectory(mysql)
-add_subdirectory(postgresql)
-add_subdirectory(sqlite3)
+function(test_usage name)
+  set(target sqlpp17_connector_postgresql_usage_${name})
+  add_executable(${target} ${name}.cpp)
+  target_link_libraries(${target} PRIVATE sqlpp17-connector-postgresql sqlpp17-connector-postgresql-testing ${additional_libraries} ${ARGV1})
+	add_test(${target} ${target})
+endfunction()
+
+test_usage(insert)
+test_usage(select)
+
+test_usage(prepared_insert)
+test_usage(prepared_select)
+
+test_usage(connection_pool Threads::Threads)
+

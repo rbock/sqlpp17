@@ -31,14 +31,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
 
-namespace sqlpp::mysql
+namespace sqlpp::postgresql
 {
   namespace clause
   {
     struct using_
     {
     };
-  }
+  }  // namespace clause
 
   template <typename Table>
   struct using_t
@@ -136,4 +136,4 @@ namespace sqlpp::mysql
   {
     return statement<no_using_t>{}.using_(std::forward<Table>(t));
   }
-}
+}  // namespace sqlpp::postgresql
