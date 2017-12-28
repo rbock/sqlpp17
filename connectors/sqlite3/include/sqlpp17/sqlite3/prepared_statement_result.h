@@ -80,10 +80,7 @@ namespace sqlpp::sqlite3
     prepared_statement_result_t& operator=(direct_execution_result_t&&) = delete;
     ~prepared_statement_result_t()
     {
-      if (_prepared_statement)
-      {
-        _prepared_statement->put_handle(std::move(_handle));
-      }
+      invalidate();
     }
 
     [[nodiscard]] operator bool() const
@@ -101,9 +98,16 @@ namespace sqlpp::sqlite3
       return _debug;
     }
 
-    auto invalidate()
+    auto invalidate() -> void
     {
-      _handle = 0;
+      if (_prepared_statement and _handle.get())
+      {
+        _prepared_statement->put_handle(std::move(_handle));
+      }
+      else
+      {
+        _handle.reset();
+      }
     }
   };
 

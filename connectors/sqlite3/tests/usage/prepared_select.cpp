@@ -62,6 +62,10 @@ int main()
     {
       std::cout << row.id << ", " << row.name.value_or("NULL") << std::endl;
     }
+    for (const auto& row : prepared_select.run())
+    {
+      std::cout << row.id << ", " << row.name.value_or("NULL") << std::endl;
+    }
   }
   catch (const std::exception& e)
   {

@@ -69,7 +69,8 @@ namespace sqlpp::mysql
         : _handle(statement.get_handle()),
           _bind_meta_data(statement.get_number_of_columns()),
           _bind_data(statement.get_number_of_columns()),
-          _debug(statement.debug())
+          _debug(statement.debug()),
+          _prepared_statement(&statement)
     {
     }
     prepared_statement_result_t(const prepared_statement_result_t&) = delete;
@@ -78,10 +79,7 @@ namespace sqlpp::mysql
     prepared_statement_result_t& operator=(prepared_statement_result_t&&) = default;
     ~prepared_statement_result_t()
     {
-      if (_prepared_statement)
-      {
-        _prepared_statement->put_handle(std::move(_handle));
-      }
+      invalidate();
     }
 
     [[nodiscard]] operator bool() const
@@ -111,9 +109,16 @@ namespace sqlpp::mysql
       return _bind_data;
     }
 
-    auto invalidate()
+    auto invalidate() -> void
     {
-      _handle = nullptr;
+      if (_prepared_statement and _handle.get())
+      {
+        _prepared_statement->put_handle(std::move(_handle));
+      }
+      else
+      {
+        _handle.reset();
+      }
     }
   };
 
