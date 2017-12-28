@@ -46,7 +46,8 @@ namespace sqlpp::sqlite3::detail
       case SQLITE_DONE:
         return false;
       default:
-        throw sqlpp::exception("Sqlite3 error: Unexpected return value for sqlite3_step(): " + std::to_string(rc));
+        throw sqlpp::exception("Sqlite3 error: Unexpected return value for sqlite3_step(): " +
+                               std::string(sqlite3_errstr(rc)));
     }
   }
 }  // namespace sqlpp::sqlite3::detail

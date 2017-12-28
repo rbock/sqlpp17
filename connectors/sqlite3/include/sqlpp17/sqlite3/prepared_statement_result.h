@@ -55,13 +55,21 @@ namespace sqlpp::sqlite3
 
   class prepared_statement_result_t
   {
-    ::sqlite3_stmt* _handle;
+    detail::unique_prepared_statement_ptr _handle;
     std::function<void(std::string_view)> _debug;
+    prepared_statement_t* _prepared_statement = nullptr;
 
   public:
     prepared_statement_result_t() = default;
-    prepared_statement_result_t(::sqlite3_stmt* handle, std::function<void(std::string_view)> debug)
-        : _handle(handle), _debug(debug)
+    prepared_statement_result_t(detail::unique_prepared_statement_ptr handle,
+                                std::function<void(std::string_view)> debug)
+        : _handle(std::move(handle)), _debug(debug)
+    {
+    }
+    prepared_statement_result_t(prepared_statement_t& prepared_statement)
+        : _handle(prepared_statement.get_handle()),
+          _debug(prepared_statement.debug()),
+          _prepared_statement(&prepared_statement)
     {
     }
     prepared_statement_result_t(const prepared_statement_result_t&) = delete;
@@ -70,7 +78,13 @@ namespace sqlpp::sqlite3
     prepared_statement_result_t& operator=(const prepared_statement_result_t&) = delete;
     prepared_statement_result_t& operator=(prepared_statement_result_t&&) = default;
     prepared_statement_result_t& operator=(direct_execution_result_t&&) = delete;
-    ~prepared_statement_result_t() = default;
+    ~prepared_statement_result_t()
+    {
+      if (_prepared_statement)
+      {
+        _prepared_statement->put_handle(std::move(_handle));
+      }
+    }
 
     [[nodiscard]] operator bool() const
     {
@@ -79,7 +93,7 @@ namespace sqlpp::sqlite3
 
     [[nodiscard]] auto* get() const
     {
-      return _handle;
+      return _handle.get();
     }
 
     [[nodiscard]] auto debug() const

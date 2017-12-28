@@ -73,8 +73,7 @@ namespace sqlpp::sqlite3::detail
       case SQLITE_DONE:
         return;
       default:
-        throw sqlpp::exception("Sqlite3 error: Could not execute statement: " +
-                               std::string(sqlite3_errmsg(connection)));
+        throw sqlpp::exception("Sqlite3 error: Could not execute statement: " + std::string(sqlite3_errstr(rc)));
     }
   }
 
@@ -91,7 +90,7 @@ namespace sqlpp::sqlite3::detail
     execute_prepared_statement(prepared_statement.get(), connection.get(), connection.debug());
   }
 
-  auto select(const connection_t& connection, const std::string& statement) -> direct_execution_result_t
+  auto select(const connection_t& connection, const std::string& statement) -> prepared_statement_result_t
   {
     return {prepare_impl(connection, statement), connection.debug()};
   }
@@ -127,7 +126,7 @@ namespace sqlpp::sqlite3::detail
   auto prepared_select_t::run() -> prepared_statement_result_t
   {
     sqlite3_reset(_statement.get());
-    return {_statement.get(), _statement.debug()};
+    return {_statement};
   }
 
   auto prepared_insert_t::run() -> size_t
