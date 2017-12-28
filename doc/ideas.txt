@@ -1,8 +1,8 @@
 USE SANITIZERS!
 ===============
-cmake .. -DCMAKE_CXX_COMPILER=/usr/local/clang-trunk/bin/clang++          -DCMAKE_CXX_FLAGS='-std=c++17 -stdlib=libc++ -fcolor-diagnostics -fsanitize=memory -fno-omit-frame-pointer -O1 -g -fsanitize-memory-track-origins -fno-optimize-sibling-calls -fsanitize-blacklist=/home/rbock/projects/sqlpp17/build/blacklist.txt'
-cmake .. -DCMAKE_CXX_COMPILER=/usr/local/clang-trunk/bin/clang++          -DCMAKE_CXX_FLAGS='-std=c++17 -stdlib=libc++ -fcolor-diagnostics -fsanitize=address -O1 -g'
-cmake .. -DCMAKE_CXX_COMPILER=/usr/local/clang-trunk/bin/clang++          -DCMAKE_CXX_FLAGS='-std=c++17 -stdlib=libc++ -fcolor-diagnostics -fsanitize=thread -O1 -g'
+cmake .. -DCMAKE_CXX_COMPILER=/usr/local/clang-trunk/bin/clang++          -DCMAKE_CXX_FLAGS='-std=c++17 -stdlib=libc++ -fcolor-diagnostics -Wall -Wpedantic -fsanitize=memory -fno-omit-frame-pointer -O1 -g -fsanitize-memory-track-origins -fno-optimize-sibling-calls -fsanitize-blacklist=/home/rbock/projects/sqlpp17/build/blacklist.txt'
+cmake .. -DCMAKE_CXX_COMPILER=/usr/local/clang-trunk/bin/clang++          -DCMAKE_CXX_FLAGS='-std=c++17 -stdlib=libc++ -fcolor-diagnostics -Wall -Wpedantic -fsanitize=address -O1 -g'
+cmake .. -DCMAKE_CXX_COMPILER=/usr/local/clang-trunk/bin/clang++          -DCMAKE_CXX_FLAGS='-std=c++17 -stdlib=libc++ -fcolor-diagnostics -Wall -Wpedantic -fsanitize=thread -O1 -g'
 ...
 
 tags:

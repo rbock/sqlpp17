@@ -22,14 +22,11 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -Wpedantic")
-
 add_library(sqlpp17-connector-sqlite3-testing INTERFACE)
 
 target_include_directories(sqlpp17-connector-sqlite3-testing INTERFACE
   $<BUILD_INTERFACE:${sqlpp17_SOURCE_DIR}/connectors/sqlite3/tests>
   )
-target_link_libraries(sqlpp17-connector-sqlite3-testing INTERFACE "${SQLITE3_LIBRARIES}")
 
 add_subdirectory(usage)
 
