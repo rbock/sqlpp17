@@ -1,0 +1,29 @@
+The sqlite3 result class:
+
+Scenario1:
+  auto statement = prepare_statement(query);
+  auto result1 = execute(statement);
+  // `statement` holds an owning pointer to some `sqlite3_stmt`
+  // `result` holds a non-owning pointer to the same `sqlite3_stmt`
+
+Scenario2
+  auto result2 = execute(query);
+  // `result` holds an owning pointer to some `sqlite3_stmt`
+
+result1 and result2 behave in the exact same way (from a user's perspective).
+They only differ in the way the handle the pointer at the end of their lifetime.
+
+ - shared_ptr<sqlite3_stmt>
+ - unique_ptr<sqlite3_stmt, maybe_deleter<sqlite3_stmt>>
+ - variant<unique_ptr<sqlite3_stmt>, sqlite3_stmt*>
+ - transfer ownership from prepared_statement to result during the
+   result's lifetime
+   unique_ptr<sqlite3_stmt> + prepared_statement_type*
+ - two distinct result classes
+ - template<bool OwnPointer>
+   class result;
+ - class hierarchy:
+    - base: non-owning result
+    - derived: owning result (adds a unique_ptr)
+    direct_result is a prepared_result plus ownership
+

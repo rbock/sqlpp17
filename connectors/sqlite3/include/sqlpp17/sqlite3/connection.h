@@ -32,10 +32,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/result.h>
 #include <sqlpp17/statement.h>
 
-#include <sqlpp17/sqlite3/bind_result.h>
 #include <sqlpp17/sqlite3/clauses.h>
 #include <sqlpp17/sqlite3/connection_config.h>
+#include <sqlpp17/sqlite3/direct_execution_result.h>
 #include <sqlpp17/sqlite3/prepared_statement.h>
+#include <sqlpp17/sqlite3/prepared_statement_result.h>
 
 namespace sqlpp::sqlite3
 {
@@ -46,7 +47,7 @@ namespace sqlpp::sqlite3
 
 namespace sqlpp::sqlite3::detail
 {
-  class connection_cleanup
+  struct connection_cleanup
   {
   public:
     auto operator()(::sqlite3* handle) -> void
@@ -61,7 +62,7 @@ namespace sqlpp::sqlite3::detail
   using unique_connection_ptr = std::unique_ptr<::sqlite3, detail::connection_cleanup>;
 
   // direct execution
-  auto select(const connection_t&, const std::string& statement) -> bind_result_t;
+  auto select(const connection_t&, const std::string& statement) -> direct_execution_result_t;
   auto insert(const connection_t&, const std::string& statement) -> std::size_t;
   auto update(const connection_t&, const std::string& statement) -> std::size_t;
   auto erase(const connection_t&, const std::string& statement) -> std::size_t;
@@ -81,7 +82,7 @@ namespace sqlpp::sqlite3::detail
     {
     }
 
-    auto run() -> bind_result_t;
+    auto run() -> prepared_statement_result_t;
   };
 
   class prepared_insert_t

@@ -26,66 +26,24 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <memory>
-#include <vector>
-
-#ifdef SQLPP_USE_SQLCIPHER
-#include <sqlcipher/sqlite3.h>
-#else
-#include <sqlite3.h>
-#endif
-
-namespace sqlpp::sqlite3::detail
-{
-  struct prepared_statement_cleanup
-  {
-  public:
-    auto operator()(::sqlite3_stmt* handle) -> void
-    {
-      if (handle)
-        sqlite3_finalize(handle);
-    }
-  };
-  using unique_prepared_statement_ptr = std::unique_ptr<::sqlite3_stmt, detail::prepared_statement_cleanup>;
-
-}  // namespace sqlpp::sqlite3::detail
+#include <sqlpp17/sqlite3/prepared_statement_result.h>
 
 namespace sqlpp::sqlite3
 {
-  class prepared_statement_t
+  class direct_execution_result_t : public prepared_statement_result_t
   {
     detail::unique_prepared_statement_ptr _handle;
-    ::sqlite3* _connection;
-    std::function<void(std::string_view)> _debug;
 
   public:
-    prepared_statement_t() = default;
-    prepared_statement_t(detail::unique_prepared_statement_ptr handle,
-                         ::sqlite3* connection,
-                         std::function<void(std::string_view)> debug)
-        : _handle(std::move(handle)), _connection(connection), _debug(debug)
+    direct_execution_result_t() = default;
+    direct_execution_result_t(detail::unique_prepared_statement_ptr handle, std::function<void(std::string_view)> debug)
+        : prepared_statement_result_t(handle.get(), debug), _handle(std::move(handle))
     {
     }
-    prepared_statement_t(const prepared_statement_t&) = delete;
-    prepared_statement_t(prepared_statement_t&& rhs) = default;
-    prepared_statement_t& operator=(const prepared_statement_t&) = delete;
-    prepared_statement_t& operator=(prepared_statement_t&&) = default;
-    ~prepared_statement_t() = default;
-
-    auto* get() const
-    {
-      return _handle.get();
-    }
-
-    auto* connection() const
-    {
-      return _connection;
-    }
-
-    auto debug() const
-    {
-      return _debug;
-    }
+    direct_execution_result_t(const direct_execution_result_t&) = delete;
+    direct_execution_result_t(direct_execution_result_t&& rhs) = default;
+    direct_execution_result_t& operator=(const direct_execution_result_t&) = delete;
+    direct_execution_result_t& operator=(direct_execution_result_t&&) = default;
+    ~direct_execution_result_t() = default;
   };
 }  // namespace sqlpp::sqlite3
-

@@ -41,39 +41,36 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp::sqlite3
 {
-  class bind_result_t;
-  class prepared_statement_t;
+  class prepared_statement_result_t;
 }  // namespace sqlpp::sqlite3
 
 namespace sqlpp::sqlite3::detail
 {
-  using maybe_owning_stmt_ptr = std::unique_ptr<::sqlite3_stmt, void (*)(::sqlite3_stmt*)>;
-
-  auto get_next_result_row(bind_result_t& result) -> bool;
+  auto get_next_result_row(prepared_statement_result_t& result) -> bool;
 }  // namespace sqlpp::sqlite3::detail
 
 namespace sqlpp::sqlite3
 {
-  class bind_result_t
+  class direct_execution_result_t;
+
+  class prepared_statement_result_t
   {
-    detail::maybe_owning_stmt_ptr _handle;
+    ::sqlite3_stmt* _handle;
     std::function<void(std::string_view)> _debug;
 
-    friend auto detail::get_next_result_row(bind_result_t& result) -> bool;
-    template <typename Row>
-    friend auto get_next_result_row(bind_result_t& result, Row& row) -> void;
-
   public:
-    bind_result_t() = default;
-    bind_result_t(detail::maybe_owning_stmt_ptr handle, std::function<void(std::string_view)> debug)
-        : _handle(std::move(handle)), _debug(debug)
+    prepared_statement_result_t() = default;
+    prepared_statement_result_t(::sqlite3_stmt* handle, std::function<void(std::string_view)> debug)
+        : _handle(handle), _debug(debug)
     {
     }
-    bind_result_t(const bind_result_t&) = delete;
-    bind_result_t(bind_result_t&& rhs) = default;
-    bind_result_t& operator=(const bind_result_t&) = delete;
-    bind_result_t& operator=(bind_result_t&&) = default;
-    ~bind_result_t() = default;
+    prepared_statement_result_t(const prepared_statement_result_t&) = delete;
+    prepared_statement_result_t(prepared_statement_result_t&& rhs) = default;
+    prepared_statement_result_t(direct_execution_result_t&& rhs) = delete;
+    prepared_statement_result_t& operator=(const prepared_statement_result_t&) = delete;
+    prepared_statement_result_t& operator=(prepared_statement_result_t&&) = default;
+    prepared_statement_result_t& operator=(direct_execution_result_t&&) = delete;
+    ~prepared_statement_result_t() = default;
 
     [[nodiscard]] operator bool() const
     {
@@ -82,7 +79,7 @@ namespace sqlpp::sqlite3
 
     [[nodiscard]] auto* get() const
     {
-      return _handle.get();
+      return _handle;
     }
 
     [[nodiscard]] auto debug() const
@@ -92,12 +89,12 @@ namespace sqlpp::sqlite3
 
     auto invalidate()
     {
-      _handle.reset();
+      _handle = 0;
     }
   };
 
   template <typename Row>
-  auto get_next_result_row(bind_result_t& result, Row& row) -> void
+  auto get_next_result_row(prepared_statement_result_t& result, Row& row) -> void
   {
     if (detail::get_next_result_row(result))
     {
@@ -109,7 +106,8 @@ namespace sqlpp::sqlite3
     }
   }
 
-  auto post_bind_field(bind_result_t& result, std::int64_t& value, std::size_t index) -> void;
+  auto post_bind_field(prepared_statement_result_t& result, std::int64_t& value, std::size_t index) -> void;
 
-  auto post_bind_field(bind_result_t& result, std::optional<std::string_view>& value, std::size_t index) -> void;
+  auto post_bind_field(prepared_statement_result_t& result, std::optional<std::string_view>& value, std::size_t index)
+      -> void;
 }  // namespace sqlpp::sqlite3

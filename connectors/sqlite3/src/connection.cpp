@@ -26,7 +26,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/exception.h>
 
-#include <sqlpp17/sqlite3/bind_result.h>
 #include <sqlpp17/sqlite3/connection.h>
 #include <sqlpp17/sqlite3/connection_pool.h>
 
@@ -34,19 +33,7 @@ namespace sqlpp::sqlite3::detail
 {
   namespace
   {
-    auto no_cleanup([[maybe_unused]] ::sqlite3_stmt* statement) -> void
-    {
-      // This is used in case of executing a prepared select.
-      // The result is not owning the statement, but still receiving the pointer
-    }
-
-    auto statement_cleanup(::sqlite3_stmt* statement) -> void
-    {
-      if (statement)
-        sqlite3_finalize(statement);
-    }
-
-    auto prepare_impl(const connection_t& connection, const std::string& statement) -> maybe_owning_stmt_ptr
+    auto prepare_impl(const connection_t& connection, const std::string& statement) -> unique_prepared_statement_ptr
     {
       if (connection.debug())
         connection.debug()("Preparing: '" + statement + "'");
@@ -56,7 +43,7 @@ namespace sqlpp::sqlite3::detail
       const auto rc = sqlite3_prepare_v2(connection.get(), statement.c_str(), static_cast<int>(statement.size()),
                                          &statement_ptr, nullptr);
 
-      auto statement_handle = maybe_owning_stmt_ptr(statement_ptr, statement_cleanup);
+      auto statement_handle = unique_prepared_statement_ptr(statement_ptr, prepared_statement_cleanup{});
 
       if (rc != SQLITE_OK)
       {
@@ -104,7 +91,7 @@ namespace sqlpp::sqlite3::detail
     execute_prepared_statement(prepared_statement.get(), connection.get(), connection.debug());
   }
 
-  auto select(const connection_t& connection, const std::string& statement) -> bind_result_t
+  auto select(const connection_t& connection, const std::string& statement) -> direct_execution_result_t
   {
     return {prepare_impl(connection, statement), connection.debug()};
   }
@@ -137,10 +124,10 @@ namespace sqlpp::sqlite3::detail
     return {prepare_impl(connection, statement), connection.get(), connection.debug()};
   }
 
-  auto prepared_select_t::run() -> bind_result_t
+  auto prepared_select_t::run() -> prepared_statement_result_t
   {
     sqlite3_reset(_statement.get());
-    return {detail::maybe_owning_stmt_ptr(_statement.get(), no_cleanup), _statement.debug()};
+    return {_statement.get(), _statement.debug()};
   }
 
   auto prepared_insert_t::run() -> size_t

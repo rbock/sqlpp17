@@ -28,11 +28,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/exception.h>
 
-#include <sqlpp17/sqlite3/bind_result.h>
+#include <sqlpp17/sqlite3/prepared_statement_result.h>
 
 namespace sqlpp::sqlite3::detail
 {
-  auto get_next_result_row(bind_result_t& result) -> bool
+  auto get_next_result_row(prepared_statement_result_t& result) -> bool
   {
     if (result.debug())
       result.debug()("Reading next row");
@@ -53,7 +53,7 @@ namespace sqlpp::sqlite3::detail
 
 namespace sqlpp::sqlite3
 {
-  auto post_bind_field(bind_result_t& result, std::int64_t& value, std::size_t index) -> void
+  auto post_bind_field(prepared_statement_result_t& result, std::int64_t& value, std::size_t index) -> void
   {
     if (result.debug())
       result.debug()("Binding integral result at index " + std::to_string(index));
@@ -61,7 +61,8 @@ namespace sqlpp::sqlite3
     value = sqlite3_column_int64(result.get(), static_cast<int>(index));
   }
 
-  auto post_bind_field(bind_result_t& result, std::optional<std::string_view>& value, std::size_t index) -> void
+  auto post_bind_field(prepared_statement_result_t& result, std::optional<std::string_view>& value, std::size_t index)
+      -> void
   {
     if (result.debug())
       result.debug()("Binding optional string_view result at index " + std::to_string(index));
