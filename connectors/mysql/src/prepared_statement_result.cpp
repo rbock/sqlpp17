@@ -28,22 +28,23 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/exception.h>
 
-#include <sqlpp17/mysql/bind_result.h>
+#include <sqlpp17/mysql/prepared_statement_result.h>
 
 namespace sqlpp::mysql::detail
 {
-  auto bind_impl(bind_result_t& result) -> void
+  auto bind_impl(prepared_statement_result_t& result) -> void
   {
     if (result.debug())
       result.debug()("Binding results");
 
     if (mysql_stmt_bind_result(result.get(), result.get_bind_data().data()))
     {
-      throw sqlpp::exception(std::string("MySQL: mysql_stmt_bind_result: ") + mysql_stmt_error(result.get()));
+      throw sqlpp::exception(std::string("MySQL: mysql_stmt_prepared_statement_result: ") +
+                             mysql_stmt_error(result.get()));
     }
   }
 
-  auto get_next_result_row(bind_result_t& result) -> bool
+  auto get_next_result_row(prepared_statement_result_t& result) -> bool
   {
     if (result.debug())
       result.debug()("Reading bound row");
@@ -93,7 +94,7 @@ namespace sqlpp::mysql::detail
 
 namespace sqlpp::mysql
 {
-  auto pre_bind_field(bind_result_t& result, std::int64_t& value, std::size_t index) -> void
+  auto pre_bind_field(prepared_statement_result_t& result, std::int64_t& value, std::size_t index) -> void
   {
     if (result.debug())
       result.debug()("Binding integral result at index " + std::to_string(index));
@@ -110,7 +111,8 @@ namespace sqlpp::mysql
     param.error = &meta_data.bound_error;
   }
 
-  auto pre_bind_field(bind_result_t& result, std::optional<std::string_view>& value, std::size_t index) -> void
+  auto pre_bind_field(prepared_statement_result_t& result, std::optional<std::string_view>& value, std::size_t index)
+      -> void
   {
     if (result.debug())
       result.debug()("Binding string_view result at index " + std::to_string(index));
@@ -128,7 +130,8 @@ namespace sqlpp::mysql
     param.error = &meta_data.bound_error;
   }
 
-  auto post_bind_field(bind_result_t& result, std::optional<std::string_view>& value, std::size_t index) -> void
+  auto post_bind_field(prepared_statement_result_t& result, std::optional<std::string_view>& value, std::size_t index)
+      -> void
   {
     if (result.debug())
       result.debug()("Assigning string_view result at index " + std::to_string(index));

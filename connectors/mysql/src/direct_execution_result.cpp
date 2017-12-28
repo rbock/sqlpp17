@@ -24,11 +24,11 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/mysql/char_result.h>
+#include <sqlpp17/mysql/direct_execution_result.h>
 
 namespace sqlpp::mysql::detail
 {
-  auto get_next_result_row(char_result_t& result) -> bool
+  auto get_next_result_row(direct_execution_result_t& result) -> bool
   {
     if (result.debug())
       result.debug()("Reading char row");
@@ -42,13 +42,13 @@ namespace sqlpp::mysql::detail
 
 namespace
 {
-  auto assert_row(sqlpp::mysql::char_result_t& result) -> void
+  auto assert_row(sqlpp::mysql::direct_execution_result_t& result) -> void
   {
     if (!result.get_data())
       throw std::logic_error("Trying to obtain value from non-existing row");
   }
 
-  auto assert_field(sqlpp::mysql::char_result_t& result, std::size_t index) -> void
+  auto assert_field(sqlpp::mysql::direct_execution_result_t& result, std::size_t index) -> void
   {
     assert_row(result);
     if (!result.get_data()[index])
@@ -58,19 +58,19 @@ namespace
 
 namespace sqlpp::mysql
 {
-  auto bind_field(char_result_t& result, std::int64_t& value, std::size_t index) -> void
+  auto bind_field(direct_execution_result_t& result, std::int64_t& value, std::size_t index) -> void
   {
     assert_field(result, index);
     value = std::strtoll(result.get_data()[index], nullptr, 10);
   }
 
-  auto bind_field(char_result_t& result, std::string_view& value, std::size_t index) -> void
+  auto bind_field(direct_execution_result_t& result, std::string_view& value, std::size_t index) -> void
   {
     assert_field(result, index);
     value = std::string_view(result.get_data()[index], result.get_lengths()[index]);
   }
 
-  auto bind_field(char_result_t& result, std::optional<std::string_view>& value, std::size_t index) -> void
+  auto bind_field(direct_execution_result_t& result, std::optional<std::string_view>& value, std::size_t index) -> void
   {
     assert_row(result);
     value =

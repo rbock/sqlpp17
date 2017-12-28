@@ -35,37 +35,37 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp ::mysql
 {
-  class char_result_t;
+  class direct_execution_result_t;
 }
 
 namespace sqlpp ::mysql::detail
 {
-  auto get_next_result_row(char_result_t& result) -> bool;
+  auto get_next_result_row(direct_execution_result_t& result) -> bool;
 }
 
 namespace sqlpp ::mysql
 {
-  class char_result_t
+  class direct_execution_result_t
   {
     std::unique_ptr<MYSQL_RES, void (*)(MYSQL_RES*)> _handle;
     std::function<void(std::string_view)> _debug;
     MYSQL_ROW _data = nullptr;
     unsigned long* _lengths = nullptr;
 
-    friend auto sqlpp ::mysql::detail::get_next_result_row(char_result_t& result) -> bool;
+    friend auto sqlpp ::mysql::detail::get_next_result_row(direct_execution_result_t& result) -> bool;
 
   public:
-    char_result_t() = default;
-    char_result_t(std::unique_ptr<MYSQL_RES, void (*)(MYSQL_RES*)>&& handle,
-                  std::function<void(std::string_view)> debug)
+    direct_execution_result_t() = default;
+    direct_execution_result_t(std::unique_ptr<MYSQL_RES, void (*)(MYSQL_RES*)>&& handle,
+                              std::function<void(std::string_view)> debug)
         : _handle(std::move(handle)), _debug(debug)
     {
     }
-    char_result_t(const char_result_t&) = delete;
-    char_result_t(char_result_t&& rhs) = default;
-    char_result_t& operator=(const char_result_t&) = delete;
-    char_result_t& operator=(char_result_t&&) = default;
-    ~char_result_t() = default;
+    direct_execution_result_t(const direct_execution_result_t&) = delete;
+    direct_execution_result_t(direct_execution_result_t&& rhs) = default;
+    direct_execution_result_t& operator=(const direct_execution_result_t&) = delete;
+    direct_execution_result_t& operator=(direct_execution_result_t&&) = default;
+    ~direct_execution_result_t() = default;
 
     [[nodiscard]] operator bool() const
     {
@@ -99,7 +99,7 @@ namespace sqlpp ::mysql
   };
 
   template <typename Row>
-  auto get_next_result_row(char_result_t& result, Row& row) -> void
+  auto get_next_result_row(direct_execution_result_t& result, Row& row) -> void
   {
     if (detail::get_next_result_row(result))
     {
@@ -111,9 +111,9 @@ namespace sqlpp ::mysql
     }
   }
 
-  auto bind_field(char_result_t& result, std::int64_t& value, std::size_t index) -> void;
-  auto bind_field(char_result_t& result, std::string_view& value, std::size_t index) -> void;
-  auto bind_field(char_result_t& result, std::optional<std::string_view>& value, std::size_t index) -> void;
+  auto bind_field(direct_execution_result_t& result, std::int64_t& value, std::size_t index) -> void;
+  auto bind_field(direct_execution_result_t& result, std::string_view& value, std::size_t index) -> void;
+  auto bind_field(direct_execution_result_t& result, std::optional<std::string_view>& value, std::size_t index) -> void;
 
 }  // namespace sqlpp::mysql
 

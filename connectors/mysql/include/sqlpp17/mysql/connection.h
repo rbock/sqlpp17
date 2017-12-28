@@ -32,11 +32,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/result.h>
 #include <sqlpp17/statement.h>
 
-#include <sqlpp17/mysql/bind_result.h>
-#include <sqlpp17/mysql/char_result.h>
 #include <sqlpp17/mysql/clauses.h>
 #include <sqlpp17/mysql/connection_config.h>
+#include <sqlpp17/mysql/direct_execution_result.h>
 #include <sqlpp17/mysql/prepared_statement.h>
+#include <sqlpp17/mysql/prepared_statement_result.h>
 
 namespace sqlpp::mysql
 {
@@ -60,7 +60,7 @@ namespace sqlpp::mysql::detail
   auto thread_init() -> void;
 
   // direct execution
-  auto select(const connection_t&, const std::string& statement) -> char_result_t;
+  auto select(const connection_t&, const std::string& statement) -> direct_execution_result_t;
   auto insert(const connection_t&, const std::string& statement) -> std::size_t;
   auto update(const connection_t&, const std::string& statement) -> std::size_t;
   auto erase(const connection_t&, const std::string& statement) -> std::size_t;
@@ -81,7 +81,7 @@ namespace sqlpp::mysql::detail
     {
     }
 
-    auto run() -> bind_result_t;
+    auto run() -> prepared_statement_result_t;
   };
 
   class prepared_insert_t

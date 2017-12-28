@@ -37,45 +37,52 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp::mysql
 {
-  class bind_result_t;
+  class prepared_statement_result_t;
   class prepared_statement_t;
 }  // namespace sqlpp::mysql
 
 namespace sqlpp::mysql::detail
 {
-  auto bind_impl(bind_result_t& result) -> void;
-  auto get_next_result_row(bind_result_t& result) -> bool;
+  auto bind_impl(prepared_statement_result_t& result) -> void;
+  auto get_next_result_row(prepared_statement_result_t& result) -> bool;
 }  // namespace sqlpp::mysql::detail
 
 namespace sqlpp::mysql
 {
-  class bind_result_t
+  class prepared_statement_result_t
   {
-    MYSQL_STMT* _handle = nullptr;
+    detail::unique_prepared_statement_ptr _handle = nullptr;
+    prepared_statement_t* _prepared_statement = nullptr;
     std::vector<detail::bind_meta_data_t> _bind_meta_data;
     std::vector<MYSQL_BIND> _bind_data;
     std::function<void(std::string_view)> _debug;
     void* _result_row_address = nullptr;
 
-    friend auto detail::bind_impl(bind_result_t& result) -> void;
-    friend auto detail::get_next_result_row(bind_result_t& result) -> bool;
+    friend auto detail::bind_impl(prepared_statement_result_t& result) -> void;
+    friend auto detail::get_next_result_row(prepared_statement_result_t& result) -> bool;
     template <typename Row>
-    friend auto get_next_result_row(bind_result_t& result, Row& row) -> void;
+    friend auto get_next_result_row(prepared_statement_result_t& result, Row& row) -> void;
 
   public:
-    bind_result_t() = default;
-    bind_result_t(const ::sqlpp::mysql::prepared_statement_t& statement)
-        : _handle(statement.get()),
+    prepared_statement_result_t() = default;
+    prepared_statement_result_t(::sqlpp::mysql::prepared_statement_t& statement)
+        : _handle(statement.get_handle()),
           _bind_meta_data(statement.get_number_of_columns()),
           _bind_data(statement.get_number_of_columns()),
           _debug(statement.debug())
     {
     }
-    bind_result_t(const bind_result_t&) = delete;
-    bind_result_t(bind_result_t&& rhs) = default;
-    bind_result_t& operator=(const bind_result_t&) = delete;
-    bind_result_t& operator=(bind_result_t&&) = default;
-    ~bind_result_t() = default;
+    prepared_statement_result_t(const prepared_statement_result_t&) = delete;
+    prepared_statement_result_t(prepared_statement_result_t&& rhs) = default;
+    prepared_statement_result_t& operator=(const prepared_statement_result_t&) = delete;
+    prepared_statement_result_t& operator=(prepared_statement_result_t&&) = default;
+    ~prepared_statement_result_t()
+    {
+      if (_prepared_statement)
+      {
+        _prepared_statement->put_handle(std::move(_handle));
+      }
+    }
 
     [[nodiscard]] operator bool() const
     {
@@ -84,7 +91,7 @@ namespace sqlpp::mysql
 
     [[nodiscard]] auto* get() const
     {
-      return _handle;
+      return _handle.get();
     }
 
     [[nodiscard]] auto debug() const
@@ -111,7 +118,7 @@ namespace sqlpp::mysql
   };
 
   template <typename Row>
-  auto get_next_result_row(bind_result_t& result, Row& row) -> void
+  auto get_next_result_row(prepared_statement_result_t& result, Row& row) -> void
   {
     // prepare bind
     if (&row != result._result_row_address)
@@ -132,11 +139,13 @@ namespace sqlpp::mysql
     }
   }
 
-  auto pre_bind_field(bind_result_t& result, std::int64_t& value, std::size_t index) -> void;
-  inline auto post_bind_field(bind_result_t& result, std::int64_t& value, std::size_t index) -> void
+  auto pre_bind_field(prepared_statement_result_t& result, std::int64_t& value, std::size_t index) -> void;
+  inline auto post_bind_field(prepared_statement_result_t& result, std::int64_t& value, std::size_t index) -> void
   {
   }
 
-  auto pre_bind_field(bind_result_t& result, std::optional<std::string_view>& value, std::size_t index) -> void;
-  auto post_bind_field(bind_result_t& result, std::optional<std::string_view>& value, std::size_t index) -> void;
+  auto pre_bind_field(prepared_statement_result_t& result, std::optional<std::string_view>& value, std::size_t index)
+      -> void;
+  auto post_bind_field(prepared_statement_result_t& result, std::optional<std::string_view>& value, std::size_t index)
+      -> void;
 }  // namespace sqlpp::mysql

@@ -26,10 +26,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/exception.h>
 
-#include <sqlpp17/mysql/bind_result.h>
-#include <sqlpp17/mysql/char_result.h>
 #include <sqlpp17/mysql/connection.h>
 #include <sqlpp17/mysql/connection_pool.h>
+#include <sqlpp17/mysql/direct_execution_result.h>
+#include <sqlpp17/mysql/prepared_statement_result.h>
 
 namespace
 {
@@ -89,11 +89,6 @@ namespace sqlpp::mysql::detail
     mysql_free_result(result);
   }
 
-  auto statement_cleanup(MYSQL_STMT* statement) -> void
-  {
-    mysql_stmt_close(statement);
-  }
-
   auto execute_query(const connection_t& connection, const std::string& query) -> void
   {
     detail::thread_init();
@@ -108,7 +103,7 @@ namespace sqlpp::mysql::detail
     }
   }
 
-  auto select(const connection_t& connection, const std::string& query) -> char_result_t
+  auto select(const connection_t& connection, const std::string& query) -> direct_execution_result_t
   {
     execute_query(connection, query);
     std::unique_ptr<MYSQL_RES, void (*)(MYSQL_RES*)> result_handle(mysql_store_result(connection.get()),
@@ -155,8 +150,7 @@ namespace sqlpp::mysql::detail
     if (connection.debug())
       connection.debug()("Preparing: '" + statement + "'");
 
-    auto statement_handle =
-        std::unique_ptr<MYSQL_STMT, void (*)(MYSQL_STMT*)>(mysql_stmt_init(connection.get()), statement_cleanup);
+    auto statement_handle = detail::unique_prepared_statement_ptr(mysql_stmt_init(connection.get()), {});
     if (not statement_handle)
     {
       throw sqlpp::exception("MySQL: Could not allocate prepared statement\n");
@@ -190,7 +184,7 @@ namespace sqlpp::mysql::detail
     }
   }
 
-  auto prepared_select_t::run() -> bind_result_t
+  auto prepared_select_t::run() -> prepared_statement_result_t
   {
     execute_prepared_statement(_statement);
     return {_statement};

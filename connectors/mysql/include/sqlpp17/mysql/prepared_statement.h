@@ -41,22 +41,48 @@ namespace sqlpp::mysql::detail
     bool use_buffer = false;
     std::vector<char> bound_buffer;
   };
+
+  struct prepared_statement_cleanup
+  {
+  public:
+    auto operator()(MYSQL_STMT* handle) -> void
+    {
+      if (handle)
+        mysql_stmt_close(handle);
+    }
+  };
+  using unique_prepared_statement_ptr = std::unique_ptr<MYSQL_STMT, detail::prepared_statement_cleanup>;
+
 }  // namespace sqlpp::mysql::detail
 
 namespace sqlpp::mysql
 {
+  class prepared_statement_result_t;
+
   class prepared_statement_t
   {
-    std::unique_ptr<MYSQL_STMT, void (*)(MYSQL_STMT*)> _handle;
+    detail::unique_prepared_statement_ptr _handle;
     std::size_t _number_of_parameters;
     std::size_t _number_of_columns;
     std::vector<detail::bind_meta_data_t> _bind_meta_data;
     std::vector<MYSQL_BIND> _bind_data;
     std::function<void(std::string_view)> _debug;
 
+    friend prepared_statement_result_t;
+
+    auto get_handle() -> detail::unique_prepared_statement_ptr
+    {
+      return std::move(_handle);
+    }
+
+    auto put_handle(detail::unique_prepared_statement_ptr handle) -> void
+    {
+      _handle = std::move(handle);
+    }
+
   public:
     prepared_statement_t() = default;
-    prepared_statement_t(std::unique_ptr<MYSQL_STMT, void (*)(MYSQL_STMT*)>&& handle,
+    prepared_statement_t(detail::unique_prepared_statement_ptr handle,
                          std::size_t number_of_parameters,
                          std::size_t number_of_columns,
                          std::function<void(std::string_view)> debug)

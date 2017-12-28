@@ -1,8 +1,8 @@
 add_library(sqlpp17-connector-mysql
-		bind_result.cpp
-		char_result.cpp
 		connection.cpp
 		connection_pool.cpp
+		direct_execution_result.cpp
+		prepared_statement_result.cpp
 )
 
 if (APPLE)
