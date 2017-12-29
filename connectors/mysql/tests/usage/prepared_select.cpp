@@ -72,11 +72,11 @@ int main()
 
     auto prepared_select = db.prepare(
         sqlpp::select(test::tabDepartment.id, test::tabDepartment.name).from(test::tabDepartment).unconditionally());
-    for (const auto& row : prepared_select.run())
+    for (const auto& row : execute(prepared_select))
     {
       std::cout << row.id << ", " << row.name.value_or("NULL") << std::endl;
     }
-    for (const auto& row : prepared_select.run())
+    for (const auto& row : execute(prepared_select))
     {
       std::cout << row.id << ", " << row.name.value_or("NULL") << std::endl;
     }

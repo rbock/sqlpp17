@@ -211,8 +211,8 @@ namespace sqlpp::postgresql
     }
 
   private:
-    template <typename Statement>
-    auto _execute(const Statement& statement)
+    template <typename... Clauses>
+    auto execute(const ::sqlpp::statement<Clauses...>& statement)
     {
       return detail::execute(*this, to_sql_string(*this, statement));
     }

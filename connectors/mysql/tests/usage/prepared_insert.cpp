@@ -67,7 +67,7 @@ int main()
     db(create_table(test::tabDepartment));
 
     auto prepared_insert = db.prepare(sqlpp::insert().into(test::tabDepartment).default_values());
-    auto id = prepared_insert.run();
+    auto id = execute(prepared_insert);
   }
   catch (const std::exception& e)
   {

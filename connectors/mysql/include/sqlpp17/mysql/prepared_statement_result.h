@@ -51,8 +51,7 @@ namespace sqlpp::mysql
 {
   class prepared_statement_result_t
   {
-    detail::unique_prepared_statement_ptr _handle = nullptr;
-    prepared_statement_t* _prepared_statement = nullptr;
+    MYSQL_STMT* _handle = nullptr;
     std::vector<detail::bind_meta_data_t> _bind_meta_data;
     std::vector<MYSQL_BIND> _bind_data;
     std::function<void(std::string_view)> _debug;
@@ -63,41 +62,30 @@ namespace sqlpp::mysql
     template <typename Row>
     friend auto get_next_result_row(prepared_statement_result_t& result, Row& row) -> void;
 
-    auto return_ownership()
-    {
-      if (_prepared_statement and _handle.get())
-      {
-        _prepared_statement->put_handle(std::move(_handle));
-      }
-    }
-
   public:
     prepared_statement_result_t() = default;
     prepared_statement_result_t(::sqlpp::mysql::prepared_statement_t& statement)
-        : _handle(statement.get_handle()),
+        : _handle(statement.get()),
           _bind_meta_data(statement.get_number_of_columns()),
           _bind_data(statement.get_number_of_columns()),
-          _debug(statement.debug()),
-          _prepared_statement(&statement)
+          _debug(statement.debug())
     {
     }
     prepared_statement_result_t(const prepared_statement_result_t&) = delete;
     prepared_statement_result_t(prepared_statement_result_t&& rhs) = default;
     prepared_statement_result_t& operator=(const prepared_statement_result_t&) = delete;
     prepared_statement_result_t& operator=(prepared_statement_result_t&&) = default;
-    ~prepared_statement_result_t()
-    {
-      return_ownership();
-    }
+    ~prepared_statement_result_t(){}
 
-    [[nodiscard]] operator bool() const
+        [[nodiscard]]
+        operator bool() const
     {
       return !!_handle;
     }
 
     [[nodiscard]] auto* get() const
     {
-      return _handle.get();
+      return _handle;
     }
 
     [[nodiscard]] auto debug() const
@@ -119,7 +107,6 @@ namespace sqlpp::mysql
 
     auto reset() -> void
     {
-      return_ownership();
       operator=(prepared_statement_result_t{});
     }
   };

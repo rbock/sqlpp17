@@ -129,7 +129,14 @@ namespace sqlpp
     [[nodiscard]] auto _run(Connection& connection) const
     {
       using _result_handle_t = decltype(connection.select(Statement::of(this)));
-      return ::sqlpp::result_t<_result_row_t, _result_handle_t>{connection.select(Statement::of(this))};
+      if constexpr (is_row_result_v<_result_handle_t>)
+      {
+        return connection.select(Statement::of(this));
+      }
+      else
+      {
+        return ::sqlpp::result_t<_result_row_t, _result_handle_t>{connection.select(Statement::of(this))};
+      }
     }
 
     template <typename Connection>
@@ -144,11 +151,18 @@ namespace sqlpp
       return sizeof...(Columns);
     }
 
+#warning : Get rid of this, use result_row_of instead.
     using _result_row_t = result_row_t<make_column_spec_t<Statement, Columns>...>;
   };
 
   template <typename... Columns, typename Statement>
   constexpr auto has_result_rows_v<result_base<select_columns_t<Columns...>, Statement>> = true;
+
+  template <typename... Columns, typename Statement>
+  struct result_row_of<result_base<select_columns_t<Columns...>, Statement>>
+  {
+    using type = result_row_t<make_column_spec_t<Statement, Columns>...>;
+  };
 
   template <typename DbConnection, typename... Columns, typename Statement>
   [[nodiscard]] auto to_sql_string(const DbConnection& connection,

@@ -35,32 +35,91 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
 
+namespace sqlpp::detail
+{
+  struct runner
+  {
+    template <typename T>
+    decltype(auto) operator()(T& t) const
+    {
+      return t.run();
+    }
+  };
+  constexpr auto run = runner{};
+}  // namespace sqlpp::detail
 namespace sqlpp
 {
-  template <typename ResultBase, typename Handle>
+  template <typename ResultBase, typename Handle, typename = void>
   class prepared_statement_t
   {
     Handle _handle;
 
-  public:
-    prepared_statement_t(const ResultBase& /*unused*/, Handle&& handle) : _handle(std::move(handle))
-    {
-    }
+    friend detail::runner;
 
     auto run()
     {
-      if constexpr (has_result_row_v<ResultBase>)
-      {
-        using _result_row_t = typename ResultBase::_result_row_t;
-        using _result_handle_t = decltype(_handle.run());
+      return _handle.run();
+    }
 
-        return ::sqlpp::result_t<_result_row_t, _result_handle_t>{_handle.run()};
-      }
-      else
-      {
-        return _handle.run();
-      }
+  public:
+    prepared_statement_t([[maybe_unused]] const ResultBase& result_base, Handle handle) : _handle(std::move(handle))
+    {
     }
   };
+
+  template <typename ResultBase, typename Handle>
+  class prepared_statement_t<ResultBase, Handle, std::enable_if_t<has_result_row_v<ResultBase>>>
+  {
+    Handle _handle;
+    using result_type = ::sqlpp::result_t<result_row_of_t<ResultBase>, decltype(_handle.run())>;
+
+    result_type _result;
+
+    friend detail::runner;
+
+    decltype(auto) run()
+    {
+      _result = result_type{_handle.run()};
+      return *this;
+    }
+
+  public:
+    prepared_statement_t([[maybe_unused]] const ResultBase& result_base, Handle handle)
+        : _handle(std::move(handle)){}
+
+              [[nodiscard]] decltype(auto) begin()
+    {
+      return _result.begin();
+    }
+
+    [[nodiscard]] constexpr decltype(auto) end() const
+    {
+      return _result.end();
+    }
+
+    [[nodiscard]] decltype(auto) empty() const { return _result.empty(); }
+
+        [[nodiscard]] decltype(auto) front() const
+    {
+      return _result.front();
+    }
+
+    auto pop_front() -> void
+    {
+      _result.pop_front();
+    }
+  };
+
+  template <typename ResultBase, typename Handle>
+  struct is_row_result<prepared_statement_t<ResultBase, Handle>>
+  {
+    static constexpr auto value = has_result_row_v<ResultBase>;
+  };
+
+  template <typename ResultBase, typename Handle>
+  decltype(auto) execute(prepared_statement_t<ResultBase, Handle>& prepared_statement)
+  {
+    return detail::run(prepared_statement);
+  }
 
 }  // namespace sqlpp

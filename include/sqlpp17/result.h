@@ -30,6 +30,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <memory>
 #include <optional>
 
+#include <sqlpp17/type_traits.h>
+
 namespace sqlpp
 {
   class result_end_t
@@ -141,6 +143,12 @@ namespace sqlpp
     {
       ++(begin());
     }
+  };
+
+  template <typename Row, typename ResultHandle>
+  struct is_row_result<result_t<Row, ResultHandle>>
+  {
+    static constexpr auto value = true;
   };
 
 }  // namespace sqlpp

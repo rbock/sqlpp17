@@ -57,8 +57,6 @@ namespace sqlpp::mysql::detail
 
 namespace sqlpp::mysql
 {
-  class prepared_statement_result_t;
-
   class prepared_statement_t
   {
     detail::unique_prepared_statement_ptr _handle;
@@ -67,18 +65,6 @@ namespace sqlpp::mysql
     std::vector<detail::bind_meta_data_t> _bind_meta_data;
     std::vector<MYSQL_BIND> _bind_data;
     std::function<void(std::string_view)> _debug;
-
-    friend prepared_statement_result_t;
-
-    auto get_handle() -> detail::unique_prepared_statement_ptr
-    {
-      return std::move(_handle);
-    }
-
-    auto put_handle(detail::unique_prepared_statement_ptr handle) -> void
-    {
-      _handle = std::move(handle);
-    }
 
   public:
     prepared_statement_t() = default;

@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <functional>
 #include <type_traits>
 
+#include <sqlpp17/prepared_statement.h>
 #include <sqlpp17/result.h>
 #include <sqlpp17/statement.h>
 
@@ -60,23 +61,16 @@ namespace sqlpp::sqlite3::detail
   };
   using unique_connection_ptr = std::unique_ptr<::sqlite3, detail::connection_cleanup_t>;
 
-  // direct execution
-  auto select(const connection_t&, const std::string& statement) -> prepared_statement_result_t;
-  auto insert(const connection_t&, const std::string& statement) -> std::size_t;
-  auto update(const connection_t&, const std::string& statement) -> std::size_t;
-  auto erase(const connection_t&, const std::string& statement) -> std::size_t;
-  auto execute(const connection_t&, const std::string& statement) -> void;
-
   // prepared execution
-  auto prepare(const connection_t&, const std::string& statement) -> ::sqlpp::sqlite3 ::prepared_statement_t;
+  auto prepare(const connection_t&, const std::string& statement) -> ::sqlpp::sqlite3::prepared_statement_t;
 
   class prepared_select_t
   {
-    ::sqlpp::sqlite3 ::prepared_statement_t _statement;
+    ::sqlpp::sqlite3::prepared_statement_t _statement;
     std::function<void(std::string_view)> _debug;
 
   public:
-    prepared_select_t(::sqlpp::sqlite3 ::prepared_statement_t&& statement, std::function<void(std::string_view)> debug)
+    prepared_select_t(::sqlpp::sqlite3::prepared_statement_t&& statement, std::function<void(std::string_view)> debug)
         : _statement(std::move(statement)), _debug(debug)
     {
     }
@@ -84,12 +78,24 @@ namespace sqlpp::sqlite3::detail
     auto run() -> prepared_statement_result_t;
   };
 
-  class prepared_insert_t
+  class prepared_execute_t
   {
-    ::sqlpp::sqlite3 ::prepared_statement_t _statement;
+    ::sqlpp::sqlite3::prepared_statement_t _statement;
 
   public:
-    prepared_insert_t(::sqlpp::sqlite3 ::prepared_statement_t&& statement) : _statement(std::move(statement))
+    prepared_execute_t(::sqlpp::sqlite3::prepared_statement_t&& statement) : _statement(std::move(statement))
+    {
+    }
+
+    auto run() -> void;
+  };
+
+  class prepared_insert_t
+  {
+    ::sqlpp::sqlite3::prepared_statement_t _statement;
+
+  public:
+    prepared_insert_t(::sqlpp::sqlite3::prepared_statement_t&& statement) : _statement(std::move(statement))
     {
     }
 
@@ -98,10 +104,10 @@ namespace sqlpp::sqlite3::detail
 
   class prepared_update_t
   {
-    ::sqlpp::sqlite3 ::prepared_statement_t _statement;
+    ::sqlpp::sqlite3::prepared_statement_t _statement;
 
   public:
-    prepared_update_t(::sqlpp::sqlite3 ::prepared_statement_t&& statement) : _statement(std::move(statement))
+    prepared_update_t(::sqlpp::sqlite3::prepared_statement_t&& statement) : _statement(std::move(statement))
     {
     }
 
@@ -110,10 +116,10 @@ namespace sqlpp::sqlite3::detail
 
   class prepared_erase_t
   {
-    ::sqlpp::sqlite3 ::prepared_statement_t _statement;
+    ::sqlpp::sqlite3::prepared_statement_t _statement;
 
   public:
-    prepared_erase_t(::sqlpp::sqlite3 ::prepared_statement_t&& statement) : _statement(std::move(statement))
+    prepared_erase_t(::sqlpp::sqlite3::prepared_statement_t&& statement) : _statement(std::move(statement))
     {
     }
 
@@ -126,9 +132,9 @@ namespace sqlpp::sqlite3
 {
   class connection_t
   {
-    std::function<void(std::string_view)> _debug;
     detail::unique_connection_ptr _handle;
     connection_pool_t* _connection_pool = nullptr;
+    std::function<void(std::string_view)> _debug;
 
     template <typename... Clauses>
     friend class ::sqlpp::statement;
@@ -136,12 +142,12 @@ namespace sqlpp::sqlite3
     template <typename Clause, typename Statement>
     friend class ::sqlpp::result_base;
 
-    friend class ::sqlpp::sqlite3 ::connection_pool_t;
+    friend class ::sqlpp::sqlite3::connection_pool_t;
 
     connection_t(const connection_config_t& config,
                  detail::unique_connection_ptr&& handle,
                  connection_pool_t* connection_pool)
-        : _debug(config.debug), _handle(std::move(handle)), _connection_pool(connection_pool)
+        : _handle(std::move(handle)), _connection_pool(connection_pool), _debug(config.debug)
     {
     }
 
@@ -176,7 +182,8 @@ namespace sqlpp::sqlite3
 
     auto execute(const std::string& query)
     {
-      return detail::execute(*this, query);
+      auto prepared_statement = detail::prepared_execute_t{detail::prepare(*this, query)};
+      prepared_statement.run();
     }
 
     template <typename Statement>
@@ -205,16 +212,24 @@ namespace sqlpp::sqlite3
     auto is_alive() -> bool;
 
   private:
-    template <typename Statement>
-    auto _execute(const Statement& statement)
+    template <typename... Clauses>
+    auto execute(const ::sqlpp::statement<Clauses...>& statement)
     {
-      return detail::execute(*this, to_sql_string(*this, statement));
+      auto prepared_statement = prepare(statement);
+      ::sqlpp::execute(prepared_statement);
+    }
+
+    template <typename Statement>
+    [[nodiscard]] auto prepare_execute(const Statement& statement)
+    {
+      return detail::prepared_execute_t{detail::prepare(*this, to_sql_string(*this, statement))};
     }
 
     template <typename Statement>
     auto insert(const Statement& statement)
     {
-      return detail::insert(*this, to_sql_string(*this, statement));
+      auto prepared_statement = prepare(statement);
+      return ::sqlpp::execute(prepared_statement);
     }
 
     template <typename Statement>
@@ -226,7 +241,8 @@ namespace sqlpp::sqlite3
     template <typename Statement>
     auto update(const Statement& statement)
     {
-      return detail::update(*this, to_sql_string(*this, statement));
+      auto prepared_statement = prepare(statement);
+      return ::sqlpp::execute(prepared_statement);
     }
 
     template <typename Statement>
@@ -238,7 +254,8 @@ namespace sqlpp::sqlite3
     template <typename Statement>
     auto erase(const Statement& statement)
     {
-      return detail::erase(*this, to_sql_string(*this, statement));
+      auto prepared_statement = prepare(statement);
+      return ::sqlpp::execute(prepared_statement);
     }
 
     template <typename Statement>
@@ -250,7 +267,9 @@ namespace sqlpp::sqlite3
     template <typename Statement>
     [[nodiscard]] auto select(const Statement& statement)
     {
-      return detail::select(*this, to_sql_string(*this, statement));
+      auto prepared_statement = prepare(statement);
+      ::sqlpp::execute(prepared_statement);
+      return prepared_statement;
     }
 
     template <typename Statement>

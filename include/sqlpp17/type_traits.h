@@ -216,7 +216,10 @@ namespace sqlpp
   constexpr auto result_rows_are_compatible_v = result_rows_are_compatible<Left, Right>::value;
 
   template <typename T>
-  struct result_row_of;
+  struct result_row_of
+  {
+    using type = std::nullptr_t;
+  };
 
   template <typename T>
   using result_row_of_t = typename result_row_of<T>::type;
@@ -229,6 +232,15 @@ namespace sqlpp
   {
     return is_bad_statement_v<Assert, T>;
   }
+
+  template <typename T>
+  struct is_row_result
+  {
+    static constexpr auto value = false;
+  };
+
+  template <typename T>
+  static constexpr auto is_row_result_v = is_row_result<T>::value;
 
   template <typename T>
   constexpr auto is_join_v = false;

@@ -56,15 +56,14 @@ namespace sqlpp::sqlite3::detail
     }
   }  // namespace
 
-#warning : Need to have better names for the two versions of execute_prepared_statement
-  auto execute_prepared_statement(::sqlite3_stmt* statement,
-                                  ::sqlite3* connection,
-                                  const std::function<void(std::string_view)>& debug) -> void
+  auto execute_prepared_statement(const prepared_statement_t& prepared_statement) -> void
   {
-    if (debug)
-      debug("Executing prepared statement");
+    if (prepared_statement.debug())
+      prepared_statement.debug()("Executing prepared statement");
 
-    switch (const auto rc = sqlite3_step(statement); rc)
+    sqlite3_reset(prepared_statement.get());
+
+    switch (const auto rc = sqlite3_step(prepared_statement.get()); rc)
     {
       case SQLITE_OK:
         [[fallthrough]];
@@ -75,47 +74,6 @@ namespace sqlpp::sqlite3::detail
       default:
         throw sqlpp::exception("Sqlite3 error: Could not execute statement: " + std::string(sqlite3_errstr(rc)));
     }
-  }
-
-  auto execute_prepared_statement(const prepared_statement_t& prepared_statement) -> void
-  {
-    sqlite3_reset(prepared_statement.get());
-
-    execute_prepared_statement(prepared_statement.get(), prepared_statement.connection(), prepared_statement.debug());
-  }
-
-  auto execute_query(const connection_t& connection, const std::string& statement) -> void
-  {
-    auto prepared_statement = prepare_impl(connection, statement);
-    execute_prepared_statement(prepared_statement.get(), connection.get(), connection.debug());
-  }
-
-  auto select(const connection_t& connection, const std::string& statement) -> prepared_statement_result_t
-  {
-    return {prepare_impl(connection, statement), connection.debug()};
-  }
-
-  auto insert(const connection_t& connection, const std::string& statement) -> size_t
-  {
-    execute_query(connection, statement);
-    return sqlite3_last_insert_rowid(connection.get());
-  }
-
-  auto update(const connection_t& connection, const std::string& statement) -> size_t
-  {
-    execute_query(connection, statement);
-    return sqlite3_changes(connection.get());
-  }
-
-  auto erase(const connection_t& connection, const std::string& statement) -> size_t
-  {
-    execute_query(connection, statement);
-    return sqlite3_changes(connection.get());
-  }
-
-  auto execute(const connection_t& connection, const std::string& statement) -> void
-  {
-    execute_query(connection, statement);
   }
 
   auto prepare(const connection_t& connection, const std::string& statement) -> ::sqlpp::sqlite3::prepared_statement_t
@@ -133,6 +91,11 @@ namespace sqlpp::sqlite3::detail
   {
     execute_prepared_statement(_statement);
     return sqlite3_last_insert_rowid(_statement.connection());
+  }
+
+  auto prepared_execute_t::run() -> void
+  {
+    execute_prepared_statement(_statement);
   }
 
   auto prepared_update_t::run() -> size_t
