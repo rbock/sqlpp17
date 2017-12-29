@@ -47,7 +47,7 @@ namespace sqlpp::mysql
 
 namespace sqlpp::mysql::detail
 {
-  class connection_cleanup
+  class connection_cleanup_t
   {
   public:
     auto operator()(MYSQL* handle) -> void
@@ -55,7 +55,7 @@ namespace sqlpp::mysql::detail
       mysql_close(handle);
     }
   };
-  using unique_connection_ptr = std::unique_ptr<MYSQL, detail::connection_cleanup>;
+  using unique_connection_ptr = std::unique_ptr<MYSQL, detail::connection_cleanup_t>;
 
   auto thread_init() -> void;
 

@@ -46,7 +46,7 @@ namespace sqlpp::sqlite3
 
 namespace sqlpp::sqlite3::detail
 {
-  struct connection_cleanup
+  struct connection_cleanup_t
   {
   public:
     auto operator()(::sqlite3* handle) -> void
@@ -58,7 +58,7 @@ namespace sqlpp::sqlite3::detail
       }
     }
   };
-  using unique_connection_ptr = std::unique_ptr<::sqlite3, detail::connection_cleanup>;
+  using unique_connection_ptr = std::unique_ptr<::sqlite3, detail::connection_cleanup_t>;
 
   // direct execution
   auto select(const connection_t&, const std::string& statement) -> prepared_statement_result_t;

@@ -46,7 +46,7 @@ namespace sqlpp::postgresql
 
 namespace sqlpp::postgresql::detail
 {
-  class connection_cleanup
+  class connection_cleanup_t
   {
   public:
     auto operator()(PGconn* handle) -> void
@@ -55,7 +55,7 @@ namespace sqlpp::postgresql::detail
         PQfinish(handle);
     }
   };
-  using unique_connection_ptr = std::unique_ptr<PGconn, detail::connection_cleanup>;
+  using unique_connection_ptr = std::unique_ptr<PGconn, detail::connection_cleanup_t>;
 
   // direct execution
   auto select(const connection_t&, const std::string& statement) -> char_result_t;

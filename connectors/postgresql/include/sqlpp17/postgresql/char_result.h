@@ -35,7 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp::postgresql::detail
 {
-  struct result_cleanup
+  struct result_cleanup_t
   {
     auto operator()(PGresult* handle) const -> void
     {
@@ -43,21 +43,21 @@ namespace sqlpp::postgresql::detail
         PQclear(handle);
     }
   };
+  using unique_result_ptr = std::unique_ptr<PGresult, detail::result_cleanup_t>;
 }  // namespace sqlpp::postgresql::detail
 
 namespace sqlpp::postgresql
 {
   class char_result_t
   {
-    std::unique_ptr<PGresult, detail::result_cleanup> _handle;
+    detail::unique_result_ptr _handle;
     std::function<void(std::string_view)> _debug;
     int _row_index = -1;
     int _row_count;
 
   public:
     char_result_t() = default;
-    char_result_t(std::unique_ptr<PGresult, detail::result_cleanup>&& handle,
-                  std::function<void(std::string_view)> debug)
+    char_result_t(detail::unique_result_ptr handle, std::function<void(std::string_view)> debug)
         : _handle(std::move(handle)), _debug(debug)
     {
       _row_count = PQntuples(_handle.get());

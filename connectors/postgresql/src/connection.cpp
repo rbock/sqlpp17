@@ -32,15 +32,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp::postgresql::detail
 {
-  auto execute_query(const connection_t& connection, const std::string& query)
-      -> std::unique_ptr<PGresult, detail::result_cleanup>
+  auto execute_query(const connection_t& connection, const std::string& query) -> detail::unique_result_ptr
   {
     if (connection.debug())
       connection.debug()("Executing: '" + query + "'");
 
     // If one day we switch to binary format, then we could use PQexecParams with resultFormat=1
-    auto result = std::unique_ptr<PGresult, detail::result_cleanup>(PQexec(connection.get(), query.c_str()),
-                                                                    detail::result_cleanup{});
+    auto result = detail::unique_result_ptr(PQexec(connection.get(), query.c_str()), {});
 
     if (not result)
     {
@@ -95,9 +93,8 @@ namespace sqlpp::postgresql::detail
     if (connection.debug())
       connection.debug()("Preparing" + statement_name + ": '" + statement + "'");
 
-    auto result = std::unique_ptr<PGresult, result_cleanup>(
-        PQprepare(connection.get(), statement_name.c_str(), statement.c_str(), no_of_parameters, nullptr),
-        result_cleanup{});
+    auto result = detail::unique_result_ptr(
+        PQprepare(connection.get(), statement_name.c_str(), statement.c_str(), no_of_parameters, nullptr), {});
 
     if (not result)
     {
@@ -117,16 +114,16 @@ namespace sqlpp::postgresql::detail
   }
 
   auto execute_prepared_statement(::sqlpp::postgresql::prepared_statement_t& prepared_statement)
-      -> std::unique_ptr<PGresult, detail::result_cleanup>
+      -> detail::unique_result_ptr
   {
     if (prepared_statement.debug())
       prepared_statement.debug()("Executing prepared_statement " + prepared_statement.get_name());
 
-    auto result = std::unique_ptr<PGresult, detail::result_cleanup>(
+    auto result = detail::unique_result_ptr(
         PQexecPrepared(prepared_statement.get_connection(), prepared_statement.get_name().c_str(),
                        prepared_statement.get_number_of_parameters(),
                        prepared_statement.get_parameter_pointers().data(), nullptr, nullptr, 0),
-        detail::result_cleanup{});
+        {});
 
     if (not result)
     {
@@ -189,8 +186,7 @@ namespace sqlpp::postgresql
 
   }  // namespace
 
-  connection_t::connection_t(const connection_config_t& config)
-      : _handle(nullptr, detail::connection_cleanup{}), _debug(config.debug)
+  connection_t::connection_t(const connection_config_t& config) : _handle(nullptr, {}), _debug(config.debug)
   {
     if (config.pre_connect)
     {

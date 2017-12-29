@@ -37,7 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp::sqlite3::detail
 {
-  struct prepared_statement_cleanup
+  struct prepared_statement_cleanup_t
   {
   public:
     auto operator()(::sqlite3_stmt* handle) -> void
@@ -46,7 +46,7 @@ namespace sqlpp::sqlite3::detail
         sqlite3_finalize(handle);
     }
   };
-  using unique_prepared_statement_ptr = std::unique_ptr<::sqlite3_stmt, detail::prepared_statement_cleanup>;
+  using unique_prepared_statement_ptr = std::unique_ptr<::sqlite3_stmt, detail::prepared_statement_cleanup_t>;
 
 }  // namespace sqlpp::sqlite3::detail
 

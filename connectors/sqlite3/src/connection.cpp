@@ -43,7 +43,7 @@ namespace sqlpp::sqlite3::detail
       const auto rc = sqlite3_prepare_v2(connection.get(), statement.c_str(), static_cast<int>(statement.size()),
                                          &statement_ptr, nullptr);
 
-      auto statement_handle = unique_prepared_statement_ptr(statement_ptr, prepared_statement_cleanup{});
+      auto statement_handle = unique_prepared_statement_ptr(statement_ptr, {});
 
       if (rc != SQLITE_OK)
       {
@@ -151,8 +151,7 @@ namespace sqlpp::sqlite3::detail
 
 namespace sqlpp::sqlite3
 {
-  connection_t::connection_t(const connection_config_t& config)
-      : _handle(nullptr, detail::connection_cleanup{}), _debug(config.debug)
+  connection_t::connection_t(const connection_config_t& config) : _handle(nullptr, {}), _debug(config.debug)
   {
     ::sqlite3* connection_ptr = nullptr;
     const auto rc = sqlite3_open_v2(config.path_to_database.c_str(), &connection_ptr, config.flags,

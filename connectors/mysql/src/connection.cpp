@@ -211,8 +211,7 @@ namespace sqlpp::mysql
     static const auto global_init_and_end = scoped_library_initializer_t(argc, argv, groups);
   }
 
-  connection_t::connection_t(const connection_config_t& config)
-      : _handle(mysql_init(nullptr), detail::connection_cleanup{}), _debug(config.debug)
+  connection_t::connection_t(const connection_config_t& config) : _handle(mysql_init(nullptr), {}), _debug(config.debug)
   {
     if (not _handle)
     {

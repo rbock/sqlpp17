@@ -42,7 +42,7 @@ namespace sqlpp::mysql::detail
     std::vector<char> bound_buffer;
   };
 
-  struct prepared_statement_cleanup
+  struct prepared_statement_cleanup_t
   {
   public:
     auto operator()(MYSQL_STMT* handle) -> void
@@ -51,7 +51,7 @@ namespace sqlpp::mysql::detail
         mysql_stmt_close(handle);
     }
   };
-  using unique_prepared_statement_ptr = std::unique_ptr<MYSQL_STMT, detail::prepared_statement_cleanup>;
+  using unique_prepared_statement_ptr = std::unique_ptr<MYSQL_STMT, detail::prepared_statement_cleanup_t>;
 
 }  // namespace sqlpp::mysql::detail
 
