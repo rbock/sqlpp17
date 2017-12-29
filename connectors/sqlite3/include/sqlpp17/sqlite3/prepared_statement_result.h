@@ -59,6 +59,14 @@ namespace sqlpp::sqlite3
     std::function<void(std::string_view)> _debug;
     prepared_statement_t* _prepared_statement = nullptr;
 
+    auto return_ownership()
+    {
+      if (_prepared_statement and _handle.get())
+      {
+        _prepared_statement->put_handle(std::move(_handle));
+      }
+    }
+
   public:
     prepared_statement_result_t() = default;
     prepared_statement_result_t(detail::unique_prepared_statement_ptr handle,
@@ -80,7 +88,7 @@ namespace sqlpp::sqlite3
     prepared_statement_result_t& operator=(direct_execution_result_t&&) = delete;
     ~prepared_statement_result_t()
     {
-      invalidate();
+      return_ownership();
     }
 
     [[nodiscard]] operator bool() const
@@ -98,16 +106,10 @@ namespace sqlpp::sqlite3
       return _debug;
     }
 
-    auto invalidate() -> void
+    auto reset() -> void
     {
-      if (_prepared_statement and _handle.get())
-      {
-        _prepared_statement->put_handle(std::move(_handle));
-      }
-      else
-      {
-        _handle.reset();
-      }
+      return_ownership();
+      *this = prepared_statement_result_t{};
     }
   };
 
@@ -120,7 +122,7 @@ namespace sqlpp::sqlite3
     }
     else
     {
-      result.invalidate();
+      result.reset();
     }
   }
 

@@ -99,6 +99,11 @@ namespace sqlpp::postgresql
     {
       return _debug;
     }
+
+    auto reset() -> void
+    {
+      *this = char_result_t{};
+    }
   };
 
   template <typename Row>
@@ -111,7 +116,7 @@ namespace sqlpp::postgresql
     }
     else
     {
-      result = char_result_t{};
+      result.reset();
     }
   }
 

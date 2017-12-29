@@ -41,13 +41,24 @@ namespace sqlpp ::mysql
 namespace sqlpp ::mysql::detail
 {
   auto get_next_result_row(direct_execution_result_t& result) -> bool;
-}
+
+  struct result_cleanup_t
+  {
+    auto operator()(MYSQL_RES* result) const -> void
+    {
+      if (result)
+        mysql_free_result(result);
+    }
+  };
+  using unique_result_ptr = std::unique_ptr<MYSQL_RES, result_cleanup_t>;
+
+}  // namespace sqlpp::mysql::detail
 
 namespace sqlpp ::mysql
 {
   class direct_execution_result_t
   {
-    std::unique_ptr<MYSQL_RES, void (*)(MYSQL_RES*)> _handle;
+    detail::unique_result_ptr _handle;
     std::function<void(std::string_view)> _debug;
     MYSQL_ROW _data = nullptr;
     unsigned long* _lengths = nullptr;
@@ -56,8 +67,7 @@ namespace sqlpp ::mysql
 
   public:
     direct_execution_result_t() = default;
-    direct_execution_result_t(std::unique_ptr<MYSQL_RES, void (*)(MYSQL_RES*)>&& handle,
-                              std::function<void(std::string_view)> debug)
+    direct_execution_result_t(detail::unique_result_ptr handle, std::function<void(std::string_view)> debug)
         : _handle(std::move(handle)), _debug(debug)
     {
     }
@@ -92,9 +102,9 @@ namespace sqlpp ::mysql
       return _debug;
     }
 
-    auto invalidate()
+    auto reset()
     {
-      _handle.reset(nullptr);
+      *this = direct_execution_result_t{};
     }
   };
 
@@ -107,7 +117,7 @@ namespace sqlpp ::mysql
     }
     else
     {
-      result.invalidate();
+      result.reset();
     }
   }
 

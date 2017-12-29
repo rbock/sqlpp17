@@ -63,6 +63,14 @@ namespace sqlpp::mysql
     template <typename Row>
     friend auto get_next_result_row(prepared_statement_result_t& result, Row& row) -> void;
 
+    auto return_ownership()
+    {
+      if (_prepared_statement and _handle.get())
+      {
+        _prepared_statement->put_handle(std::move(_handle));
+      }
+    }
+
   public:
     prepared_statement_result_t() = default;
     prepared_statement_result_t(::sqlpp::mysql::prepared_statement_t& statement)
@@ -79,7 +87,7 @@ namespace sqlpp::mysql
     prepared_statement_result_t& operator=(prepared_statement_result_t&&) = default;
     ~prepared_statement_result_t()
     {
-      invalidate();
+      return_ownership();
     }
 
     [[nodiscard]] operator bool() const
@@ -109,16 +117,10 @@ namespace sqlpp::mysql
       return _bind_data;
     }
 
-    auto invalidate() -> void
+    auto reset() -> void
     {
-      if (_prepared_statement and _handle.get())
-      {
-        _prepared_statement->put_handle(std::move(_handle));
-      }
-      else
-      {
-        _handle.reset();
-      }
+      return_ownership();
+      operator=(prepared_statement_result_t{});
     }
   };
 
@@ -140,7 +142,7 @@ namespace sqlpp::mysql
     }
     else
     {
-      result.invalidate();
+      result.reset();
     }
   }
 

@@ -84,11 +84,6 @@ namespace sqlpp::mysql::detail
   }
 #endif
 
-  auto result_cleanup(MYSQL_RES* result) -> void
-  {
-    mysql_free_result(result);
-  }
-
   auto execute_query(const connection_t& connection, const std::string& query) -> void
   {
     detail::thread_init();
@@ -106,8 +101,7 @@ namespace sqlpp::mysql::detail
   auto select(const connection_t& connection, const std::string& query) -> direct_execution_result_t
   {
     execute_query(connection, query);
-    std::unique_ptr<MYSQL_RES, void (*)(MYSQL_RES*)> result_handle(mysql_store_result(connection.get()),
-                                                                   result_cleanup);
+    auto result_handle = unique_result_ptr(mysql_store_result(connection.get()), {});
     if (!result_handle)
     {
       throw sqlpp::exception("MySQL: Could not store result set: " + std::string(mysql_error(connection.get())));
