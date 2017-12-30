@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/char_sequence.h>
 #include <sqlpp17/join.h>
 #include <sqlpp17/member.h>
+#include <sqlpp17/multi_column.h>
 #include <sqlpp17/name_to_sql_string.h>
 #include <sqlpp17/table_alias.h>
 #include <sqlpp17/type_traits.h>
@@ -62,6 +63,12 @@ namespace sqlpp
   [[nodiscard]] constexpr auto column_tuple_of(const table_t<TableSpec, ColumnSpecs...>& t)
   {
     return std::tuple{static_cast<member_t<ColumnSpecs, column_t<TableSpec, ColumnSpecs>>>(t)()...};
+  }
+
+  template <typename TableSpec, typename... ColumnSpecs>
+  [[nodiscard]] constexpr auto all_of(const table_t<TableSpec, ColumnSpecs...>& t)
+  {
+    return multi_column_t{std::tuple{static_cast<member_t<ColumnSpecs, column_t<TableSpec, ColumnSpecs>>>(t)()...}};
   }
 
   template <typename TableSpec, typename... ColumnSpecs>

@@ -52,6 +52,14 @@ namespace test
       static constexpr auto default_value = ::sqlpp::none_t{};
     };
 
+    struct Division
+    {
+      SQLPP_ALIAS(division)
+      using value_type = ::sqlpp::varchar<255>;
+      static constexpr auto can_be_null = true;
+      static constexpr auto default_value = ::sqlpp::none_t{};
+    };
+
     struct _
     {
       SQLPP_ALIAS(tab_department)
@@ -59,6 +67,7 @@ namespace test
     };
   }  // namespace TabDepartment_
 
-  inline constexpr auto tabDepartment = sqlpp::table_t<TabDepartment_::_, TabDepartment_::Id, TabDepartment_::Name>{};
+  inline constexpr auto tabDepartment =
+      sqlpp::table_t<TabDepartment_::_, TabDepartment_::Id, TabDepartment_::Name, TabDepartment_::Division>{};
 
 }  // namespace test

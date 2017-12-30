@@ -37,6 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/clauses/select_columns.h>
 #include <sqlpp17/clauses/select_flags.h>
 #include <sqlpp17/clauses/where.h>
+#include <sqlpp17/multi_column.h>
 #include <sqlpp17/type_traits.h>
 
 namespace sqlpp
@@ -131,5 +132,11 @@ namespace sqlpp
     {
       return ::sqlpp::bad_statement_t<typename select_failure<Fs...>::type>{};
     }
+  }
+
+  template <typename... Fs>
+  [[nodiscard]] constexpr auto select(multi_column_t<Fs...> mc)
+  {
+    return ::sqlpp::select().columns(mc);
   }
 }  // namespace sqlpp

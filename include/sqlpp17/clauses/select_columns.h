@@ -30,6 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/clause_fwd.h>
 #include <sqlpp17/column_spec.h>
+#include <sqlpp17/multi_column.h>
 #include <sqlpp17/name_to_sql_string.h>
 #include <sqlpp17/result.h>
 #include <sqlpp17/result_row.h>
@@ -231,6 +232,19 @@ namespace sqlpp
       if constexpr (constexpr auto check = check_select_columns_arg<remove_optional_t<Columns>...>(); check)
       {
         return Statement::replace_clause(this, select_columns_t<Columns...>{columns});
+      }
+      else
+      {
+        return ::sqlpp::bad_statement_t{check};
+      }
+    }
+
+    template <typename... Columns>
+    [[nodiscard]] constexpr auto columns(multi_column_t<Columns...> columns) const
+    {
+      if constexpr (constexpr auto check = check_select_columns_arg<remove_optional_t<Columns>...>(); check)
+      {
+        return Statement::replace_clause(this, select_columns_t<Columns...>{columns._columns});
       }
       else
       {
