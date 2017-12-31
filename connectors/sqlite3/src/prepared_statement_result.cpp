@@ -62,6 +62,14 @@ namespace sqlpp::sqlite3
     value = sqlite3_column_int64(result.get(), static_cast<int>(index));
   }
 
+  auto post_bind_field(prepared_statement_result_t& result, std::int32_t& value, std::size_t index) -> void
+  {
+    if (result.debug())
+      result.debug()("Binding integral result at index " + std::to_string(index));
+
+    value = sqlite3_column_int(result.get(), static_cast<int>(index));
+  }
+
   auto post_bind_field(prepared_statement_result_t& result, std::optional<std::string_view>& value, std::size_t index)
       -> void
   {

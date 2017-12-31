@@ -79,7 +79,7 @@ namespace sqlpp
   class result_base<union_t<Flag, LeftSelect, RightSelect>, Statement>
   {
   public:
-    using _result_row_t = typename LeftSelect::_result_row_t;
+    using _result_row_t = result_row_of_t<LeftSelect>;
 
     template <typename Connection>
     [[nodiscard]] auto _run(Connection& connection) const
@@ -88,11 +88,18 @@ namespace sqlpp
     }
   };
 
+  template <typename Flag, typename LeftSelect, typename RightSelect, typename Statement>
+  struct result_row_of<result_base<union_t<Flag, LeftSelect, RightSelect>, Statement>>
+  {
+    using type = typename result_base<union_t<Flag, LeftSelect, RightSelect>, Statement>::_result_row_t;
+  };
+
   template <typename DbConnection, typename Flag, typename LeftSelect, typename RightSelect, typename Statement>
   [[nodiscard]] auto to_sql_string(const DbConnection& connection,
                                    const clause_base<union_t<Flag, LeftSelect, RightSelect>, Statement>& t)
   {
-    return to_sql_string(connection, embrace(t._left)) + " UNION " + to_sql_string(connection, embrace(t._right));
+#warning : Some DBMS allow embracing, others do not.
+    return to_sql_string(connection, t._left) + " UNION " + to_sql_string(connection, t._right);
   }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_union_args_are_statements, "union_() args must be sql statements");

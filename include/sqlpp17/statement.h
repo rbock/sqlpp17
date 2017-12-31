@@ -144,6 +144,7 @@ namespace sqlpp
     }
 
     using result_base_t = result_base<get_result_clause_t<Clauses...>, statement<Clauses...>>;
+    using result_row_t = result_row_of_t<result_base_t>;
 
     [[nodiscard]] constexpr auto get_no_of_parameters() const
     {
@@ -183,6 +184,12 @@ namespace sqlpp
 
   template <typename... Clauses>
   constexpr auto requires_braces_v<statement<Clauses...>> = true;
+
+  template <typename... Clauses>
+  struct result_row_of<statement<Clauses...>>
+  {
+    using type = typename statement<Clauses...>::result_row_t;
+  };
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_statement_contains_unique_clauses,
                               "statements must contain uniquely tagged clauses only (except custom clauses)");

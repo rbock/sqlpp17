@@ -89,7 +89,8 @@ namespace sqlpp
     T t;
   };
 
-#warning implement
+#warning implement type traits
+#warning : also prevent alias to be wrapper in expression
   template <typename T>
   constexpr auto is_alias_v<expr_t<T>> = is_alias_v<T>;
 
@@ -98,5 +99,6 @@ namespace sqlpp
   {
     return expr_t{t};
   }
+#warning implement to_sql_string
 
 }  // namespace sqlpp

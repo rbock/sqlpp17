@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <functional>
 #include <type_traits>
 
+#include <sqlpp17/exception.h>
 #include <sqlpp17/prepared_statement.h>
 #include <sqlpp17/result.h>
 #include <sqlpp17/statement.h>

@@ -26,6 +26,8 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <utility>
+
 #include <sqlpp17/member.h>
 
 namespace sqlpp::detail
@@ -33,7 +35,10 @@ namespace sqlpp::detail
   template <typename ColumnSpec>
   struct make_result_column_base
   {
-    using type = member_t<ColumnSpec, value_type_of_t<ColumnSpec>>;
+    using type = member_t<ColumnSpec,
+                          std::conditional_t<ColumnSpec::can_be_null,
+                                             std::optional<value_type_of_t<ColumnSpec>>,
+                                             value_type_of_t<ColumnSpec>>>;
   };
 }  // namespace sqlpp::detail
 

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2017, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -25,49 +25,62 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <iostream>
-#include <tables/TabDepartment.h>
-#include <tables/TabEmpty.h>
-#include <tables/TabPerson.h>
 
 #include <sqlpp17/alias_provider.h>
 #include <sqlpp17/clauses/select.h>
 #include <sqlpp17/clauses/with.h>
-#include <sqlpp17/cte.h>
 #include <sqlpp17/operator.h>
+#include <sqlpp17/result_cast.h>
+#include <sqlpp17/value.h>
 
-#warning : Need a real result class and a real connection
+#include <sqlpp17/sqlite3/connection.h>
 
-SQLPP_ALIAS_PROVIDER(foo);
-
-struct connection
+namespace
 {
-  template <typename Statement, typename Row>
-  auto select(const Statement& s, const Row& row)
+  auto print_debug(std::string_view message)
   {
-    return row;
+    std::cout << "Debug: " << message << std::endl;
   }
-};
+
+  namespace alias
+  {
+    SQLPP_ALIAS_PROVIDER(cnt);
+    SQLPP_ALIAS_PROVIDER(x);
+  }  // namespace alias
+}  // namespace
+
 int main()
 {
-  auto context = 0;
-#warning : s should be a constexpr
-  auto s =
-      sqlpp::with(cte(foo).as(select(all_of(test::tabPerson)).from(test::tabPerson).where(test::tabPerson.id % 2 == 0)))
-      << sqlpp::select()
-      << sqlpp::select_columns(test::tabPerson.id, test::tabPerson.isManager, test::tabPerson.address,
-                               test::tabPerson.name)
-      << sqlpp::from(test::tabPerson) << sqlpp::where(test::tabPerson.isManager and test::tabPerson.name == "")
-      << sqlpp::having(test::tabPerson.id == test::tabPerson.id or test::tabPerson.id == 1);
-#warning : need to test results
-  std::cout << to_sql_string(context, s);
-  /*
-  auto conn = connection{};
-  auto row = s.run(conn);
+  auto config = ::sqlpp::sqlite3::connection_config_t{};
+  config.path_to_database = ":memory:";
+  config.flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
+  config.debug = print_debug;
 
-  // using data_members_of_meta = std::meta::get_public_data_members_m<reflexpr(reflexpr(row))>;
-  // std::cout << std::meta::get_size_v<data_members_of_meta> << std::endl;
-  // data_members::hansi;
-  // std::cout << data_members{} << std::endl;
-  row.hansi;
-  */
+  try
+  {
+    auto db = ::sqlpp::sqlite3::connection_t{config};
+
+    /* Example from sqlite https://sqlite.org/lang_with.html
+
+      ```
+      WITH RECURSIVE
+      cnt(x) AS (VALUES(1) UNION ALL SELECT x+1 FROM cnt WHERE x<1000000)
+      SELECT x FROM cnt;
+      ```
+    */
+    const auto cnt = [&]() {
+      auto cnt = cte(alias::cnt).as(select(as(::sqlpp::value(int32_t(1)), alias::x)));
+      return cnt.union_all(select(as(::sqlpp::result_cast<int32_t>(cnt.x + 1), alias::x)).from(cnt).where(cnt.x < 10));
+    }();
+    for (const auto& row : db(with_recursive(cnt) << select(cnt.x).from(cnt).unconditionally()))
+    {
+      std::cout << row.x << '\n';
+    }
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << "Exception: " << e.what() << std::endl;
+    return 1;
+  }
 }
+

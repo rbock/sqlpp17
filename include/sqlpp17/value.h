@@ -26,39 +26,46 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <type_traits>
-#include <sqlpp17/to_sql_string.h>
+#include <string>
+#include <string_view>
+#include <sqlpp17/type_traits.h>
 
 namespace sqlpp
 {
-  template <typename L, typename R>
-  struct less_t
+  template <typename T>
+  struct value_t
   {
-    L l;
-    R r;
+    T t;
   };
 
-  template <typename L, typename R>
-  constexpr auto operator<(L l, R r) -> std::enable_if_t<are_comparable_v<L, R>, less_t<L, R>>
+  template <typename T>
+  constexpr auto is_expression_v<value_t<T>> = true;
+
+  template <typename T>
+  struct value_type_of<value_t<T>>
   {
-    return less_t<L, R>{l, r};
+    using type = T;
+  };
+
+  template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+  [[nodiscard]] constexpr auto value(T t)
+  {
+    return value_t<T>{t};
   }
 
-  template <typename L, typename R>
-  constexpr auto is_expression_v<less_t<L, R>> = true;
-
-  template <typename L, typename R>
-  struct value_type_of<less_t<L, R>>
+  [[nodiscard]] auto value(std::string t)
   {
-    using type = bool;
-  };
+    return value_t<std::string>{t};
+  }
 
-  template <typename L, typename R>
-  constexpr auto requires_braces_v<less_t<L, R>> = true;
-
-  template <typename DbConnection, typename L, typename R>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const less_t<L, R>& t)
+  [[nodiscard]] constexpr auto value(std::string_view t)
   {
-    return to_sql_string(connection, embrace(t.l)) + " < " + to_sql_string(connection, embrace(t.r));
+    return value_t<std::string_view>{t};
+  }
+
+  template <typename DbConnection, typename T>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const value_t<T>& t)
+  {
+    return to_sql_string(connection, t.t);
   }
 }  // namespace sqlpp

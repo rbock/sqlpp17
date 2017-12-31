@@ -48,7 +48,7 @@ namespace sqlpp
     {
       return failed<assert_cte_as_arg_has_result_row>{};
     }
-    else if constexpr (required_cte_names_of_v<Statement>.template count<AliasProvider>() == 0)
+    else if constexpr (required_cte_names_of_v<Statement>.template count<AliasProvider>() != 0)
     {
       return failed<assert_cte_as_arg_is_not_initially_self_referential>{};
     }
@@ -65,7 +65,7 @@ namespace sqlpp
     template <typename Statement>
     [[nodiscard]] constexpr auto as(Statement s) const
     {
-      constexpr auto check = check_cte_as_arg<Statement>();
+      constexpr auto check = check_cte_as_arg<AliasProvider, Statement>();
       if constexpr (check)
       {
         return cte_t<AliasProvider, Statement>{s};
@@ -82,7 +82,8 @@ namespace sqlpp
   template <typename AliasProvider>
   constexpr auto check_cte_arg()
   {
-    if constexpr (!is_alias_provider_v<AliasProvider>)
+#warning : Need to reactivate the check
+    if constexpr (false and !is_alias_provider_v<AliasProvider>)
     {
       return failed<assert_cte_arg_is_alias_provider>{};
     }
@@ -104,4 +105,4 @@ namespace sqlpp
       return ::sqlpp::bad_statement_t{check};
     }
   }
-}
+}  // namespace sqlpp

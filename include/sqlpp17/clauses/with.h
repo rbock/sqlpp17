@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2016 - 2017, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -27,7 +27,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/clause_fwd.h>
+#include <sqlpp17/cte.h>
 #include <sqlpp17/statement.h>
+#include <sqlpp17/tuple_to_sql_string.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
 
@@ -52,6 +54,9 @@ namespace sqlpp
     std::tuple<CommonTableExpressions...> _ctes;
   };
 
+  template <with_mode Mode, typename... CommonTableExpressions>
+  constexpr auto clause_tag<with_t<Mode, CommonTableExpressions...>> = clause::with{};
+
   template <with_mode Mode, typename... CommonTableExpressions, typename Statement>
   class clause_base<with_t<Mode, CommonTableExpressions...>, Statement>
   {
@@ -68,15 +73,30 @@ namespace sqlpp
     std::tuple<CommonTableExpressions...> _ctes;
   };
 
+  template <typename DbConnection>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, with_mode mode)
+  {
+    switch (mode)
+    {
+      case with_mode::flat:
+        return std::string("");
+      case with_mode::recursive:
+        return std::string("RECURSIVE ");
+    }
+  }
+
   template <typename DbConnection, with_mode Mode, typename... CommonTableExpressions, typename Statement>
   [[nodiscard]] auto to_sql_string(const DbConnection& connection,
                                    const clause_base<with_t<Mode, CommonTableExpressions...>, Statement>& t)
   {
-#warning : WITH cannot occur after a compound operator like UNION
-#warning : THis is not complete!
-    return std::string{"WITH "};
+    int index = -1;
+    return std::string{"WITH "} + to_sql_string(connection, Mode) +
+           (std::string() + ... +
+            ((++index ? ", " : "") + to_full_sql_string(connection, std::get<CommonTableExpressions>(t._ctes)))) +
+           " ";
   }
 
+#warning : WITH cannot occur after a compound operator like UNION, check that, too, somehow.
 #warning : Need to add CTE checks for with
   /*
   SQLPP_WRAPPED_STATIC_ASSERT(assert_with_args_are_statements, "with() args must be sql statements");
@@ -170,6 +190,6 @@ namespace sqlpp
   template <typename... CommonTableExpressions>
   [[nodiscard]] constexpr auto with_recursive(CommonTableExpressions&&... ctes)
   {
-    return statement<no_with_t>{}.with(std::forward<CommonTableExpressions...>(ctes...));
+    return statement<no_with_t>{}.with_recursive(std::forward<CommonTableExpressions...>(ctes...));
   }
 }  // namespace sqlpp

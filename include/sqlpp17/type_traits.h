@@ -270,6 +270,9 @@ namespace sqlpp
   }
 
   template <typename T>
+  constexpr auto is_sort_order_v = false;
+
+  template <typename T>
   constexpr auto is_table_v = false;
 
   template <typename T>
@@ -303,15 +306,6 @@ namespace sqlpp
   };
 
   template <typename T>
-  constexpr auto is_expression_v = false;
-
-  template <typename T>
-  constexpr auto is_expression(const T&)
-  {
-    return is_expression<T>;
-  }
-
-  template <typename T>
   constexpr auto is_select_flag_v = false;
 
   template <typename T>
@@ -323,7 +317,7 @@ namespace sqlpp
   template <typename T>
   struct value_type_of
   {
-    using type = T;
+    using type = none_t;
   };
 
   template <typename T, typename Enable = void>
@@ -332,6 +326,15 @@ namespace sqlpp
   struct no_value_t
   {
   };
+
+  template <typename T>
+  constexpr auto is_expression_v = not std::is_same_v<value_type_of_t<T>, none_t>;
+
+  template <typename T>
+  constexpr auto is_expression(const T&)
+  {
+    return is_expression<T>;
+  }
 
   template <typename T, typename Enable = void>
   constexpr auto table_spec_of_v = no_value_t{};
@@ -458,7 +461,8 @@ namespace sqlpp
   constexpr auto is_integral_v<integral_t> = true;
 
   template <typename T>
-  constexpr auto has_integral_value_v = is_integral_v<remove_optional_t<value_type_of_t<T>>>;
+  constexpr auto has_integral_value_v =
+      is_integral_v<remove_optional_t<T>> or is_integral_v<remove_optional_t<value_type_of_t<T>>>;
 
   template <typename T>
   constexpr auto is_numeric_v = is_integral_v<T> || std::is_floating_point_v<T>;
@@ -472,8 +476,10 @@ namespace sqlpp
   template <>
   constexpr auto is_numeric_v<numeric_t> = true;
 
+#warning : make the other has_xx_value similar
   template <typename T>
-  constexpr auto has_numeric_value_v = is_numeric_v<remove_optional_t<value_type_of_t<T>>>;
+  constexpr auto has_numeric_value_v =
+      is_numeric_v<remove_optional_t<T>> or is_numeric_v<remove_optional_t<value_type_of_t<T>>>;
 
   template <typename T>
   constexpr auto is_text_v = false;
@@ -491,20 +497,20 @@ namespace sqlpp
   constexpr auto is_text_v<std::string_view> = true;
 
   template <typename T>
-  constexpr auto has_text_value_v = is_text_v<remove_optional_t<value_type_of_t<T>>>;
+  constexpr auto has_text_value_v = is_text_v<remove_optional_t<T>> or is_text_v<remove_optional_t<value_type_of_t<T>>>;
 
   template <typename L, typename R, typename Enable = void>
   constexpr auto are_comparable_v = false;
 
   template <typename L, typename R>
-  constexpr auto are_comparable_v<L, R, std::enable_if_t<is_numeric_v<L> and is_numeric_v<R>>> = true;
+  constexpr auto are_comparable_v<L, R, std::enable_if_t<has_numeric_value_v<L> and has_numeric_value_v<R>>> = true;
 
   template <typename L, typename R>
-  constexpr auto are_comparable_v<L, R, std::enable_if_t<is_text_v<L> and is_text_v<R>>> = true;
+  constexpr auto are_comparable_v<L, R, std::enable_if_t<has_text_value_v<L> and has_text_value_v<R>>> = true;
 
+#warning : remove
   template <typename L, typename R>
-  constexpr auto are_value_types_comparable_v =
-      are_comparable_v<remove_optional_t<value_type_of_t<L>>, remove_optional_t<value_type_of_t<R>>>;
+  constexpr auto are_value_types_comparable_v = are_comparable_v<L, R>;
 
   template <typename T>
   constexpr auto is_conditionless_dynamic_join = false;

@@ -44,7 +44,7 @@ namespace sqlpp
 {
   SQLPP_WRAPPED_STATIC_ASSERT(
       assert_select_args_are_flags_or_columns,
-      "select() args must not be a either select flags or selectable columns or a tuple/vector of either kind");
+      "select() args must be a either select flags or selectable columns or a tuple of either kind");
 
   template <typename...>
   struct select_failure

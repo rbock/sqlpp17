@@ -27,6 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/clause_fwd.h>
+#include <sqlpp17/clauses/union.h>
 #include <sqlpp17/cte/recursive_cte.h>
 #include <sqlpp17/result_row.h>
 #include <sqlpp17/type_traits.h>
@@ -35,16 +36,44 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace sqlpp
 {
   template <typename AliasProvider, typename Statement>
-  struct cte_t : cte_columns_t<cte_t<AliasProvider, Statement>, typename Statement::result_row_t>
+  struct cte_t : cte_columns_t<cte_t<AliasProvider, Statement>, typename Statement::_result_row_t>
   {
     Statement _statement;
-#warning : Need to be able to call union_all here for recursive statements. This way, the cte can be self referential.
+
+    using _alias_t = typename AliasProvider::_alias_t;
+
+    cte_t(Statement statement) : _statement(statement)
+    {
+    }
+
+    template <typename SecondStatement>
+    constexpr auto union_all(SecondStatement second_statement)
+    {
+#warning need checks here
+      return recursive_cte_t(AliasProvider{}, ::sqlpp::union_all(_statement, second_statement));
+    }
+
+    template <typename SecondStatement>
+    constexpr auto union_distinct(SecondStatement second_statement)
+    {
+#warning need checks here
+      return recursive_cte_t(AliasProvider{}, ::sqlpp::union_all(_statement, second_statement));
+    }
   };
+
+  template <typename AliasProvider, typename Statement>
+  constexpr auto is_table_v<cte_t<AliasProvider, Statement>> = true;
+
+  template <typename DbConnection, typename AliasProvider, typename Statement>
+  [[nodiscard]] auto to_full_sql_string(const DbConnection& connection, const cte_t<AliasProvider, Statement>& t)
+  {
+    return to_sql_string(connection, name_of_v<AliasProvider>) + " AS (" + to_sql_string(connection, t._statement) +
+           ")";
+  }
 
   template <typename DbConnection, typename AliasProvider, typename Statement>
   [[nodiscard]] auto to_sql_string(const DbConnection& connection, const cte_t<AliasProvider, Statement>& t)
   {
-#warning : the With clause must not use this one, it must serialize the statement, too.
     return to_sql_string(connection, name_of_v<AliasProvider>);
   }
 }  // namespace sqlpp

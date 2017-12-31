@@ -32,10 +32,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  template <typename Expr, typename Alias>
-  constexpr auto as(Expr expr, const Alias&)
+  template <typename Expr, typename AliasProvider>
+  [[nodiscard]] constexpr auto as(Expr expr, const AliasProvider&)
   {
-    return alias_t<Expr, Alias>{expr};
+#warning : assert that expr is an expresssion!
+    return alias_t<Expr, typename AliasProvider::_alias_t>{expr};
   }
 
 }  // namespace sqlpp

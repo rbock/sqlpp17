@@ -26,39 +26,33 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <type_traits>
-#include <sqlpp17/to_sql_string.h>
+#include <sqlpp17/operator.h>
+#include <sqlpp17/type_traits.h>
 
 namespace sqlpp
 {
-  template <typename L, typename R>
-  struct less_t
+  template <typename ValueType, typename Column>
+  struct result_cast_t
   {
-    L l;
-    R r;
+    Column _column;
   };
 
-  template <typename L, typename R>
-  constexpr auto operator<(L l, R r) -> std::enable_if_t<are_comparable_v<L, R>, less_t<L, R>>
+  template <typename ValueType, typename Column>
+  struct value_type_of<result_cast_t<ValueType, Column>>
   {
-    return less_t<L, R>{l, r};
-  }
-
-  template <typename L, typename R>
-  constexpr auto is_expression_v<less_t<L, R>> = true;
-
-  template <typename L, typename R>
-  struct value_type_of<less_t<L, R>>
-  {
-    using type = bool;
+    using type = ValueType;
   };
 
-  template <typename L, typename R>
-  constexpr auto requires_braces_v<less_t<L, R>> = true;
-
-  template <typename DbConnection, typename L, typename R>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const less_t<L, R>& t)
+  template <typename ValueType, typename Column>
+  [[nodiscard]] auto result_cast(Column column)
   {
-    return to_sql_string(connection, embrace(t.l)) + " < " + to_sql_string(connection, embrace(t.r));
+    return result_cast_t<ValueType, Column>{column};
   }
+
+  template <typename DbConnection, typename ValueType, typename Column>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const result_cast_t<ValueType, Column>& t)
+  {
+    return to_sql_string(connection, t._column);
+  }
+
 }  // namespace sqlpp

@@ -76,9 +76,8 @@ namespace sqlpp
   }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_group_by_args_not_empty, "group_by() must be called with at least one argument");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_group_by_args_are_selectable,
-                              "group_by() args must be selectable (i.e. named expressions)");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_group_by_args_have_unique_names, "group_by() args must have unique names");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_group_by_args_are_expressions,
+                              "group_by() args must be value expressions (e.g. columns)");
 
   template <typename... T>
   constexpr auto check_group_by_arg(const T&...)
@@ -87,13 +86,9 @@ namespace sqlpp
     {
       return failed<assert_group_by_args_not_empty>{};
     }
-    else if constexpr (!(true && ... && is_selectable_v<T>))
+    else if constexpr (!(true && ... && is_expression_v<T>))
     {
-      return failed<assert_group_by_args_are_selectable>{};
-    }
-    else if constexpr (type_set<char_sequence_of_t<T>...>().size() != sizeof...(T))
-    {
-      return failed<assert_group_by_args_have_unique_names>{};
+      return failed<assert_group_by_args_are_expressions>{};
     }
     else
       return succeeded{};

@@ -30,22 +30,23 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  template <typename Alias, typename ValueType>
+  template <typename Alias, typename ValueType, bool CanBeNull>
   struct column_spec
   {
     using _alias_t = Alias;
     using value_type = ValueType;
+    static constexpr auto can_be_null = CanBeNull;
 #warning : Pseudo-tables need to be read-only
   };
 
-  template <typename Alias, typename ValueType>
-  struct value_type_of<column_spec<Alias, ValueType>>
+  template <typename Alias, typename ValueType, bool CanBeNull>
+  struct value_type_of<column_spec<Alias, ValueType, CanBeNull>>
   {
     using type = ValueType;
   };
 
-  template <typename Alias, typename ValueType>
-  static constexpr auto char_sequence_of_v<column_spec<Alias, ValueType>> = char_sequence_of_v<Alias>;
+  template <typename Alias, typename ValueType, bool CanBeNull>
+  static constexpr auto char_sequence_of_v<column_spec<Alias, ValueType, CanBeNull>> = char_sequence_of_v<Alias>;
 
   template <typename Statement, typename Column>
   struct make_column_spec
@@ -56,13 +57,11 @@ namespace sqlpp
 
     using _alias_t = typename _base_column::_alias_t;
 
-    static constexpr auto _is_optional =
+    static constexpr auto _can_be_null =
         (is_optional_v<Column> or is_optional_v<_value_t> or can_be_null_v<_base_column> or
          can_be_null_columns_of_v<Statement>.template count<_base_column>());
 
-    using _spec_value_t = std::conditional_t<_is_optional, add_optional_t<_base_value_t>, _base_value_t>;
-
-    using type = column_spec<_alias_t, _spec_value_t>;
+    using type = column_spec<_alias_t, _base_value_t, _can_be_null>;
   };
 
   template <typename Statement, typename Column>

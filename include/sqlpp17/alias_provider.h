@@ -26,6 +26,13 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+namespace sqlpp
+{
+  struct alias_base_t
+  {
+  };
+}  // namespace sqlpp
+
 #define SQLPP_ALIAS2(SQL_NAME, CPP_NAME)      \
   struct _alias_t                             \
   {                                           \
@@ -47,11 +54,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define SQLPP_ALIAS(NAME) SQLPP_ALIAS2(NAME, NAME)
 
-#define SQLPP_ALIAS_PROVIDER(NAME) \
-  struct NAME##_t                  \
-  {                                \
-    SQLPP_ALIAS(NAME)              \
-  };                               \
-  constexpr auto NAME = NAME##_t   \
-  {                                \
+#define SQLPP_ALIAS_PROVIDER(NAME)               \
+  struct NAME##_t : public ::sqlpp::alias_base_t \
+  {                                              \
+    SQLPP_ALIAS(NAME)                            \
+  };                                             \
+  constexpr auto NAME = NAME##_t                 \
+  {                                              \
   }

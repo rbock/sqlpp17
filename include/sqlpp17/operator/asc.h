@@ -56,6 +56,9 @@ namespace sqlpp
   template <typename L>
   constexpr auto requires_braces_v<sort_order_t<L>> = false;
 
+  template <typename L>
+  constexpr auto is_sort_order_v<sort_order_t<L>> = true;
+
   template <typename DbConnection>
   [[nodiscard]] auto to_sql_string(const DbConnection& connection, const sort_order& t)
   {

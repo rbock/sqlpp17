@@ -41,7 +41,7 @@ namespace sqlpp
                   public member_t<ColumnSpecs, column_t<TableSpec, ColumnSpecs>>...
   {
   public:
-    // using _alias_t = typename TableSpec::_alias_t;
+    using _alias_t = typename TableSpec::_alias_t;
 
     template <typename Alias>
     constexpr auto as(const Alias&) const

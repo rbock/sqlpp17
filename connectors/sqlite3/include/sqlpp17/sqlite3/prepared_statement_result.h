@@ -107,6 +107,7 @@ namespace sqlpp::sqlite3
     }
   }
 
+  auto post_bind_field(prepared_statement_result_t& result, std::int32_t& value, std::size_t index) -> void;
   auto post_bind_field(prepared_statement_result_t& result, std::int64_t& value, std::size_t index) -> void;
 
   auto post_bind_field(prepared_statement_result_t& result, std::optional<std::string_view>& value, std::size_t index)

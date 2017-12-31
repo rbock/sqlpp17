@@ -35,6 +35,7 @@ namespace sqlpp
   template <typename Expression, typename Alias>
   struct alias_t
   {
+    using _alias_t = Alias;
     Expression _expression;
   };
 
@@ -48,7 +49,7 @@ namespace sqlpp
   constexpr auto is_alias_v<alias_t<Expression, Alias>> = true;
 
   template <typename Expression, typename Alias>
-  constexpr auto is_selectable_v<alias_t<Expression, Alias>> = true;
+  constexpr auto is_selectable_v<alias_t<Expression, Alias>> = is_expression_v<Expression>;
 
   template <typename DbConnection, typename Expression, typename Alias>
   [[nodiscard]] auto to_sql_string(const DbConnection& connection, const alias_t<Expression, Alias>& t)
