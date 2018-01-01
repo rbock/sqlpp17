@@ -437,7 +437,8 @@ namespace sqlpp
   constexpr auto is_boolean_v = std::is_same_v<T, bool>;
 
   template <typename T>
-  constexpr auto has_boolean_value_v = is_boolean_v<remove_optional_t<value_type_of_t<T>>>;
+  constexpr auto has_boolean_value_v =
+      is_boolean_v<remove_optional_t<T>> or is_boolean_v<remove_optional_t<value_type_of_t<T>>>;
 
   template <typename T>
   constexpr auto is_boolean(const T&)
@@ -458,6 +459,9 @@ namespace sqlpp
   constexpr auto is_integral_v<char> = false;  // char is text
 
   template <>
+  constexpr auto is_integral_v<bool> = false;  // bool is boolean
+
+  template <>
   constexpr auto is_integral_v<integral_t> = true;
 
   template <typename T>
@@ -468,15 +472,8 @@ namespace sqlpp
   constexpr auto is_numeric_v = is_integral_v<T> || std::is_floating_point_v<T>;
 
   template <>
-  constexpr auto is_numeric_v<char> = false;  // char is text
-
-  template <>
-  constexpr auto is_numeric_v<integral_t> = true;
-
-  template <>
   constexpr auto is_numeric_v<numeric_t> = true;
 
-#warning : make the other has_xx_value similar
   template <typename T>
   constexpr auto has_numeric_value_v =
       is_numeric_v<remove_optional_t<T>> or is_numeric_v<remove_optional_t<value_type_of_t<T>>>;
@@ -500,17 +497,18 @@ namespace sqlpp
   constexpr auto has_text_value_v = is_text_v<remove_optional_t<T>> or is_text_v<remove_optional_t<value_type_of_t<T>>>;
 
   template <typename L, typename R, typename Enable = void>
-  constexpr auto are_comparable_v = false;
+  constexpr auto are_values_comparable_v = false;
 
   template <typename L, typename R>
-  constexpr auto are_comparable_v<L, R, std::enable_if_t<has_numeric_value_v<L> and has_numeric_value_v<R>>> = true;
+  constexpr auto are_values_comparable_v<L, R, std::enable_if_t<has_numeric_value_v<L> and has_numeric_value_v<R>>> =
+      true;
 
   template <typename L, typename R>
-  constexpr auto are_comparable_v<L, R, std::enable_if_t<has_text_value_v<L> and has_text_value_v<R>>> = true;
+  constexpr auto are_values_comparable_v<L, R, std::enable_if_t<has_text_value_v<L> and has_text_value_v<R>>> = true;
 
-#warning : remove
   template <typename L, typename R>
-  constexpr auto are_value_types_comparable_v = are_comparable_v<L, R>;
+  constexpr auto are_values_comparable_v<L, R, std::enable_if_t<has_boolean_value_v<L> and has_boolean_value_v<R>>> =
+      true;
 
   template <typename T>
   constexpr auto is_conditionless_dynamic_join = false;

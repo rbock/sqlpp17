@@ -29,8 +29,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
 
-#include <sqlpp17/clauses/select.h>
-#include <sqlpp17/clauses/union.h>
+#include <sqlpp17/clause/select.h>
+#include <sqlpp17/clause/union.h>
 #include <sqlpp17/operator.h>
 
 #warning : Need a real result class and a real connection

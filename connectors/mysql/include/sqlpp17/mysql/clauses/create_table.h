@@ -28,7 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <string>
 
-#include <sqlpp17/clauses/create_table.h>
+#include <sqlpp17/clause/create_table.h>
 #include <sqlpp17/column.h>
 #include <sqlpp17/data_types.h>
 #include <sqlpp17/table.h>

@@ -28,7 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
 
-#include <sqlpp17/clauses/order_by.h>
+#include <sqlpp17/clause/order_by.h>
 
 #warning : Not implemented yet
 #if 0

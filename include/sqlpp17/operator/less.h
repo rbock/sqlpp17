@@ -39,7 +39,7 @@ namespace sqlpp
   };
 
   template <typename L, typename R>
-  constexpr auto operator<(L l, R r) -> std::enable_if_t<are_comparable_v<L, R>, less_t<L, R>>
+  constexpr auto operator<(L l, R r) -> std::enable_if_t<are_values_comparable_v<L, R>, less_t<L, R>>
   {
     return less_t<L, R>{l, r};
   }

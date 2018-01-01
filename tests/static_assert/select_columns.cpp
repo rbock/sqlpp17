@@ -28,7 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
 
-#include <sqlpp17/clauses/select_columns.h>
+#include <sqlpp17/clause/select_columns.h>
 
 #warning : Not implemented yet
 #if 0

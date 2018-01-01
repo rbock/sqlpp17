@@ -29,7 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
 
-#include <sqlpp17/clauses/from.h>
+#include <sqlpp17/clause/from.h>
 
 // Turning off static_assert for from()
 namespace sqlpp
@@ -39,7 +39,7 @@ namespace sqlpp
 
   template <typename... T>
   constexpr auto wrong<assert_from_arg_is_not_conditionless_join, T...> = true;
-}
+}  // namespace sqlpp
 
 namespace
 {
@@ -48,7 +48,7 @@ namespace
   {
     static_assert(is_bad_statement(Assert{}, T{}));
   }
-}
+}  // namespace
 
 int main()
 {

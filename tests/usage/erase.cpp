@@ -31,7 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
 
-#include <sqlpp17/clauses/erase.h>
+#include <sqlpp17/clause/erase.h>
 #include <sqlpp17/operator.h>
 
 int main()

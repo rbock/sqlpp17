@@ -40,8 +40,7 @@ namespace sqlpp
 
   template <typename L, typename... Args>
   constexpr auto not_in(L l, Args... args)
-      -> std::enable_if_t<((sizeof...(Args) > 0) and ... and are_value_types_comparable_v<L, Args>),
-                          not_in_t<L, Args...>>
+      -> std::enable_if_t<((sizeof...(Args) > 0) and ... and are_values_comparable_v<L, Args>), not_in_t<L, Args...>>
   {
     return not_in_t<L, Args...>{l, std::tuple{args...}};
   }

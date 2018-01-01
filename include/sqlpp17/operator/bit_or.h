@@ -41,7 +41,8 @@ namespace sqlpp
 
   template <typename L, typename R>
   constexpr auto operator|(L l, R r)
-      -> std::enable_if_t<has_integral_value_v<L> and has_integral_value_v<R>, bit_or_t<L, R>>
+      -> std::enable_if_t<sizeof(L) == sizeof(R) and has_integral_value_v<L> and has_integral_value_v<R>,
+                          bit_or_t<L, R>>
   {
     return bit_or_t<L, R>{l, r};
   }

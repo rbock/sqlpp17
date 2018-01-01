@@ -13,6 +13,19 @@ Instead of has_default: Specify the default value.
 The required information can be extracted from the new values.
 In addition, it should be possible to start writing `create table` calls.
 
+Dynamic queries:
+================
+*) Dynamic tables, columns, queries:
+As mentioned before, this is not the main focus of the library, but the last few weeks have created a new opportunity for this. I actually realized this when reading your mail:
+
+You can now introduce new data types very easily (much easier than in sqlpp11). With a couple of meta functions and a bit of code in the connector library you're ready to go.
+
+Then, instead of saying this column is of type int64_t, you could say, it is of type std::variant<in64_t, std::string_view, date, time, etc>.
+
+This would make the use of this column very flexible, but of course, the burden to make sure that you do not compare apples and oranges would be your task :-)
+
+This leads to an interesting thought: A dynamic table in basically be a map of name<->variant_column.
+
 case_when:
 ==========
 sqlpp11 tries to be clever with NULL: if a column x was marked as trivial_is_null and you said

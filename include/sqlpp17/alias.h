@@ -54,7 +54,7 @@ namespace sqlpp
   template <typename DbConnection, typename Expression, typename Alias>
   [[nodiscard]] auto to_sql_string(const DbConnection& connection, const alias_t<Expression, Alias>& t)
   {
-    return to_sql_string(connection, t._expression) + " AS " + to_sql_string(connection, name_of_v<Alias>);
+    return to_sql_string(connection, t._expression) + " AS " + name_to_sql_string(connection, name_of_v<Alias>);
   }
 
   template <typename Expression, typename Alias>

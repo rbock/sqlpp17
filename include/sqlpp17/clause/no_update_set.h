@@ -26,7 +26,7 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/clauses/update_set.h>
+#include <sqlpp17/clause/update_set.h>
 #include <sqlpp17/statement.h>
 
 namespace sqlpp

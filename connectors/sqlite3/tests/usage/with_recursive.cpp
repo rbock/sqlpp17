@@ -27,8 +27,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 
 #include <sqlpp17/alias_provider.h>
-#include <sqlpp17/clauses/select.h>
-#include <sqlpp17/clauses/with.h>
+#include <sqlpp17/clause/select.h>
+#include <sqlpp17/clause/with.h>
 #include <sqlpp17/operator.h>
 #include <sqlpp17/result_cast.h>
 #include <sqlpp17/value.h>

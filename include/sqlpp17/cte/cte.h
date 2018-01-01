@@ -26,8 +26,8 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <sqlpp17/clause/union.h>
 #include <sqlpp17/clause_fwd.h>
-#include <sqlpp17/clauses/union.h>
 #include <sqlpp17/cte/recursive_cte.h>
 #include <sqlpp17/result_row.h>
 #include <sqlpp17/type_traits.h>
@@ -67,13 +67,13 @@ namespace sqlpp
   template <typename DbConnection, typename AliasProvider, typename Statement>
   [[nodiscard]] auto to_full_sql_string(const DbConnection& connection, const cte_t<AliasProvider, Statement>& t)
   {
-    return to_sql_string(connection, name_of_v<AliasProvider>) + " AS (" + to_sql_string(connection, t._statement) +
-           ")";
+    return name_to_sql_string(connection, name_of_v<AliasProvider>) + " AS (" +
+           to_sql_string(connection, t._statement) + ")";
   }
 
   template <typename DbConnection, typename AliasProvider, typename Statement>
   [[nodiscard]] auto to_sql_string(const DbConnection& connection, const cte_t<AliasProvider, Statement>& t)
   {
-    return to_sql_string(connection, name_of_v<AliasProvider>);
+    return name_to_sql_string(connection, name_of_v<AliasProvider>);
   }
 }  // namespace sqlpp

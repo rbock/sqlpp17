@@ -26,34 +26,33 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <sqlpp17/clause/insert_values.h>
+#include <sqlpp17/clause/into.h>
 #include <sqlpp17/clause_fwd.h>
-#include <sqlpp17/clauses/update_set.h>
-#include <sqlpp17/clauses/update_table.h>
-#include <sqlpp17/clauses/where.h>
 #include <sqlpp17/type_traits.h>
 
 namespace sqlpp
 {
   namespace clause
   {
-    struct update
+    struct insert
     {
     };
   }  // namespace clause
 
-  struct update_t
+  struct insert_t
   {
   };
 
   template <>
-  constexpr auto clause_tag<update_t> = clause::update{};
+  constexpr auto clause_tag<insert_t> = clause::insert{};
 
   template <typename Statement>
-  class clause_base<update_t, Statement>
+  class clause_base<insert_t, Statement>
   {
   public:
     template <typename OtherStatement>
-    clause_base(const clause_base<update_t, OtherStatement>&)
+    clause_base(const clause_base<insert_t, OtherStatement>&)
     {
     }
 
@@ -61,19 +60,13 @@ namespace sqlpp
   };
 
   template <typename DbConnection, typename Statement>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<update_t, Statement>& t)
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<insert_t, Statement>& t)
   {
-    return std::string{"UPDATE"};
+    return std::string{"INSERT"};
   }
 
-  [[nodiscard]] constexpr auto update()
+  [[nodiscard]] constexpr auto insert()
   {
-    return statement<update_t, no_update_table_t, no_update_set_t, no_where_t>{};
-  }
-
-  template <typename Table>
-  [[nodiscard]] constexpr auto update(Table&& t)
-  {
-    return update().table(std::forward<Table>(t));
+    return statement<insert_t, no_into_t, no_insert_values_t>{};
   }
 }  // namespace sqlpp

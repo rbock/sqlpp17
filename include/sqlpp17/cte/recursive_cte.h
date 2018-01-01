@@ -64,13 +64,13 @@ namespace sqlpp
   [[nodiscard]] auto to_full_sql_string(const DbConnection& connection,
                                         const recursive_cte_t<AliasProvider, Statement>& t)
   {
-    return to_sql_string(connection, name_of_v<AliasProvider>) + " AS (" + to_sql_string(connection, t._statement) +
-           ")";
+    return name_to_sql_string(connection, name_of_v<AliasProvider>) + " AS (" +
+           to_sql_string(connection, t._statement) + ")";
   }
 
   template <typename DbConnection, typename AliasProvider, typename Statement>
   [[nodiscard]] auto to_sql_string(const DbConnection& connection, const recursive_cte_t<AliasProvider, Statement>& t)
   {
-    return to_sql_string(connection, name_of_v<AliasProvider>);
+    return name_to_sql_string(connection, name_of_v<AliasProvider>);
   }
 }  // namespace sqlpp

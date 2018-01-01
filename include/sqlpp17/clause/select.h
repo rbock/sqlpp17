@@ -26,17 +26,17 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <sqlpp17/clause/from.h>
+#include <sqlpp17/clause/group_by.h>
+#include <sqlpp17/clause/having.h>
+#include <sqlpp17/clause/limit.h>
+#include <sqlpp17/clause/lock.h>
+#include <sqlpp17/clause/offset.h>
+#include <sqlpp17/clause/order_by.h>
+#include <sqlpp17/clause/select_columns.h>
+#include <sqlpp17/clause/select_flags.h>
+#include <sqlpp17/clause/where.h>
 #include <sqlpp17/clause_fwd.h>
-#include <sqlpp17/clauses/from.h>
-#include <sqlpp17/clauses/group_by.h>
-#include <sqlpp17/clauses/having.h>
-#include <sqlpp17/clauses/limit.h>
-#include <sqlpp17/clauses/lock.h>
-#include <sqlpp17/clauses/offset.h>
-#include <sqlpp17/clauses/order_by.h>
-#include <sqlpp17/clauses/select_columns.h>
-#include <sqlpp17/clauses/select_flags.h>
-#include <sqlpp17/clauses/where.h>
 #include <sqlpp17/multi_column.h>
 #include <sqlpp17/type_traits.h>
 

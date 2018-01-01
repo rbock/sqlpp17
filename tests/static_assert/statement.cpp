@@ -28,8 +28,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
 
-#include <sqlpp17/clauses/from.h>
-#include <sqlpp17/clauses/where.h>
+#include <sqlpp17/clause/from.h>
+#include <sqlpp17/clause/where.h>
 
 #warning : Not implemented yet
 #if 0

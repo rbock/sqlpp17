@@ -45,6 +45,7 @@ namespace sqlpp::mysql
   {
     std::function<void(MYSQL*)> pre_connect;
     std::function<void(MYSQL*)> post_connect;
+#warning : Maybe add a callback for the destructor, too?
     std::string host;
     std::string user;
     std::string password;
