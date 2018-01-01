@@ -39,9 +39,6 @@ namespace sqlpp
   };
 
   template <typename T>
-  constexpr auto is_expression_v<value_t<T>> = true;
-
-  template <typename T>
   struct value_type_of<value_t<T>>
   {
     using type = T;

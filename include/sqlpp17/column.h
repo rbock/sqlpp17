@@ -109,9 +109,6 @@ namespace sqlpp
   constexpr auto char_sequence_of_v<column_t<TableSpec, ColumnSpec>> = make_char_sequence_t<name_of_v<ColumnSpec>>{};
 
   template <typename TableSpec, typename ColumnSpec>
-  constexpr auto is_expression_v<column_t<TableSpec, ColumnSpec>> = true;
-
-  template <typename TableSpec, typename ColumnSpec>
   constexpr auto is_selectable_v<column_t<TableSpec, ColumnSpec>> = true;
 
   template <typename TableSpec, typename ColumnSpec>

@@ -51,9 +51,6 @@ namespace sqlpp
   }
 
   template <typename L>
-  constexpr auto is_expression_v<sort_order_t<L>> = false;
-
-  template <typename L>
   constexpr auto requires_braces_v<sort_order_t<L>> = false;
 
   template <typename L>

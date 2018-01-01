@@ -44,9 +44,6 @@ namespace sqlpp
   }
 
   template <typename L>
-  constexpr auto is_expression_v<is_null_t<L>> = true;
-
-  template <typename L>
   struct value_type_of<is_null_t<L>>
   {
     using type = bool;

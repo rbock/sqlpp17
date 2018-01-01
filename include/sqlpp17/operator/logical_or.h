@@ -47,9 +47,6 @@ namespace sqlpp
   }
 
   template <typename L, typename R>
-  constexpr auto is_expression_v<logical_or_t<L, R>> = true;
-
-  template <typename L, typename R>
   struct value_type_of<logical_or_t<L, R>>
   {
     using type = bool;

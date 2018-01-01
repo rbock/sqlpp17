@@ -44,9 +44,6 @@ namespace sqlpp
   }
 
   template <typename L>
-  constexpr auto is_expression_v<negate_t<L>> = true;
-
-  template <typename L>
   struct value_type_of<negate_t<L>>
   {
     using type = numeric_t;

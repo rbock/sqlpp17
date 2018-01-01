@@ -46,9 +46,6 @@ namespace sqlpp
   }
 
   template <typename L, typename... Args>
-  constexpr auto is_expression_v<not_in_t<L, Args...>> = true;
-
-  template <typename L, typename... Args>
   struct value_type_of<not_in_t<L, Args...>>
   {
     using type = bool;
