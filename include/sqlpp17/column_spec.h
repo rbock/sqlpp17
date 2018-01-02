@@ -36,7 +36,7 @@ namespace sqlpp
     using _sqlpp_name_tag = NameTag;
     using value_type = ValueType;
     static constexpr auto can_be_null = CanBeNull;
-#warning : Pseudo-tables need to be read-only
+    static constexpr auto default_value = ::sqlpp::none_t{};
   };
 
   template <typename NameTag, typename ValueType, bool CanBeNull>

@@ -37,54 +37,45 @@ namespace sqlpp
     template <typename Pattern>
     [[nodiscard]] constexpr auto like(Pattern pattern) const
     {
-      using ::sqlpp::like;
-      return like(t, pattern);
+      return ::sqlpp::like(t, pattern);
     }
 
     template <typename... Exprs>
     [[nodiscard]] constexpr auto in(Exprs... exprs) const
     {
-      using ::sqlpp::in;
-      return in(t, exprs...);
+      return ::sqlpp::in(t, exprs...);
     }
 
     template <typename... Exprs>
     [[nodiscard]] constexpr auto not_in(Exprs... exprs) const
     {
-      using ::sqlpp::not_in;
-      return not_in(t, exprs...);
+      return ::sqlpp::not_in(t, exprs...);
     }
 
     [[nodiscard]] constexpr auto is_null() const
     {
-      using ::sqlpp::is_null;
-      return is_null(t);
+      return ::sqlpp::is_null(t);
     }
 
     [[nodiscard]] constexpr auto is_not_null() const
     {
-      using ::sqlpp::is_not_null;
-      return is_not_null(t);
+      return ::sqlpp::is_not_null(t);
     }
 
     [[nodiscard]] constexpr auto asc() const
     {
-      using ::sqlpp::asc;
-      return asc(t);
+      return ::sqlpp::asc(t);
     }
 
     [[nodiscard]] constexpr auto desc() const
     {
-      using ::sqlpp::desc;
-      return desc(t);
+      return ::sqlpp::desc(t);
     }
 
     template <typename Alias>
     [[nodiscard]] constexpr auto as(const Alias& alias) const
     {
-#warning : This using here is good for nothing
-      using ::sqlpp::as;
-      return as(t, alias);
+      return ::sqlpp::as(t, alias);
     }
 
     T t;
