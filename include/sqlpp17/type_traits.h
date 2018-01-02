@@ -134,9 +134,6 @@ namespace sqlpp
   };
 
   template <typename T>
-  constexpr auto is_alias_provider_v = false;
-
-  template <typename T>
   constexpr auto is_failed_v = false;
 
   template <typename T>
