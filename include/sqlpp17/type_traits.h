@@ -629,6 +629,4 @@ namespace sqlpp
   template <typename T>
   using name_tag_of_t = typename name_tag_of<T>::type;
 
-  template <typename T>
-  constexpr auto& name_of_v = T::name;
 }  // namespace sqlpp

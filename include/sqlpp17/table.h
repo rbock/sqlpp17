@@ -66,9 +66,6 @@ namespace sqlpp
     using type = typename TableSpec::_sqlpp_name_tag;
   };
 
-  template <typename TableSpec, typename... ColumnSpecs>
-  constexpr auto& name_of_v<table_t<TableSpec, ColumnSpecs...>> = TableSpec::_sqlpp_name_tag::name;
-
   template <typename DbConnection, typename TableSpec, typename... ColumnSpecs>
   [[nodiscard]] auto to_sql_string(const DbConnection& connection, const table_t<TableSpec, ColumnSpecs...>& t)
   {
@@ -92,7 +89,7 @@ namespace sqlpp
 
   template <typename TableSpec, typename... ColumnSpecs>
   constexpr auto char_sequence_of_v<table_t<TableSpec, ColumnSpecs...>> =
-      make_char_sequence_t<name_of_v<table_t<TableSpec, ColumnSpecs...>>>{};
+      make_char_sequence_t<name_tag_of_t<table_t<TableSpec, ColumnSpecs...>>::name>{};
 
   template <typename TableSpec, typename... ColumnSpecs>
   constexpr auto table_names_of_v<table_t<TableSpec, ColumnSpecs...>> =

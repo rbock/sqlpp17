@@ -110,11 +110,8 @@ namespace sqlpp
   };
 
   template <typename TableSpec, typename ColumnSpec>
-  constexpr auto& name_of_v<column_t<TableSpec, ColumnSpec>> = ColumnSpec::_sqlpp_name_tag::name;
-
-  template <typename TableSpec, typename ColumnSpec>
   constexpr auto char_sequence_of_v<column_t<TableSpec, ColumnSpec>> =
-      make_char_sequence_t<name_of_v<column_t<TableSpec, ColumnSpec>>>{};
+      make_char_sequence_t<name_tag_of_t<column_t<TableSpec, ColumnSpec>>::name>{};
 
   template <typename TableSpec, typename ColumnSpec>
   constexpr auto is_selectable_v<column_t<TableSpec, ColumnSpec>> = true;

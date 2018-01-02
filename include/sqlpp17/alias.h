@@ -52,9 +52,6 @@ namespace sqlpp
   };
 
   template <typename Expression, typename NameTag>
-  constexpr auto& name_of_v<alias_t<Expression, NameTag>> = NameTag::name;
-
-  template <typename Expression, typename NameTag>
   constexpr auto is_alias_v<alias_t<Expression, NameTag>> = true;
 
   template <typename Expression, typename NameTag>
@@ -67,6 +64,5 @@ namespace sqlpp
   }
 
   template <typename Expression, typename NameTag>
-  constexpr auto char_sequence_of_v<alias_t<Expression, NameTag>> =
-      make_char_sequence_t<name_of_v<alias_t<Expression, NameTag>>>{};
+  constexpr auto char_sequence_of_v<alias_t<Expression, NameTag>> = make_char_sequence_t<NameTag::name>{};
 }  // namespace sqlpp

@@ -30,6 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/column.h>
 #include <sqlpp17/join.h>
 #include <sqlpp17/member.h>
+#include <sqlpp17/to_sql_name.h>
 
 namespace sqlpp
 {
@@ -39,22 +40,6 @@ namespace sqlpp
   {
     Table _table;
   };
-
-  template <typename DbConnection, typename Table, typename NameTag, typename... ColumnSpecs>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection,
-                                   const table_alias_t<Table, NameTag, ColumnSpecs...>& t)
-  {
-    auto ret = std::string{};
-
-    if constexpr (requires_braces<Table>)
-      ret += "(";
-    ret += to_sql_string(t._table);
-    if constexpr (requires_braces<Table>)
-      ret += ")";
-    ret += " AS " + name_of_v<NameTag>;
-
-    return ret;
-  }
 
   template <typename Table, typename NameTag, typename... ColumnSpecs>
   struct name_tag_of<table_alias_t<Table, NameTag, ColumnSpecs...>>
@@ -72,4 +57,21 @@ namespace sqlpp
   template <typename Table, typename NameTag, typename... ColumnSpecs>
   constexpr auto char_sequence_of_v<table_alias_t<Table, NameTag, ColumnSpecs...>> =
       make_char_sequence_t<NameTag::name>{};
+
+  template <typename DbConnection, typename Table, typename NameTag, typename... ColumnSpecs>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection,
+                                   const table_alias_t<Table, NameTag, ColumnSpecs...>& t)
+  {
+    auto ret = std::string{};
+
+    if constexpr (requires_braces<Table>)
+      ret += "(";
+    ret += to_sql_string(t._table);
+    if constexpr (requires_braces<Table>)
+      ret += ")";
+    ret += " AS " + to_sql_name(t);
+
+    return ret;
+  }
+
 }  // namespace sqlpp
