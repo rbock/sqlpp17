@@ -32,31 +32,41 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  template <typename Expression, typename Alias>
+  template <typename Expression, typename NameTag>
   struct alias_t
   {
-    using _alias_t = Alias;
+    using _alias_t = NameTag;
     Expression _expression;
   };
 
-  template <typename Expression, typename Alias>
-  struct value_type_of<alias_t<Expression, Alias>>
+  template <typename Expression, typename NameTag>
+  struct value_type_of<alias_t<Expression, NameTag>>
   {
     using type = value_type_of_t<Expression>;
   };
 
-  template <typename Expression, typename Alias>
-  constexpr auto is_alias_v<alias_t<Expression, Alias>> = true;
-
-  template <typename Expression, typename Alias>
-  constexpr auto is_selectable_v<alias_t<Expression, Alias>> = is_expression_v<alias_t<Expression, Alias>>;
-
-  template <typename DbConnection, typename Expression, typename Alias>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const alias_t<Expression, Alias>& t)
+  template <typename Expression, typename NameTag>
+  struct name_tag_of<alias_t<Expression, NameTag>>
   {
-    return to_sql_string(connection, t._expression) + " AS " + name_to_sql_string(connection, name_of_v<Alias>);
+    using type = NameTag;
+  };
+
+  template <typename Expression, typename NameTag>
+  constexpr auto& name_of_v<alias_t<Expression, NameTag>> = NameTag::name;
+
+  template <typename Expression, typename NameTag>
+  constexpr auto is_alias_v<alias_t<Expression, NameTag>> = true;
+
+  template <typename Expression, typename NameTag>
+  constexpr auto is_selectable_v<alias_t<Expression, NameTag>> = is_expression_v<alias_t<Expression, NameTag>>;
+
+  template <typename DbConnection, typename Expression, typename NameTag>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const alias_t<Expression, NameTag>& t)
+  {
+    return to_sql_string(connection, t._expression) + " AS " + to_sql_name(connection, t);
   }
 
-  template <typename Expression, typename Alias>
-  constexpr auto char_sequence_of_v<alias_t<Expression, Alias>> = make_char_sequence_t<name_of_v<Alias>>{};
+  template <typename Expression, typename NameTag>
+  constexpr auto char_sequence_of_v<alias_t<Expression, NameTag>> =
+      make_char_sequence_t<name_of_v<alias_t<Expression, NameTag>>>{};
 }  // namespace sqlpp

@@ -35,42 +35,52 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
+  template <typename Cte>
+  struct cte_spec : public ::sqlpp::spec_base
+  {
+    using _sqlpp_name_tag = name_tag_of_t<Cte>;
+  };
+
   template <typename Cte, typename ResultRow>
   struct cte_columns_t
   {
     static_assert(wrong<cte_columns_t>, "Invalid arguments for cte_columns_t");
   };
 
-  template <typename Cte, typename... FieldSpecs>
-  struct cte_columns_t<Cte, result_row_t<FieldSpecs...>> : member_t<FieldSpecs, column_t<Cte, FieldSpecs>>...
+  template <typename Cte, typename... ResultColumnSpecs>
+  struct cte_columns_t<Cte, result_row_t<ResultColumnSpecs...>>
+      : member_t<ResultColumnSpecs, column_t<cte_spec<Cte>, ResultColumnSpecs>>...
   {
   };
 
-  template <typename AliasProvider, typename Statement>
-  struct recursive_cte_t : cte_columns_t<recursive_cte_t<AliasProvider, Statement>, result_row_of_t<Statement>>
+  template <typename NameTag, typename Statement>
+  struct recursive_cte_t : cte_columns_t<recursive_cte_t<NameTag, Statement>, result_row_of_t<Statement>>
   {
     Statement _statement;
-    using _alias_t = typename AliasProvider::_alias_t;
 
-    recursive_cte_t(AliasProvider, Statement statement) : _statement(statement)
+    recursive_cte_t(NameTag, Statement statement) : _statement(statement)
     {
     }
   };
 
-  template <typename AliasProvider, typename Statement>
-  constexpr auto is_table_v<recursive_cte_t<AliasProvider, Statement>> = true;
-
-  template <typename DbConnection, typename AliasProvider, typename Statement>
-  [[nodiscard]] auto to_full_sql_string(const DbConnection& connection,
-                                        const recursive_cte_t<AliasProvider, Statement>& t)
+  template <typename NameTag, typename Statement>
+  struct name_tag_of<recursive_cte_t<NameTag, Statement>>
   {
-    return name_to_sql_string(connection, name_of_v<AliasProvider>) + " AS (" +
-           to_sql_string(connection, t._statement) + ")";
+    using type = NameTag;
+  };
+
+  template <typename NameTag, typename Statement>
+  constexpr auto is_table_v<recursive_cte_t<NameTag, Statement>> = true;
+
+  template <typename DbConnection, typename NameTag, typename Statement>
+  [[nodiscard]] auto to_full_sql_string(const DbConnection& connection, const recursive_cte_t<NameTag, Statement>& t)
+  {
+    return to_sql_name(connection, t) + " AS (" + to_sql_string(connection, t._statement) + ")";
   }
 
-  template <typename DbConnection, typename AliasProvider, typename Statement>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const recursive_cte_t<AliasProvider, Statement>& t)
+  template <typename DbConnection, typename NameTag, typename Statement>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const recursive_cte_t<NameTag, Statement>& t)
   {
-    return name_to_sql_string(connection, name_of_v<AliasProvider>);
+    return to_sql_name(connection, t);
   }
 }  // namespace sqlpp

@@ -29,15 +29,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
 
-#include <sqlpp17/alias_provider.h>
 #include <sqlpp17/clause/select.h>
 #include <sqlpp17/clause/with.h>
 #include <sqlpp17/cte.h>
+#include <sqlpp17/name_tag.h>
 #include <sqlpp17/operator.h>
 
 #warning : Need a real result class and a real connection
 
-SQLPP_ALIAS_PROVIDER(foo);
+SQLPP_CREATE_NAME_TAG(foo);
 
 struct connection
 {

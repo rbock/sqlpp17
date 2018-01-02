@@ -27,9 +27,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tables/TabDepartment.h>
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
-#include <sqlpp17/alias_provider.h>
+#include <sqlpp17/name_tag.h>
 
-SQLPP_ALIAS_PROVIDER(foo);
+SQLPP_CREATE_NAME_TAG(foo);
 
 template <char... Ls, char... Rs>
 constexpr auto compare(::sqlpp::char_sequence<Ls...> lhs, ::sqlpp::char_sequence<Rs...> rhs) -> bool

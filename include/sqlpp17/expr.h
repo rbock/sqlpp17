@@ -82,6 +82,7 @@ namespace sqlpp
     template <typename Alias>
     [[nodiscard]] constexpr auto as(const Alias& alias) const
     {
+#warning : This using here is good for nothing
       using ::sqlpp::as;
       return as(t, alias);
     }

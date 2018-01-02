@@ -58,11 +58,11 @@ namespace sqlpp::postgresql::detail
   }
 
   template <typename ColumnSpec>
-  [[nodiscard]] auto to_sql_column_spec_string(const postgresql::connection_t& connection, const ColumnSpec& c)
+  [[nodiscard]] auto to_sql_column_spec_string(const postgresql::connection_t& connection, const ColumnSpec& columnSpec)
   {
-    auto ret = name_to_sql_string(connection, name_of_v<ColumnSpec>);
+    auto ret = to_sql_name(connection, columnSpec);
 
-    if constexpr (std::is_same_v<std::decay_t<decltype(c.default_value)>, ::sqlpp::auto_increment_t>)
+    if constexpr (std::is_same_v<std::decay_t<decltype(columnSpec.default_value)>, ::sqlpp::auto_increment_t>)
     {
       if constexpr (std::is_same_v<typename ColumnSpec::value_type, int16_t>)
       {
@@ -90,13 +90,13 @@ namespace sqlpp::postgresql::detail
         ret += " NOT NULL";
       }
 
-      if constexpr (std::is_same_v<std::decay_t<decltype(c.default_value)>, ::sqlpp::none_t>)
+      if constexpr (std::is_same_v<std::decay_t<decltype(columnSpec.default_value)>, ::sqlpp::none_t>)
       {
       }
       else
       {
 #warning need to implement default values
-        // ret += " DEFAULT=" + to_sql_string(connection, c.default_value);
+        // ret += " DEFAULT=" + to_sql_string(connection, columnSpec.default_value);
       }
     }
 
@@ -138,7 +138,7 @@ namespace sqlpp::postgresql::detail
     }
     else
     {
-      return ", PRIMARY KEY (" + name_to_sql_string(connection, name_of_v<_primary_key>) + ")";
+      return ", PRIMARY KEY (" + to_sql_name(connection, _primary_key{}) + ")";
     }
   }
 }  // namespace sqlpp::postgresql::detail

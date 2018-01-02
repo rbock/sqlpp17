@@ -33,15 +33,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  template <typename Table, typename Alias, typename... ColumnSpecs>
-  struct table_alias_t : public join_functions<table_alias_t<Table, Alias, ColumnSpecs...>>,
-                         public member_t<ColumnSpecs, column_t<Alias, ColumnSpecs>>...
+  template <typename Table, typename NameTag, typename... ColumnSpecs>
+  struct table_alias_t : public join_functions<table_alias_t<Table, NameTag, ColumnSpecs...>>,
+                         public member_t<ColumnSpecs, column_t<NameTag, ColumnSpecs>>...
   {
     Table _table;
   };
 
-  template <typename DbConnection, typename Table, typename Alias, typename... ColumnSpecs>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const table_alias_t<Table, Alias, ColumnSpecs...>& t)
+  template <typename DbConnection, typename Table, typename NameTag, typename... ColumnSpecs>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection,
+                                   const table_alias_t<Table, NameTag, ColumnSpecs...>& t)
   {
     auto ret = std::string{};
 
@@ -50,19 +51,25 @@ namespace sqlpp
     ret += to_sql_string(t._table);
     if constexpr (requires_braces<Table>)
       ret += ")";
-    ret += " AS " + name_of_v<Alias>;
+    ret += " AS " + name_of_v<NameTag>;
 
     return ret;
   }
 
-  template <typename Table, typename Alias, typename... ColumnSpecs>
-  constexpr auto is_table_v<table_alias_t<Table, Alias, ColumnSpecs...>> = true;
+  template <typename Table, typename NameTag, typename... ColumnSpecs>
+  struct name_tag_of<table_alias_t<Table, NameTag, ColumnSpecs...>>
+  {
+    using type = NameTag;
+  };
 
-  template <typename Table, typename Alias, typename... ColumnSpecs>
-  constexpr auto columns_of_v<table_alias_t<Table, Alias, ColumnSpecs...>> =
-      type_set<column_t<Alias, ColumnSpecs>...>();
+  template <typename Table, typename NameTag, typename... ColumnSpecs>
+  constexpr auto is_table_v<table_alias_t<Table, NameTag, ColumnSpecs...>> = true;
 
-  template <typename Table, typename Alias, typename... ColumnSpecs>
-  constexpr auto char_sequence_of_v<table_alias_t<Table, Alias, ColumnSpecs...>> =
-      make_char_sequence_t<Alias::_alias_t::name>{};
+  template <typename Table, typename NameTag, typename... ColumnSpecs>
+  constexpr auto columns_of_v<table_alias_t<Table, NameTag, ColumnSpecs...>> =
+      type_set<column_t<NameTag, ColumnSpecs>...>();
+
+  template <typename Table, typename NameTag, typename... ColumnSpecs>
+  constexpr auto char_sequence_of_v<table_alias_t<Table, NameTag, ColumnSpecs...>> =
+      make_char_sequence_t<NameTag::name>{};
 }  // namespace sqlpp

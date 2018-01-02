@@ -28,18 +28,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/alias.h>
 #include <sqlpp17/expr.h>
-#include <sqlpp17/name_to_sql_string.h>
 #include <sqlpp17/operator.h>
+#include <sqlpp17/to_sql_name.h>
 #include <sqlpp17/type_traits.h>
 
 namespace sqlpp
 {
-  template <typename TableAlias, typename ColumnSpec>
+  template <typename TableSpec, typename ColumnSpec>
   class column_t
   {
   public:
-    using _alias_t = typename ColumnSpec::_alias_t;
-
     template <typename T>
     [[nodiscard]] auto operator=(T t) const
     {
@@ -87,6 +85,7 @@ namespace sqlpp
 
     [[nodiscard]] constexpr auto desc() const
     {
+#warning : This using here is good for nothing
       using ::sqlpp::desc;
       return desc(*this);
     }
@@ -94,8 +93,7 @@ namespace sqlpp
     template <typename Alias>
     [[nodiscard]] constexpr auto as(const Alias& alias) const
     {
-      using ::sqlpp::as;
-      return as(*this, alias);
+      return ::sqlpp::as(*this, alias);
     }
   };
 
@@ -106,7 +104,17 @@ namespace sqlpp
   };
 
   template <typename TableSpec, typename ColumnSpec>
-  constexpr auto char_sequence_of_v<column_t<TableSpec, ColumnSpec>> = make_char_sequence_t<name_of_v<ColumnSpec>>{};
+  struct name_tag_of<column_t<TableSpec, ColumnSpec>>
+  {
+    using type = typename ColumnSpec::_sqlpp_name_tag;
+  };
+
+  template <typename TableSpec, typename ColumnSpec>
+  constexpr auto& name_of_v<column_t<TableSpec, ColumnSpec>> = ColumnSpec::_sqlpp_name_tag::name;
+
+  template <typename TableSpec, typename ColumnSpec>
+  constexpr auto char_sequence_of_v<column_t<TableSpec, ColumnSpec>> =
+      make_char_sequence_t<name_of_v<column_t<TableSpec, ColumnSpec>>>{};
 
   template <typename TableSpec, typename ColumnSpec>
   constexpr auto is_selectable_v<column_t<TableSpec, ColumnSpec>> = true;
@@ -135,8 +143,7 @@ namespace sqlpp
   template <typename DbConnection, typename TableSpec, typename ColumnSpec>
   [[nodiscard]] auto to_sql_string(const DbConnection& connection, const column_t<TableSpec, ColumnSpec>& t)
   {
-    return name_to_sql_string(connection, name_of_v<TableSpec>) + "." +
-           name_to_sql_string(connection, name_of_v<ColumnSpec>);
+    return to_sql_name(connection, TableSpec{}) + "." + to_sql_name(connection, ColumnSpec{});
   }
 
 }  // namespace sqlpp

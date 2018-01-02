@@ -30,8 +30,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/join.h>
 #include <sqlpp17/member.h>
 #include <sqlpp17/multi_column.h>
-#include <sqlpp17/name_to_sql_string.h>
 #include <sqlpp17/table_alias.h>
+#include <sqlpp17/to_sql_name.h>
 #include <sqlpp17/type_traits.h>
 
 namespace sqlpp
@@ -41,22 +41,38 @@ namespace sqlpp
                   public member_t<ColumnSpecs, column_t<TableSpec, ColumnSpecs>>...
   {
   public:
-    using _alias_t = typename TableSpec::_alias_t;
-
-    template <typename Alias>
-    constexpr auto as(const Alias&) const
+    template <typename NamedTypeOrTag>
+    [[nodiscard]] constexpr auto as([[maybe_unused]] const NamedTypeOrTag&) const
     {
-      return table_alias_t<table_t, Alias, ColumnSpecs...>{{}};
+      if constexpr (std::is_base_of_v<::sqlpp::name_tag_base, NamedTypeOrTag>)
+      {
+        return table_alias_t<table_t, NamedTypeOrTag, ColumnSpecs...>{{}};
+      }
+      else if constexpr (not std::is_same_v<name_tag_of_t<NamedTypeOrTag>, none_t>)
+      {
+        return table_alias_t<table_t, name_tag_of_t<NamedTypeOrTag>, ColumnSpecs...>{{}};
+      }
+      else
+      {
+        static_assert(wrong<NamedTypeOrTag>,
+                      "as() is expecting a named expression (e.g. column, table), or a name tag");
+      }
     }
   };
 
   template <typename TableSpec, typename... ColumnSpecs>
-  constexpr auto& name_of_v<table_t<TableSpec, ColumnSpecs...>> = name_of_v<TableSpec>;
+  struct name_tag_of<table_t<TableSpec, ColumnSpecs...>>
+  {
+    using type = typename TableSpec::_sqlpp_name_tag;
+  };
+
+  template <typename TableSpec, typename... ColumnSpecs>
+  constexpr auto& name_of_v<table_t<TableSpec, ColumnSpecs...>> = TableSpec::_sqlpp_name_tag::name;
 
   template <typename DbConnection, typename TableSpec, typename... ColumnSpecs>
   [[nodiscard]] auto to_sql_string(const DbConnection& connection, const table_t<TableSpec, ColumnSpecs...>& t)
   {
-    return name_to_sql_string(connection, name_of_v<TableSpec>);
+    return to_sql_name(connection, t);
   }
 
   template <typename TableSpec, typename... ColumnSpecs>
@@ -75,7 +91,8 @@ namespace sqlpp
   constexpr auto is_table_v<table_t<TableSpec, ColumnSpecs...>> = true;
 
   template <typename TableSpec, typename... ColumnSpecs>
-  constexpr auto char_sequence_of_v<table_t<TableSpec, ColumnSpecs...>> = make_char_sequence_t<name_of_v<TableSpec>>{};
+  constexpr auto char_sequence_of_v<table_t<TableSpec, ColumnSpecs...>> =
+      make_char_sequence_t<name_of_v<table_t<TableSpec, ColumnSpecs...>>>{};
 
   template <typename TableSpec, typename... ColumnSpecs>
   constexpr auto table_names_of_v<table_t<TableSpec, ColumnSpecs...>> =

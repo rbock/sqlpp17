@@ -35,12 +35,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  template <typename AliasProvider, typename Statement>
-  struct cte_t : cte_columns_t<cte_t<AliasProvider, Statement>, typename Statement::_result_row_t>
+  template <typename NameTag, typename Statement>
+  struct cte_t : cte_columns_t<cte_t<NameTag, Statement>, typename Statement::_result_row_t>
   {
     Statement _statement;
-
-    using _alias_t = typename AliasProvider::_alias_t;
 
     cte_t(Statement statement) : _statement(statement)
     {
@@ -50,30 +48,35 @@ namespace sqlpp
     constexpr auto union_all(SecondStatement second_statement)
     {
 #warning need checks here
-      return recursive_cte_t(AliasProvider{}, ::sqlpp::union_all(_statement, second_statement));
+      return recursive_cte_t(NameTag{}, ::sqlpp::union_all(_statement, second_statement));
     }
 
     template <typename SecondStatement>
     constexpr auto union_distinct(SecondStatement second_statement)
     {
 #warning need checks here
-      return recursive_cte_t(AliasProvider{}, ::sqlpp::union_all(_statement, second_statement));
+      return recursive_cte_t(NameTag{}, ::sqlpp::union_all(_statement, second_statement));
     }
   };
 
-  template <typename AliasProvider, typename Statement>
-  constexpr auto is_table_v<cte_t<AliasProvider, Statement>> = true;
+  template <typename NameTag, typename Statement>
+  constexpr auto is_table_v<cte_t<NameTag, Statement>> = true;
 
-  template <typename DbConnection, typename AliasProvider, typename Statement>
-  [[nodiscard]] auto to_full_sql_string(const DbConnection& connection, const cte_t<AliasProvider, Statement>& t)
+  template <typename NameTag, typename Statement>
+  struct name_tag_of<cte_t<NameTag, Statement>>
   {
-    return name_to_sql_string(connection, name_of_v<AliasProvider>) + " AS (" +
-           to_sql_string(connection, t._statement) + ")";
+    using type = NameTag;
+  };
+
+  template <typename DbConnection, typename NameTag, typename Statement>
+  [[nodiscard]] auto to_full_sql_string(const DbConnection& connection, const cte_t<NameTag, Statement>& t)
+  {
+    return to_sql_name(connection, t) + " AS (" + to_sql_string(connection, t._statement) + ")";
   }
 
-  template <typename DbConnection, typename AliasProvider, typename Statement>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const cte_t<AliasProvider, Statement>& t)
+  template <typename DbConnection, typename NameTag, typename Statement>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const cte_t<NameTag, Statement>& t)
   {
-    return name_to_sql_string(connection, name_of_v<AliasProvider>);
+    return to_sql_name(connection, t);
   }
 }  // namespace sqlpp

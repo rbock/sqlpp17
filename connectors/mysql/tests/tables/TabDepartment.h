@@ -28,41 +28,41 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <cstdint>
 
-#include <sqlpp17/alias_provider.h>
 #include <sqlpp17/data_types.h>
+#include <sqlpp17/name_tag.h>
 #include <sqlpp17/table.h>
 
 namespace test
 {
   namespace TabDepartment_
   {
-    struct Id
+    struct Id : public ::sqlpp::spec_base
     {
-      SQLPP_ALIAS(id)
+      SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(id, id);
       using value_type = std::int64_t;
       static constexpr auto can_be_null = false;
       static constexpr auto default_value = ::sqlpp::auto_increment_t{};
     };
 
-    struct Name
+    struct Name : public ::sqlpp::spec_base
     {
-      SQLPP_ALIAS(name)
+      SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(name, name);
       using value_type = ::sqlpp::varchar<255>;
       static constexpr auto can_be_null = true;
       static constexpr auto default_value = ::sqlpp::none_t{};
     };
 
-    struct Division
+    struct Division : public ::sqlpp::spec_base
     {
-      SQLPP_ALIAS(division)
+      SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(division, division);
       using value_type = ::sqlpp::varchar<255>;
       static constexpr auto can_be_null = true;
       static constexpr auto default_value = ::sqlpp::none_t{};
     };
 
-    struct _
+    struct _ : public ::sqlpp::spec_base
     {
-      SQLPP_ALIAS(tab_department)
+      SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(tab_department, tab_department);
       using primary_key = Id;
     };
   }  // namespace TabDepartment_

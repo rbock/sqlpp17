@@ -29,49 +29,49 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <optional>
 #include <string>
 
-#include <sqlpp17/alias_provider.h>
+#include <sqlpp17/name_tag.h>
 #include <sqlpp17/table.h>
 
 namespace test
 {
   namespace TabPerson_
   {
-    struct Id
+    struct Id : public ::sqlpp::spec_base
     {
-      SQLPP_ALIAS(id)
+      SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(id, id);
       using value_type = std::int64_t;
       static constexpr auto can_be_null = false;
       static constexpr auto default_value = ::sqlpp::auto_increment_t{};
     };
 
-    struct IsManager
+    struct IsManager : public ::sqlpp::spec_base
     {
-      SQLPP_ALIAS2(is_manager, isManager)
+      SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(is_manager, isManager);
       using value_type = bool;
       static constexpr auto can_be_null = false;
       static constexpr auto default_value = ::sqlpp::none_t{};
     };
 
-    struct Name
+    struct Name : public ::sqlpp::spec_base
     {
-      SQLPP_ALIAS(name)
+      SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(name, name);
       using value_type = std::string_view;
       static constexpr auto can_be_null = false;
       static constexpr auto default_value = ::sqlpp::none_t{};
     };
 
-    struct Address
+    struct Address : public ::sqlpp::spec_base
     {
-      SQLPP_ALIAS(address)
+      SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(address, address);
       using value_type = std::string_view;
       static constexpr auto can_be_null = true;
 #warning The default value should be a string_view.
       static constexpr char default_value[] = "";
     };
 
-    struct _
+    struct _ : public ::sqlpp::spec_base
     {
-      SQLPP_ALIAS(tab_person)
+      SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(tab_person, tab_person);
       using primary_key = Id;
     };
   }  // namespace TabPerson_

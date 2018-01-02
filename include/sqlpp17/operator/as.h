@@ -32,11 +32,22 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  template <typename Expr, typename AliasProvider>
-  [[nodiscard]] constexpr auto as(Expr expr, const AliasProvider&)
+  template <typename Expr, typename NamedTypeOrTag>
+  [[nodiscard]] constexpr auto as(Expr expr, const NamedTypeOrTag&)
   {
-#warning : assert that expr is an expresssion!
-    return alias_t<Expr, typename AliasProvider::_alias_t>{expr};
+#warning : wrapped assert that expr is an expresssion!
+    if constexpr (std::is_base_of_v<::sqlpp::name_tag_base, NamedTypeOrTag>)
+    {
+      return alias_t<Expr, NamedTypeOrTag>{expr};
+    }
+    else if constexpr (not std::is_same_v<name_tag_of_t<NamedTypeOrTag>, none_t>)
+    {
+      return alias_t<Expr, name_tag_of_t<NamedTypeOrTag>>{expr};
+    }
+    else
+    {
+      static_assert(wrong<NamedTypeOrTag>, "as() is expecting a named expression (e.g. column, table), or a name tag");
+    }
   }
 
 }  // namespace sqlpp

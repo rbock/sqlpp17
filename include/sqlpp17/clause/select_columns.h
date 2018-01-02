@@ -31,10 +31,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/clause_fwd.h>
 #include <sqlpp17/column_spec.h>
 #include <sqlpp17/multi_column.h>
-#include <sqlpp17/name_to_sql_string.h>
 #include <sqlpp17/result.h>
 #include <sqlpp17/result_row.h>
 #include <sqlpp17/statement.h>
+#include <sqlpp17/to_sql_name.h>
 #include <sqlpp17/tuple_to_sql_string.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
@@ -78,7 +78,8 @@ namespace sqlpp
   {
     return has_value(t._column)
                ? to_sql_string(connection, get_value(t._column))
-               : std::string("NULL AS ") + name_to_sql_string(connection, name_of_v<remove_optional_t<Column>>);
+#warning : This name stuff here is quite ugly
+               : std::string("NULL AS ") + to_sql_name(connection, name_tag_of_t<remove_optional_t<Column>>{});
   }
 
   template <typename... Columns, typename Statement>

@@ -32,18 +32,10 @@ namespace test
 {
   namespace TabEmpty_
   {
-    struct _
+    struct _ : public ::sqlpp::spec_base
     {
-      struct _alias_t
-      {
-        static constexpr char name[] = "tab_empty";
-        template <typename T>
-        struct _member_t
-        {
-          T tabPerson;
-        };
-      };
+      SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(tab_empty, tabEmpty);
     };
-  }
+  }  // namespace TabEmpty_
   constexpr auto tabEmpty = sqlpp::table_t<TabEmpty_::_>{};
-}
+}  // namespace test

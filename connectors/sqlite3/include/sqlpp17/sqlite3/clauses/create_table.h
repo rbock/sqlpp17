@@ -59,21 +59,20 @@ namespace sqlpp::sqlite3::detail
 
   template <typename TableSpec, typename ColumnSpec>
   [[nodiscard]] auto to_sql_column_spec_string(const sqlite3::connection_t& connection,
-                                               const TableSpec& t,
-                                               const ColumnSpec& c)
+                                               [[maybe_unused]] const TableSpec&,
+                                               const ColumnSpec& columnSpec)
   {
-    auto ret = name_to_sql_string(connection, name_of_v<ColumnSpec>) +
-               value_type_to_sql_string(typename ColumnSpec::value_type{});
+    auto ret = to_sql_name(connection, columnSpec) + value_type_to_sql_string(typename ColumnSpec::value_type{});
 
     if constexpr (not ColumnSpec::can_be_null)
     {
       ret += " NOT NULL";
     }
 
-    if constexpr (std::is_same_v<std::decay_t<decltype(c.default_value)>, ::sqlpp::none_t>)
+    if constexpr (std::is_same_v<std::decay_t<decltype(columnSpec.default_value)>, ::sqlpp::none_t>)
     {
     }
-    else if constexpr (std::is_same_v<std::decay_t<decltype(c.default_value)>, ::sqlpp::auto_increment_t>)
+    else if constexpr (std::is_same_v<std::decay_t<decltype(columnSpec.default_value)>, ::sqlpp::auto_increment_t>)
     {
       static_assert(not ColumnSpec::can_be_null, "auto increment columns must not be null");
       static_assert(std::is_integral_v<typename ColumnSpec::value_type>, "auto increment columns must be integer");
@@ -84,7 +83,7 @@ namespace sqlpp::sqlite3::detail
     else
     {
 #warning need to implement default values
-      // ret += " DEFAULT=" + to_sql_string(connection, c.default_value);
+      // ret += " DEFAULT=" + to_sql_string(connection, columnSpec.default_value);
     }
 
     return ret;
@@ -130,7 +129,7 @@ namespace sqlpp::sqlite3::detail
     }
     else
     {
-      return ", PRIMARY KEY (" + name_to_sql_string(connection, name_of_v<_primary_key>) + " ASC)";
+      return ", PRIMARY KEY (" + to_sql_name(connection, _primary_key{}) + " ASC)";
     }
   }
 }  // namespace sqlpp::sqlite3::detail

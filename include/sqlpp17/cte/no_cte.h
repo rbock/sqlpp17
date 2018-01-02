@@ -48,6 +48,7 @@ namespace sqlpp
     {
       return failed<assert_cte_as_arg_has_result_row>{};
     }
+#warning : Need to check for the char_sequence, not the type
     else if constexpr (required_cte_names_of_v<Statement>.template count<AliasProvider>() != 0)
     {
       return failed<assert_cte_as_arg_is_not_initially_self_referential>{};
@@ -77,32 +78,25 @@ namespace sqlpp
     }
   };
 
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_cte_arg_is_alias_provider, "cte() arg must be an alias provider");
-
-  template <typename AliasProvider>
-  constexpr auto check_cte_arg()
+  template <typename NamedTypeOrTag>
+  [[nodiscard]] constexpr auto cte([[maybe_unused]] NamedTypeOrTag)
   {
-#warning : Need to reactivate the check
-    if constexpr (false and !is_alias_provider_v<AliasProvider>)
+    if constexpr (std::is_base_of_v<::sqlpp::spec_base, NamedTypeOrTag>)
     {
-      return failed<assert_cte_arg_is_alias_provider>{};
+      return cte_alias_t<typename NamedTypeOrTag::_sqlpp_name_tag>{};
+    }
+    else if constexpr (std::is_base_of_v<::sqlpp::name_tag_base, NamedTypeOrTag>)
+    {
+      return cte_alias_t<NamedTypeOrTag>{};
+    }
+    else if constexpr (not std::is_same_v<name_tag_of_t<NamedTypeOrTag>, none_t>)
+    {
+      return cte_alias_t<name_tag_of_t<NamedTypeOrTag>>{};
     }
     else
     {
-      return succeeded{};
-    }
-  }
-  template <typename AliasProvider>
-  [[nodiscard]] constexpr auto cte(AliasProvider alias)
-  {
-    constexpr auto check = check_cte_arg<AliasProvider>();
-    if constexpr (check)
-    {
-      return cte_alias_t<AliasProvider>{};
-    }
-    else
-    {
-      return ::sqlpp::bad_statement_t{check};
+      static_assert(wrong<NamedTypeOrTag>,
+                    "cte() arg must be a named expression (e.g. column, table), or a column/table spec, or a name tag");
     }
   }
 }  // namespace sqlpp

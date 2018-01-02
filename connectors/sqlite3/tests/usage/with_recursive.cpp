@@ -26,9 +26,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <iostream>
 
-#include <sqlpp17/alias_provider.h>
 #include <sqlpp17/clause/select.h>
 #include <sqlpp17/clause/with.h>
+#include <sqlpp17/name_tag.h>
 #include <sqlpp17/operator.h>
 #include <sqlpp17/result_cast.h>
 #include <sqlpp17/value.h>
@@ -44,8 +44,8 @@ namespace
 
   namespace alias
   {
-    SQLPP_ALIAS_PROVIDER(cnt);
-    SQLPP_ALIAS_PROVIDER(x);
+    SQLPP_CREATE_NAME_TAG(cnt);
+    SQLPP_CREATE_NAME_TAG(x);
   }  // namespace alias
 }  // namespace
 

@@ -26,7 +26,7 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/name_to_sql_string.h>
+#include <sqlpp17/to_sql_name.h>
 #include <sqlpp17/type_traits.h>
 
 namespace sqlpp
@@ -47,7 +47,7 @@ namespace sqlpp
   template <typename DbConnection, typename ColumnSpec>
   [[nodiscard]] auto to_sql_string(const DbConnection& connection, const free_column_t<ColumnSpec>& t)
   {
-    return name_to_sql_string(connection, name_of_v<ColumnSpec>);
+    return to_sql_name(connection, ColumnSpec{});
   }
 
 }  // namespace sqlpp

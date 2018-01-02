@@ -30,6 +30,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  template <typename Name, typename Type>
-  using member_t = typename Name::_alias_t::template _member_t<Type>;
+  template <typename MemberSpec, typename Type>
+  using member_t = typename MemberSpec::_sqlpp_name_tag::template _sqlpp_member_base<Type>;
 }

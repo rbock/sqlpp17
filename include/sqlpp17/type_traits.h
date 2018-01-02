@@ -44,6 +44,14 @@ namespace sqlpp
   {
   };
 
+  struct name_tag_base
+  {
+  };
+
+  struct spec_base
+  {
+  };
+
   template <typename T>
   constexpr auto is_auto_value_v = false;
 
@@ -616,5 +624,14 @@ namespace sqlpp
   }
 
   template <typename T>
-  constexpr auto& name_of_v = T::_alias_t::name;
+  struct name_tag_of
+  {
+    using type = none_t;
+  };
+
+  template <typename T>
+  using name_tag_of_t = typename name_tag_of<T>::type;
+
+  template <typename T>
+  constexpr auto& name_of_v = T::name;
 }  // namespace sqlpp

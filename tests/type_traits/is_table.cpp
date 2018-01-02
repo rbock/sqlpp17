@@ -27,9 +27,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tables/TabDepartment.h>
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
-#include <sqlpp17/alias_provider.h>
+#include <sqlpp17/name_tag.h>
 
-SQLPP_ALIAS_PROVIDER(foo);
+SQLPP_CREATE_NAME_TAG(foo);
 
 // non-tables
 static_assert(not sqlpp::is_table(7));

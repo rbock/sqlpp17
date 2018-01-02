@@ -27,13 +27,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tables/TabDepartment.h>
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
-#include <sqlpp17/alias_provider.h>
+#include <sqlpp17/name_tag.h>
 #include <sqlpp17/operator/equal_to.h>
 
-SQLPP_ALIAS_PROVIDER(foo);
-SQLPP_ALIAS_PROVIDER(bar);
-SQLPP_ALIAS_PROVIDER(ping);
-SQLPP_ALIAS_PROVIDER(pong);
+SQLPP_CREATE_NAME_TAG(foo);
+SQLPP_CREATE_NAME_TAG(bar);
+SQLPP_CREATE_NAME_TAG(ping);
+SQLPP_CREATE_NAME_TAG(pong);
 
 using test::tabDepartment;
 using test::tabEmpty;
@@ -57,13 +57,14 @@ static_assert(columns_of(test::tabDepartment) ==
 
 // aliased tables
 static_assert(columns_of(test::tabEmpty.as(foo)).empty());
-static_assert(columns_of(test::tabPerson.as(foo)) == type_set(sqlpp::column_t<foo_t, test::TabPerson_::Id>{},
-                                                              sqlpp::column_t<foo_t, test::TabPerson_::IsManager>{},
-                                                              sqlpp::column_t<foo_t, test::TabPerson_::Name>{},
-                                                              sqlpp::column_t<foo_t, test::TabPerson_::Address>{}));
+static_assert(columns_of(test::tabPerson.as(foo)) ==
+              type_set(sqlpp::column_t<sqlpp_name_tag_for_foo, test::TabPerson_::Id>{},
+                       sqlpp::column_t<sqlpp_name_tag_for_foo, test::TabPerson_::IsManager>{},
+                       sqlpp::column_t<sqlpp_name_tag_for_foo, test::TabPerson_::Name>{},
+                       sqlpp::column_t<sqlpp_name_tag_for_foo, test::TabPerson_::Address>{}));
 static_assert(columns_of(test::tabDepartment.as(foo)) ==
-              type_set(sqlpp::column_t<foo_t, test::TabDepartment_::Id>{},
-                       sqlpp::column_t<foo_t, test::TabDepartment_::Name>{}));
+              type_set(sqlpp::column_t<sqlpp_name_tag_for_foo, test::TabDepartment_::Id>{},
+                       sqlpp::column_t<sqlpp_name_tag_for_foo, test::TabDepartment_::Name>{}));
 
 // conditionless joins
 constexpr auto colsOfDepartmentAndPerson = (columns_of(test::tabDepartment) | columns_of(test::tabPerson));
