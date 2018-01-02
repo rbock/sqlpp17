@@ -609,18 +609,6 @@ namespace sqlpp
   using cpp_type_t = typename cpp_type<T>::type;
 
   template <typename T>
-  constexpr auto char_sequence_of_v = char_sequence<>{};
-
-  template <typename T>
-  using char_sequence_of_t = std::decay_t<decltype(char_sequence_of_v<T>)>;
-
-  template <typename T>
-  constexpr auto char_sequence_of(const T&)
-  {
-    return char_sequence_of_t<T>{};
-  }
-
-  template <typename T>
   struct name_tag_of
   {
     using type = none_t;
@@ -628,5 +616,18 @@ namespace sqlpp
 
   template <typename T>
   using name_tag_of_t = typename name_tag_of<T>::type;
+
+  template <typename T>
+  struct char_sequence_of
+  {
+    static_assert(not std::is_same_v<name_tag_of_t<T>, none_t>, "Invalid use of char_sequence_of");
+    using type = make_char_sequence_t<name_tag_of_t<T>::name>;
+  };
+
+  template <typename T>
+  using char_sequence_of_t = typename char_sequence_of<T>::type;
+
+  template <typename T>
+  constexpr auto char_sequence_of_v = char_sequence_of_t<T>{};
 
 }  // namespace sqlpp

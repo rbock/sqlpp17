@@ -46,7 +46,10 @@ namespace sqlpp
   };
 
   template <typename NameTag, typename ValueType, bool CanBeNull>
-  static constexpr auto char_sequence_of_v<column_spec<NameTag, ValueType, CanBeNull>> = char_sequence_of_v<NameTag>;
+  struct name_tag_of<column_spec<NameTag, ValueType, CanBeNull>>
+  {
+    using type = NameTag;
+  };
 
   template <typename Statement, typename Column>
   struct make_column_spec

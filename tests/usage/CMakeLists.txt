@@ -23,7 +23,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 function(test_usage name)
-  set(target sqlpp17_usage${name})
+  set(target sqlpp17_usage_${name})
   add_executable(${target} ${name}.cpp)
   target_link_libraries(${target} PRIVATE sqlpp17 sqlpp17_testing)
 	add_test(${target} ${target})

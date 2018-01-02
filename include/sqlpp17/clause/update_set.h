@@ -117,7 +117,7 @@ namespace sqlpp
     {
       return failed<assert_update_set_args_are_assignments>{};
     }
-    else if constexpr (type_set<char_sequence_of_t<Assignments>...>().size() != sizeof...(Assignments))
+    else if constexpr (type_set<char_sequence_of_t<column_of_t<Assignments>>...>().size() != sizeof...(Assignments))
     {
       return failed<assert_update_set_args_contain_no_duplicates>{};
     }

@@ -54,10 +54,6 @@ namespace sqlpp
   constexpr auto columns_of_v<table_alias_t<Table, NameTag, ColumnSpecs...>> =
       type_set<column_t<NameTag, ColumnSpecs>...>();
 
-  template <typename Table, typename NameTag, typename... ColumnSpecs>
-  constexpr auto char_sequence_of_v<table_alias_t<Table, NameTag, ColumnSpecs...>> =
-      make_char_sequence_t<NameTag::name>{};
-
   template <typename DbConnection, typename Table, typename NameTag, typename... ColumnSpecs>
   [[nodiscard]] auto to_sql_string(const DbConnection& connection,
                                    const table_alias_t<Table, NameTag, ColumnSpecs...>& t)

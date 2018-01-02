@@ -46,6 +46,12 @@ constexpr auto compare(::sqlpp::char_sequence<Ls...> lhs, ::sqlpp::char_sequence
   }
 }
 
+template <typename T>
+constexpr auto char_sequence_of(const T&)
+{
+  return ::sqlpp::char_sequence_of_t<T>{};
+}
+
 // Tables
 static_assert(compare(char_sequence_of(test::tabEmpty),
                       ::sqlpp::char_sequence<'t', 'a', 'b', '_', 'e', 'm', 'p', 't', 'y', '\x00'>{}));

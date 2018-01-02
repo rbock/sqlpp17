@@ -62,7 +62,4 @@ namespace sqlpp
   {
     return to_sql_string(connection, t._expression) + " AS " + to_sql_name(connection, t);
   }
-
-  template <typename Expression, typename NameTag>
-  constexpr auto char_sequence_of_v<alias_t<Expression, NameTag>> = make_char_sequence_t<NameTag::name>{};
 }  // namespace sqlpp

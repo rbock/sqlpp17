@@ -68,7 +68,7 @@ namespace sqlpp
       else
       {
         return (true && ... &&
-                (char_sequence_of_v<LeftColumnSpecs> == char_sequence_of_v<RightColumnSpecs> and
+                (char_sequence_of_t<LeftColumnSpecs>{} == char_sequence_of_t<RightColumnSpecs>{} and
                  std::is_same_v<value_type_of_t<LeftColumnSpecs>, value_type_of_t<RightColumnSpecs>>));
       }
     }
