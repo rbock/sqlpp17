@@ -55,8 +55,7 @@ namespace sqlpp
   struct make_column_spec
   {
     using _base_column = remove_optional_t<Column>;
-#warning : Do we need cpp_type?
-    using _value_t = cpp_type_t<value_type_of_t<_base_column>>;
+    using _value_t = cpp_type_t<value_type_of_t<_base_column>>;  // this decodes fixchar/varchar/etc
     using _base_value_t = remove_optional_t<_value_t>;
 
     using _name_tag = name_tag_of_t<_base_column>;

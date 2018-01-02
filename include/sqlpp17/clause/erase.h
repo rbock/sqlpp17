@@ -61,7 +61,7 @@ namespace sqlpp
     {
       return failed<assert_from_table_arg_is_table>{};
     }
-    else if constexpr (is_read_only_table_v<T>)
+    else if constexpr (is_read_only_v<T>)
     {
       return failed<assert_from_table_arg_no_read_only_table>{};
     }

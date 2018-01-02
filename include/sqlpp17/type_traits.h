@@ -53,14 +53,14 @@ namespace sqlpp
   };
 
   template <typename T>
-  constexpr auto is_auto_value_v = false;
+  constexpr auto is_read_only_v = false;
 
   struct auto_increment_t
   {
   };
 
   template <>
-  constexpr auto is_auto_value_v<auto_increment_t> = true;
+  constexpr auto is_read_only_v<auto_increment_t> = true;
 
   template <typename T>
   struct type_t
@@ -284,15 +284,6 @@ namespace sqlpp
   constexpr auto is_table(const T&)
   {
     return is_table_v<T>;
-  }
-
-  template <typename T>
-  constexpr auto is_read_only_table_v = false;
-
-  template <typename T>
-  constexpr auto is_read_only_table(const T&)
-  {
-    return is_read_only_table_v<T>;
   }
 
   template <typename T>
