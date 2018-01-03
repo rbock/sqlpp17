@@ -199,11 +199,17 @@ namespace sqlpp
     return is_statement_v<T>;
   }
 
-  template <typename T, typename Enable = void>
-  constexpr auto has_result_row_v = false;
+  template <typename T>
+  struct result_row_of
+  {
+    using type = none_t;
+  };
 
   template <typename T>
-  constexpr auto has_result_row_v<T, std::void_t<typename T::_result_row_t>> = true;
+  using result_row_of_t = typename result_row_of<T>::type;
+
+  template <typename T>
+  constexpr auto has_result_row_v = not std::is_same_v<result_row_of_t<T>, none_t>;
 
   template <typename T>
   constexpr auto has_result_row(const T&)
@@ -220,15 +226,6 @@ namespace sqlpp
   template <typename Left, typename Right>
   constexpr auto result_rows_are_compatible_v = result_rows_are_compatible<Left, Right>::value;
 
-  template <typename T>
-  struct result_row_of
-  {
-    using type = std::nullptr_t;
-  };
-
-  template <typename T>
-  using result_row_of_t = typename result_row_of<T>::type;
-
   template <typename Assert, typename T>
   constexpr auto is_bad_statement_v = false;
 
@@ -237,15 +234,6 @@ namespace sqlpp
   {
     return is_bad_statement_v<Assert, T>;
   }
-
-  template <typename T>
-  struct is_row_result
-  {
-    static constexpr auto value = false;
-  };
-
-  template <typename T>
-  static constexpr auto is_row_result_v = is_row_result<T>::value;
 
   template <typename T>
   constexpr auto is_join_v = false;
@@ -586,9 +574,6 @@ namespace sqlpp
   {
     return columns_of_v<T>;
   }
-
-  template <typename T>
-  constexpr auto has_result_rows_v = false;
 
   template <typename T>
   struct cpp_type

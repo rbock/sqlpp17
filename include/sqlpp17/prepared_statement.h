@@ -111,9 +111,9 @@ namespace sqlpp
   };
 
   template <typename ResultBase, typename Handle>
-  struct is_row_result<prepared_statement_t<ResultBase, Handle>>
+  struct result_row_of<prepared_statement_t<ResultBase, Handle>>
   {
-    static constexpr auto value = has_result_row_v<ResultBase>;
+    using type = result_row_of_t<ResultBase>;
   };
 
   template <typename ResultBase, typename Handle>

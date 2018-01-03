@@ -49,33 +49,6 @@ namespace sqlpp
   template <typename Table>
   constexpr auto clause_tag<create_table_t<Table>> = clause::create_table{};
 
-#warning : Need to check this before running
-  /*
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_from_table_arg_is_table, "from_table() arg has to be a table");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_from_table_arg_no_read_only_table, "from_table() arg must not be read-only table");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_from_table_arg_no_required_columns,
-                              "from_table() arg must not depend on other tables");
-
-  template <typename T>
-  constexpr auto check_from_table_arg(const T&)
-  {
-    if constexpr (!is_table_v<T>)
-    {
-      return failed<assert_from_table_arg_is_table>{};
-    }
-    else if constexpr (is_read_only_v<T>)
-    {
-      return failed<assert_from_table_arg_no_read_only_table>{};
-    }
-    else if constexpr (!required_columns_of_v<T>.empty())
-    {
-      return failed<assert_from_table_arg_no_required_columns>{};
-    }
-    else
-      return succeeded{};
-  }
-
-  */
   template <typename Table, typename Statement>
   class clause_base<create_table_t<Table>, Statement>
   {
@@ -120,9 +93,35 @@ namespace sqlpp
                   "Missing specialization for to_sql_string() for the current connection type");
   }
 
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_create_table_arg_is_table, "create_table() arg has to be a table");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_create_table_arg_no_read_only_table,
+                              "create_table() arg must not be read-only table");
+
+  template <typename T>
+  constexpr auto check_create_table_arg()
+  {
+    if constexpr (!is_table_v<T>)
+    {
+      return failed<assert_create_table_arg_is_table>{};
+    }
+    else if constexpr (is_read_only_v<T>)
+    {
+      return failed<assert_create_table_arg_no_read_only_table>{};
+    }
+    else
+      return succeeded{};
+  }
+
   template <typename Table>
   [[nodiscard]] constexpr auto create_table(Table table)
   {
-    return statement<create_table_t<Table>>{table};
+    if constexpr (constexpr auto check = check_create_table_arg<Table>(); check)
+    {
+      return statement<create_table_t<Table>>{table};
+    }
+    else
+    {
+      return ::sqlpp::bad_statement_t{check};
+    }
   }
 }  // namespace sqlpp

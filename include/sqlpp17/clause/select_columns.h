@@ -78,7 +78,6 @@ namespace sqlpp
   {
     return has_value(t._column)
                ? to_sql_string(connection, get_value(t._column))
-#warning : This name stuff here is quite ugly
                : std::string("NULL AS ") + to_sql_name(connection, name_tag_of_t<remove_optional_t<Column>>{});
   }
 
@@ -131,13 +130,14 @@ namespace sqlpp
     [[nodiscard]] auto _run(Connection& connection) const
     {
       using _result_handle_t = decltype(connection.select(Statement::of(this)));
-      if constexpr (is_row_result_v<_result_handle_t>)
+      if constexpr (has_result_row_v<_result_handle_t>)
       {
         return connection.select(Statement::of(this));
       }
       else
       {
-        return ::sqlpp::result_t<_result_row_t, _result_handle_t>{connection.select(Statement::of(this))};
+        return ::sqlpp::result_t<result_row_of_t<result_base>, _result_handle_t>{
+            connection.select(Statement::of(this))};
       }
     }
 
@@ -152,13 +152,7 @@ namespace sqlpp
     {
       return sizeof...(Columns);
     }
-
-#warning : Get rid of this, use result_row_of instead.
-    using _result_row_t = result_row_t<make_column_spec_t<Statement, Columns>...>;
   };
-
-  template <typename... Columns, typename Statement>
-  constexpr auto has_result_rows_v<result_base<select_columns_t<Columns...>, Statement>> = true;
 
   template <typename... Columns, typename Statement>
   struct result_row_of<result_base<select_columns_t<Columns...>, Statement>>

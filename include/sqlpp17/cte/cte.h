@@ -36,7 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace sqlpp
 {
   template <typename NameTag, typename Statement>
-  struct cte_t : cte_columns_t<cte_t<NameTag, Statement>, typename Statement::_result_row_t>
+  struct cte_t : cte_columns_t<cte_t<NameTag, Statement>, result_row_of_t<Statement>>
   {
     Statement _statement;
 

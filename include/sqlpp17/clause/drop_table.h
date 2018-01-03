@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/clause/from.h>
 #include <sqlpp17/clause/where.h>
 #include <sqlpp17/clause_fwd.h>
+#include <sqlpp17/to_sql_name.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrong.h>
 
@@ -49,33 +50,6 @@ namespace sqlpp
   template <typename Table>
   constexpr auto clause_tag<drop_table_t<Table>> = clause::drop_table{};
 
-#warning : Need to check this before running
-  /*
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_from_table_arg_is_table, "from_table() arg has to be a table");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_from_table_arg_no_read_only_table, "from_table() arg must not be read-only table");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_from_table_arg_no_required_columns,
-                              "from_table() arg must not depend on other tables");
-
-  template <typename T>
-  constexpr auto check_from_table_arg(const T&)
-  {
-    if constexpr (!is_table_v<T>)
-    {
-      return failed<assert_from_table_arg_is_table>{};
-    }
-    else if constexpr (is_read_only_v<T>)
-    {
-      return failed<assert_from_table_arg_no_read_only_table>{};
-    }
-    else if constexpr (!required_columns_of_v<T>.empty())
-    {
-      return failed<assert_from_table_arg_no_required_columns>{};
-    }
-    else
-      return succeeded{};
-  }
-
-  */
   template <typename Table, typename Statement>
   class clause_base<drop_table_t<Table>, Statement>
   {
@@ -115,12 +89,37 @@ namespace sqlpp
   template <typename DbConnection, typename Table, typename Statement>
   [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<drop_table_t<Table>, Statement>& t)
   {
-    return std::string("DROP TABLE IF EXISTS ") + to_sql_string(connection, t._table);
+    return std::string("DROP TABLE IF EXISTS ") + to_sql_name(connection, t._table);
+  }
+
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_drop_table_arg_is_table, "drop_table() arg has to be a table");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_drop_table_arg_no_read_only_table, "drop_table() arg must not be read-only table");
+
+  template <typename T>
+  constexpr auto check_drop_table_arg()
+  {
+    if constexpr (!is_table_v<T>)
+    {
+      return failed<assert_drop_table_arg_is_table>{};
+    }
+    else if constexpr (is_read_only_v<T>)
+    {
+      return failed<assert_drop_table_arg_no_read_only_table>{};
+    }
+    else
+      return succeeded{};
   }
 
   template <typename Table>
   [[nodiscard]] constexpr auto drop_table(Table table)
   {
-    return statement<drop_table_t<Table>>{table};
+    if constexpr (constexpr auto check = check_drop_table_arg<Table>(); check)
+    {
+      return statement<drop_table_t<Table>>{table};
+    }
+    else
+    {
+      return ::sqlpp::bad_statement_t{check};
+    }
   }
 }  // namespace sqlpp

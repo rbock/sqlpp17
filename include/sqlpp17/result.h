@@ -145,10 +145,4 @@ namespace sqlpp
     }
   };
 
-  template <typename Row, typename ResultHandle>
-  struct is_row_result<result_t<Row, ResultHandle>>
-  {
-    static constexpr auto value = true;
-  };
-
 }  // namespace sqlpp

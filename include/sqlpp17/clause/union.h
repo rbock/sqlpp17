@@ -79,8 +79,6 @@ namespace sqlpp
   class result_base<union_t<Flag, LeftSelect, RightSelect>, Statement>
   {
   public:
-    using _result_row_t = result_row_of_t<LeftSelect>;
-
     template <typename Connection>
     [[nodiscard]] auto _run(Connection& connection) const
     {
@@ -91,7 +89,7 @@ namespace sqlpp
   template <typename Flag, typename LeftSelect, typename RightSelect, typename Statement>
   struct result_row_of<result_base<union_t<Flag, LeftSelect, RightSelect>, Statement>>
   {
-    using type = typename result_base<union_t<Flag, LeftSelect, RightSelect>, Statement>::_result_row_t;
+    using type = result_row_of_t<LeftSelect>;
   };
 
   template <typename DbConnection, typename Flag, typename LeftSelect, typename RightSelect, typename Statement>
@@ -117,8 +115,7 @@ namespace sqlpp
     {
       return failed<assert_union_args_have_result_rows>{};
     }
-    else if constexpr (!result_rows_are_compatible_v<typename LeftSelect::_result_row_t,
-                                                     typename RightSelect::_result_row_t>)
+    else if constexpr (!result_rows_are_compatible_v<result_row_of_t<LeftSelect>, result_row_of_t<RightSelect>>)
     {
       return failed<assert_union_args_have_compatible_rows>{};
     }

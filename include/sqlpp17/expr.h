@@ -31,66 +31,97 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  template <typename T>
+  template <typename Expression>
   struct expr_t
   {
     template <typename Pattern>
     [[nodiscard]] constexpr auto like(Pattern pattern) const
     {
-      return ::sqlpp::like(t, pattern);
+      return ::sqlpp::like(_expr, pattern);
     }
 
     template <typename... Exprs>
     [[nodiscard]] constexpr auto in(Exprs... exprs) const
     {
-      return ::sqlpp::in(t, exprs...);
+      return ::sqlpp::in(_expr, exprs...);
     }
 
     template <typename... Exprs>
     [[nodiscard]] constexpr auto not_in(Exprs... exprs) const
     {
-      return ::sqlpp::not_in(t, exprs...);
+      return ::sqlpp::not_in(_expr, exprs...);
     }
 
     [[nodiscard]] constexpr auto is_null() const
     {
-      return ::sqlpp::is_null(t);
+      return ::sqlpp::is_null(_expr);
     }
 
     [[nodiscard]] constexpr auto is_not_null() const
     {
-      return ::sqlpp::is_not_null(t);
+      return ::sqlpp::is_not_null(_expr);
     }
 
     [[nodiscard]] constexpr auto asc() const
     {
-      return ::sqlpp::asc(t);
+      return ::sqlpp::asc(_expr);
     }
 
     [[nodiscard]] constexpr auto desc() const
     {
-      return ::sqlpp::desc(t);
+      return ::sqlpp::desc(_expr);
     }
 
     template <typename Alias>
     [[nodiscard]] constexpr auto as(const Alias& alias) const
     {
-      return ::sqlpp::as(t, alias);
+      return ::sqlpp::as(_expr, alias);
     }
 
-    T t;
+    Expression _expr;
   };
 
-#warning implement type traits
-#warning : also prevent alias to be wrapper in expression
-  template <typename T>
-  constexpr auto is_alias_v<expr_t<T>> = is_alias_v<T>;
-
-  template <typename T>
-  [[nodiscard]] auto expr(T t)
+  template <typename Expression>
+  struct value_type_of<expr_t<Expression>>
   {
-    return expr_t{t};
+    using type = value_type_of_t<Expression>;
+  };
+
+  template <typename DbConnection, typename Expression>
+  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const expr_t<Expression>& t)
+  {
+    return to_sql_string(connection, t._expr);
   }
-#warning implement to_sql_string
+
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_expr_arg_is_expression, "expr() arg must be a value expression");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_expr_arg_is_not_alias, "expr() first arg must not be an alias");
+
+  template <typename Expr>
+  constexpr auto check_expr_args()
+  {
+    if constexpr (not is_expression_v<Expr>)
+    {
+      return failed<assert_expr_arg_is_expression>{};
+    }
+    else if constexpr (is_alias_v<Expr>)
+    {
+      return failed<assert_expr_arg_is_not_alias>{};
+    }
+    else
+      return succeeded{};
+  }
+
+  template <typename Expression>
+  [[nodiscard]] auto expr(Expression expr)
+  {
+    if constexpr (constexpr auto check = check_expr_args<Expression>(); check)
+    {
+      return expr_t{expr};
+    }
+    else
+    {
+      return ::sqlpp::bad_statement_t{check};
+    }
+  }
 
 }  // namespace sqlpp
