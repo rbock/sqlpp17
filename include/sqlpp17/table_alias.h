@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016 - 2017, Roland Bock
+Copyright (c) 2016 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -34,11 +34,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
+#warning : It does not make sense to pass the full table as an argument to the columns, but the NameTag plus an type_id, that would be neat! Same for CTE.
   template <typename Table, typename NameTag, typename... ColumnSpecs>
   struct table_alias_t : public join_functions<table_alias_t<Table, NameTag, ColumnSpecs...>>,
                          public member_t<ColumnSpecs, column_t<NameTag, ColumnSpecs>>...
   {
     Table _table;
+  };
+
+  template <typename Table, typename NameTag, typename... ColumnSpecs>
+  struct nodes_of<table_alias_t<Table, NameTag, ColumnSpecs...>>
+  {
+    using type = type_vector<Table>;
   };
 
   template <typename Table, typename NameTag, typename... ColumnSpecs>

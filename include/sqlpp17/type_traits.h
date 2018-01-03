@@ -36,6 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/char_sequence.h>
 #include <sqlpp17/type_set.h>
+#include <sqlpp17/type_vector.h>
 #include <sqlpp17/wrong.h>
 
 namespace sqlpp
@@ -76,7 +77,13 @@ namespace sqlpp
   };
 
   template <typename T>
-  constexpr auto sub_expression_set_v = type_set();
+  struct nodes_of
+  {
+    using type = type_vector<>;
+  };
+
+  template <typename T>
+  using nodes_of_t = typename nodes_of<T>::type;
 
   template <typename T>
   constexpr auto is_aggregate_v = false;
@@ -91,7 +98,7 @@ namespace sqlpp
   constexpr auto can_be_null_v = can_be_null<T>::value;
 
   template <typename KnownAggregatesSet, typename... Ts>
-  constexpr auto recursive_is_aggregate(const type_set_t<Ts...>&)
+  constexpr auto recursive_is_aggregate(const type_vector<Ts...>&)
   {
     return (true && ... && recursive_is_aggregate<KnownAggregatesSet, Ts>());
   }
@@ -100,7 +107,7 @@ namespace sqlpp
   constexpr auto recursive_is_aggregate()
   {
     return (is_aggregate_v<T> || KnownAggregatesSet::template count<T>()) &&
-           recursive_is_aggregate<KnownAggregatesSet>(sub_expression_set_v<T>);
+           recursive_is_aggregate<KnownAggregatesSet>(nodes_of_t<T>{});
   }
 
   // constant values and type-erased values could be treated as both,
@@ -109,7 +116,7 @@ namespace sqlpp
   constexpr auto is_non_aggregate_v = false;
 
   template <typename KnownAggregatesSet, typename... Ts>
-  constexpr auto recursive_is_non_aggregate(const type_set_t<Ts...>&)
+  constexpr auto recursive_is_non_aggregate(const type_vector<Ts...>&)
   {
     return (true && ... && recursive_is_non_aggregate<KnownAggregatesSet, Ts>());
   }
@@ -118,7 +125,7 @@ namespace sqlpp
   constexpr auto recursive_is_non_aggregate()
   {
     return is_non_aggregate_v<T> && (KnownAggregatesSet::template count<T>() == 0) &&
-           recursive_is_non_aggregate<KnownAggregatesSet>(sub_expression_set_v<T>);
+           recursive_is_non_aggregate<KnownAggregatesSet>(nodes_of_t<T>{});
   }
 
   template <typename T>

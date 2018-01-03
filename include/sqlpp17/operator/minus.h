@@ -40,6 +40,12 @@ namespace sqlpp
   };
 
   template <typename L, typename R>
+  struct nodes_of<minus_t<L, R>>
+  {
+    using type = type_vector<L, R>;
+  };
+
+  template <typename L, typename R>
   constexpr auto operator-(L l, R r)
       -> std::enable_if_t<has_numeric_value_v<L> and has_numeric_value_v<R>, minus_t<L, R>>
   {

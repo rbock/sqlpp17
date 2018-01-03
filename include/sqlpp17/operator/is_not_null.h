@@ -38,6 +38,12 @@ namespace sqlpp
   };
 
   template <typename L>
+  struct nodes_of<is_not_null_t<L>>
+  {
+    using type = type_vector<L>;
+  };
+
+  template <typename L>
   constexpr auto is_not_null(L l) -> std::enable_if_t<has_boolean_value_v<L>, is_not_null_t<L>>
   {
     return is_not_null_t<L>{l};

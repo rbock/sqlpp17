@@ -49,6 +49,12 @@ namespace sqlpp
     std::tuple<Columns...> _columns;
   };
 
+  template <typename... Columns>
+  struct nodes_of<group_by_t<Columns...>>
+  {
+    using type = type_vector<Columns...>;
+  };
+
   template <typename Table>
   constexpr auto clause_tag<group_by_t<Table>> = clause::group_by{};
 

@@ -54,6 +54,12 @@ namespace sqlpp
   };
 
   template <typename... Assignments>
+  struct nodes_of<insert_values_t<Assignments...>>
+  {
+    using type = type_vector<Assignments...>;
+  };
+
+  template <typename... Assignments>
   constexpr auto clause_tag<insert_values_t<Assignments...>> = clause::insert_values{};
 
   template <typename Statement, typename... Assignments>
@@ -147,6 +153,12 @@ namespace sqlpp
   struct insert_multi_values_t
   {
     std::vector<std::tuple<Assignments...>> _rows;
+  };
+
+  template <typename... Assignments>
+  struct nodes_of<insert_multi_values_t<Assignments...>>
+  {
+    using type = type_vector<Assignments...>;
   };
 
   template <typename... Assignments>

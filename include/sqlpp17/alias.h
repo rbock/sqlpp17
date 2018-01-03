@@ -40,6 +40,12 @@ namespace sqlpp
   };
 
   template <typename Expression, typename NameTag>
+  struct nodes_of<alias_t<Expression, NameTag>>
+  {
+    using type = type_vector<Expression>;
+  };
+
+  template <typename Expression, typename NameTag>
   struct value_type_of<alias_t<Expression, NameTag>>
   {
     using type = value_type_of_t<Expression>;

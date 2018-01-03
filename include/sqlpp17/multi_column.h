@@ -74,6 +74,12 @@ namespace sqlpp
     }
   };
 
+  template <typename... Columns>
+  struct nodes_of<multi_column_t<Columns...>>
+  {
+    using type = type_vector<Columns...>;
+  };
+
   template <typename DbConnection, typename... Columns>
   [[nodiscard]] auto to_sql_string(const DbConnection& connection, const multi_column_t<Columns...>& t)
   {

@@ -60,6 +60,12 @@ namespace sqlpp
   };
 
   template <typename NameTag, typename Statement>
+  struct nodes_of<cte_t<NameTag, Statement>>
+  {
+    using type = type_vector<Statement>;
+  };
+
+  template <typename NameTag, typename Statement>
   constexpr auto is_table_v<cte_t<NameTag, Statement>> = true;
 
   template <typename NameTag, typename Statement>

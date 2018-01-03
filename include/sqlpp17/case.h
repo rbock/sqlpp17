@@ -39,6 +39,12 @@ namespace sqlpp
     Else _else;                    // The final else
   };
 
+  template <typename CaseWhenThen, typename Else>
+  struct nodes_of<case_when_then_else_t<CaseWhenThen, Else>>
+  {
+    using type = type_vector<CaseWhenThen, Else>;
+  };
+
   template <typename Expr>
   struct then_t
   {
@@ -52,6 +58,12 @@ namespace sqlpp
     Then _then;
   };
 
+  template <typename When, typename Then>
+  struct nodes_of<when_then_t<When, Then>>
+  {
+    using type = type_vector<When, Then>;
+  };
+
   template <typename... WhenThen>
   struct case_when_then_t
   {
@@ -61,8 +73,8 @@ namespace sqlpp
     [[nodiscard]] constexpr auto when(When when, then_t<Then> then) const
     {
 #warning : Checks missing
-      auto wt = when_then_t<When, Then>{when, then._expr};
-      return case_when_then_t<WhenThen..., decltype(wt)>{std::tuple_cat(_when_thens, std::tuple{wt})};
+      auto _wt = when_then_t<When, Then>{when, then._expr};
+      return case_when_then_t<WhenThen..., decltype(_wt)>{std::tuple_cat(_when_thens, std::tuple{_wt})};
     }
 
     template <typename Expr>
@@ -73,17 +85,17 @@ namespace sqlpp
     }
   };
 
+  template <typename... WhenThen>
+  struct nodes_of<case_when_then_t<WhenThen...>>
+  {
+    using type = type_vector<WhenThen...>;
+  };
+
   template <typename DbConnection, typename When, typename Then>
   [[nodiscard]] auto to_sql_string(const DbConnection& connection, const when_then_t<When, Then>& t)
   {
     return std::string{" WHEN "} + to_sql_string(connection, embrace(t._when)) + " THEN " +
            to_sql_string(connection, embrace(t._then));
-  }
-
-  template <typename DbConnection, typename... T, std::size_t... Is>
-  void tuple_print(const DbConnection& connection, const std::tuple<T...>& t, std::integer_sequence<std::size_t, Is...>)
-  {
-    (connection << ... << std::get<Is>(t));
   }
 
   template <typename DbConnection, typename... WhenThen>

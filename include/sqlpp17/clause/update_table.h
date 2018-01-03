@@ -47,6 +47,12 @@ namespace sqlpp
   };
 
   template <typename Table>
+  struct nodes_of<update_table_t<Table>>
+  {
+    using type = type_vector<Table>;
+  };
+
+  template <typename Table>
   constexpr auto clause_tag<update_table_t<Table>> = clause::update_table{};
 
   template <typename Table, typename Statement>

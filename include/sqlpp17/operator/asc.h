@@ -45,6 +45,12 @@ namespace sqlpp
   };
 
   template <typename L>
+  struct nodes_of<sort_order_t<L>>
+  {
+    using type = type_vector<L>;
+  };
+
+  template <typename L>
   constexpr auto asc(L l) -> std::enable_if_t<has_boolean_value_v<L>, sort_order_t<L>>
   {
     return sort_order_t<L>{l, sort_order::asc};

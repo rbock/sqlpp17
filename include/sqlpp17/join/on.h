@@ -37,6 +37,12 @@ namespace sqlpp
     Expression _expression;
   };
 
+  template <typename Expression>
+  struct nodes_of<on_t<Expression>>
+  {
+    using type = type_vector<Expression>;
+  };
+
   template <typename DbConnection, typename Expression>
   [[nodiscard]] auto to_sql_string(const DbConnection& connection, const on_t<Expression>& t)
   {

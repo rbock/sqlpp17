@@ -46,6 +46,12 @@ namespace sqlpp
     Condition _condition;
   };
 
+  template <typename Condition>
+  struct nodes_of<where_t<Condition>>
+  {
+    using type = type_vector<Condition>;
+  };
+
   template <typename Table>
   constexpr auto clause_tag<where_t<Table>> = clause::where{};
 

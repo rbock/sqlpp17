@@ -45,6 +45,13 @@ namespace sqlpp
   template <typename Table>
   struct drop_table_t
   {
+    Table _table;
+  };
+
+  template <typename Table>
+  struct nodes_of<drop_table_t<Table>>
+  {
+    using type = type_vector<Table>;
   };
 
   template <typename Table>

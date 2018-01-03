@@ -49,6 +49,12 @@ namespace sqlpp
     std::tuple<Flags...> _flags;
   };
 
+  template <typename... Flags>
+  struct nodes_of<select_flags_t<Flags...>>
+  {
+    using type = type_vector<Flags...>;
+  };
+
   template <typename Table>
   constexpr auto clause_tag<select_flags_t<Table>> = clause::select_flags{};
 

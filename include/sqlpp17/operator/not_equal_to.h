@@ -40,6 +40,12 @@ namespace sqlpp
     R r;
   };
 
+  template <typename L, typename R>
+  struct nodes_of<not_equal_to_t<L, R>>
+  {
+    using type = type_vector<L, R>;
+  };
+
   template <typename L,
             typename R,
             typename = decltype(std::declval<value_type_of_t<L>&>() != std::declval<value_type_of_t<R>&>())>

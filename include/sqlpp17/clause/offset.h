@@ -48,6 +48,12 @@ namespace sqlpp
   };
 
   template <typename Number>
+  struct nodes_of<offset_t<Number>>
+  {
+    using type = type_vector<Number>;
+  };
+
+  template <typename Number>
   constexpr auto clause_tag<offset_t<Number>> = clause::offset{};
 
   template <typename Number, typename Statement>

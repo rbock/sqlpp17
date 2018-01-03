@@ -39,6 +39,12 @@ namespace sqlpp
   };
 
   template <typename L, typename R>
+  struct nodes_of<like_t<L, R>>
+  {
+    using type = type_vector<L, R>;
+  };
+
+  template <typename L, typename R>
   constexpr auto like(L l, R r) -> std::enable_if_t<has_text_value_v<L> and has_text_value_v<R>, like_t<L, R>>
   {
     return like_t<L, R>{l, r};

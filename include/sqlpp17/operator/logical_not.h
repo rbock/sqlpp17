@@ -38,6 +38,12 @@ namespace sqlpp
   };
 
   template <typename L>
+  struct nodes_of<logical_not_t<L>>
+  {
+    using type = type_vector<L>;
+  };
+
+  template <typename L>
   constexpr auto operator!(L l) -> std::enable_if_t<has_boolean_value_v<L>, logical_not_t<L>>
   {
     return logical_not_t<L>{l};

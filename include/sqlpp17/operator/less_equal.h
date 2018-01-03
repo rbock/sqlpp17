@@ -39,6 +39,12 @@ namespace sqlpp
   };
 
   template <typename L, typename R>
+  struct nodes_of<less_equal_t<L, R>>
+  {
+    using type = type_vector<L, R>;
+  };
+
+  template <typename L, typename R>
   constexpr auto operator<=(L l, R r) -> std::enable_if_t<are_values_comparable_v<L, R>, less_equal_t<L, R>>
   {
     return less_equal_t<L, R>{l, r};

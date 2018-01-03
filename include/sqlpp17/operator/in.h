@@ -39,6 +39,12 @@ namespace sqlpp
   };
 
   template <typename L, typename... Args>
+  struct nodes_of<in_t<L, Args...>>
+  {
+    using type = type_vector<L, Args...>;
+  };
+
+  template <typename L, typename... Args>
   constexpr auto in(L l, Args... args)
       -> std::enable_if_t<((sizeof...(Args) > 0) and ... and are_values_comparable_v<L, Args>), in_t<L, Args...>>
   {

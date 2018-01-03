@@ -180,6 +180,12 @@ namespace sqlpp
   };
 
   template <typename... Clauses>
+  struct nodes_of<statement<Clauses...>>
+  {
+    using type = type_vector<Clauses...>;
+  };
+
+  template <typename... Clauses>
   constexpr auto is_statement_v<statement<Clauses...>> = true;
 
   template <typename... Clauses>

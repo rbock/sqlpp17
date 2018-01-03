@@ -47,6 +47,12 @@ namespace sqlpp
     Condition _condition;
   };
 
+  template <typename Condition>
+  struct nodes_of<having_t<Condition>>
+  {
+    using type = type_vector<Condition>;
+  };
+
   template <typename Table>
   constexpr auto clause_tag<having_t<Table>> = clause::having{};
 

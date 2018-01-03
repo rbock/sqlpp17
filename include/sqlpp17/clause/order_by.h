@@ -49,7 +49,13 @@ namespace sqlpp
     std::tuple<Columns...> _columns;
   };
   template <typename... Columns>
-  order_by_t(std::initializer_list<std::tuple<Columns...>>)->order_by_t<Columns...>;
+  order_by_t(std::tuple<Columns...>)->order_by_t<Columns...>;
+
+  template <typename... Columns>
+  struct nodes_of<order_by_t<Columns...>>
+  {
+    using type = type_vector<Columns...>;
+  };
 
   template <typename Table>
   constexpr auto clause_tag<order_by_t<Table>> = clause::order_by{};

@@ -47,7 +47,6 @@ namespace sqlpp
   template <>
   constexpr auto clause_tag<erase_t> = clause::erase{};
 
-#warning : Need to check this before running
   /*
   SQLPP_WRAPPED_STATIC_ASSERT(assert_from_table_arg_is_table, "from_table() arg has to be a table");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_from_table_arg_no_read_only_table, "from_table() arg must not be read-only table");
@@ -72,7 +71,6 @@ namespace sqlpp
     else
       return succeeded{};
   }
-
   */
   template <typename Statement>
   class clause_base<erase_t, Statement>
@@ -96,6 +94,7 @@ namespace sqlpp
     template <typename Connection>
     [[nodiscard]] auto _run(Connection& connection) const
     {
+#warning : Need to perform checks here, see above (since we use the same "from" as select and have stricter rules here)
       return connection.erase(Statement::of(this));
     }
   };

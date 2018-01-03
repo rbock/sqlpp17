@@ -55,6 +55,12 @@ namespace sqlpp
   };
 
   template <typename... Columns>
+  struct nodes_of<select_columns_t<Columns...>>
+  {
+    using type = type_vector<Columns...>;
+  };
+
+  template <typename... Columns>
   constexpr auto clause_tag<select_columns_t<Columns...>> = clause::select_columns{};
 
   template <typename Column>

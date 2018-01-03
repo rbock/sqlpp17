@@ -64,6 +64,12 @@ namespace sqlpp
   };
 
   template <typename NameTag, typename Statement>
+  struct nodes_of<recursive_cte_t<NameTag, Statement>>
+  {
+    using type = type_vector<Statement>;
+  };
+
+  template <typename NameTag, typename Statement>
   struct name_tag_of<recursive_cte_t<NameTag, Statement>>
   {
     using type = NameTag;

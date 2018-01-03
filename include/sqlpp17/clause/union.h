@@ -51,6 +51,12 @@ namespace sqlpp
   };
 
   template <typename Flag, typename LeftSelect, typename RightSelect>
+  struct nodes_of<union_t<Flag, LeftSelect, RightSelect>>
+  {
+    using type = type_vector<LeftSelect, RightSelect>;
+  };
+
+  template <typename Flag, typename LeftSelect, typename RightSelect>
   constexpr auto is_result_clause_v<union_t<Flag, LeftSelect, RightSelect>> = true;
 
   template <typename Flag, typename LeftSelect, typename RightSelect>

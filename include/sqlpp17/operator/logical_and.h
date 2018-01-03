@@ -40,6 +40,12 @@ namespace sqlpp
   };
 
   template <typename L, typename R>
+  struct nodes_of<logical_and_t<L, R>>
+  {
+    using type = type_vector<L, R>;
+  };
+
+  template <typename L, typename R>
   constexpr auto operator&&(L l, R r)
       -> std::enable_if_t<has_boolean_value_v<L> and has_boolean_value_v<R>, logical_and_t<L, R>>
   {

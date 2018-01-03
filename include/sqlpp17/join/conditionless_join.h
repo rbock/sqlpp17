@@ -86,6 +86,12 @@ namespace sqlpp
   };
 
   template <typename Lhs, typename JoinType, typename Rhs>
+  struct nodes_of<conditionless_join_t<Lhs, JoinType, Rhs>>
+  {
+    using type = type_vector<Lhs, Rhs>;
+  };
+
+  template <typename Lhs, typename JoinType, typename Rhs>
   constexpr auto is_conditionless_join_v<conditionless_join_t<Lhs, JoinType, Rhs>> = true;
 
   template <typename Lhs, typename JoinType, typename Rhs>

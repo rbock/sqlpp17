@@ -38,6 +38,12 @@ namespace sqlpp
   };
 
   template <typename ValueType, typename Column>
+  struct nodes_of<result_cast_t<ValueType, Column>>
+  {
+    using type = type_vector<Column>;
+  };
+
+  template <typename ValueType, typename Column>
   struct value_type_of<result_cast_t<ValueType, Column>>
   {
     using type = ValueType;

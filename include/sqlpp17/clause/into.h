@@ -48,6 +48,12 @@ namespace sqlpp
   };
 
   template <typename Table>
+  struct nodes_of<into_t<Table>>
+  {
+    using type = type_vector<Table>;
+  };
+
+  template <typename Table>
   constexpr auto clause_tag<into_t<Table>> = clause::into{};
 
   template <typename Table, typename Statement>

@@ -38,6 +38,12 @@ namespace sqlpp
   };
 
   template <typename L>
+  struct nodes_of<negate_t<L>>
+  {
+    using type = type_vector<L>;
+  };
+
+  template <typename L>
   constexpr auto operator-(L l) -> std::enable_if_t<has_numeric_value_v<L>, negate_t<L>>
   {
     return negate_t<L>{l};

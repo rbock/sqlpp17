@@ -39,6 +39,12 @@ namespace sqlpp
   };
 
   template <typename T>
+  struct nodes_of<value_t<T>>
+  {
+    using type = type_vector<T>;
+  };
+
+  template <typename T>
   struct value_type_of<value_t<T>>
   {
     using type = T;

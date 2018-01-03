@@ -55,6 +55,12 @@ namespace sqlpp
   };
 
   template <with_mode Mode, typename... CommonTableExpressions>
+  struct nodes_of<with_t<Mode, CommonTableExpressions...>>
+  {
+    using type = type_vector<CommonTableExpressions...>;
+  };
+
+  template <with_mode Mode, typename... CommonTableExpressions>
   constexpr auto clause_tag<with_t<Mode, CommonTableExpressions...>> = clause::with{};
 
   template <with_mode Mode, typename... CommonTableExpressions, typename Statement>

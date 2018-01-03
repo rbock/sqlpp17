@@ -50,6 +50,12 @@ namespace sqlpp
   };
 
   template <typename Number>
+  struct nodes_of<limit_t<Number>>
+  {
+    using type = type_vector<Number>;
+  };
+
+  template <typename Number>
   constexpr auto clause_tag<limit_t<Number>> = clause::limit{};
 
   template <typename Number, typename Statement>

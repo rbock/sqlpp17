@@ -48,6 +48,12 @@ namespace sqlpp
   };
 
   template <typename Table>
+  struct nodes_of<from_t<Table>>
+  {
+    using type = type_vector<Table>;
+  };
+
+  template <typename Table>
   constexpr auto clause_tag<from_t<Table>> = clause::from{};
 
   template <typename Table, typename Statement>

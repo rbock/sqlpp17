@@ -44,6 +44,12 @@ namespace sqlpp
     Condition _condition;
   };
 
+  template <typename Lhs, typename JoinType, typename Rhs, typename Condition>
+  struct nodes_of<join_t<Lhs, JoinType, Rhs, Condition>>
+  {
+    using type = type_vector<Lhs, Rhs, Condition>;
+  };
+
   template <typename DbConnection, typename Lhs, typename JoinType, typename Rhs, typename Condition>
   [[nodiscard]] auto to_sql_string(const DbConnection& connection, const join_t<Lhs, JoinType, Rhs, Condition>& t)
   {

@@ -39,6 +39,12 @@ namespace sqlpp
   };
 
   template <typename L, typename R>
+  struct nodes_of<assign_t<L, R>>
+  {
+    using type = type_vector<L, R>;
+  };
+
+  template <typename L, typename R>
   constexpr auto assign(L column, R value) -> std::enable_if_t<are_values_comparable_v<L, R>, assign_t<L, R>>
   {
     return assign_t<L, R>{column, value};

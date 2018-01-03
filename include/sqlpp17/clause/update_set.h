@@ -50,6 +50,12 @@ namespace sqlpp
   };
 
   template <typename... Assignments>
+  struct nodes_of<update_set_t<Assignments...>>
+  {
+    using type = type_vector<Assignments...>;
+  };
+
+  template <typename... Assignments>
   constexpr auto clause_tag<update_set_t<Assignments...>> = clause::update_set{};
 
   template <typename... Assignments, typename Statement>

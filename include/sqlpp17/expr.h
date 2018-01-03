@@ -82,6 +82,12 @@ namespace sqlpp
   };
 
   template <typename Expression>
+  struct nodes_of<expr_t<Expression>>
+  {
+    using type = type_vector<Expression>;
+  };
+
+  template <typename Expression>
   struct value_type_of<expr_t<Expression>>
   {
     using type = value_type_of_t<Expression>;

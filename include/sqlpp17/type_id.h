@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,42 +26,35 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <type_traits>
-#include <sqlpp17/to_sql_string.h>
+#include <cstddef>
+#include <cstdint>
 
 namespace sqlpp
 {
-  template <typename L, typename R>
-  struct less_t
+  // Adapted from https://en.wikipedia.org/wiki/Universal_hashing#Hashing_strings
+  template <std::size_t N>
+  constexpr auto djb2_hash(const char (&input)[N]) -> std::uint32_t
   {
-    L l;
-    R r;
-  };
+    if (input[N - 1] != '\0')
+      throw "This is unexpected...";
 
-  template <typename L, typename R>
-  struct nodes_of<less_t<L, R>>
-  {
-    using type = type_vector<L, R>;
-  };
-
-  template <typename L, typename R>
-  constexpr auto operator<(L l, R r) -> std::enable_if_t<are_values_comparable_v<L, R>, less_t<L, R>>
-  {
-    return less_t<L, R>{l, r};
+    std::size_t _hash = 5381;
+    for (std::size_t index = 0; index < N - 1; ++index)
+    {
+      _hash = _hash * 33 + input[index];
+    }
+    return _hash;
   }
 
-  template <typename L, typename R>
-  struct value_type_of<less_t<L, R>>
+  // From https://stackoverflow.com/a/35943472/2173029
+  template <typename T>
+  constexpr auto type_id()
   {
-    using type = bool;
-  };
-
-  template <typename L, typename R>
-  constexpr auto requires_braces_v<less_t<L, R>> = true;
-
-  template <typename DbConnection, typename L, typename R>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const less_t<L, R>& t)
-  {
-    return to_sql_string(connection, embrace(t.l)) + " < " + to_sql_string(connection, embrace(t.r));
+#ifdef _MSC_VER
+    return djb2_hash(__FUNCSIG__);
+#else
+    return djb2_hash(__PRETTY_FUNCTION__);
+#endif
   }
 }  // namespace sqlpp
+

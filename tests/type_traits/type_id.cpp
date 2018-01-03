@@ -1,7 +1,5 @@
-#pragma once
-
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,42 +24,51 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <type_traits>
-#include <sqlpp17/to_sql_string.h>
+#include <string>
+#include <string_view>
+#include <utility>
 
-namespace sqlpp
+#include <sqlpp17/type_id.h>
+
+#include <tables/TabDepartment.h>
+#include <tables/TabEmpty.h>
+#include <tables/TabPerson.h>
+
+template <typename T1, typename T2>
+auto compare_two_ids()
 {
-  template <typename L, typename R>
-  struct less_t
+  if constexpr (std::is_same_v<T1, T2>)
   {
-    L l;
-    R r;
-  };
-
-  template <typename L, typename R>
-  struct nodes_of<less_t<L, R>>
-  {
-    using type = type_vector<L, R>;
-  };
-
-  template <typename L, typename R>
-  constexpr auto operator<(L l, R r) -> std::enable_if_t<are_values_comparable_v<L, R>, less_t<L, R>>
-  {
-    return less_t<L, R>{l, r};
+    static_assert(::sqlpp::type_id<T1>() == ::sqlpp::type_id<T2>());
   }
+  else
+    static_assert(::sqlpp::type_id<T1>() != ::sqlpp::type_id<T2>());
+}
 
-  template <typename L, typename R>
-  struct value_type_of<less_t<L, R>>
-  {
-    using type = bool;
-  };
+template <typename T, typename... Rest>
+auto compare_one_to_all_ids()
+{
+  (compare_two_ids<T, Rest>(), ...);
+}
 
-  template <typename L, typename R>
-  constexpr auto requires_braces_v<less_t<L, R>> = true;
+template <typename... Ts>
+void compare_all_ids()
+{
+  (compare_one_to_all_ids<Ts, Ts...>(), ...);
+}
 
-  template <typename DbConnection, typename L, typename R>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const less_t<L, R>& t)
-  {
-    return to_sql_string(connection, embrace(t.l)) + " < " + to_sql_string(connection, embrace(t.r));
-  }
-}  // namespace sqlpp
+template <typename... Ts>
+void compare_all_ids(Ts...)
+{
+  (compare_one_to_all_ids<Ts, Ts...>(), ...);
+}
+
+template <typename...>
+struct X;
+
+int main()
+{
+  compare_all_ids<bool, char, int, float, long, std::string, std::string_view, X<>>();
+  compare_all_ids(test::tabDepartment, test::tabEmpty, test::tabPerson);
+}
+
