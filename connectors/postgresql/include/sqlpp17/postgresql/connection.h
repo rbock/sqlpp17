@@ -33,7 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/statement.h>
 
 #include <sqlpp17/postgresql/char_result.h>
-#include <sqlpp17/postgresql/clauses.h>
+#include <sqlpp17/postgresql/clause.h>
 #include <sqlpp17/postgresql/connection_config.h>
 #include <sqlpp17/postgresql/prepared_statement.h>
 

@@ -52,6 +52,14 @@ namespace test
       static constexpr auto default_value = ::sqlpp::none_t{};
     };
 
+    struct Division : public ::sqlpp::spec_base
+    {
+      SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(division, division);
+      using value_type = ::sqlpp::varchar<255>;
+      static constexpr auto can_be_null = false;
+      static constexpr auto default_value = std::string_view("engineering");
+    };
+
     struct _ : public ::sqlpp::spec_base
     {
       SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(tab_department, tab_department);
@@ -59,6 +67,7 @@ namespace test
     };
   }  // namespace TabDepartment_
 
-  inline constexpr auto tabDepartment = sqlpp::table_t<TabDepartment_::_, TabDepartment_::Id, TabDepartment_::Name>{};
+  inline constexpr auto tabDepartment =
+      sqlpp::table_t<TabDepartment_::_, TabDepartment_::Id, TabDepartment_::Name, TabDepartment_::Division>{};
 
 }  // namespace test

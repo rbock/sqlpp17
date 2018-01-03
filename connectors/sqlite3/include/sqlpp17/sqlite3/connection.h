@@ -34,7 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/result.h>
 #include <sqlpp17/statement.h>
 
-#include <sqlpp17/sqlite3/clauses.h>
+#include <sqlpp17/sqlite3/clause.h>
 #include <sqlpp17/sqlite3/connection_config.h>
 #include <sqlpp17/sqlite3/prepared_statement.h>
 #include <sqlpp17/sqlite3/prepared_statement_result.h>

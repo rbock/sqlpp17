@@ -33,12 +33,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/data_types.h>
 #include <sqlpp17/table.h>
 
-namespace sqlpp::mysql
+namespace sqlpp::postgresql
 {
   class connection_t;
 }
 
-namespace sqlpp::mysql::detail
+namespace sqlpp::postgresql::detail
 {
   template <typename ValueType>
   [[nodiscard]] auto value_type_to_sql_string(const ValueType&)
@@ -58,33 +58,52 @@ namespace sqlpp::mysql::detail
   }
 
   template <typename ColumnSpec>
-  [[nodiscard]] auto to_sql_column_spec_string(const mysql::connection_t& connection, const ColumnSpec& columnSpec)
+  [[nodiscard]] auto to_sql_column_spec_string(const postgresql::connection_t& connection, const ColumnSpec& columnSpec)
   {
-    auto ret = to_sql_name(connection, columnSpec) + value_type_to_sql_string(typename ColumnSpec::value_type{});
+    auto ret = to_sql_name(connection, columnSpec);
 
-    if constexpr (!ColumnSpec::can_be_null)
+    if constexpr (std::is_same_v<std::decay_t<decltype(columnSpec.default_value)>, ::sqlpp::auto_increment_t>)
     {
-      ret += " NOT NULL";
-    }
-
-    if constexpr (std::is_same_v<std::decay_t<decltype(columnSpec.default_value)>, ::sqlpp::none_t>)
-    {
-    }
-    else if constexpr (std::is_same_v<std::decay_t<decltype(columnSpec.default_value)>, ::sqlpp::auto_increment_t>)
-    {
-      ret += " AUTO_INCREMENT";
+      if constexpr (std::is_same_v<typename ColumnSpec::value_type, int16_t>)
+      {
+        ret += " SMALLSERIAL";
+      }
+      else if constexpr (std::is_same_v<typename ColumnSpec::value_type, int32_t>)
+      {
+        ret += " SERIAL";
+      }
+      else if constexpr (std::is_same_v<typename ColumnSpec::value_type, int64_t>)
+      {
+        ret += " BIGSERIAL";
+      }
+      else
+      {
+        static_assert(::sqlpp::wrong<ColumnSpec>, "Unexpected type for auto increment");
+      }
     }
     else
     {
-#warning need to implement default values
-      // ret += " DEFAULT=" + to_sql_string(connection, columnSpec.default_value);
+      ret += value_type_to_sql_string(typename ColumnSpec::value_type{});
+
+      if constexpr (!ColumnSpec::can_be_null)
+      {
+        ret += " NOT NULL";
+      }
+
+      if constexpr (std::is_same_v<std::decay_t<decltype(columnSpec.default_value)>, ::sqlpp::none_t>)
+      {
+      }
+      else
+      {
+        ret += " DEFAULT " + to_sql_string(connection, columnSpec.default_value);
+      }
     }
 
     return ret;
   }
 
   template <typename TableSpec, typename... ColumnSpecs>
-  [[nodiscard]] auto to_sql_create_columns_string(const mysql::connection_t& connection,
+  [[nodiscard]] auto to_sql_create_columns_string(const postgresql::connection_t& connection,
                                                   const std::tuple<column_t<TableSpec, ColumnSpecs>...>& t)
   {
     struct
@@ -108,7 +127,7 @@ namespace sqlpp::mysql::detail
   }
 
   template <typename TableSpec, typename... ColumnSpecs>
-  [[nodiscard]] auto to_sql_primary_key(const mysql::connection_t& connection,
+  [[nodiscard]] auto to_sql_primary_key(const postgresql::connection_t& connection,
                                         const ::sqlpp::table_t<TableSpec, ColumnSpecs...>& t)
   {
     using _primary_key = typename TableSpec::primary_key;
@@ -121,18 +140,18 @@ namespace sqlpp::mysql::detail
       return ", PRIMARY KEY (" + to_sql_name(connection, _primary_key{}) + ")";
     }
   }
-}  // namespace sqlpp::mysql::detail
+}  // namespace sqlpp::postgresql::detail
 
 namespace sqlpp
 {
   template <typename Table, typename Statement>
-  [[nodiscard]] auto to_sql_string(const mysql::connection_t& connection,
+  [[nodiscard]] auto to_sql_string(const postgresql::connection_t& connection,
                                    const clause_base<create_table_t<Table>, Statement>& t)
   {
     auto ret = std::string{"CREATE TABLE "} + to_sql_string(connection, t._table);
     ret += "(";
-    ret += ::sqlpp::mysql::detail::to_sql_create_columns_string(connection, column_tuple_of(t._table));
-    ret += ::sqlpp::mysql::detail::to_sql_primary_key(connection, t._table);
+    ret += ::sqlpp::postgresql::detail::to_sql_create_columns_string(connection, column_tuple_of(t._table));
+    ret += ::sqlpp::postgresql::detail::to_sql_primary_key(connection, t._table);
     ret += ")";
 
     return ret;

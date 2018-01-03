@@ -26,4 +26,5 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/sqlite3/clauses/create_table.h>
+#include <sqlpp17/postgresql/clause/create_table.h>
+

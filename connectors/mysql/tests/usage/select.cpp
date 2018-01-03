@@ -79,7 +79,7 @@ int main()
 
     for (const auto& row : db(sqlpp::select(all_of(test::tabDepartment)).from(test::tabDepartment).unconditionally()))
     {
-      std::cout << row.id << ", " << row.name.value_or("NULL") << ", " << row.division.value_or("NULL") << std::endl;
+      std::cout << row.id << ", " << row.name.value_or("NULL") << ", " << row.division << std::endl;
     }
   }
   catch (const std::exception& e)

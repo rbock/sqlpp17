@@ -56,8 +56,8 @@ namespace test
     {
       SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(division, division);
       using value_type = ::sqlpp::varchar<255>;
-      static constexpr auto can_be_null = true;
-      static constexpr auto default_value = ::sqlpp::none_t{};
+      static constexpr auto can_be_null = false;
+      static constexpr auto default_value = std::string_view("engineering");
     };
 
     struct _ : public ::sqlpp::spec_base

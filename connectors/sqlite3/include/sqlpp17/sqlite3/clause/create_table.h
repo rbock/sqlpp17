@@ -82,8 +82,7 @@ namespace sqlpp::sqlite3::detail
     }
     else
     {
-#warning need to implement default values
-      // ret += " DEFAULT=" + to_sql_string(connection, columnSpec.default_value);
+      ret += " DEFAULT " + to_sql_string(connection, columnSpec.default_value);
     }
 
     return ret;
