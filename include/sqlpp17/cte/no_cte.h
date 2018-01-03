@@ -78,25 +78,31 @@ namespace sqlpp
     }
   };
 
+  SQLPP_WRAPPED_STATIC_ASSERT(
+      assert_cte_arg_is_name_tag_or_similar,
+      "cte() arg must be a named expression (e.g. column, table), or a column/table spec, or a name tag");
+
+  template <typename Tag>
+  constexpr auto check_cte_args()
+  {
+    if constexpr (std::is_same_v<name_tag_of_t<Tag>, none_t>)
+    {
+      return failed<assert_cte_arg_is_name_tag_or_similar>{};
+    }
+    else
+      return succeeded{};
+  }
+
   template <typename NamedTypeOrTag>
   [[nodiscard]] constexpr auto cte([[maybe_unused]] NamedTypeOrTag)
   {
-    if constexpr (std::is_base_of_v<::sqlpp::spec_base, NamedTypeOrTag>)
-    {
-      return cte_alias_t<typename NamedTypeOrTag::_sqlpp_name_tag>{};
-    }
-    else if constexpr (std::is_base_of_v<::sqlpp::name_tag_base, NamedTypeOrTag>)
-    {
-      return cte_alias_t<NamedTypeOrTag>{};
-    }
-    else if constexpr (not std::is_same_v<name_tag_of_t<NamedTypeOrTag>, none_t>)
+    if constexpr (constexpr auto check = check_cte_args<NamedTypeOrTag>(); check)
     {
       return cte_alias_t<name_tag_of_t<NamedTypeOrTag>>{};
     }
     else
     {
-      static_assert(wrong<NamedTypeOrTag>,
-                    "cte() arg must be a named expression (e.g. column, table), or a column/table spec, or a name tag");
+      return ::sqlpp::bad_statement_t{check};
     }
   }
 }  // namespace sqlpp

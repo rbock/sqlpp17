@@ -316,7 +316,7 @@ namespace sqlpp
     using type = none_t;
   };
 
-  template <typename T, typename Enable = void>
+  template <typename T>
   using value_type_of_t = typename value_type_of<T>::type;
 
   struct no_value_t
@@ -599,10 +599,30 @@ namespace sqlpp
   template <typename T>
   using cpp_type_t = typename cpp_type<T>::type;
 
+  namespace detail
+  {
+    template <typename T>
+    auto get_name_tag_of()
+    {
+      if constexpr (std::is_base_of_v<::sqlpp::name_tag_base, T>)
+      {
+        return T{};
+      }
+      else if constexpr (std::is_base_of_v<::sqlpp::spec_base, T>)
+      {
+        return typename T::_sqlpp_name_tag{};
+      }
+      else
+      {
+        return none_t{};
+      }
+    }
+  }  // namespace detail
+
   template <typename T>
   struct name_tag_of
   {
-    using type = none_t;
+    using type = decltype(detail::get_name_tag_of<T>());
   };
 
   template <typename T>

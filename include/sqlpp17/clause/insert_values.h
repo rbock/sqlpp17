@@ -193,7 +193,6 @@ namespace sqlpp
     {
       if (static_cast<const insert_multi_values_t<Assignments...>&>(Statement::of(this))._rows.empty())
       {
-#warning : Maybe return a thing that returns 0 upon run()
         throw ::sqlpp::exception("Cannot prepare zero-line insert");
       }
       else

@@ -35,15 +35,7 @@ namespace sqlpp
   template <typename DbConnection, typename Object>
   [[nodiscard]] auto to_sql_name(const DbConnection& connection, const Object& object) -> std::string
   {
-    if constexpr (std::is_base_of_v<::sqlpp::spec_base, Object>)
-    {
-      return std::string(Object::_sqlpp_name_tag::name);
-    }
-    else if constexpr (std::is_base_of_v<::sqlpp::name_tag_base, Object>)
-    {
-      return std::string(Object::name);
-    }
-    else if constexpr (not std::is_same_v<name_tag_of_t<Object>, none_t>)
+    if constexpr (not std::is_same_v<name_tag_of_t<Object>, none_t>)
     {
       return name_tag_of_t<Object>::name;
     }
