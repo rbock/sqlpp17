@@ -37,7 +37,7 @@ namespace sqlpp
   {
     if constexpr (not std::is_same_v<name_tag_of_t<Object>, none_t>)
     {
-      return name_tag_of_t<Object>::name;
+      return std::string(name_tag_of_t<Object>::name);
     }
     else
     {

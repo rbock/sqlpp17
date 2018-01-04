@@ -26,22 +26,17 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <cstddef>
-#include <cstdint>
+#include <string_view>
 
 namespace sqlpp
 {
-  // Adapted from https://en.wikipedia.org/wiki/Universal_hashing#Hashing_strings
-  template <std::size_t N>
-  constexpr auto djb2_hash(const char (&input)[N]) -> std::uint32_t
+  // From https://en.wikipedia.org/wiki/Universal_hashing#Hashing_strings
+  constexpr auto djb2_hash(const std::string_view& input) -> std::uint32_t
   {
-    if (input[N - 1] != '\0')
-      throw "This is unexpected...";
-
-    std::size_t _hash = 5381;
-    for (std::size_t index = 0; index < N - 1; ++index)
+    std::uint32_t _hash = 5381;
+    for (auto c : input)
     {
-      _hash = _hash * 33 + input[index];
+      _hash = _hash * 33 + c;
     }
     return _hash;
   }
@@ -51,10 +46,11 @@ namespace sqlpp
   constexpr auto type_hash()
   {
 #ifdef _MSC_VER
-    return djb2_hash(__FUNCSIG__);
+    constexpr auto _name = std::string_view{__FUNCSIG__};
 #else
-    return djb2_hash(__PRETTY_FUNCTION__);
+    constexpr auto _name = std::string_view{__PRETTY_FUNCTION__};
 #endif
+    return djb2_hash(_name);
   }
 
   template <typename T>

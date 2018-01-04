@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2016 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,9 +26,8 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <string_view>
 #include <utility>
-
-#include <sqlpp17/wrong.h>
 
 namespace sqlpp
 {
@@ -38,34 +37,23 @@ namespace sqlpp
     template <char... Cs>
     constexpr bool operator==(const char_sequence<Cs...>& rhs) const
     {
-      return std::is_same_v<char_sequence, std::decay_t<decltype(rhs)>>;
+      return std::is_same_v<char_sequence, char_sequence<Cs...>>;
     }
   };
 
   namespace detail
   {
-    template <const auto& StringLiteral, typename IndexSequence>
+    template <const std::string_view& Text, typename IndexSequence>
     struct make_char_sequence;
 
-    template <const auto& StringLiteral, std::size_t... Is>
-    struct make_char_sequence<StringLiteral, std::index_sequence<Is...>>
+    template <const std::string_view& Text, std::size_t... Is>
+    struct make_char_sequence<Text, std::index_sequence<Is...>>
     {
-      using type = char_sequence<StringLiteral[Is]...>;
+      using type = char_sequence<Text[Is]...>;
     };
-  }
+  }  // namespace detail
 
-  template <const auto& Value>
-  struct make_char_sequence
-  {
-    static_assert(wrong<decltype(Value)>, "argument needs to be reference to const char[N]");
-  };
+  template <const std::string_view& Text>
+  using make_char_sequence_t = typename detail::make_char_sequence<Text, std::make_index_sequence<Text.size()>>::type;
 
-  template <std::size_t N, const char (&StringLiteral)[N]>
-  struct make_char_sequence<StringLiteral>
-  {
-    using type = typename detail::make_char_sequence<StringLiteral, std::make_index_sequence<N>>::type;
-  };
-
-  template <const auto& StringLiteral>
-  using make_char_sequence_t = typename make_char_sequence<StringLiteral>::type;
-}
+}  // namespace sqlpp

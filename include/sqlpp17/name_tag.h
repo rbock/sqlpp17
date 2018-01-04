@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2016 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,22 +26,26 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <string_view>
+
 #include <sqlpp17/type_traits.h>
 
-#define SQLPP_NAME_TAG_GUTS(SQL_NAME, CPP_NAME) \
-  static constexpr char name[] = #SQL_NAME;     \
-  template <typename T>                         \
-  struct _sqlpp_member_base                     \
-  {                                             \
-    T CPP_NAME;                                 \
-    T& operator()()                             \
-    {                                           \
-      return CPP_NAME;                          \
-    }                                           \
-    const T& operator()() const                 \
-    {                                           \
-      return CPP_NAME;                          \
-    }                                           \
+#define SQLPP_NAME_TAG_GUTS(SQL_NAME, CPP_NAME)             \
+  /* would like to make this a function, but clang crashes, \
+     see https://bugs.llvm.org/show_bug.cgi?id=35829)*/     \
+  static constexpr auto name = std::string_view{#SQL_NAME}; \
+  template <typename T>                                     \
+  struct _sqlpp_member_base                                 \
+  {                                                         \
+    T CPP_NAME;                                             \
+    T& operator()()                                         \
+    {                                                       \
+      return CPP_NAME;                                      \
+    }                                                       \
+    const T& operator()() const                             \
+    {                                                       \
+      return CPP_NAME;                                      \
+    }                                                       \
   };
 
 #define SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(SQL_NAME, CPP_NAME) \
