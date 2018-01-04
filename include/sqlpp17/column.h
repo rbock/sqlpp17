@@ -37,6 +37,8 @@ namespace sqlpp
   template <typename TableSpec, typename ColumnSpec>
   class column_t
   {
+    static_assert(std::is_base_of_v<::sqlpp::spec_base, TableSpec>);
+
   public:
     template <typename T>
     [[nodiscard]] auto operator=(T t) const
@@ -102,6 +104,12 @@ namespace sqlpp
   };
 
   template <typename TableSpec, typename ColumnSpec>
+  struct table_spec_of<column_t<TableSpec, ColumnSpec>>
+  {
+    using type = TableSpec;
+  };
+
+  template <typename TableSpec, typename ColumnSpec>
   constexpr auto is_selectable_v<column_t<TableSpec, ColumnSpec>> = true;
 
   template <typename TableSpec, typename ColumnSpec>
@@ -124,6 +132,12 @@ namespace sqlpp
   template <typename TableSpec, typename ColumnSpec>
   constexpr auto is_insert_required_v<column_t<TableSpec, ColumnSpec>> =
       not has_default<column_t<TableSpec, ColumnSpec>>::value;
+
+  template <typename TableSpec, typename ColumnSpec>
+  [[nodiscard]] constexpr auto required_tables_of([[maybe_unused]] type_t<column_t<TableSpec, ColumnSpec>>)
+  {
+    return type_set<TableSpec>();
+  }
 
   template <typename DbConnection, typename TableSpec, typename ColumnSpec>
   [[nodiscard]] auto to_sql_string(const DbConnection& connection, const column_t<TableSpec, ColumnSpec>& t)

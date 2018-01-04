@@ -60,7 +60,7 @@ namespace sqlpp
       {
         return failed<assert_conditionless_join_unique_names>{};
       }
-      else if constexpr (!required_columns_of_v<Lhs>.empty() || !required_columns_of_v<remove_optional_t<Rhs>>.empty())
+      else if constexpr (!required_tables_of_v<Lhs>.empty() || !required_tables_of_v<remove_optional_t<Rhs>>.empty())
       {
         return failed<assert_conditionless_join_no_table_dependencies>{};
       }

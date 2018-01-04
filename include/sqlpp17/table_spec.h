@@ -1,3 +1,5 @@
+#pragma once
+
 /*
 Copyright (c) 2018, Roland Bock
 All rights reserved.
@@ -24,51 +26,14 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <string>
-#include <string_view>
-#include <utility>
+#include <sqlpp17/type_traits.h>
 
-#include <sqlpp17/type_id.h>
-
-#include <tables/TabDepartment.h>
-#include <tables/TabEmpty.h>
-#include <tables/TabPerson.h>
-
-template <typename T1, typename T2>
-auto compare_two_ids()
+namespace sqlpp
 {
-  if constexpr (std::is_same_v<T1, T2>)
+  template <typename NameTag, std::uint32_t TableHash>
+  struct table_spec : public ::sqlpp::spec_base
   {
-    static_assert(::sqlpp::type_id<T1>() == ::sqlpp::type_id<T2>());
-  }
-  else
-    static_assert(::sqlpp::type_id<T1>() != ::sqlpp::type_id<T2>());
-}
+    using _sqlpp_name_tag = NameTag;
+  };
 
-template <typename T, typename... Rest>
-auto compare_one_to_all_ids()
-{
-  (compare_two_ids<T, Rest>(), ...);
-}
-
-template <typename... Ts>
-void compare_all_ids()
-{
-  (compare_one_to_all_ids<Ts, Ts...>(), ...);
-}
-
-template <typename... Ts>
-void compare_all_ids(Ts...)
-{
-  (compare_one_to_all_ids<Ts, Ts...>(), ...);
-}
-
-template <typename...>
-struct X;
-
-int main()
-{
-  compare_all_ids<bool, char, int, float, long, std::string, std::string_view, X<>>();
-  compare_all_ids(test::tabDepartment, test::tabEmpty, test::tabPerson);
-}
-
+}  // namespace sqlpp

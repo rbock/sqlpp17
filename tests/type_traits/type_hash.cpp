@@ -1,5 +1,3 @@
-#pragma once
-
 /*
 Copyright (c) 2018, Roland Bock
 All rights reserved.
@@ -26,35 +24,51 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <cstddef>
-#include <cstdint>
+#include <string>
+#include <string_view>
+#include <utility>
 
-namespace sqlpp
+#include <sqlpp17/type_hash.h>
+
+#include <tables/TabDepartment.h>
+#include <tables/TabEmpty.h>
+#include <tables/TabPerson.h>
+
+template <typename T1, typename T2>
+auto compare_two_hashes()
 {
-  // Adapted from https://en.wikipedia.org/wiki/Universal_hashing#Hashing_strings
-  template <std::size_t N>
-  constexpr auto djb2_hash(const char (&input)[N]) -> std::uint32_t
+  if constexpr (std::is_same_v<T1, T2>)
   {
-    if (input[N - 1] != '\0')
-      throw "This is unexpected...";
-
-    std::size_t _hash = 5381;
-    for (std::size_t index = 0; index < N - 1; ++index)
-    {
-      _hash = _hash * 33 + input[index];
-    }
-    return _hash;
+    static_assert(::sqlpp::type_hash<T1>() == ::sqlpp::type_hash<T2>());
   }
+  else
+    static_assert(::sqlpp::type_hash<T1>() != ::sqlpp::type_hash<T2>());
+}
 
-  // From https://stackoverflow.com/a/35943472/2173029
-  template <typename T>
-  constexpr auto type_id()
-  {
-#ifdef _MSC_VER
-    return djb2_hash(__FUNCSIG__);
-#else
-    return djb2_hash(__PRETTY_FUNCTION__);
-#endif
-  }
-}  // namespace sqlpp
+template <typename T, typename... Rest>
+auto compare_one_to_all_hashes()
+{
+  (compare_two_hashes<T, Rest>(), ...);
+}
+
+template <typename... Ts>
+void compare_all_hashes()
+{
+  (compare_one_to_all_hashes<Ts, Ts...>(), ...);
+}
+
+template <typename... Ts>
+void compare_all_hashes(Ts...)
+{
+  (compare_one_to_all_hashes<Ts, Ts...>(), ...);
+}
+
+template <typename...>
+struct X;
+
+int main()
+{
+  compare_all_hashes<bool, char, int, float, long, std::string, std::string_view, X<>>();
+  compare_all_hashes(test::tabDepartment, test::tabEmpty, test::tabPerson);
+}
 

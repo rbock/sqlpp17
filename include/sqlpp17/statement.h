@@ -83,25 +83,34 @@ namespace sqlpp
     return succeeded{};
   }
 
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_all_required_tables_are_provided, "statement uses tables that are not provided");
+
   template <typename Db, typename... Clauses>
-  constexpr auto check_statement_preparable(const type_t<statement<Clauses...>>& s)
+  constexpr auto check_statement_preparable([[maybe_unused]] const type_t<statement<Clauses...>>& s)
   {
     using _statement_t = statement<Clauses...>;
-    return (succeeded{} && ... && check_clause_preparable<Db>(type_v<clause_base<Clauses, _statement_t>>));
+
+    if constexpr (not(required_tables_of_v<_statement_t> <= provided_tables_of_v<_statement_t>))
+    {
+      return failed<assert_all_required_tables_are_provided>{};
+    }
+    else
+      return (succeeded{} and ... and check_clause_preparable<Db>(type_v<clause_base<Clauses, _statement_t>>));
   }
 
-  template <typename Db, typename Clause, typename Statement>
-  constexpr auto check_clause_has_no_parameters(const type_t<clause_base<Clause, Statement>>&)
-  {
-    return succeeded{};
-  }
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_execute_without_parameters,
+                              "directly executed statements must have no parameters");
 
   template <typename Db, typename... Clauses>
   constexpr auto check_statement_executable(const type_t<statement<Clauses...>>& s)
   {
     using _statement_t = statement<Clauses...>;
-    return (check_statement_preparable<Db>(s) && ... &&
-            check_clause_has_no_parameters<Db>(type_v<clause_base<Clauses, _statement_t>>));
+    if constexpr (_statement_t::get_no_of_parameters() != 0)
+    {
+      return failed<assert_execute_without_parameters>{};
+    }
+    else
+      return check_statement_preparable<Db>(s);
   }
 
   template <typename... Clauses>
@@ -146,7 +155,7 @@ namespace sqlpp
     using result_base_t = result_base<get_result_clause_t<Clauses...>, statement<Clauses...>>;
     using result_row_t = result_row_of_t<result_base_t>;
 
-    [[nodiscard]] constexpr auto get_no_of_parameters() const
+    [[nodiscard]] static constexpr auto get_no_of_parameters()
     {
 #warning : implement
       return 0;

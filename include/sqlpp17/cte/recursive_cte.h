@@ -30,17 +30,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/column.h>
 #include <sqlpp17/member.h>
 #include <sqlpp17/result_row.h>
+#include <sqlpp17/table_spec.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
 
 namespace sqlpp
 {
-  template <typename Cte>
-  struct cte_spec : public ::sqlpp::spec_base
-  {
-    using _sqlpp_name_tag = name_tag_of_t<Cte>;
-  };
-
   template <typename Cte, typename ResultRow>
   struct cte_columns_t
   {
@@ -49,10 +44,18 @@ namespace sqlpp
 
   template <typename Cte, typename... ResultColumnSpecs>
   struct cte_columns_t<Cte, result_row_t<ResultColumnSpecs...>>
-      : member_t<ResultColumnSpecs, column_t<cte_spec<Cte>, ResultColumnSpecs>>...
+      : member_t<ResultColumnSpecs, column_t<table_spec<name_tag_of_t<Cte>, type_hash<Cte>()>, ResultColumnSpecs>>...
   {
   };
 
+  template <typename Cte, typename... ResultColumnSpecs>
+  [[nodiscard]] constexpr auto all_of(const cte_columns_t<Cte, ResultColumnSpecs...>& t)
+  {
+#warning : For sake of completeness, it might be good to provide overloads for cte and recursive_cte, too
+    return multi_column_t{column_t<table_spec<name_tag_of_t<Cte>, type_hash<Cte>()>, ResultColumnSpecs>{}...};
+  }
+
+#warning : Maybe merge cte and recursive_cte, check in union calls if it already is recursive. Duplicating all functions for both versions of CTE is error prone
   template <typename NameTag, typename Statement>
   struct recursive_cte_t : cte_columns_t<recursive_cte_t<NameTag, Statement>, result_row_of_t<Statement>>
   {
@@ -62,6 +65,18 @@ namespace sqlpp
     {
     }
   };
+
+  template <typename NameTag, typename Statement>
+  [[nodiscard]] constexpr auto provided_tables_of([[maybe_unused]] type_t<recursive_cte_t<NameTag, Statement>>)
+  {
+    return type_set<table_spec<NameTag, type_hash<recursive_cte_t<NameTag, Statement>>()>>();
+  }
+
+  template <typename NameTag, typename Statement>
+  [[nodiscard]] constexpr auto required_tables_of([[maybe_unused]] type_t<recursive_cte_t<NameTag, Statement>>)
+  {
+    return type_set<>();
+  }
 
   template <typename NameTag, typename Statement>
   struct nodes_of<recursive_cte_t<NameTag, Statement>>

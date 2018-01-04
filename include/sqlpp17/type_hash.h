@@ -1,5 +1,7 @@
+#pragma once
+
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -24,36 +26,41 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <iostream>
+#include <cstddef>
+#include <cstdint>
 
-#include <connections/mock_db.h>
-#include <tables/TabDepartment.h>
-#include <tables/TabEmpty.h>
-#include <tables/TabPerson.h>
-
-#include <sqlpp17/clause/update.h>
-#include <sqlpp17/operator.h>
-
-int main()
+namespace sqlpp
 {
-  auto db = ::sqlpp::test::mock_db{};
-
-  // default way of constructing an insert statement
-  const auto id = db(sqlpp::update(test::tabPerson).set(test::tabPerson.isManager = true).unconditionally());
-
-  // using << concatenation
-  /*
-  for (const auto& row :
-       db(sqlpp::select() << sqlpp::select_columns(test::tabPerson.id, test::tabPerson.isManager,
-                                                   test::tabPerson.address, test::tabPerson.name)
-                          << sqlpp::from(test::tabPerson)
-                          << sqlpp::where(test::tabPerson.isManager and test::tabPerson.name == "")
-                          << sqlpp::having(test::tabPerson.id == test::tabPerson.id or test::tabPerson.id == 1)))
+  // Adapted from https://en.wikipedia.org/wiki/Universal_hashing#Hashing_strings
+  template <std::size_t N>
+  constexpr auto djb2_hash(const char (&input)[N]) -> std::uint32_t
   {
-    std::cout << row.id << std::endl;
-    std::cout << row.isManager << std::endl;
-    std::cout << row.name << std::endl;
-    std::cout << row.address.value_or("") << std::endl;
+    if (input[N - 1] != '\0')
+      throw "This is unexpected...";
+
+    std::size_t _hash = 5381;
+    for (std::size_t index = 0; index < N - 1; ++index)
+    {
+      _hash = _hash * 33 + input[index];
+    }
+    return _hash;
   }
-  */
-}
+
+  // From https://stackoverflow.com/a/35943472/2173029
+  template <typename T>
+  constexpr auto type_hash()
+  {
+#ifdef _MSC_VER
+    return djb2_hash(__FUNCSIG__);
+#else
+    return djb2_hash(__PRETTY_FUNCTION__);
+#endif
+  }
+
+  template <typename T>
+  constexpr auto type_hash([[maybe_unused]] T)
+  {
+    return type_hash<T>();
+  }
+}  // namespace sqlpp
+

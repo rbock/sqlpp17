@@ -35,6 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <utility>
 
 #include <sqlpp17/char_sequence.h>
+#include <sqlpp17/type_hash.h>
 #include <sqlpp17/type_set.h>
 #include <sqlpp17/type_vector.h>
 #include <sqlpp17/wrong.h>
@@ -327,17 +328,14 @@ namespace sqlpp
     return is_expression<T>;
   }
 
-  template <typename T, typename Enable = void>
-  constexpr auto table_spec_of_v = no_value_t{};
-
   template <typename T>
-  using table_spec_of_t = std::decay_t<decltype(table_spec_of_v<T>)>;
-
-  template <typename T>
-  constexpr auto table_spec_of(const T&)
+  struct table_spec_of
   {
-    return table_spec_of_v<T>;
-  }
+    static_assert(wrong<T>, "Missing specialization");
+  };
+
+  template <typename T>
+  using table_spec_of_t = typename table_spec_of<T>::type;
 
   template <typename T>
   struct column_of
@@ -519,14 +517,35 @@ namespace sqlpp
   template <typename T>
   constexpr auto parameters_of = type_set_t<>();
 
-  template <typename T>
-  constexpr auto required_columns_of_v = type_set_t<>();
+  template <typename... T>
+  [[nodiscard]] constexpr auto required_tables_of(type_vector<T...>)
+  {
+    return (type_set() | ... | required_tables_of(type_t<T>{}));
+  }
 
   template <typename T>
-  constexpr auto required_columns_of(const T&)
+  [[nodiscard]] constexpr auto required_tables_of(type_t<T>)
   {
-    return required_columns_of_v<T>;
+    return required_tables_of(nodes_of_t<T>{});
   }
+
+  template <typename T>
+  constexpr auto required_tables_of_v = required_tables_of(type_t<T>{});
+
+  template <typename... T>
+  [[nodiscard]] constexpr auto provided_tables_of(type_vector<T...>)
+  {
+    return (type_set() | ... | provided_tables_of(type_t<T>{}));
+  }
+
+  template <typename T>
+  [[nodiscard]] constexpr auto provided_tables_of(type_t<T>)
+  {
+    return provided_tables_of(nodes_of_t<T>{});
+  }
+
+  template <typename T>
+  constexpr auto provided_tables_of_v = provided_tables_of(type_t<T>{});
 
   template <typename T>
   constexpr auto default_columns_of_v = type_set_t<>();

@@ -30,40 +30,59 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/column.h>
 #include <sqlpp17/join.h>
 #include <sqlpp17/member.h>
+#include <sqlpp17/table_spec.h>
 #include <sqlpp17/to_sql_name.h>
 
 namespace sqlpp
 {
-#warning : It does not make sense to pass the full table as an argument to the columns, but the NameTag plus an type_id, that would be neat! Same for CTE.
-  template <typename Table, typename NameTag, typename... ColumnSpecs>
-  struct table_alias_t : public join_functions<table_alias_t<Table, NameTag, ColumnSpecs...>>,
-                         public member_t<ColumnSpecs, column_t<NameTag, ColumnSpecs>>...
+  template <typename Table, typename TableSpec, typename... ColumnSpecs>
+  struct table_alias_t : public join_functions<table_alias_t<Table, TableSpec, ColumnSpecs...>>,
+                         public member_t<ColumnSpecs, column_t<TableSpec, ColumnSpecs>>...
   {
     Table _table;
   };
 
-  template <typename Table, typename NameTag, typename... ColumnSpecs>
-  struct nodes_of<table_alias_t<Table, NameTag, ColumnSpecs...>>
+  template <typename Table, typename TableSpec, typename... ColumnSpecs>
+  struct nodes_of<table_alias_t<Table, TableSpec, ColumnSpecs...>>
   {
     using type = type_vector<Table>;
   };
 
-  template <typename Table, typename NameTag, typename... ColumnSpecs>
-  struct name_tag_of<table_alias_t<Table, NameTag, ColumnSpecs...>>
+  template <typename Table, typename TableSpec, typename... ColumnSpecs>
+  struct name_tag_of<table_alias_t<Table, TableSpec, ColumnSpecs...>>
   {
-    using type = NameTag;
+    using type = name_tag_of_t<TableSpec>;
   };
 
-  template <typename Table, typename NameTag, typename... ColumnSpecs>
-  constexpr auto is_table_v<table_alias_t<Table, NameTag, ColumnSpecs...>> = true;
+  template <typename Table, typename TableSpec, typename... ColumnSpecs>
+  struct table_spec_of<table_alias_t<Table, TableSpec, ColumnSpecs...>>
+  {
+    using type = TableSpec;
+  };
 
-  template <typename Table, typename NameTag, typename... ColumnSpecs>
-  constexpr auto columns_of_v<table_alias_t<Table, NameTag, ColumnSpecs...>> =
-      type_set<column_t<NameTag, ColumnSpecs>...>();
+  template <typename Table, typename TableSpec, typename... ColumnSpecs>
+  constexpr auto is_table_v<table_alias_t<Table, TableSpec, ColumnSpecs...>> = true;
 
-  template <typename DbConnection, typename Table, typename NameTag, typename... ColumnSpecs>
+  template <typename Table, typename TableSpec, typename... ColumnSpecs>
+  constexpr auto columns_of_v<table_alias_t<Table, TableSpec, ColumnSpecs...>> =
+      type_set<column_t<TableSpec, ColumnSpecs>...>();
+
+  template <typename Table, typename TableSpec, typename... ColumnSpecs>
+  [[nodiscard]] constexpr auto all_of(const table_alias_t<Table, TableSpec, ColumnSpecs...>& t)
+  {
+    return multi_column_t{column_t<TableSpec, ColumnSpecs>{}...};
+  }
+
+  template <typename Table, typename TableSpec, typename... ColumnSpecs>
+  [[nodiscard]] constexpr auto provided_tables_of([
+      [maybe_unused]] type_t<table_alias_t<Table, TableSpec, ColumnSpecs...>>)
+  {
+    return type_set<TableSpec>();
+  }
+
+  template <typename DbConnection, typename Table, typename TableSpec, typename... ColumnSpecs>
   [[nodiscard]] auto to_sql_string(const DbConnection& connection,
-                                   const table_alias_t<Table, NameTag, ColumnSpecs...>& t)
+                                   const table_alias_t<Table, TableSpec, ColumnSpecs...>& t)
   {
     auto ret = std::string{};
 

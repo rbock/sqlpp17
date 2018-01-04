@@ -36,7 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 int main()
 {
-  auto db = test::mock_db{};
+  auto db = ::sqlpp::test::mock_db{};
 
   // default way of constructing a select statement
   for (const auto& row :

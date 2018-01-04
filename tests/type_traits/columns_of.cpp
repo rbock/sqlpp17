@@ -57,14 +57,16 @@ static_assert(columns_of(test::tabDepartment) ==
 
 // aliased tables
 static_assert(columns_of(test::tabEmpty.as(foo)).empty());
+using person_as_foo_spec = sqlpp::table_spec<sqlpp_name_tag_for_foo, sqlpp::type_hash(test::tabPerson)>;
 static_assert(columns_of(test::tabPerson.as(foo)) ==
-              type_set(sqlpp::column_t<sqlpp_name_tag_for_foo, test::TabPerson_::Id>{},
-                       sqlpp::column_t<sqlpp_name_tag_for_foo, test::TabPerson_::IsManager>{},
-                       sqlpp::column_t<sqlpp_name_tag_for_foo, test::TabPerson_::Name>{},
-                       sqlpp::column_t<sqlpp_name_tag_for_foo, test::TabPerson_::Address>{}));
+              type_set(sqlpp::column_t<person_as_foo_spec, test::TabPerson_::Id>{},
+                       sqlpp::column_t<person_as_foo_spec, test::TabPerson_::IsManager>{},
+                       sqlpp::column_t<person_as_foo_spec, test::TabPerson_::Name>{},
+                       sqlpp::column_t<person_as_foo_spec, test::TabPerson_::Address>{}));
+using department_as_foo_spec = sqlpp::table_spec<sqlpp_name_tag_for_foo, sqlpp::type_hash(test::tabDepartment)>;
 static_assert(columns_of(test::tabDepartment.as(foo)) ==
-              type_set(sqlpp::column_t<sqlpp_name_tag_for_foo, test::TabDepartment_::Id>{},
-                       sqlpp::column_t<sqlpp_name_tag_for_foo, test::TabDepartment_::Name>{}));
+              type_set(sqlpp::column_t<department_as_foo_spec, test::TabDepartment_::Id>{},
+                       sqlpp::column_t<department_as_foo_spec, test::TabDepartment_::Name>{}));
 
 // conditionless joins
 constexpr auto colsOfDepartmentAndPerson = (columns_of(test::tabDepartment) | columns_of(test::tabPerson));

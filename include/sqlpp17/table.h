@@ -46,11 +46,12 @@ namespace sqlpp
     {
       if constexpr (std::is_base_of_v<::sqlpp::name_tag_base, NamedTypeOrTag>)
       {
-        return table_alias_t<table_t, NamedTypeOrTag, ColumnSpecs...>{{}};
+        return table_alias_t<table_t, table_spec<NamedTypeOrTag, type_hash<table_t>()>, ColumnSpecs...>{{}};
       }
       else if constexpr (not std::is_same_v<name_tag_of_t<NamedTypeOrTag>, none_t>)
       {
-        return table_alias_t<table_t, name_tag_of_t<NamedTypeOrTag>, ColumnSpecs...>{{}};
+        return table_alias_t<table_t, table_spec<name_tag_of_t<NamedTypeOrTag>, type_hash<table_t>()>, ColumnSpecs...>{
+            {}};
       }
       else
       {
@@ -64,6 +65,12 @@ namespace sqlpp
   struct name_tag_of<table_t<TableSpec, ColumnSpecs...>>
   {
     using type = typename TableSpec::_sqlpp_name_tag;
+  };
+
+  template <typename TableSpec, typename... ColumnSpecs>
+  struct table_spec_of<table_t<TableSpec, ColumnSpecs...>>
+  {
+    using type = TableSpec;
   };
 
   template <typename DbConnection, typename TableSpec, typename... ColumnSpecs>
@@ -81,7 +88,13 @@ namespace sqlpp
   template <typename TableSpec, typename... ColumnSpecs>
   [[nodiscard]] constexpr auto all_of(const table_t<TableSpec, ColumnSpecs...>& t)
   {
-    return multi_column_t{std::tuple{static_cast<member_t<ColumnSpecs, column_t<TableSpec, ColumnSpecs>>>(t)()...}};
+    return multi_column_t{column_t<TableSpec, ColumnSpecs>{}...};
+  }
+
+  template <typename TableSpec, typename... ColumnSpecs>
+  [[nodiscard]] constexpr auto provided_tables_of([[maybe_unused]] type_t<table_t<TableSpec, ColumnSpecs...>>)
+  {
+    return type_set<TableSpec>();
   }
 
   template <typename TableSpec, typename... ColumnSpecs>

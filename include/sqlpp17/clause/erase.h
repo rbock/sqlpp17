@@ -50,7 +50,7 @@ namespace sqlpp
   /*
   SQLPP_WRAPPED_STATIC_ASSERT(assert_from_table_arg_is_table, "from_table() arg has to be a table");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_from_table_arg_no_read_only_table, "from_table() arg must not be read-only table");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_from_table_arg_no_required_columns,
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_from_table_arg_no_required_tables,
                               "from_table() arg must not depend on other tables");
 
   template <typename T>
@@ -64,9 +64,9 @@ namespace sqlpp
     {
       return failed<assert_from_table_arg_no_read_only_table>{};
     }
-    else if constexpr (!required_columns_of_v<T>.empty())
+    else if constexpr (!required_tables_of_v<T>.empty())
     {
-      return failed<assert_from_table_arg_no_required_columns>{};
+      return failed<assert_from_table_arg_no_required_tables>{};
     }
     else
       return succeeded{};

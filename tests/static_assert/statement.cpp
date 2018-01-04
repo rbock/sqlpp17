@@ -24,24 +24,22 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <string>
+
+#include <sqlpp17/clause/select.h>
+#include <sqlpp17/name_tag.h>
+
+#include <connections/mock_db.h>
 #include <tables/TabDepartment.h>
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
 
-#include <sqlpp17/clause/from.h>
-#include <sqlpp17/clause/where.h>
-
-#warning : Not implemented yet
-#if 0
-// Turning off static_assert for from()
+// Turning off static_assert for statements
 namespace sqlpp
 {
   template <typename... T>
-  constexpr auto wrong<assert_from_arg_is_table, T...> = true;
-
-  template <typename... T>
-  constexpr auto wrong<assert_from_arg_is_not_conditionless_join, T...> = true;
-}
+  constexpr auto wrong<assert_all_required_tables_are_provided, T...> = true;
+}  // namespace sqlpp
 
 namespace
 {
@@ -50,25 +48,16 @@ namespace
   {
     static_assert(is_bad_statement(Assert{}, T{}));
   }
-}
-#endif
+
+  SQLPP_CREATE_NAME_TAG(foo);
+}  // namespace
 
 int main()
 {
-  constexpr auto f = sqlpp::statement<sqlpp::no_from_t>{};
-  constexpr auto w = sqlpp::statement<sqlpp::no_where_t>{};
-  constexpr auto s = f << w;
+  auto pi = test::tabPerson.as(foo);
+  auto qu = test::tabDepartment.as(foo);
+  auto db = ::sqlpp::test::mock_db{};
 
-#if 0
-  // constexpr tests
-  static_assert(is_bad_statement(sqlpp::assert_from_arg_is_table{}, s.from(1)));
-
-  static_assert(is_bad_statement(sqlpp::assert_from_arg_is_not_conditionless_join{},
-                                 s.from(test::tabPerson.join(test::tabDepartment))));
-
-  static_assert(is_bad_statement(sqlpp::assert_from_arg_is_table{}, sqlpp::from(1)));
-
-  // non-constexpr tests
-  test_bad_statement(sqlpp::assert_from_arg_is_table{}, sqlpp::from(std::string("mytable")));
-#endif
+  test_bad_statement(sqlpp::assert_all_required_tables_are_provided{},
+                     db(select(all_of(pi)).from(qu).unconditionally()));
 }

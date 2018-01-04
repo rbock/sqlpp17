@@ -33,7 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/clause/union.h>
 #include <sqlpp17/operator.h>
 
-#warning : Need a real result class and a real connection
+#warning : Not implemented
 
 struct connection
 {
@@ -46,26 +46,20 @@ struct connection
 int main()
 {
   auto context = 0;
-/*
-std::cout << true
-        << " As of now, I need to print a bool before I can print complex statements (don't ask me why, but "
-           "please figure out why, I guess it is a linker problem).\n"
-        << std::endl;
-        */
-#warning : s should be a constexpr
-  auto s = sqlpp::union_all(sqlpp::select() << select_columns(test::tabPerson.id),
-                            sqlpp::select() << select_columns(test::tabPerson.id));
-/*
-sqlpp::select() << sqlpp::selected_fields(test::tabPerson.id, test::tabPerson.isManager,
-                                                   test::tabPerson.address, test::tabPerson.name)
-                         << sqlpp::from(test::tabPerson)
-                         << sqlpp::where(test::tabPerson.isManager and test::tabPerson.name == '\0')
-                         << sqlpp::having(test::tabPerson.id == test::tabPerson.id or test::tabPerson.id == 1);
-                         */
-#warning : need to test results
-  std::cout << to_sql_string(context, s);
-  auto conn = connection{};
-  auto row = s.run(conn);
+  /*
+  #warning : s should be a constexpr
+    auto s = sqlpp::union_all(sqlpp::select() << select_columns(test::tabPerson.id),
+                              sqlpp::select() << select_columns(test::tabPerson.id));
+  sqlpp::select() << sqlpp::selected_fields(test::tabPerson.id, test::tabPerson.isManager,
+                                                     test::tabPerson.address, test::tabPerson.name)
+                           << sqlpp::from(test::tabPerson)
+                           << sqlpp::where(test::tabPerson.isManager and test::tabPerson.name == '\0')
+                           << sqlpp::having(test::tabPerson.id == test::tabPerson.id or test::tabPerson.id == 1);
+  #warning : need to test results
+    std::cout << to_sql_string(context, s);
+    auto conn = connection{};
+    auto row = s.run(conn);
+    */
   /*
 
   // using data_members_of_meta = std::meta::get_public_data_members_m<reflexpr(reflexpr(row))>;

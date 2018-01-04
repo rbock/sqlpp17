@@ -29,7 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/result.h>
 #include <sqlpp17/statement.h>
 
-namespace test
+namespace sqlpp::test
 {
   struct mock_result
   {
@@ -86,4 +86,4 @@ namespace test
     }
   };
 
-}  // namespace test
+}  // namespace sqlpp::test

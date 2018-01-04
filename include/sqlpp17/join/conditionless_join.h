@@ -45,7 +45,7 @@ namespace sqlpp
       {
         return failed<assert_on_is_boolean_expression>{};
       }
-      else if constexpr (!(required_columns_of_v<Expr> <= columns_of_v<ConditionlessJoin>))
+      else if constexpr (!(required_tables_of_v<Expr> <= provided_tables_of_v<ConditionlessJoin>))
       {
         return failed<assert_join_on_no_foreign_table_dependencies>{};
       }

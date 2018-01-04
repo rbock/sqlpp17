@@ -5,6 +5,13 @@ cmake .. -DCMAKE_CXX_COMPILER=/usr/local/clang-trunk/bin/clang++          -DCMAK
 cmake .. -DCMAKE_CXX_COMPILER=/usr/local/clang-trunk/bin/clang++          -DCMAKE_CXX_FLAGS='-std=c++17 -stdlib=libc++ -fcolor-diagnostics -Wall -Wpedantic -fsanitize=thread -O1 -g'
 ...
 
+table_alias and CTE:
+====================
+ - Using just the name_tag to identify the table in column_t is too little information
+ - Using the full underlying table type is too much.
+
+Use the name_tag plus a hash of the underlying table. That should give enough safety.
+
 tags:
 =====
 Instead of no_insert and no_update, use auto_increment.

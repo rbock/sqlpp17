@@ -60,6 +60,18 @@ namespace sqlpp
   };
 
   template <typename NameTag, typename Statement>
+  [[nodiscard]] constexpr auto provided_tables_of([[maybe_unused]] type_t<cte_t<NameTag, Statement>>)
+  {
+    return type_set<table_spec<NameTag, type_hash<cte_t<NameTag, Statement>>()>>();
+  }
+
+  template <typename NameTag, typename Statement>
+  [[nodiscard]] constexpr auto required_tables_of([[maybe_unused]] type_t<cte_t<NameTag, Statement>>)
+  {
+    return type_set<>();
+  }
+
+  template <typename NameTag, typename Statement>
   struct nodes_of<cte_t<NameTag, Statement>>
   {
     using type = type_vector<Statement>;
