@@ -35,6 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/postgresql/char_result.h>
 #include <sqlpp17/postgresql/clause.h>
 #include <sqlpp17/postgresql/connection_config.h>
+#include <sqlpp17/postgresql/context.h>
 #include <sqlpp17/postgresql/prepared_statement.h>
 
 namespace sqlpp::postgresql
@@ -125,9 +126,9 @@ namespace sqlpp::postgresql
 {
   class connection_t
   {
-    std::function<void(std::string_view)> _debug;
     detail::unique_connection_ptr _handle;
     connection_pool_t* _connection_pool = nullptr;
+    std::function<void(std::string_view)> _debug;
 
     mutable std::size_t _statement_index = 0;
 
@@ -142,7 +143,7 @@ namespace sqlpp::postgresql
     connection_t(const connection_config_t& config,
                  detail::unique_connection_ptr&& handle,
                  connection_pool_t* connection_pool)
-        : _debug(config.debug), _handle(std::move(handle)), _connection_pool(connection_pool)
+        : _handle(std::move(handle)), _connection_pool(connection_pool), _debug(config.debug)
     {
     }
 
@@ -214,59 +215,59 @@ namespace sqlpp::postgresql
     template <typename... Clauses>
     auto execute(const ::sqlpp::statement<Clauses...>& statement)
     {
-      return detail::execute(*this, to_sql_string(*this, statement));
+      return detail::execute(*this, to_sql_string_c(context_t{}, statement));
     }
 
     template <typename Statement>
     auto insert(const Statement& statement)
     {
-      return detail::insert(*this, to_sql_string(*this, statement));
+      return detail::insert(*this, to_sql_string_c(context_t{}, statement));
     }
 
     template <typename Statement>
     [[nodiscard]] auto prepare_insert(const Statement& statement)
     {
       return detail::prepared_insert_t{
-          detail::prepare(*this, to_sql_string(*this, statement), statement.get_no_of_parameters(), 0)};
+          detail::prepare(*this, to_sql_string_c(context_t{}, statement), statement.get_no_of_parameters(), 0)};
     }
 
     template <typename Statement>
     auto update(const Statement& statement)
     {
-      return detail::update(*this, to_sql_string(*this, statement));
+      return detail::update(*this, to_sql_string_c(context_t{}, statement));
     }
 
     template <typename Statement>
     [[nodiscard]] auto prepare_update(const Statement& statement)
     {
       return detail::prepared_update_t{
-          detail::prepare(*this, to_sql_string(*this, statement), statement.get_no_of_parameters(), 0)};
+          detail::prepare(*this, to_sql_string_c(context_t{}, statement), statement.get_no_of_parameters(), 0)};
     }
 
     template <typename Statement>
     auto erase(const Statement& statement)
     {
-      return detail::erase(*this, to_sql_string(*this, statement));
+      return detail::erase(*this, to_sql_string_c(context_t{}, statement));
     }
 
     template <typename Statement>
     [[nodiscard]] auto prepare_erase(const Statement& statement)
     {
       return detail::prepared_erase_t{
-          detail::prepare(*this, to_sql_string(*this, statement), statement.get_no_of_parameters(), 0)};
+          detail::prepare(*this, to_sql_string_c(context_t{}, statement), statement.get_no_of_parameters(), 0)};
     }
 
     template <typename Statement>
     [[nodiscard]] auto select(const Statement& statement)
     {
-      return detail::select(*this, to_sql_string(*this, statement));
+      return detail::select(*this, to_sql_string_c(context_t{}, statement));
     }
 
     template <typename Statement>
     [[nodiscard]] auto prepare_select(const Statement& statement)
     {
       return detail::prepared_select_t{
-          detail::prepare(*this, to_sql_string(*this, statement), statement.get_no_of_parameters(),
+          detail::prepare(*this, to_sql_string_c(context_t{}, statement), statement.get_no_of_parameters(),
                           statement.get_no_of_result_columns()),
           _debug};
     }

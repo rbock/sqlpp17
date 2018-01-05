@@ -74,9 +74,9 @@ namespace sqlpp
   template <typename L, typename R>
   constexpr auto requires_braces_v<not_equal_to_t<L, R>> = true;
 
-  template <typename DbConnection, typename L, typename R>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const not_equal_to_t<L, R>& t)
+  template <typename Context, typename L, typename R>
+  [[nodiscard]] auto to_sql_string(Context& context, const not_equal_to_t<L, R>& t)
   {
-    return to_sql_string(connection, embrace(t.l)) + " <> " + to_sql_string(connection, embrace(t.r));
+    return to_sql_string(context, embrace(t.l)) + " <> " + to_sql_string(context, embrace(t.r));
   }
 }  // namespace sqlpp

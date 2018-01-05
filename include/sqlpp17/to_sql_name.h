@@ -32,8 +32,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  template <typename DbConnection, typename Object>
-  [[nodiscard]] auto to_sql_name(const DbConnection& connection, const Object& object) -> std::string
+  template <typename Context, typename Object>
+  [[nodiscard]] auto to_sql_name(Context& context, const Object& object) -> std::string
   {
     if constexpr (not std::is_same_v<name_tag_of_t<Object>, none_t>)
     {

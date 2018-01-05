@@ -82,16 +82,16 @@ namespace sqlpp
     }
   };
 
-  template <typename DbConnection, typename Statement>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<for_update_t, Statement>& t)
+  template <typename Context, typename Statement>
+  [[nodiscard]] auto to_sql_string(Context& context, const clause_base<for_update_t, Statement>& t)
   {
     return std::string(" FOR UPDATE");
   }
 
-  template <typename DbConnection, typename Statement>
-  decltype(auto) operator<<(const DbConnection& connection, const clause_base<for_share_t, Statement>& t)
+  template <typename Context, typename Statement>
+  [[nodiscard]] auto to_sql_string(Context& context, const clause_base<for_share_t, Statement>& t)
   {
-    return connection << " FOR SHARE";
+    return std::string(" FOR SHARE");
   }
 
   struct no_lock_t
@@ -120,8 +120,8 @@ namespace sqlpp
     }
   };
 
-  template <typename DbConnection, typename Statement>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<no_lock_t, Statement>&)
+  template <typename Context, typename Statement>
+  [[nodiscard]] auto to_sql_string(Context& context, const clause_base<no_lock_t, Statement>&)
   {
     return std::string{};
   }

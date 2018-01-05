@@ -36,10 +36,10 @@ namespace sqlpp
     const Expr& _expr;
   };
 
-  template <typename DbConnection, typename Expr>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const embrace_t<Expr>& t)
+  template <typename Context, typename Expr>
+  [[nodiscard]] auto to_sql_string(Context& context, const embrace_t<Expr>& t)
   {
-    return std::string{"("} + to_sql_string(connection, t._expr) + ")";
+    return std::string{"("} + to_sql_string(context, t._expr) + ")";
   }
 
   template <typename Expr>

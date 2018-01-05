@@ -71,10 +71,10 @@ namespace sqlpp
     Condition _condition;
   };
 
-  template <typename DbConnection, typename Condition, typename Statement>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<where_t<Condition>, Statement>& t)
+  template <typename Context, typename Condition, typename Statement>
+  [[nodiscard]] auto to_sql_string(Context& context, const clause_base<where_t<Condition>, Statement>& t)
   {
-    return std::string(" WHERE ") + to_sql_string(connection, t._condition);
+    return std::string(" WHERE ") + to_sql_string(context, t._condition);
   }
 
   struct unconditionally_t
@@ -98,8 +98,8 @@ namespace sqlpp
     }
   };
 
-  template <typename DbConnection, typename Statement>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<unconditionally_t, Statement>& t)
+  template <typename Context, typename Statement>
+  [[nodiscard]] auto to_sql_string(Context& context, const clause_base<unconditionally_t, Statement>& t)
   {
     return std::string{};
   }
@@ -163,8 +163,8 @@ namespace sqlpp
     }
   };
 
-  template <typename DbConnection, typename Statement>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<no_where_t, Statement>&)
+  template <typename Context, typename Statement>
+  [[nodiscard]] auto to_sql_string(Context& context, const clause_base<no_where_t, Statement>&)
   {
     return std::string{};
   }

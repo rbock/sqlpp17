@@ -91,23 +91,23 @@ namespace sqlpp
     using type = type_vector<WhenThen...>;
   };
 
-  template <typename DbConnection, typename When, typename Then>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const when_then_t<When, Then>& t)
+  template <typename Context, typename When, typename Then>
+  [[nodiscard]] auto to_sql_string(Context& context, const when_then_t<When, Then>& t)
   {
-    return std::string{" WHEN "} + to_sql_string(connection, embrace(t._when)) + " THEN " +
-           to_sql_string(connection, embrace(t._then));
+    return std::string{" WHEN "} + to_sql_string(context, embrace(t._when)) + " THEN " +
+           to_sql_string(context, embrace(t._then));
   }
 
-  template <typename DbConnection, typename... WhenThen>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const case_when_then_t<WhenThen...>& t)
+  template <typename Context, typename... WhenThen>
+  [[nodiscard]] auto to_sql_string(Context& context, const case_when_then_t<WhenThen...>& t)
   {
-    return std::string{" CASE"} + tuple_to_sql_string(connection, "", t._when_thens);
+    return std::string{" CASE"} + tuple_to_sql_string(context, "", t._when_thens);
   }
 
-  template <typename DbConnection, typename CaseWhenThen, typename Else>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const case_when_then_else_t<CaseWhenThen, Else>& t)
+  template <typename Context, typename CaseWhenThen, typename Else>
+  [[nodiscard]] auto to_sql_string(Context& context, const case_when_then_else_t<CaseWhenThen, Else>& t)
   {
-    return to_sql_string(connection, t._case_when_then) + " ELSE " + to_sql_string(connection, embrace(t._else));
+    return to_sql_string(context, t._case_when_then) + " ELSE " + to_sql_string(context, embrace(t._else));
   }
 
   template <typename Expr>

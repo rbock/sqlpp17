@@ -36,8 +36,7 @@ namespace sqlpp::mysql
 namespace sqlpp
 {
   template <typename Statement>
-  [[nodiscard]] auto to_sql_string(const mysql::connection_t& connection,
-                                   const clause_base<insert_default_values_t, Statement>& t)
+  [[nodiscard]] auto to_sql_string(mysql::context_t& context, const clause_base<insert_default_values_t, Statement>& t)
   {
     return std::string{" () VALUES()"};
   }

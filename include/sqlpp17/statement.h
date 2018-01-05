@@ -237,11 +237,11 @@ namespace sqlpp
       return succeeded{};
   }
 
-  template <typename DbConnection, typename... Clauses>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const statement<Clauses...>& t)
+  template <typename Context, typename... Clauses>
+  [[nodiscard]] auto to_sql_string(Context& context, const statement<Clauses...>& t)
   {
     return (std::string{} + ... +
-            to_sql_string(connection, static_cast<const clause_base<Clauses, statement<Clauses...>>&>(t)));
+            to_sql_string(context, static_cast<const clause_base<Clauses, statement<Clauses...>>&>(t)));
   }
 
   template <typename... LClauses, typename... RClauses>

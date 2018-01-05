@@ -35,7 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp::mysql
 {
-  class connection_t;
+  struct context_t;
 }
 
 namespace sqlpp::mysql::detail
@@ -58,9 +58,9 @@ namespace sqlpp::mysql::detail
   }
 
   template <typename ColumnSpec>
-  [[nodiscard]] auto to_sql_column_spec_string(const mysql::connection_t& connection, const ColumnSpec& columnSpec)
+  [[nodiscard]] auto to_sql_column_spec_string(mysql::context_t& context, const ColumnSpec& columnSpec)
   {
-    auto ret = to_sql_name(connection, columnSpec) + value_type_to_sql_string(typename ColumnSpec::value_type{});
+    auto ret = to_sql_name(context, columnSpec) + value_type_to_sql_string(typename ColumnSpec::value_type{});
 
     if constexpr (!ColumnSpec::can_be_null)
     {
@@ -76,14 +76,14 @@ namespace sqlpp::mysql::detail
     }
     else
     {
-      ret += " DEFAULT " + to_sql_string(connection, columnSpec.default_value);
+      ret += " DEFAULT " + to_sql_string(context, columnSpec.default_value);
     }
 
     return ret;
   }
 
   template <typename TableSpec, typename... ColumnSpecs>
-  [[nodiscard]] auto to_sql_create_columns_string(const mysql::connection_t& connection,
+  [[nodiscard]] auto to_sql_create_columns_string(mysql::context_t& context,
                                                   const std::tuple<column_t<TableSpec, ColumnSpecs>...>& t)
   {
     struct
@@ -103,12 +103,11 @@ namespace sqlpp::mysql::detail
       }
     } separator;
 
-    return (std ::string{} + ... + (separator.to_string() + to_sql_column_spec_string(connection, ColumnSpecs{})));
+    return (std ::string{} + ... + (separator.to_string() + to_sql_column_spec_string(context, ColumnSpecs{})));
   }
 
   template <typename TableSpec, typename... ColumnSpecs>
-  [[nodiscard]] auto to_sql_primary_key(const mysql::connection_t& connection,
-                                        const ::sqlpp::table_t<TableSpec, ColumnSpecs...>& t)
+  [[nodiscard]] auto to_sql_primary_key(mysql::context_t& context, const ::sqlpp::table_t<TableSpec, ColumnSpecs...>& t)
   {
     using _primary_key = typename TableSpec::primary_key;
     if constexpr (std::is_same_v<_primary_key, ::sqlpp::none_t>)
@@ -117,7 +116,7 @@ namespace sqlpp::mysql::detail
     }
     else
     {
-      return ", PRIMARY KEY (" + to_sql_name(connection, _primary_key{}) + ")";
+      return ", PRIMARY KEY (" + to_sql_name(context, _primary_key{}) + ")";
     }
   }
 }  // namespace sqlpp::mysql::detail
@@ -125,13 +124,12 @@ namespace sqlpp::mysql::detail
 namespace sqlpp
 {
   template <typename Table, typename Statement>
-  [[nodiscard]] auto to_sql_string(const mysql::connection_t& connection,
-                                   const clause_base<create_table_t<Table>, Statement>& t)
+  [[nodiscard]] auto to_sql_string(mysql::context_t& context, const clause_base<create_table_t<Table>, Statement>& t)
   {
-    auto ret = std::string{"CREATE TABLE "} + to_sql_string(connection, t._table);
+    auto ret = std::string{"CREATE TABLE "} + to_sql_string(context, t._table);
     ret += "(";
-    ret += ::sqlpp::mysql::detail::to_sql_create_columns_string(connection, column_tuple_of(t._table));
-    ret += ::sqlpp::mysql::detail::to_sql_primary_key(connection, t._table);
+    ret += ::sqlpp::mysql::detail::to_sql_create_columns_string(context, column_tuple_of(t._table));
+    ret += ::sqlpp::mysql::detail::to_sql_primary_key(context, t._table);
     ret += ")";
 
     return ret;

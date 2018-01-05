@@ -33,20 +33,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  template <typename DbConnection, typename T>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const std::optional<T>& o)
+  template <typename Context, typename T>
+  [[nodiscard]] auto to_sql_string(Context& context, const std::optional<T>& o)
   {
-    return o ? to_sql_string(connection, o.value()) : "NULL";
+    return o ? to_sql_string(context, o.value()) : "NULL";
   }
 
-  template <typename DbConnection>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const char& c)
+  template <typename Context>
+  [[nodiscard]] auto to_sql_string(Context& context, const char& c)
   {
     return std::string(1, c);
   }
 
-  template <typename DbConnection>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const std::string_view& s)
+  template <typename Context>
+  [[nodiscard]] auto to_sql_string(Context& context, const std::string_view& s)
   {
     auto ret = std::string{"'"};
     for (const auto c : s)
@@ -59,15 +59,14 @@ namespace sqlpp
     return ret;
   }
 
-  template <typename DbConnection, typename T>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const T& i)
-      -> std::enable_if_t<std::is_integral_v<T>, std::string>
+  template <typename Context, typename T>
+  [[nodiscard]] auto to_sql_string(Context& context, const T& i) -> std::enable_if_t<std::is_integral_v<T>, std::string>
   {
     return std::to_string(i);
   }
 
-  template <typename DbConnection, typename T>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const T& f)
+  template <typename Context, typename T>
+  [[nodiscard]] auto to_sql_string(Context& context, const T& f)
       -> std::enable_if_t<std::is_floating_point_v<T>, std::string>
   {
     // TODO: Once gcc and clang support to_chars, try that
@@ -75,4 +74,12 @@ namespace sqlpp
     oss << std::setprecision(std::numeric_limits<long double>::digits10 + 1) << f;
     return oss.str();
   }
+
+  // This version will bind to a temporary context, all others won't
+  template <typename Context, typename T>
+  [[nodiscard]] auto to_sql_string_c(Context context, const T& t)
+  {
+    return to_sql_string(context, t);
+  }
+
 }  // namespace sqlpp

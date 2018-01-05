@@ -74,11 +74,10 @@ namespace sqlpp
     std::tuple<Flags...> _flags;
   };
 
-  template <typename DbConnection, typename... Flags, typename Statement>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection,
-                                   const clause_base<select_flags_t<Flags...>, Statement>& t)
+  template <typename Context, typename... Flags, typename Statement>
+  [[nodiscard]] auto to_sql_string(Context& context, const clause_base<select_flags_t<Flags...>, Statement>& t)
   {
-    return (std::string{} + ... + to_sql_string(connection, std::get<Flags>(t._flags)));
+    return (std::string{} + ... + to_sql_string(context, std::get<Flags>(t._flags)));
   }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_select_flags_args_are_valid, "select flags() args must be valid select_flags");
@@ -143,8 +142,8 @@ namespace sqlpp
     }
   };
 
-  template <typename DbConnection, typename Statement>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<no_select_flags_t, Statement>& t)
+  template <typename Context, typename Statement>
+  [[nodiscard]] auto to_sql_string(Context& context, const clause_base<no_select_flags_t, Statement>& t)
   {
     return std::string{};
   }

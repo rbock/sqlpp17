@@ -42,16 +42,16 @@ int main()
                              << sqlpp::from(test::tabPerson)
                              << sqlpp::where(test::tabPerson.isManager and test::tabPerson.name == "")
                              << sqlpp::having(test::tabPerson.id == test::tabPerson.id or test::tabPerson.id == 1);
-    std::cout << to_sql_string(context, s) << std::endl;
+    std::cout << to_sql_string_c(context, s) << std::endl;
   }
   {
     auto s = sqlpp::select() << sqlpp::select_columns(
                  test::tabPerson.id, false ? std::make_optional(test::tabPerson.isManager) : std::nullopt);
-    std::cout << to_sql_string(context, s) << std::endl;
+    std::cout << to_sql_string_c(context, s) << std::endl;
   }
   {
     auto s = sqlpp::select() << sqlpp::select_columns(
                  test::tabPerson.id, true ? std::make_optional(test::tabPerson.isManager) : std::nullopt);
-    std::cout << to_sql_string(context, s) << std::endl;
+    std::cout << to_sql_string_c(context, s) << std::endl;
   }
 }

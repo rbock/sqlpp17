@@ -92,8 +92,8 @@ namespace sqlpp
     }
   };
 
-  template <typename DbConnection, typename Statement>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<no_update_set_t, Statement>&)
+  template <typename Context, typename Statement>
+  [[nodiscard]] auto to_sql_string(Context& context, const clause_base<no_update_set_t, Statement>&)
   {
     return std::string{};
   }

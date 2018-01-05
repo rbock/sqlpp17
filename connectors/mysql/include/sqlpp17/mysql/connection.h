@@ -124,6 +124,10 @@ namespace sqlpp::mysql::detail
 
 namespace sqlpp::mysql
 {
+  struct context_t
+  {
+  };
+
   void global_library_init(int argc = 0, char** argv = nullptr, char** groups = nullptr);
 
   class connection_t
@@ -210,59 +214,59 @@ namespace sqlpp::mysql
     template <typename... Clauses>
     auto execute(const ::sqlpp::statement<Clauses...>& statement)
     {
-      return detail::execute(*this, to_sql_string(*this, statement));
+      return detail::execute(*this, to_sql_string_c(context_t{}, statement));
     }
 
     template <typename Statement>
     auto insert(const Statement& statement)
     {
-      return detail::insert(*this, to_sql_string(*this, statement));
+      return detail::insert(*this, to_sql_string_c(context_t{}, statement));
     }
 
     template <typename Statement>
     [[nodiscard]] auto prepare_insert(const Statement& statement)
     {
       return detail::prepared_insert_t{
-          detail::prepare(*this, to_sql_string(*this, statement), statement.get_no_of_parameters(), 0)};
+          detail::prepare(*this, to_sql_string_c(context_t{}, statement), statement.get_no_of_parameters(), 0)};
     }
 
     template <typename Statement>
     auto update(const Statement& statement)
     {
-      return detail::update(*this, to_sql_string(*this, statement));
+      return detail::update(*this, to_sql_string_c(context_t{}, statement));
     }
 
     template <typename Statement>
     [[nodiscard]] auto prepare_update(const Statement& statement)
     {
       return detail::prepared_update_t{
-          detail::prepare(*this, to_sql_string(*this, statement), statement.get_no_of_parameters(), 0)};
+          detail::prepare(*this, to_sql_string_c(context_t{}, statement), statement.get_no_of_parameters(), 0)};
     }
 
     template <typename Statement>
     auto erase(const Statement& statement)
     {
-      return detail::erase(*this, to_sql_string(*this, statement));
+      return detail::erase(*this, to_sql_string_c(context_t{}, statement));
     }
 
     template <typename Statement>
     [[nodiscard]] auto prepare_erase(const Statement& statement)
     {
       return detail::prepared_erase_t{
-          detail::prepare(*this, to_sql_string(*this, statement), statement.get_no_of_parameters(), 0)};
+          detail::prepare(*this, to_sql_string_c(context_t{}, statement), statement.get_no_of_parameters(), 0)};
     }
 
     template <typename Statement>
     [[nodiscard]] auto select(const Statement& statement)
     {
-      return detail::select(*this, to_sql_string(*this, statement));
+      return detail::select(*this, to_sql_string_c(context_t{}, statement));
     }
 
     template <typename Statement>
     [[nodiscard]] auto prepare_select(const Statement& statement)
     {
       return detail::prepared_select_t{
-          detail::prepare(*this, to_sql_string(*this, statement), statement.get_no_of_parameters(),
+          detail::prepare(*this, to_sql_string_c(context_t{}, statement), statement.get_no_of_parameters(),
                           statement.get_no_of_result_columns()),
           _debug};
     }

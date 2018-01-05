@@ -58,8 +58,8 @@ namespace sqlpp
   template <typename L>
   constexpr auto requires_braces_v<is_not_null_t<L>> = true;
 
-  template <typename DbConnection, typename L>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const is_not_null_t<L>& t)
+  template <typename Context, typename L>
+  [[nodiscard]] auto to_sql_string(Context& context, const is_not_null_t<L>& t)
   {
     return to_sql_string(embrace(t.l)) + " IS NOT NULL";
   }

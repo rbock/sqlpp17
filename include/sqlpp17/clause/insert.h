@@ -59,8 +59,8 @@ namespace sqlpp
     clause_base() = default;
   };
 
-  template <typename DbConnection, typename Statement>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<insert_t, Statement>& t)
+  template <typename Context, typename Statement>
+  [[nodiscard]] auto to_sql_string(Context& context, const clause_base<insert_t, Statement>& t)
   {
     return std::string{"INSERT"};
   }

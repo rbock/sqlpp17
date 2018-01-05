@@ -71,9 +71,8 @@ namespace sqlpp
     Table _table;
   };
 
-  template <typename DbConnection, typename Table, typename Statement>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection,
-                                   const clause_base<update_table_t<Table>, Statement>& t)
+  template <typename Context, typename Table, typename Statement>
+  [[nodiscard]] auto to_sql_string(Context& context, const clause_base<update_table_t<Table>, Statement>& t)
   {
     return to_sql_string(t._table);
   }
@@ -133,8 +132,8 @@ namespace sqlpp
     }
   };
 
-  template <typename DbConnection, typename Statement>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<no_update_table_t, Statement>&)
+  template <typename Context, typename Statement>
+  [[nodiscard]] auto to_sql_string(Context& context, const clause_base<no_update_table_t, Statement>&)
   {
     return std::string{};
   }

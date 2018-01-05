@@ -96,12 +96,11 @@ namespace sqlpp
     }
   };
 
-  template <typename DbConnection, typename... Assignments, typename Statement>
-  decltype(auto) operator<<(const DbConnection& connection,
-                            const clause_base<update_set_t<Assignments...>, Statement>& t)
+  template <typename Context, typename... Assignments, typename Statement>
+  decltype(auto) operator<<(Context& context, const clause_base<update_set_t<Assignments...>, Statement>& t)
   {
     return std::string{" SET "} +
-           tuple_to_sql_string(connection, ", ", std::tie(std::get<Assignments>(t._assignments)...));
+           tuple_to_sql_string(context, ", ", std::tie(std::get<Assignments>(t._assignments)...));
   }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_update_set_at_least_one_arg, "at least one assignment required in set()");
@@ -165,8 +164,8 @@ namespace sqlpp
     }
   };
 
-  template <typename DbConnection, typename Statement>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<no_update_set_t, Statement>&)
+  template <typename Context, typename Statement>
+  [[nodiscard]] auto to_sql_string(Context& context, const clause_base<no_update_set_t, Statement>&)
   {
     return std::string{};
   }

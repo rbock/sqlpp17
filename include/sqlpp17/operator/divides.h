@@ -61,15 +61,15 @@ namespace sqlpp
   template <typename L, typename R>
   constexpr auto requires_braces_v<divides_t<L, R>> = true;
 
-  template <typename DbConnection, typename L, typename R>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const divides_t<L, R>& t)
+  template <typename Context, typename L, typename R>
+  [[nodiscard]] auto to_sql_string(Context& context, const divides_t<L, R>& t)
   {
-    return to_sql_string(connection, embrace(t.l)) + " / " + to_sql_string(connection, embrace(t.r));
+    return to_sql_string(context, embrace(t.l)) + " / " + to_sql_string(context, embrace(t.r));
   }
 
-  template <typename DbConnection, typename L1, typename R1, typename R2>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const divides_t<divides_t<L1, R1>, R2>& t)
+  template <typename Context, typename L1, typename R1, typename R2>
+  [[nodiscard]] auto to_sql_string(Context& context, const divides_t<divides_t<L1, R1>, R2>& t)
   {
-    return to_sql_string(connection, t.l) + " / " + to_sql_string(connection, embrace(t.r));
+    return to_sql_string(context, t.l) + " / " + to_sql_string(context, embrace(t.r));
   }
 }  // namespace sqlpp

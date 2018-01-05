@@ -110,15 +110,15 @@ namespace sqlpp
     using type = NameTag;
   };
 
-  template <typename DbConnection, typename CteType, typename NameTag, typename Statement>
-  [[nodiscard]] auto to_full_sql_string(const DbConnection& connection, const cte_t<CteType, NameTag, Statement>& t)
+  template <typename Context, typename CteType, typename NameTag, typename Statement>
+  [[nodiscard]] auto to_full_sql_string(Context& context, const cte_t<CteType, NameTag, Statement>& t)
   {
-    return to_sql_name(connection, t) + " AS (" + to_sql_string(connection, t._statement) + ")";
+    return to_sql_name(context, t) + " AS (" + to_sql_string(context, t._statement) + ")";
   }
 
-  template <typename DbConnection, typename CteType, typename NameTag, typename Statement>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const cte_t<CteType, NameTag, Statement>& t)
+  template <typename Context, typename CteType, typename NameTag, typename Statement>
+  [[nodiscard]] auto to_sql_string(Context& context, const cte_t<CteType, NameTag, Statement>& t)
   {
-    return to_sql_name(connection, t);
+    return to_sql_name(context, t);
   }
 }  // namespace sqlpp

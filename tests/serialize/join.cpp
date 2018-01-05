@@ -37,11 +37,11 @@ int main()
   auto context = 0;
   {
     auto s = test::tabPerson.join(test::tabDepartment).unconditionally();
-    std::cout << to_sql_string(context, s) << std::endl;
+    std::cout << to_sql_string_c(context, s) << std::endl;
   }
   {
     auto s = test::tabPerson.join(false ? std::make_optional(test::tabDepartment) : std::nullopt).unconditionally();
-    std::cout << to_sql_string(context, s) << std::endl;
+    std::cout << to_sql_string_c(context, s) << std::endl;
   }
 #warning : need to test results
 }

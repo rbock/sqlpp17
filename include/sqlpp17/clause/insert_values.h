@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2016 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -78,15 +78,14 @@ namespace sqlpp
     std::tuple<Assignments...> _assignments;
   };
 
-  template <typename DbConnection, typename Statement, typename... Assignments>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection,
-                                   const clause_base<insert_values_t<Assignments...>, Statement>& t)
+  template <typename Context, typename Statement, typename... Assignments>
+  [[nodiscard]] auto to_sql_string(Context& context, const clause_base<insert_values_t<Assignments...>, Statement>& t)
   {
     auto ret = std::string{};
     // columns
     {
       ret += " (";
-      ret += tuple_to_sql_string(connection, ", ",
+      ret += tuple_to_sql_string(context, ", ",
                                  std::tuple(free_column_t{std::get<Assignments>(t._assignments).column}...));
       ret += ")";
     }
@@ -94,7 +93,7 @@ namespace sqlpp
     // values
     {
       ret += " VALUES (";
-      ret += tuple_to_sql_string(connection, ", ", std::tie(std::get<Assignments>(t._assignments).value...));
+      ret += tuple_to_sql_string(context, ", ", std::tie(std::get<Assignments>(t._assignments).value...));
       ret += ")";
     }
 
@@ -142,9 +141,8 @@ namespace sqlpp
     }
   }
 
-  template <typename DbConnection, typename Statement>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection,
-                                   const clause_base<insert_default_values_t, Statement>& t)
+  template <typename Context, typename Statement>
+  [[nodiscard]] auto to_sql_string(Context& context, const clause_base<insert_default_values_t, Statement>& t)
   {
     return std::string{" DEFAULT VALUES"};
   }
@@ -216,8 +214,8 @@ namespace sqlpp
 
   // this function assumes that there is something to do
   // the check if there is at least one row has to be performed elsewhere
-  template <typename DbConnection, typename Statement, typename... Assignments>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection,
+  template <typename Context, typename Statement, typename... Assignments>
+  [[nodiscard]] auto to_sql_string(Context& context,
                                    const clause_base<insert_multi_values_t<Assignments...>, Statement>& t)
   {
     auto ret = std::string{};
@@ -225,7 +223,7 @@ namespace sqlpp
     // columns
     {
       ret += " (";
-      ret += tuple_to_sql_string(connection, ", ",
+      ret += tuple_to_sql_string(context, ", ",
                                  std::tuple(free_column_t{std::get<Assignments>(t._assignments).column}...));
       ret += ")";
     }
@@ -240,7 +238,7 @@ namespace sqlpp
           ret += ", ";
         first = false;
         ret += "(";
-        ret += tuple_to_sql_string(connection, ", ", std::tie(std::get<Assignments>(t._assignments).value...));
+        ret += tuple_to_sql_string(context, ", ", std::tie(std::get<Assignments>(t._assignments).value...));
         ret += ")";
       }
     }
@@ -342,9 +340,9 @@ namespace sqlpp
     }
   };
 
-  template <typename DbConnection, typename Statement>
-  decltype(auto) operator<<(const DbConnection& connection, const clause_base<no_insert_values_t, Statement>&)
+  template <typename Context, typename Statement>
+  [[nodiscard]] auto to_sql_string(Context& context, clause_base<no_insert_values_t, Statement>&)
   {
-    return connection;
+    return std::string{};
   }
 }  // namespace sqlpp

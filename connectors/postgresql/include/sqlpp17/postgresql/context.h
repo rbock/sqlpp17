@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,50 +26,17 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <type_traits>
-#include <sqlpp17/to_sql_string.h>
-
-namespace sqlpp
+namespace sqlpp::postgresql
 {
-  template <typename L, typename... Args>
-  struct not_in_t
+  class context_t
   {
-    L l;
-    std::tuple<Args...> args;
-  };
+    int _parameter_index = 0;
 
-  template <typename L, typename... Args>
-  struct nodes_of<not_in_t<L, Args...>>
-  {
-    using type = type_vector<L, Args...>;
-  };
-
-  template <typename L, typename... Args>
-  constexpr auto not_in(L l, Args... args)
-      -> std::enable_if_t<((sizeof...(Args) > 0) and ... and are_values_comparable_v<L, Args>), not_in_t<L, Args...>>
-  {
-    return not_in_t<L, Args...>{l, std::tuple{args...}};
-  }
-
-  template <typename L, typename... Args>
-  struct value_type_of<not_in_t<L, Args...>>
-  {
-    using type = bool;
-  };
-
-  template <typename L, typename... Args>
-  constexpr auto requires_braces_v<not_in_t<L, Args...>> = true;
-
-  template <typename Context, typename L, typename... Args>
-  [[nodiscard]] auto to_sql_string(Context& context, const not_in_t<L, Args...>& t)
-  {
-    if constexpr (sizeof...(Args) == 1)
+  public:
+    auto get_next_parameter_index()
     {
-      return to_sql_string(context, embrace(t.l)) + " IN(" + to_sql_string(context, std::get<0>(t.args)) + ")";
+      return _parameter_index++;
     }
-    else
-    {
-      return to_sql_string(context, embrace(t.l)) + " IN(" + tuple_to_sql_string(context, ", ", t.args) + ")";
-    }
-  }
-}  // namespace sqlpp
+  };
+}  // namespace sqlpp::postgresql
+

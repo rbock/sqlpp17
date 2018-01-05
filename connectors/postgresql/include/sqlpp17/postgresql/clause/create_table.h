@@ -35,7 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp::postgresql
 {
-  class connection_t;
+  class context_t;
 }
 
 namespace sqlpp::postgresql::detail
@@ -58,9 +58,9 @@ namespace sqlpp::postgresql::detail
   }
 
   template <typename ColumnSpec>
-  [[nodiscard]] auto to_sql_column_spec_string(const postgresql::connection_t& connection, const ColumnSpec& columnSpec)
+  [[nodiscard]] auto to_sql_column_spec_string(postgresql::context_t& context, const ColumnSpec& columnSpec)
   {
-    auto ret = to_sql_name(connection, columnSpec);
+    auto ret = to_sql_name(context, columnSpec);
 
     if constexpr (std::is_same_v<std::decay_t<decltype(columnSpec.default_value)>, ::sqlpp::auto_increment_t>)
     {
@@ -95,7 +95,7 @@ namespace sqlpp::postgresql::detail
       }
       else
       {
-        ret += " DEFAULT " + to_sql_string(connection, columnSpec.default_value);
+        ret += " DEFAULT " + to_sql_string(context, columnSpec.default_value);
       }
     }
 
@@ -103,7 +103,7 @@ namespace sqlpp::postgresql::detail
   }
 
   template <typename TableSpec, typename... ColumnSpecs>
-  [[nodiscard]] auto to_sql_create_columns_string(const postgresql::connection_t& connection,
+  [[nodiscard]] auto to_sql_create_columns_string(postgresql::context_t& context,
                                                   const std::tuple<column_t<TableSpec, ColumnSpecs>...>& t)
   {
     struct
@@ -123,11 +123,11 @@ namespace sqlpp::postgresql::detail
       }
     } separator;
 
-    return (std ::string{} + ... + (separator.to_string() + to_sql_column_spec_string(connection, ColumnSpecs{})));
+    return (std ::string{} + ... + (separator.to_string() + to_sql_column_spec_string(context, ColumnSpecs{})));
   }
 
   template <typename TableSpec, typename... ColumnSpecs>
-  [[nodiscard]] auto to_sql_primary_key(const postgresql::connection_t& connection,
+  [[nodiscard]] auto to_sql_primary_key(postgresql::context_t& context,
                                         const ::sqlpp::table_t<TableSpec, ColumnSpecs...>& t)
   {
     using _primary_key = typename TableSpec::primary_key;
@@ -137,7 +137,7 @@ namespace sqlpp::postgresql::detail
     }
     else
     {
-      return ", PRIMARY KEY (" + to_sql_name(connection, _primary_key{}) + ")";
+      return ", PRIMARY KEY (" + to_sql_name(context, _primary_key{}) + ")";
     }
   }
 }  // namespace sqlpp::postgresql::detail
@@ -145,13 +145,13 @@ namespace sqlpp::postgresql::detail
 namespace sqlpp
 {
   template <typename Table, typename Statement>
-  [[nodiscard]] auto to_sql_string(const postgresql::connection_t& connection,
+  [[nodiscard]] auto to_sql_string(postgresql::context_t& context,
                                    const clause_base<create_table_t<Table>, Statement>& t)
   {
-    auto ret = std::string{"CREATE TABLE "} + to_sql_string(connection, t._table);
+    auto ret = std::string{"CREATE TABLE "} + to_sql_string(context, t._table);
     ret += "(";
-    ret += ::sqlpp::postgresql::detail::to_sql_create_columns_string(connection, column_tuple_of(t._table));
-    ret += ::sqlpp::postgresql::detail::to_sql_primary_key(connection, t._table);
+    ret += ::sqlpp::postgresql::detail::to_sql_create_columns_string(context, column_tuple_of(t._table));
+    ret += ::sqlpp::postgresql::detail::to_sql_primary_key(context, t._table);
     ret += ")";
 
     return ret;

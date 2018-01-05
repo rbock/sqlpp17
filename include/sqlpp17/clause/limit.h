@@ -90,8 +90,8 @@ namespace sqlpp
     }
   }
 
-  template <typename DbConnection, typename Number, typename Statement>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<limit_t<Number>, Statement>& t)
+  template <typename Context, typename Number, typename Statement>
+  [[nodiscard]] auto to_sql_string(Context& context, const clause_base<limit_t<Number>, Statement>& t)
   {
     if (has_value(t._number))
       return std::string{};
@@ -142,8 +142,8 @@ namespace sqlpp
     }
   };
 
-  template <typename DbConnection, typename Statement>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<no_limit_t, Statement>&)
+  template <typename Context, typename Statement>
+  [[nodiscard]] auto to_sql_string(Context& context, const clause_base<no_limit_t, Statement>&)
   {
     return std::string{};
   }

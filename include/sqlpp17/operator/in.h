@@ -60,16 +60,16 @@ namespace sqlpp
   template <typename L, typename... Args>
   constexpr auto requires_braces_v<in_t<L, Args...>> = true;
 
-  template <typename DbConnection, typename L, typename... Args>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const in_t<L, Args...>& t)
+  template <typename Context, typename L, typename... Args>
+  [[nodiscard]] auto to_sql_string(Context& context, const in_t<L, Args...>& t)
   {
     if constexpr (sizeof...(Args) == 1)
     {
-      return to_sql_string(connection, embrace(t.l)) + " IN(" + to_sql_string(connection, std::get<0>(t.args)) + ")";
+      return to_sql_string(context, embrace(t.l)) + " IN(" + to_sql_string(context, std::get<0>(t.args)) + ")";
     }
     else
     {
-      return to_sql_string(connection, embrace(t.l)) + " IN(" + tuple_to_sql_string(connection, ", ", t.args) + ")";
+      return to_sql_string(context, embrace(t.l)) + " IN(" + tuple_to_sql_string(context, ", ", t.args) + ")";
     }
   }
 }  // namespace sqlpp

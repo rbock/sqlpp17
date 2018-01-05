@@ -76,11 +76,10 @@ namespace sqlpp
     std::tuple<Columns...> _columns;
   };
 
-  template <typename DbConnection, typename... Columns, typename Statement>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection,
-                                   const clause_base<order_by_t<Columns...>, Statement>& t)
+  template <typename Context, typename... Columns, typename Statement>
+  [[nodiscard]] auto to_sql_string(Context& context, const clause_base<order_by_t<Columns...>, Statement>& t)
   {
-    return std::string{" ORDER BY "} + tuple_to_sql_string(connection, ", ", std::get<Columns>(t._columns)...);
+    return std::string{" ORDER BY "} + tuple_to_sql_string(context, ", ", std::get<Columns>(t._columns)...);
   }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_order_by_args_not_empty, "order_by() must be called with at least one argument");
@@ -144,8 +143,8 @@ namespace sqlpp
     }
   };
 
-  template <typename DbConnection, typename Statement>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<no_order_by_t, Statement>& t)
+  template <typename Context, typename Statement>
+  [[nodiscard]] auto to_sql_string(Context& context, const clause_base<no_order_by_t, Statement>& t)
   {
     return std::string{};
   }

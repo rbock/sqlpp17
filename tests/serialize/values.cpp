@@ -32,24 +32,24 @@ int main()
 {
   auto context = 0;
 
-  std::cout << sqlpp::to_sql_string(context, true) << std::endl;
-  std::cout << sqlpp::to_sql_string(context, false) << std::endl;
+  std::cout << sqlpp::to_sql_string_c(context, true) << std::endl;
+  std::cout << sqlpp::to_sql_string_c(context, false) << std::endl;
 
-  std::cout << sqlpp::to_sql_string(context, 1234567890) << std::endl;
-  std::cout << sqlpp::to_sql_string(context, 42) << std::endl;
-  std::cout << sqlpp::to_sql_string(context, 0) << std::endl;
+  std::cout << sqlpp::to_sql_string_c(context, 1234567890) << std::endl;
+  std::cout << sqlpp::to_sql_string_c(context, 42) << std::endl;
+  std::cout << sqlpp::to_sql_string_c(context, 0) << std::endl;
 
-  std::cout << sqlpp::to_sql_string(context, 12345678901234567890ull) << std::endl;
-  std::cout << sqlpp::to_sql_string(context, 42ull) << std::endl;
-  std::cout << sqlpp::to_sql_string(context, 0ull) << std::endl;
+  std::cout << sqlpp::to_sql_string_c(context, 12345678901234567890ull) << std::endl;
+  std::cout << sqlpp::to_sql_string_c(context, 42ull) << std::endl;
+  std::cout << sqlpp::to_sql_string_c(context, 0ull) << std::endl;
 
-  std::cout << sqlpp::to_sql_string(context, 1234567890.1234567890) << std::endl;
-  std::cout << sqlpp::to_sql_string(context, -1234567890.1234567890) << std::endl;
+  std::cout << sqlpp::to_sql_string_c(context, 1234567890.1234567890) << std::endl;
+  std::cout << sqlpp::to_sql_string_c(context, -1234567890.1234567890) << std::endl;
 
-  std::cout << sqlpp::to_sql_string(context, 'c') << std::endl;
-  std::cout << sqlpp::to_sql_string(context, "char*") << std::endl;
-  std::cout << sqlpp::to_sql_string(context, std::string_view("string_view")) << std::endl;
-  std::cout << sqlpp::to_sql_string(context, std::string("string")) << std::endl;
+  std::cout << sqlpp::to_sql_string_c(context, 'c') << std::endl;
+  std::cout << sqlpp::to_sql_string_c(context, "char*") << std::endl;
+  std::cout << sqlpp::to_sql_string_c(context, std::string_view("string_view")) << std::endl;
+  std::cout << sqlpp::to_sql_string_c(context, std::string("string")) << std::endl;
 
 #warning : need to test results
 }

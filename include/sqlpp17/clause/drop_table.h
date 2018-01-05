@@ -93,10 +93,10 @@ namespace sqlpp
     }
   };
 
-  template <typename DbConnection, typename Table, typename Statement>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<drop_table_t<Table>, Statement>& t)
+  template <typename Context, typename Table, typename Statement>
+  [[nodiscard]] auto to_sql_string(Context& context, const clause_base<drop_table_t<Table>, Statement>& t)
   {
-    return std::string("DROP TABLE IF EXISTS ") + to_sql_name(connection, t._table);
+    return std::string("DROP TABLE IF EXISTS ") + to_sql_name(context, t._table);
   }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_drop_table_arg_is_table, "drop_table() arg has to be a table");

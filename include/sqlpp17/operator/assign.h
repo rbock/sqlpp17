@@ -62,9 +62,9 @@ namespace sqlpp
   template <typename L, typename R>
   constexpr auto requires_braces_v<assign_t<L, R>> = true;
 
-  template <typename DbConnection, typename L, typename R>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const assign_t<L, R>& t)
+  template <typename Context, typename L, typename R>
+  [[nodiscard]] auto to_sql_string(Context& context, const assign_t<L, R>& t)
   {
-    return to_sql_string(connection, t.column) + " = " + to_sql_string(connection, embrace(t.value));
+    return to_sql_string(context, t.column) + " = " + to_sql_string(context, embrace(t.value));
   }
 }  // namespace sqlpp

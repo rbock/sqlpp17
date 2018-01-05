@@ -58,9 +58,9 @@ namespace sqlpp
   template <typename L>
   constexpr auto requires_braces_v<negate_t<L>> = true;
 
-  template <typename DbConnection, typename L>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const negate_t<L>& t)
+  template <typename Context, typename L>
+  [[nodiscard]] auto to_sql_string(Context& context, const negate_t<L>& t)
   {
-    return std::string{" -"} + to_sql_string(connection, embrace(t.l));
+    return std::string{" -"} + to_sql_string(context, embrace(t.l));
   }
 }  // namespace sqlpp

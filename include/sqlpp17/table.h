@@ -73,10 +73,10 @@ namespace sqlpp
     using type = TableSpec;
   };
 
-  template <typename DbConnection, typename TableSpec, typename... ColumnSpecs>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const table_t<TableSpec, ColumnSpecs...>& t)
+  template <typename Context, typename TableSpec, typename... ColumnSpecs>
+  [[nodiscard]] auto to_sql_string(Context& context, const table_t<TableSpec, ColumnSpecs...>& t)
   {
-    return to_sql_name(connection, t);
+    return to_sql_name(context, t);
   }
 
   template <typename TableSpec, typename... ColumnSpecs>

@@ -43,14 +43,14 @@ namespace sqlpp
     using type = type_vector<Expression>;
   };
 
-  template <typename DbConnection, typename Expression>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const on_t<Expression>& t)
+  template <typename Context, typename Expression>
+  [[nodiscard]] auto to_sql_string(Context& context, const on_t<Expression>& t)
   {
-    return std::string{" ON "} + to_sql_string(connection, t._expression);
+    return std::string{" ON "} + to_sql_string(context, t._expression);
   }
 
-  template <typename DbConnection>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const on_t<unconditional_t>& t)
+  template <typename Context>
+  [[nodiscard]] auto to_sql_string(Context& context, const on_t<unconditional_t>& t)
   {
     return std::string{};
   }

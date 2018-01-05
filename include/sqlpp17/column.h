@@ -139,10 +139,10 @@ namespace sqlpp
     return type_set<TableSpec>();
   }
 
-  template <typename DbConnection, typename TableSpec, typename ColumnSpec>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const column_t<TableSpec, ColumnSpec>& t)
+  template <typename Context, typename TableSpec, typename ColumnSpec>
+  [[nodiscard]] auto to_sql_string(Context& context, const column_t<TableSpec, ColumnSpec>& t)
   {
-    return to_sql_name(connection, TableSpec{}) + "." + to_sql_name(connection, ColumnSpec{});
+    return to_sql_name(context, TableSpec{}) + "." + to_sql_name(context, ColumnSpec{});
   }
 
 }  // namespace sqlpp

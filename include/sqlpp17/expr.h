@@ -93,10 +93,10 @@ namespace sqlpp
     using type = value_type_of_t<Expression>;
   };
 
-  template <typename DbConnection, typename Expression>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const expr_t<Expression>& t)
+  template <typename Context, typename Expression>
+  [[nodiscard]] auto to_sql_string(Context& context, const expr_t<Expression>& t)
   {
-    return to_sql_string(connection, t._expr);
+    return to_sql_string(context, t._expr);
   }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_expr_arg_is_expression, "expr() arg must be a value expression");

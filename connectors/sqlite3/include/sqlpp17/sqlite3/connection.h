@@ -36,6 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/sqlite3/clause.h>
 #include <sqlpp17/sqlite3/connection_config.h>
+#include <sqlpp17/sqlite3/context.h>
 #include <sqlpp17/sqlite3/prepared_statement.h>
 #include <sqlpp17/sqlite3/prepared_statement_result.h>
 
@@ -223,7 +224,7 @@ namespace sqlpp::sqlite3
     template <typename Statement>
     [[nodiscard]] auto prepare_execute(const Statement& statement)
     {
-      return detail::prepared_execute_t{detail::prepare(*this, to_sql_string(*this, statement))};
+      return detail::prepared_execute_t{detail::prepare(*this, to_sql_string_c(context_t{}, statement))};
     }
 
     template <typename Statement>
@@ -236,7 +237,7 @@ namespace sqlpp::sqlite3
     template <typename Statement>
     [[nodiscard]] auto prepare_insert(const Statement& statement)
     {
-      return detail::prepared_insert_t{detail::prepare(*this, to_sql_string(*this, statement))};
+      return detail::prepared_insert_t{detail::prepare(*this, to_sql_string_c(context_t{}, statement))};
     }
 
     template <typename Statement>
@@ -249,7 +250,7 @@ namespace sqlpp::sqlite3
     template <typename Statement>
     [[nodiscard]] auto prepare_update(const Statement& statement)
     {
-      return detail::prepared_update_t{detail::prepare(*this, to_sql_string(*this, statement))};
+      return detail::prepared_update_t{detail::prepare(*this, to_sql_string_c(context_t{}, statement))};
     }
 
     template <typename Statement>
@@ -262,7 +263,7 @@ namespace sqlpp::sqlite3
     template <typename Statement>
     [[nodiscard]] auto prepare_erase(const Statement& statement)
     {
-      return detail::prepared_erase_t{detail::prepare(*this, to_sql_string(*this, statement))};
+      return detail::prepared_erase_t{detail::prepare(*this, to_sql_string_c(context_t{}, statement))};
     }
 
     template <typename Statement>
@@ -276,7 +277,7 @@ namespace sqlpp::sqlite3
     template <typename Statement>
     [[nodiscard]] auto prepare_select(const Statement& statement)
     {
-      return detail::prepared_select_t{detail::prepare(*this, to_sql_string(*this, statement)), _debug};
+      return detail::prepared_select_t{detail::prepare(*this, to_sql_string_c(context_t{}, statement)), _debug};
     }
   };  // namespace sqlpp::sqlite3
 

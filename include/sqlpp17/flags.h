@@ -34,8 +34,8 @@ namespace sqlpp
 
   constexpr auto all = all_t{};
 
-  template <typename DbConnection>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const all_t& t)
+  template <typename Context>
+  [[nodiscard]] auto to_sql_string(Context& context, const all_t& t)
   {
     return std::string{" ALL "};
   }
@@ -46,8 +46,8 @@ namespace sqlpp
 
   constexpr auto distinct = distinct_t{};
 
-  template <typename DbConnection>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const distinct_t& t)
+  template <typename Context>
+  [[nodiscard]] auto to_sql_string(Context& context, const distinct_t& t)
   {
     return std::string{" DISTINCT "};
   }

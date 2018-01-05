@@ -93,11 +93,10 @@ namespace sqlpp
     }
   };
 
-  template <typename DbConnection, typename Table, typename Statement>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection,
-                                   const clause_base<create_table_t<Table>, Statement>& t)
+  template <typename Context, typename Table, typename Statement>
+  [[nodiscard]] auto to_sql_string(Context& context, const clause_base<create_table_t<Table>, Statement>& t)
   {
-    static_assert(wrong<DbConnection, clause_base<create_table_t<Table>, Statement>>,
+    static_assert(wrong<Context, clause_base<create_table_t<Table>, Statement>>,
                   "Missing specialization for to_sql_string() for the current connection type");
   }
 

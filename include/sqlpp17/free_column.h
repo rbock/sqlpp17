@@ -44,10 +44,10 @@ namespace sqlpp
     }
   };
 
-  template <typename DbConnection, typename ColumnSpec>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const free_column_t<ColumnSpec>& t)
+  template <typename Context, typename ColumnSpec>
+  [[nodiscard]] auto to_sql_string(Context& context, const free_column_t<ColumnSpec>& t)
   {
-    return to_sql_name(connection, ColumnSpec{});
+    return to_sql_name(context, ColumnSpec{});
   }
 
 }  // namespace sqlpp

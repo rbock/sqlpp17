@@ -88,13 +88,13 @@ namespace sqlpp
     }
   }
 
-  template <typename DbConnection, typename Number, typename Statement>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<offset_t<Number>, Statement>& t)
+  template <typename Context, typename Number, typename Statement>
+  [[nodiscard]] auto to_sql_string(Context& context, const clause_base<offset_t<Number>, Statement>& t)
   {
     if (has_value(t._number))
       return std::string{};
 
-    return std::string{" OFFSET "} + to_sql_string(connection, get_value(t._number));
+    return std::string{" OFFSET "} + to_sql_string(context, get_value(t._number));
   }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_offset_arg_is_integral_value, "offset() arg has to be an integral value");
@@ -140,8 +140,8 @@ namespace sqlpp
     }
   };
 
-  template <typename DbConnection, typename Statement>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<no_offset_t, Statement>&)
+  template <typename Context, typename Statement>
+  [[nodiscard]] auto to_sql_string(Context& context, const clause_base<no_offset_t, Statement>&)
   {
     return std::string{};
   }

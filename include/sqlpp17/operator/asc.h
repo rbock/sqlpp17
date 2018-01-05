@@ -62,8 +62,8 @@ namespace sqlpp
   template <typename L>
   constexpr auto is_sort_order_v<sort_order_t<L>> = true;
 
-  template <typename DbConnection>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const sort_order& t)
+  template <typename Context>
+  [[nodiscard]] auto to_sql_string(Context& context, const sort_order& t)
   {
     switch (t)
     {
@@ -74,10 +74,10 @@ namespace sqlpp
     }
   }
 
-  template <typename DbConnection, typename L>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const sort_order_t<L>& t)
+  template <typename Context, typename L>
+  [[nodiscard]] auto to_sql_string(Context& context, const sort_order_t<L>& t)
   {
-    return to_sql_string(embrace(t.l)) + to_sql_string(connection, t.order);
+    return to_sql_string(embrace(t.l)) + to_sql_string(context, t.order);
   }
 
 }  // namespace sqlpp

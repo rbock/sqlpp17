@@ -63,9 +63,9 @@ namespace sqlpp
   template <typename Expression, typename NameTag>
   constexpr auto is_selectable_v<alias_t<Expression, NameTag>> = is_expression_v<alias_t<Expression, NameTag>>;
 
-  template <typename DbConnection, typename Expression, typename NameTag>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const alias_t<Expression, NameTag>& t)
+  template <typename Context, typename Expression, typename NameTag>
+  [[nodiscard]] auto to_sql_string(Context& context, const alias_t<Expression, NameTag>& t)
   {
-    return to_sql_string(connection, t._expression) + " AS " + to_sql_name(connection, t);
+    return to_sql_string(context, t._expression) + " AS " + to_sql_name(context, t);
   }
 }  // namespace sqlpp

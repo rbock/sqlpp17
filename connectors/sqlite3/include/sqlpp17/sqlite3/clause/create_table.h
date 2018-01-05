@@ -35,7 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp::sqlite3
 {
-  class connection_t;
+  class context_t;
 }
 
 namespace sqlpp::sqlite3::detail
@@ -58,11 +58,11 @@ namespace sqlpp::sqlite3::detail
   }
 
   template <typename TableSpec, typename ColumnSpec>
-  [[nodiscard]] auto to_sql_column_spec_string(const sqlite3::connection_t& connection,
+  [[nodiscard]] auto to_sql_column_spec_string(sqlite3::context_t& context,
                                                [[maybe_unused]] const TableSpec&,
                                                const ColumnSpec& columnSpec)
   {
-    auto ret = to_sql_name(connection, columnSpec) + value_type_to_sql_string(typename ColumnSpec::value_type{});
+    auto ret = to_sql_name(context, columnSpec) + value_type_to_sql_string(typename ColumnSpec::value_type{});
 
     if constexpr (not ColumnSpec::can_be_null)
     {
@@ -82,14 +82,14 @@ namespace sqlpp::sqlite3::detail
     }
     else
     {
-      ret += " DEFAULT " + to_sql_string(connection, columnSpec.default_value);
+      ret += " DEFAULT " + to_sql_string(context, columnSpec.default_value);
     }
 
     return ret;
   }
 
   template <typename TableSpec, typename... ColumnSpecs>
-  [[nodiscard]] auto to_sql_create_columns_string(const sqlite3::connection_t& connection,
+  [[nodiscard]] auto to_sql_create_columns_string(sqlite3::context_t& context,
                                                   const std::tuple<column_t<TableSpec, ColumnSpecs>...>& t)
   {
     struct
@@ -110,11 +110,11 @@ namespace sqlpp::sqlite3::detail
     } separator;
 
     return (std ::string{} + ... +
-            (separator.to_string() + to_sql_column_spec_string(connection, TableSpec{}, ColumnSpecs{})));
+            (separator.to_string() + to_sql_column_spec_string(context, TableSpec{}, ColumnSpecs{})));
   }
 
   template <typename TableSpec, typename... ColumnSpecs>
-  [[nodiscard]] auto to_sql_primary_key(const sqlite3::connection_t& connection,
+  [[nodiscard]] auto to_sql_primary_key(sqlite3::context_t& context,
                                         const ::sqlpp::table_t<TableSpec, ColumnSpecs...>& t)
   {
     using _primary_key = typename TableSpec::primary_key;
@@ -128,7 +128,7 @@ namespace sqlpp::sqlite3::detail
     }
     else
     {
-      return ", PRIMARY KEY (" + to_sql_name(connection, _primary_key{}) + " ASC)";
+      return ", PRIMARY KEY (" + to_sql_name(context, _primary_key{}) + " ASC)";
     }
   }
 }  // namespace sqlpp::sqlite3::detail
@@ -136,13 +136,12 @@ namespace sqlpp::sqlite3::detail
 namespace sqlpp
 {
   template <typename Table, typename Statement>
-  [[nodiscard]] auto to_sql_string(const sqlite3::connection_t& connection,
-                                   const clause_base<create_table_t<Table>, Statement>& t)
+  [[nodiscard]] auto to_sql_string(sqlite3::context_t& context, const clause_base<create_table_t<Table>, Statement>& t)
   {
-    auto ret = std::string{"CREATE TABLE "} + to_sql_string(connection, t._table);
+    auto ret = std::string{"CREATE TABLE "} + to_sql_string(context, t._table);
     ret += "(";
-    ret += ::sqlpp::sqlite3::detail::to_sql_create_columns_string(connection, column_tuple_of(t._table));
-    ret += ::sqlpp::sqlite3::detail::to_sql_primary_key(connection, t._table);
+    ret += ::sqlpp::sqlite3::detail::to_sql_create_columns_string(context, column_tuple_of(t._table));
+    ret += ::sqlpp::sqlite3::detail::to_sql_primary_key(context, t._table);
     ret += ")";
 
     return ret;

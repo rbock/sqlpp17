@@ -72,10 +72,10 @@ namespace sqlpp
     Table _table;
   };
 
-  template <typename DbConnection, typename Table, typename Statement>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<from_t<Table>, Statement>& t)
+  template <typename Context, typename Table, typename Statement>
+  [[nodiscard]] auto to_sql_string(Context& context, const clause_base<from_t<Table>, Statement>& t)
   {
-    return std::string(" FROM ") + to_sql_string(connection, t._table);
+    return std::string(" FROM ") + to_sql_string(context, t._table);
   }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_from_arg_is_not_conditionless_join,
@@ -132,8 +132,8 @@ namespace sqlpp
     }
   };
 
-  template <typename DbConnection, typename Statement>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<no_from_t, Statement>&)
+  template <typename Context, typename Statement>
+  [[nodiscard]] auto to_sql_string(Context& context, const clause_base<no_from_t, Statement>&)
   {
     return std::string{};
   }

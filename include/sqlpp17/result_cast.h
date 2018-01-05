@@ -55,10 +55,10 @@ namespace sqlpp
     return result_cast_t<ValueType, Column>{column};
   }
 
-  template <typename DbConnection, typename ValueType, typename Column>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const result_cast_t<ValueType, Column>& t)
+  template <typename Context, typename ValueType, typename Column>
+  [[nodiscard]] auto to_sql_string(Context& context, const result_cast_t<ValueType, Column>& t)
   {
-    return to_sql_string(connection, t._column);
+    return to_sql_string(context, t._column);
   }
 
 }  // namespace sqlpp

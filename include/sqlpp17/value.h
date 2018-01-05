@@ -66,9 +66,9 @@ namespace sqlpp
     return value_t<std::string_view>{t};
   }
 
-  template <typename DbConnection, typename T>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const value_t<T>& t)
+  template <typename Context, typename T>
+  [[nodiscard]] auto to_sql_string(Context& context, const value_t<T>& t)
   {
-    return to_sql_string(connection, t.t);
+    return to_sql_string(context, t.t);
   }
 }  // namespace sqlpp

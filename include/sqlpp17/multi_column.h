@@ -88,9 +88,9 @@ namespace sqlpp
     using type = type_vector<Columns...>;
   };
 
-  template <typename DbConnection, typename... Columns>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const multi_column_t<Columns...>& t)
+  template <typename Context, typename... Columns>
+  [[nodiscard]] auto to_sql_string(Context& context, const multi_column_t<Columns...>& t)
   {
-    return tuple_to_sql_string(connection, t._tuples);
+    return tuple_to_sql_string(context, t._tuples);
   }
 }  // namespace sqlpp

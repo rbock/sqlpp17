@@ -56,7 +56,7 @@ int main()
                            << sqlpp::where(test::tabPerson.isManager and test::tabPerson.name == '\0')
                            << sqlpp::having(test::tabPerson.id == test::tabPerson.id or test::tabPerson.id == 1);
   #warning : need to test results
-    std::cout << to_sql_string(context, s);
+    std::cout << to_sql_string_c(context, s);
     auto conn = connection{};
     auto row = s.run(conn);
     */

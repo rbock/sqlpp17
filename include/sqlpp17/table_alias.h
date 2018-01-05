@@ -80,9 +80,8 @@ namespace sqlpp
     return type_set<TableSpec>();
   }
 
-  template <typename DbConnection, typename Table, typename TableSpec, typename... ColumnSpecs>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection,
-                                   const table_alias_t<Table, TableSpec, ColumnSpecs...>& t)
+  template <typename Context, typename Table, typename TableSpec, typename... ColumnSpecs>
+  [[nodiscard]] auto to_sql_string(Context& context, const table_alias_t<Table, TableSpec, ColumnSpecs...>& t)
   {
     auto ret = std::string{};
 

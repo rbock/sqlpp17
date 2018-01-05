@@ -79,8 +79,8 @@ namespace sqlpp
     std::tuple<CommonTableExpressions...> _ctes;
   };
 
-  template <typename DbConnection>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, with_mode mode)
+  template <typename Context>
+  [[nodiscard]] auto to_sql_string(Context& context, with_mode mode)
   {
     switch (mode)
     {
@@ -91,14 +91,14 @@ namespace sqlpp
     }
   }
 
-  template <typename DbConnection, with_mode Mode, typename... CommonTableExpressions, typename Statement>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection,
+  template <typename Context, with_mode Mode, typename... CommonTableExpressions, typename Statement>
+  [[nodiscard]] auto to_sql_string(Context& context,
                                    const clause_base<with_t<Mode, CommonTableExpressions...>, Statement>& t)
   {
     int index = -1;
-    return std::string{"WITH "} + to_sql_string(connection, Mode) +
+    return std::string{"WITH "} + to_sql_string(context, Mode) +
            (std::string() + ... +
-            ((++index ? ", " : "") + to_full_sql_string(connection, std::get<CommonTableExpressions>(t._ctes)))) +
+            ((++index ? ", " : "") + to_full_sql_string(context, std::get<CommonTableExpressions>(t._ctes)))) +
            " ";
   }
 
@@ -181,8 +181,8 @@ namespace sqlpp
     }
   };
 
-  template <typename DbConnection, typename Statement>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const clause_base<no_with_t, Statement>&)
+  template <typename Context, typename Statement>
+  [[nodiscard]] auto to_sql_string(Context& context, const clause_base<no_with_t, Statement>&)
   {
     return std::string{};
   }

@@ -58,8 +58,8 @@ namespace sqlpp
   template <typename L>
   constexpr auto requires_braces_v<logical_not_t<L>> = true;
 
-  template <typename DbConnection, typename L>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const logical_not_t<L>& t)
+  template <typename Context, typename L>
+  [[nodiscard]] auto to_sql_string(Context& context, const logical_not_t<L>& t)
   {
     return std::string(" NOT ") + to_sql_string(embrace(t.l));
   }

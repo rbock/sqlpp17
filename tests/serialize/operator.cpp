@@ -37,25 +37,25 @@ int main()
 #warning : s should be a constexpr
   {
     auto s = test::tabPerson.isManager and (test::tabPerson.isManager and test::tabPerson.isManager);
-    std::cout << to_sql_string(context, s) << std::endl;
+    std::cout << to_sql_string_c(context, s) << std::endl;
   }
   {
     auto s = test::tabPerson.isManager or test::tabPerson.isManager or test::tabPerson.isManager;
-    std::cout << to_sql_string(context, s) << std::endl;
+    std::cout << to_sql_string_c(context, s) << std::endl;
   }
   {
     auto s = test::tabPerson.isManager or test::tabPerson.isManager or
              (test::tabPerson.isManager and test::tabPerson.isManager);
-    std::cout << to_sql_string(context, s) << std::endl;
+    std::cout << to_sql_string_c(context, s) << std::endl;
   }
   {
     auto s = (test::tabPerson.isManager or test::tabPerson.isManager or test::tabPerson.isManager) and
              test::tabPerson.isManager;
-    std::cout << to_sql_string(context, s) << std::endl;
+    std::cout << to_sql_string_c(context, s) << std::endl;
   }
   {
     auto s = test::tabPerson.id + test::tabPerson.id + test::tabPerson.id;
-    std::cout << to_sql_string(context, s) << std::endl;
+    std::cout << to_sql_string_c(context, s) << std::endl;
   }
 #warning : need to test results
 }

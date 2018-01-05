@@ -50,17 +50,17 @@ namespace sqlpp
     using type = type_vector<Lhs, Rhs, Condition>;
   };
 
-  template <typename DbConnection, typename Lhs, typename JoinType, typename Rhs, typename Condition>
-  [[nodiscard]] auto to_sql_string(const DbConnection& connection, const join_t<Lhs, JoinType, Rhs, Condition>& t)
+  template <typename Context, typename Lhs, typename JoinType, typename Rhs, typename Condition>
+  [[nodiscard]] auto to_sql_string(Context& context, const join_t<Lhs, JoinType, Rhs, Condition>& t)
   {
-    auto ret = to_sql_string(connection, t._lhs);
+    auto ret = to_sql_string(context, t._lhs);
 
     if (has_value(t._rhs))
     {
       ret += JoinType::_name;
       ret += " JOIN ";
-      ret += to_sql_string(connection, get_value(t._rhs));
-      ret += to_sql_string(connection, t._condition);
+      ret += to_sql_string(context, get_value(t._rhs));
+      ret += to_sql_string(context, t._condition);
     }
 
     return ret;
