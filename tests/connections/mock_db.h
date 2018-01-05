@@ -39,6 +39,14 @@ namespace sqlpp::test
     }
   };
 
+  struct mock_prepared_select
+  {
+    [[nodiscard]] auto run()
+    {
+      return mock_result{};
+    }
+  };
+
   template <typename Row>
   auto get_next_result_row(mock_result& result, Row& row)
   {
@@ -56,8 +64,27 @@ namespace sqlpp::test
     template <typename Statement>
     auto operator()(const Statement& statement)
     {
-      // Need to do a final consistency check here
-      return statement.run(*this);
+      if constexpr (constexpr auto check = check_statement_executable<mock_db>(type_v<Statement>); check)
+      {
+        return statement.run(*this);
+      }
+      else
+      {
+        return ::sqlpp::bad_expression_t{check};
+      }
+    }
+
+    template <typename Statement>
+    auto prepare(const Statement& statement)
+    {
+      if constexpr (constexpr auto check = check_statement_preparable<mock_db>(type_v<Statement>); check)
+      {
+        return statement.prepare(*this);
+      }
+      else
+      {
+        return ::sqlpp::bad_expression_t{check};
+      }
     }
 
   private:
@@ -82,7 +109,13 @@ namespace sqlpp::test
     template <typename Statement>
     auto select(const Statement& statement)
     {
-      return mock_result();
+      return mock_result{};
+    }
+
+    template <typename Statement>
+    [[nodiscard]] auto prepare_select(const Statement& statement)
+    {
+      return mock_prepared_select{};
     }
   };
 

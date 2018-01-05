@@ -34,8 +34,8 @@ namespace sqlpp::test
     static_assert(::sqlpp::is_specific_bad_expression<Assert, T>());
   }
 
-  template <typename Assert, typename T>
-  auto assert_good_expression(const Assert&, const T&)
+  template <typename T>
+  auto assert_good_expression(const T&)
   {
     static_assert(not::sqlpp::is_bad_expression<T>());
   }

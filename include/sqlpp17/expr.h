@@ -122,7 +122,7 @@ namespace sqlpp
   {
     if constexpr (constexpr auto check = check_expr_args<Expression>(); check)
     {
-      return expr_t{expr};
+      return expr_t<Expression>{expr};
     }
     else
     {

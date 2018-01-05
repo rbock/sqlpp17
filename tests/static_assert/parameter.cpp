@@ -45,6 +45,5 @@ int main()
 {
   assert_bad_expression(::sqlpp::assert_parameter_as_arg_is_name_tag_or_similar{}, ::sqlpp::parameter<int>.as(17));
 
-  assert_good_expression(::sqlpp::assert_parameter_as_arg_is_name_tag_or_similar{},
-                         ::sqlpp::parameter<int>.as(::test::tabDepartment.id));
+  assert_good_expression(::sqlpp::parameter<int>.as(::test::tabDepartment.id));
 }

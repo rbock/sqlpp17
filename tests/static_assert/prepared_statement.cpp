@@ -49,11 +49,16 @@ namespace sqlpp
 
   template <typename... T>
   constexpr auto wrong<assert_execute_without_parameters, T...> = true;
+
+  template <typename... T>
+  constexpr auto wrong<assert_statement_parameters_have_unique_names, T...> = true;
+
 }  // namespace sqlpp
 
 namespace
 {
   SQLPP_CREATE_NAME_TAG(foo);
+  SQLPP_CREATE_NAME_TAG(bar);
 }  // namespace
 
 int main()
@@ -65,9 +70,21 @@ int main()
 
   // bad: using two table aliases with the same name
   assert_bad_expression(sqlpp::assert_statement_all_required_tables_are_provided{},
-                        db(select(all_of(pi)).from(qu).unconditionally()));
+                        db.prepare(select(all_of(pi)).from(qu).unconditionally()));
 
-  // bad: using a parameter in a directly executed statement
-  assert_bad_expression(::sqlpp::assert_execute_without_parameters{},
-                        db(select(expr(::sqlpp::parameter<int>.as(foo)).as(foo))));
+  // bad: using two parameters with identical names
+  assert_bad_expression(sqlpp::assert_statement_parameters_have_unique_names{},
+                        db.prepare(select(test::tabPerson.id)
+                                       .from(test::tabPerson)
+                                       .where(::sqlpp::parameter<int>.as(foo) < test::tabPerson.id and
+                                              test::tabPerson.id < ::sqlpp::parameter<float>.as(foo))));
+
+  // good: using a parameter in a prepared statement
+  assert_good_expression(db.prepare(select(expr(::sqlpp::parameter<int>.as(foo)).as(foo))));
+
+  // good: using two parameters with different names
+  assert_good_expression(db.prepare(select(test::tabPerson.id)
+                                        .from(test::tabPerson)
+                                        .where(::sqlpp::parameter<int>.as(foo) < test::tabPerson.id and
+                                               test::tabPerson.id < ::sqlpp::parameter<float>.as(bar))));
 }

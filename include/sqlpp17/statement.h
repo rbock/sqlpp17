@@ -83,18 +83,31 @@ namespace sqlpp
     return succeeded{};
   }
 
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_all_required_tables_are_provided, "statement uses tables that are not provided");
+  namespace detail
+  {
+    template <typename... Ts>
+    [[nodiscard]] constexpr auto have_unique_names(type_vector<Ts...>)
+    {
+      return type_set(char_sequence_of_v<Ts>...).size() == type_vector<Ts...>::size();
+    }
+  }  // namespace detail
+
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_statement_all_required_tables_are_provided,
+                              "statement uses tables that are not provided");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_statement_parameters_have_unique_names, "statement parameters must be unique");
 
   template <typename Db, typename... Clauses>
   constexpr auto check_statement_preparable([[maybe_unused]] const type_t<statement<Clauses...>>& s)
   {
     using _statement_t = statement<Clauses...>;
 
-#warning : check if parameter names are unique
-
-    if constexpr (not(required_tables_of_v<_statement_t> <= provided_tables_of_v<_statement_t>))
+    if constexpr (not detail::have_unique_names(parameters_of_v<_statement_t>))
     {
-      return failed<assert_all_required_tables_are_provided>{};
+      return failed<assert_statement_parameters_have_unique_names>{};
+    }
+    else if constexpr (not(required_tables_of_v<_statement_t> <= provided_tables_of_v<_statement_t>))
+    {
+      return failed<assert_statement_all_required_tables_are_provided>{};
     }
     else
       return (succeeded{} and ... and check_clause_preparable<Db>(type_v<clause_base<Clauses, _statement_t>>));
