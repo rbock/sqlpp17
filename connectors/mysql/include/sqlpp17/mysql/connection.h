@@ -128,9 +128,9 @@ namespace sqlpp::mysql
 
   class connection_t
   {
-    std::function<void(std::string_view)> _debug;
     detail::unique_connection_ptr _handle;
     connection_pool_t* _connection_pool = nullptr;
+    std::function<void(std::string_view)> _debug;
 
     template <typename... Clauses>
     friend class ::sqlpp::statement;

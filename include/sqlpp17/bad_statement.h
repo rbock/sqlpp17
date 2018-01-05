@@ -42,5 +42,9 @@ namespace sqlpp
   };
 
   template <typename Assert>
-  constexpr auto is_bad_statement_v<Assert, bad_statement_t<failed<Assert>>> = true;
-}
+  constexpr auto is_specific_bad_statement_v<Assert, bad_statement_t<failed<Assert>>> = true;
+
+  template <typename Assert>
+  constexpr auto is_bad_statement_v<bad_statement_t<failed<Assert>>> = true;
+
+}  // namespace sqlpp

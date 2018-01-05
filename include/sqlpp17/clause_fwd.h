@@ -33,6 +33,9 @@ namespace sqlpp
   template <typename... Clauses>
   class statement;
 
+  template <typename... Clauses>
+  class prepared_statement;
+
   template <typename Clause, typename Statement>
   class clause_base
   {
@@ -41,4 +44,4 @@ namespace sqlpp
 
   template <typename Clause, typename Statement>
   class result_base;
-}
+}  // namespace sqlpp

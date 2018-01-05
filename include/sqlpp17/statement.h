@@ -90,6 +90,8 @@ namespace sqlpp
   {
     using _statement_t = statement<Clauses...>;
 
+#warning : check if parameter names are unique
+
     if constexpr (not(required_tables_of_v<_statement_t> <= provided_tables_of_v<_statement_t>))
     {
       return failed<assert_all_required_tables_are_provided>{};
@@ -157,8 +159,7 @@ namespace sqlpp
 
     [[nodiscard]] static constexpr auto get_no_of_parameters()
     {
-#warning : implement
-      return 0;
+      return parameters_of_v<statement>.size();
     }
 
     template <typename Connection>

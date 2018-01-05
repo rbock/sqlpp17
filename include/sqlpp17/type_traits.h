@@ -234,13 +234,28 @@ namespace sqlpp
   template <typename Left, typename Right>
   constexpr auto result_rows_are_compatible_v = result_rows_are_compatible<Left, Right>::value;
 
-  template <typename Assert, typename T>
+  template <typename T>
   constexpr auto is_bad_statement_v = false;
+
+  template <typename Assert, typename T>
+  constexpr auto is_specific_bad_statement_v = false;
 
   template <typename Assert, typename T>
   constexpr auto is_bad_statement(const Assert&, const T&)
   {
-    return is_bad_statement_v<Assert, T>;
+    return is_specific_bad_statement_v<Assert, T>;
+  }
+
+  template <typename T>
+  constexpr auto is_bad_statement()
+  {
+    return is_bad_statement_v<T>;
+  }
+
+  template <typename Assert, typename T>
+  constexpr auto is_specific_bad_statement()
+  {
+    return is_specific_bad_statement_v<Assert, T>;
   }
 
   template <typename T>
@@ -514,8 +529,20 @@ namespace sqlpp
     return requires_braces_v<T>;
   }
 
+  template <typename... T>
+  [[nodiscard]] constexpr auto parameters_of(type_vector<T...>)
+  {
+    return (type_vector<>{} + ... + parameters_of(type_t<T>{}));
+  }
+
   template <typename T>
-  constexpr auto parameters_of = type_set_t<>();
+  [[nodiscard]] constexpr auto parameters_of(type_t<T>)
+  {
+    return parameters_of(nodes_of_t<T>{});
+  }
+
+  template <typename T>
+  constexpr auto parameters_of_v = parameters_of(type_t<T>{});
 
   template <typename... T>
   [[nodiscard]] constexpr auto required_tables_of(type_vector<T...>)

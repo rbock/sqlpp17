@@ -1,7 +1,5 @@
-#pragma once
-
 /*
-Copyright (c) 2017 - 2018, Roland Bock
+Copyright (c) 2016, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,25 +24,37 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <string_view>
+#include <tables/TabDepartment.h>
+
+#include <sqlpp17/parameter.h>
+
+// Turning off static_assert for parameter<>.as()
 namespace sqlpp
 {
-  template <typename... Elements>
-  struct type_vector
-  {
-    [[nodiscard]] static constexpr auto size()
-    {
-      return sizeof...(Elements);
-    }
-
-    [[nodiscard]] static constexpr auto empty()
-    {
-      return size() == 0;
-    }
-  };
-
-  template <typename... Ls, typename... Rs>
-  [[nodiscard]] constexpr auto operator+([[maybe_unused]] type_vector<Ls...>, [[maybe_unused]] type_vector<Rs...>)
-  {
-    return type_vector<Ls..., Rs...>{};
-  }
+  template <typename... T>
+  constexpr auto wrong<assert_parameter_as_arg_is_name_tag_or_similar, T...> = true;
 }  // namespace sqlpp
+
+namespace
+{
+  template <typename Assert, typename T>
+  auto test_bad_statement(const Assert&, const T&)
+  {
+    static_assert(::sqlpp::is_specific_bad_statement<Assert, T>());
+  }
+
+  template <typename Assert, typename T>
+  auto test_good_statement(const Assert&, const T&)
+  {
+    static_assert(not::sqlpp::is_bad_statement<T>());
+  }
+}  // namespace
+
+int main()
+{
+  test_bad_statement(::sqlpp::assert_parameter_as_arg_is_name_tag_or_similar{}, ::sqlpp::parameter<int>.as(17));
+
+  test_good_statement(::sqlpp::assert_parameter_as_arg_is_name_tag_or_similar{},
+                      ::sqlpp::parameter<int>.as(::test::tabDepartment.id));
+}
