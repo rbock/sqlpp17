@@ -31,6 +31,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp::test
 {
+  struct mock_context_t
+  {
+  };
+
   struct mock_result
   {
     [[nodiscard]] operator bool() const

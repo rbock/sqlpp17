@@ -1,4 +1,4 @@
-# Copyright (c) 2017 - 2018, Roland Bock
+# Copyright (c) 2018, Roland Bock
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without modification,
@@ -22,12 +22,12 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-add_library(sqlpp17-connector-sqlite3-testing INTERFACE)
+function(test_usage name)
+  set(target sqlpp17_connector_sqlite3_serialize_${name})
+  add_executable(${target} ${name}.cpp)
+  target_link_libraries(${target} PRIVATE sqlpp17-connector-sqlite3 sqlpp17-connector-sqlite3-testing ${additional_libraries} ${ARGV1})
+	add_test(${target} ${target})
+endfunction()
 
-target_include_directories(sqlpp17-connector-sqlite3-testing INTERFACE
-  $<BUILD_INTERFACE:${sqlpp17_SOURCE_DIR}/connectors/sqlite3/tests>
-  )
-
-add_subdirectory(serialize)
-add_subdirectory(usage)
+test_usage(parameter)
 

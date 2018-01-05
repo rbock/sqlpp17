@@ -26,16 +26,15 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <type_traits>
-#include <sqlpp17/to_sql_string.h>
-#include <sqlpp17/type_traits.h>
+#include <sqlpp17/operator/bit_xor.h>
+#include <sqlpp17/postgresql/context.h>
 
 namespace sqlpp
 {
   template <typename L, typename R>
-  [[nodiscard]] auto to_sql_string(const postgresql::connection_t& connection, const bit_xor_t<L, R>& t)
+  [[nodiscard]] auto to_sql_string(const postgresql::context_t& context, const bit_xor_t<L, R>& t)
   {
-    return to_sql_string(connection, embrace(t.l)) + " # " + to_sql_string(connection, embrace(t.r));
+    return to_sql_string(context, embrace(t.l)) + " # " + to_sql_string(connection, embrace(t.r));
   }
 
 }  // namespace sqlpp

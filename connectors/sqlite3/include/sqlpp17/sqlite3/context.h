@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -28,15 +28,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp::sqlite3
 {
-  class context_t
+  struct context_t
   {
-    int _parameter_index = 0;
-
-  public:
-    auto get_next_parameter_index()
-    {
-      return _parameter_index++;
-    }
+    int parameter_index = 0;
   };
 }  // namespace sqlpp::sqlite3
 

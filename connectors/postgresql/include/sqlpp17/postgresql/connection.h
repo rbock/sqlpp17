@@ -36,6 +36,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/postgresql/clause.h>
 #include <sqlpp17/postgresql/connection_config.h>
 #include <sqlpp17/postgresql/context.h>
+#include <sqlpp17/postgresql/operator.h>
+#include <sqlpp17/postgresql/parameter.h>
 #include <sqlpp17/postgresql/prepared_statement.h>
 
 namespace sqlpp::postgresql

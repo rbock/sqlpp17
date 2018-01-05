@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2018, Roland Bock
+Copyright (c) 2018 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,11 +26,15 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-namespace sqlpp::postgresql
-{
-  struct context_t
-  {
-    int parameter_index = 0;
-  };
-}  // namespace sqlpp::postgresql
+#include <sqlpp17/parameter.h>
+#include <sqlpp17/postgresql/context.h>
 
+namespace sqlpp
+{
+  template <typename ValueType, typename NameTag>
+  [[nodiscard]] auto to_sql_string(postgresql::context_t& context, const parameter_t<ValueType, NameTag>&)
+  {
+    return "$" + std::to_string(context.parameter_index++);
+  }
+
+}  // namespace sqlpp

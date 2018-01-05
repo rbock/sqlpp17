@@ -33,10 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/data_types.h>
 #include <sqlpp17/table.h>
 
-namespace sqlpp::sqlite3
-{
-  class context_t;
-}
+#include <sqlpp17/sqlite3/context.h>
 
 namespace sqlpp::sqlite3::detail
 {

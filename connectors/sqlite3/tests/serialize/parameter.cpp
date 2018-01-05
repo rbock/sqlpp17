@@ -1,5 +1,3 @@
-#pragma once
-
 /*
 Copyright (c) 2018, Roland Bock
 All rights reserved.
@@ -26,11 +24,29 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-namespace sqlpp::postgresql
-{
-  struct context_t
-  {
-    int parameter_index = 0;
-  };
-}  // namespace sqlpp::postgresql
+#include <sqlpp17/name_tag.h>
+#include <sqlpp17/operator.h>
+#include <sqlpp17/parameter.h>
 
+#include <serialize/assert_equality.h>
+#include <sqlpp17/sqlite3/connection.h>
+
+using ::sqlpp::sqlite3::context_t;
+using ::sqlpp::test::assert_equality;
+
+SQLPP_CREATE_NAME_TAG(foo);
+SQLPP_CREATE_NAME_TAG(bar);
+
+int main()
+{
+  try
+  {
+    assert_equality("?0 < ?1",
+                    to_sql_string_c(context_t{}, ::sqlpp::parameter<int>.as(foo) < ::sqlpp::parameter<int>.as(bar)));
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << e.what() << std::endl;
+    return -1;
+  }
+}

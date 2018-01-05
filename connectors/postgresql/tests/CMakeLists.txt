@@ -28,5 +28,6 @@ target_include_directories(sqlpp17-connector-postgresql-testing INTERFACE
   $<BUILD_INTERFACE:${sqlpp17_SOURCE_DIR}/connectors/postgresql/tests>
   )
 
+add_subdirectory(serialize)
 add_subdirectory(usage)
 

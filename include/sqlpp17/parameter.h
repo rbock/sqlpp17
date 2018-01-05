@@ -59,7 +59,7 @@ namespace sqlpp
       "as() arg must be a named expression (e.g. column, table), or a column/table spec, or a name tag");
 
   template <typename Tag>
-  constexpr auto check_cte_args()
+  constexpr auto check_parameter_args()
   {
     if constexpr (std::is_same_v<name_tag_of_t<Tag>, none_t>)
     {
@@ -75,7 +75,7 @@ namespace sqlpp
     template <typename NamedTypeOrTag>
     [[nodiscard]] static constexpr auto as([[maybe_unused]] NamedTypeOrTag)
     {
-      if constexpr (constexpr auto check = check_cte_args<NamedTypeOrTag>(); check)
+      if constexpr (constexpr auto check = check_parameter_args<NamedTypeOrTag>(); check)
       {
         return parameter_t<ValueType, name_tag_of_t<NamedTypeOrTag>>{};
       }
@@ -88,5 +88,11 @@ namespace sqlpp
 
   template <typename ValueType>
   static constexpr auto parameter = unnamed_parameter_t<ValueType>{};
+
+  template <typename Context, typename ValueType, typename NameTag>
+  [[nodiscard]] auto to_sql_string(Context& context, const parameter_t<ValueType, NameTag>& t)
+  {
+    return std::string{"?"};
+  }
 
 }  // namespace sqlpp

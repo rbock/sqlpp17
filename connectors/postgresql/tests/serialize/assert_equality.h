@@ -26,11 +26,18 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-namespace sqlpp::postgresql
-{
-  struct context_t
-  {
-    int parameter_index = 0;
-  };
-}  // namespace sqlpp::postgresql
+#include <iostream>
+#include <string_view>
 
+namespace sqlpp::test
+{
+  auto assert_equality(const std::string_view expected, const std::string_view received)
+  {
+    if (expected != received)
+    {
+      std::cerr << "Expected: " << expected << "\n";
+      std::cerr << "Received: " << received << "\n";
+      throw std::runtime_error("Unexpected string received");
+    }
+  }
+}  // namespace sqlpp::test

@@ -1,7 +1,5 @@
-#pragma once
-
 /*
-Copyright (c) 2018, Roland Bock
+Copyright (c) 2017, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,11 +24,48 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-namespace sqlpp::postgresql
+#include <sqlpp17/name_tag.h>
+#include <sqlpp17/operator.h>
+#include <sqlpp17/parameter.h>
+
+#include <connections/mock_db.h>
+#include <serialize/assert_equality.h>
+
+using ::sqlpp::test::assert_equality;
+using ::sqlpp::test::mock_context_t;
+
+SQLPP_CREATE_NAME_TAG(foo);
+SQLPP_CREATE_NAME_TAG(bar);
+
+namespace test
 {
-  struct context_t
+  struct count_context_t
   {
     int parameter_index = 0;
   };
-}  // namespace sqlpp::postgresql
+}  // namespace test
 
+namespace sqlpp
+{
+  template <typename ValueType, typename NameTag>
+  [[nodiscard]] auto to_sql_string(::test::count_context_t& context, const parameter_t<ValueType, NameTag>& t)
+  {
+    return "$" + std::to_string(context.parameter_index++);
+  }
+}  // namespace sqlpp
+
+int main()
+{
+  try
+  {
+    assert_equality(
+        "? = ?", to_sql_string_c(mock_context_t{}, ::sqlpp::parameter<int>.as(foo) == ::sqlpp::parameter<int>.as(bar)));
+    assert_equality("$0 < $1", to_sql_string_c(test::count_context_t{},
+                                               ::sqlpp::parameter<int>.as(foo) < ::sqlpp::parameter<int>.as(bar)));
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << e.what() << std::endl;
+    return -1;
+  }
+}

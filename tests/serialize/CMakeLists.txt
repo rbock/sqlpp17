@@ -1,4 +1,4 @@
-# Copyright (c) 2016, Roland Bock
+# Copyright (c) 2016 - 2018, Roland Bock
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without modification,
@@ -32,6 +32,7 @@ endfunction()
 test_compile(values)
 test_compile(case)
 test_compile(operator)
+test_compile(parameter)
 test_compile(insert)
 test_compile(join)
 test_compile(select)
