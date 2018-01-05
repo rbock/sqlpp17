@@ -38,7 +38,7 @@ namespace sqlpp::mysql
     struct using_
     {
     };
-  }
+  }  // namespace clause
 
   template <typename Table>
   struct using_t
@@ -120,7 +120,7 @@ namespace sqlpp::mysql
       }
       else
       {
-        return ::sqlpp::bad_statement_t{check};
+        return ::sqlpp::bad_expression_t{check};
       }
     }
   };
@@ -136,4 +136,4 @@ namespace sqlpp::mysql
   {
     return statement<no_using_t>{}.using_(std::forward<Table>(t));
   }
-}
+}  // namespace sqlpp::mysql

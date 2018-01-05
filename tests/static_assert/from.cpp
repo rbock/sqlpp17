@@ -31,6 +31,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/clause/from.h>
 
+#include <static_assert/assert_bad_expression.h>
+
+using ::sqlpp::test::assert_bad_expression;
+using ::sqlpp::test::assert_good_expression;
+
 // Turning off static_assert for from()
 namespace sqlpp
 {
@@ -41,27 +46,18 @@ namespace sqlpp
   constexpr auto wrong<assert_from_arg_is_not_conditionless_join, T...> = true;
 }  // namespace sqlpp
 
-namespace
-{
-  template <typename Assert, typename T>
-  auto test_bad_statement(const Assert&, const T&)
-  {
-    static_assert(is_bad_statement(Assert{}, T{}));
-  }
-}  // namespace
-
 int main()
 {
   constexpr auto s = sqlpp::statement<sqlpp::no_from_t>{};
 
   // constexpr tests
-  static_assert(is_bad_statement(sqlpp::assert_from_arg_is_table{}, s.from(1)));
+  assert_bad_expression(sqlpp::assert_from_arg_is_table{}, s.from(1));
 
-  static_assert(is_bad_statement(sqlpp::assert_from_arg_is_not_conditionless_join{},
-                                 s.from(test::tabPerson.join(test::tabDepartment))));
+  assert_bad_expression(sqlpp::assert_from_arg_is_not_conditionless_join{},
+                        s.from(test::tabPerson.join(test::tabDepartment)));
 
-  static_assert(is_bad_statement(sqlpp::assert_from_arg_is_table{}, sqlpp::from(1)));
+  assert_bad_expression(sqlpp::assert_from_arg_is_table{}, sqlpp::from(1));
 
   // non-constexpr tests
-  test_bad_statement(sqlpp::assert_from_arg_is_table{}, sqlpp::from(std::string("mytable")));
+  assert_bad_expression(sqlpp::assert_from_arg_is_table{}, sqlpp::from(std::string("mytable")));
 }

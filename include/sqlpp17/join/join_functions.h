@@ -26,7 +26,7 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/bad_statement.h>
+#include <sqlpp17/bad_expression.h>
 #include <sqlpp17/join/join_types.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
@@ -78,7 +78,7 @@ namespace sqlpp
       }
       else
       {
-        return ::sqlpp::bad_statement_t{check};
+        return ::sqlpp::bad_expression_t{check};
       }
     }
   }  // namespace detail
@@ -125,7 +125,7 @@ namespace sqlpp
       }
       else
       {
-        return ::sqlpp::bad_statement_t{check};
+        return ::sqlpp::bad_expression_t{check};
       }
     }
   }  // namespace detail

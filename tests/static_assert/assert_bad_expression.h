@@ -1,7 +1,5 @@
-#pragma once
-
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -28,23 +26,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/type_traits.h>
 
-namespace sqlpp
+namespace sqlpp::test
 {
-  template <typename Assert>
-  struct failed;
-
-  template <typename Failure>
-  struct bad_statement_t
+  template <typename Assert, typename T>
+  auto assert_bad_expression(const Assert&, const T&)
   {
-    static_assert(wrong<Failure>, "Missing specialization");
+    static_assert(::sqlpp::is_specific_bad_expression<Assert, T>());
+  }
 
-    constexpr bad_statement_t(Failure);
-  };
+  template <typename Assert, typename T>
+  auto assert_good_expression(const Assert&, const T&)
+  {
+    static_assert(not::sqlpp::is_bad_expression<T>());
+  }
+}  // namespace sqlpp::test
 
-  template <typename Assert>
-  constexpr auto is_specific_bad_statement_v<Assert, bad_statement_t<failed<Assert>>> = true;
-
-  template <typename Assert>
-  constexpr auto is_bad_statement_v<bad_statement_t<failed<Assert>>> = true;
-
-}  // namespace sqlpp

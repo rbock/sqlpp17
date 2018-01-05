@@ -38,13 +38,13 @@ namespace sqlpp
   };                                               \
                                                    \
   template <>                                      \
-  struct bad_statement_t<failed<name>>             \
+  struct bad_expression_t<failed<name>>            \
   {                                                \
     template <typename... T>                       \
-    constexpr bad_statement_t(T&&...)              \
+    constexpr bad_expression_t(T&&...)             \
     {                                              \
       constexpr auto check = wrong<name, T...>;    \
       static_assert(check, message);               \
     }                                              \
   }
-}
+}  // namespace sqlpp

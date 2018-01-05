@@ -95,7 +95,7 @@ namespace sqlpp
   template <typename T = void>
   [[nodiscard]] constexpr auto select(std::tuple<>)
   {
-    return ::sqlpp::bad_statement_t<typename select_failure<T>::type>{};
+    return ::sqlpp::bad_expression_t<typename select_failure<T>::type>{};
   }
 
   // select with at least one argument will either create flags or columns
@@ -113,7 +113,7 @@ namespace sqlpp
     }
     else
     {
-      return ::sqlpp::bad_statement_t<typename select_failure<Fs...>::type>{};
+      return ::sqlpp::bad_expression_t<typename select_failure<Fs...>::type>{};
     }
   }
 
@@ -130,7 +130,7 @@ namespace sqlpp
     }
     else
     {
-      return ::sqlpp::bad_statement_t<typename select_failure<Fs...>::type>{};
+      return ::sqlpp::bad_expression_t<typename select_failure<Fs...>::type>{};
     }
   }
 

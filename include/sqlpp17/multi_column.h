@@ -69,7 +69,7 @@ namespace sqlpp
     {
       if constexpr (constexpr auto check = check_multi_column_arg<remove_optional_t<Columns>...>(); not check)
       {
-        ::sqlpp::bad_statement_t{check};
+        ::sqlpp::bad_expression_t{check};
       }
     }
 
@@ -77,7 +77,7 @@ namespace sqlpp
     {
       if constexpr (constexpr auto check = check_multi_column_arg<remove_optional_t<Columns>...>(); not check)
       {
-        ::sqlpp::bad_statement_t{check};
+        ::sqlpp::bad_expression_t{check};
       }
     }
   };

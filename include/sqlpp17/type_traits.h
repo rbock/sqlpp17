@@ -235,27 +235,21 @@ namespace sqlpp
   constexpr auto result_rows_are_compatible_v = result_rows_are_compatible<Left, Right>::value;
 
   template <typename T>
-  constexpr auto is_bad_statement_v = false;
+  constexpr auto is_bad_expression_v = false;
 
   template <typename Assert, typename T>
-  constexpr auto is_specific_bad_statement_v = false;
-
-  template <typename Assert, typename T>
-  constexpr auto is_bad_statement(const Assert&, const T&)
-  {
-    return is_specific_bad_statement_v<Assert, T>;
-  }
+  constexpr auto is_specific_bad_expression_v = false;
 
   template <typename T>
-  constexpr auto is_bad_statement()
+  constexpr auto is_bad_expression()
   {
-    return is_bad_statement_v<T>;
+    return is_bad_expression_v<T>;
   }
 
   template <typename Assert, typename T>
-  constexpr auto is_specific_bad_statement()
+  constexpr auto is_specific_bad_expression()
   {
-    return is_specific_bad_statement_v<Assert, T>;
+    return is_specific_bad_expression_v<Assert, T>;
   }
 
   template <typename T>

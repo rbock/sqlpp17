@@ -30,42 +30,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/clause/update_table.h>
 
+#include <static_assert/assert_bad_expression.h>
+
+using ::sqlpp::test::assert_bad_expression;
+using ::sqlpp::test::assert_good_expression;
+
 #warning : Not implemented yet
-#if 0
-// Turning off static_assert for from()
-namespace sqlpp
-{
-  template <typename... T>
-  constexpr auto wrong<assert_from_arg_is_table, T...> = true;
-
-  template <typename... T>
-  constexpr auto wrong<assert_from_arg_is_not_conditionless_join, T...> = true;
-}
-
-namespace
-{
-  template <typename Assert, typename T>
-  auto test_bad_statement(const Assert&, const T&)
-  {
-    static_assert(is_bad_statement(Assert{}, T{}));
-  }
-}
-#endif
 
 int main()
 {
-  constexpr auto s = sqlpp::statement<sqlpp::no_update_table_t>{};
-
-#if 0
-  // constexpr tests
-  static_assert(is_bad_statement(sqlpp::assert_from_arg_is_table{}, s.from(1)));
-
-  static_assert(is_bad_statement(sqlpp::assert_from_arg_is_not_conditionless_join{},
-                                 s.from(test::tabPerson.join(test::tabDepartment))));
-
-  static_assert(is_bad_statement(sqlpp::assert_from_arg_is_table{}, sqlpp::from(1)));
-
-  // non-constexpr tests
-  test_bad_statement(sqlpp::assert_from_arg_is_table{}, sqlpp::from(std::string("mytable")));
-#endif
 }

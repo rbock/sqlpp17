@@ -34,6 +34,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
 
+#include <static_assert/assert_bad_expression.h>
+
+using ::sqlpp::test::assert_bad_expression;
+using ::sqlpp::test::assert_good_expression;
+
 // Turning off static_assert for statements
 namespace sqlpp
 {
@@ -43,12 +48,6 @@ namespace sqlpp
 
 namespace
 {
-  template <typename Assert, typename T>
-  auto test_bad_statement(const Assert&, const T&)
-  {
-    static_assert(is_bad_statement(Assert{}, T{}));
-  }
-
   SQLPP_CREATE_NAME_TAG(foo);
 }  // namespace
 
@@ -58,6 +57,6 @@ int main()
   auto qu = test::tabDepartment.as(foo);
   auto db = ::sqlpp::test::mock_db{};
 
-  test_bad_statement(sqlpp::assert_all_required_tables_are_provided{},
-                     db(select(all_of(pi)).from(qu).unconditionally()));
+  assert_bad_expression(sqlpp::assert_all_required_tables_are_provided{},
+                        db(select(all_of(pi)).from(qu).unconditionally()));
 }

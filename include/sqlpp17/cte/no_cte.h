@@ -73,7 +73,7 @@ namespace sqlpp
       }
       else
       {
-        return ::sqlpp::bad_statement_t{check};
+        return ::sqlpp::bad_expression_t{check};
       }
     }
   };
@@ -102,7 +102,7 @@ namespace sqlpp
     }
     else
     {
-      return ::sqlpp::bad_statement_t{check};
+      return ::sqlpp::bad_expression_t{check};
     }
   }
 }  // namespace sqlpp

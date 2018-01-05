@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -29,6 +29,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/parameter.h>
 
+#include <static_assert/assert_bad_expression.h>
+
+using ::sqlpp::test::assert_bad_expression;
+using ::sqlpp::test::assert_good_expression;
+
 // Turning off static_assert for parameter<>.as()
 namespace sqlpp
 {
@@ -36,25 +41,10 @@ namespace sqlpp
   constexpr auto wrong<assert_parameter_as_arg_is_name_tag_or_similar, T...> = true;
 }  // namespace sqlpp
 
-namespace
-{
-  template <typename Assert, typename T>
-  auto test_bad_statement(const Assert&, const T&)
-  {
-    static_assert(::sqlpp::is_specific_bad_statement<Assert, T>());
-  }
-
-  template <typename Assert, typename T>
-  auto test_good_statement(const Assert&, const T&)
-  {
-    static_assert(not::sqlpp::is_bad_statement<T>());
-  }
-}  // namespace
-
 int main()
 {
-  test_bad_statement(::sqlpp::assert_parameter_as_arg_is_name_tag_or_similar{}, ::sqlpp::parameter<int>.as(17));
+  assert_bad_expression(::sqlpp::assert_parameter_as_arg_is_name_tag_or_similar{}, ::sqlpp::parameter<int>.as(17));
 
-  test_good_statement(::sqlpp::assert_parameter_as_arg_is_name_tag_or_similar{},
-                      ::sqlpp::parameter<int>.as(::test::tabDepartment.id));
+  assert_good_expression(::sqlpp::assert_parameter_as_arg_is_name_tag_or_similar{},
+                         ::sqlpp::parameter<int>.as(::test::tabDepartment.id));
 }

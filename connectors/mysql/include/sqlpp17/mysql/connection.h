@@ -172,7 +172,7 @@ namespace sqlpp::mysql
       }
       else
       {
-        return ::sqlpp::bad_statement_t{check};
+        return ::sqlpp::bad_expression_t{check};
       }
     }
 
@@ -190,7 +190,7 @@ namespace sqlpp::mysql
       }
       else
       {
-        return ::sqlpp::bad_statement_t{check};
+        return ::sqlpp::bad_expression_t{check};
       }
     }
 

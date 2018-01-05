@@ -1,3 +1,5 @@
+#pragma once
+
 /*
 Copyright (c) 2016, Roland Bock
 All rights reserved.
@@ -24,19 +26,25 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <tables/TabDepartment.h>
-#include <tables/TabEmpty.h>
-#include <tables/TabPerson.h>
+#include <sqlpp17/type_traits.h>
 
-#include <sqlpp17/clause/offset.h>
-
-#include <static_assert/assert_bad_expression.h>
-
-using ::sqlpp::test::assert_bad_expression;
-using ::sqlpp::test::assert_good_expression;
-
-#warning : Not implemented yet
-
-int main()
+namespace sqlpp
 {
-}
+  template <typename Assert>
+  struct failed;
+
+  template <typename Failure>
+  struct bad_expression_t
+  {
+    static_assert(wrong<Failure>, "Missing specialization");
+
+    constexpr bad_expression_t(Failure);
+  };
+
+  template <typename Assert>
+  constexpr auto is_specific_bad_expression_v<Assert, bad_expression_t<failed<Assert>>> = true;
+
+  template <typename Assert>
+  constexpr auto is_bad_expression_v<bad_expression_t<failed<Assert>>> = true;
+
+}  // namespace sqlpp
