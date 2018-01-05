@@ -69,7 +69,7 @@ namespace sqlpp
       constexpr auto check = check_cte_as_arg<AliasProvider, Statement>();
       if constexpr (check)
       {
-        return cte_t<AliasProvider, Statement>{s};
+        return cte_t<flat_t, AliasProvider, Statement>{s};
       }
       else
       {
