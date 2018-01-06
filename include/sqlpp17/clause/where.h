@@ -89,11 +89,11 @@ namespace sqlpp
   {
   public:
     template <typename OtherStatement>
-    clause_base(const clause_base<unconditionally_t, OtherStatement>& s)
+    constexpr clause_base(const clause_base<unconditionally_t, OtherStatement>& s)
     {
     }
 
-    clause_base(const unconditionally_t& f)
+    constexpr clause_base(const unconditionally_t& f)
     {
     }
   };
@@ -173,5 +173,10 @@ namespace sqlpp
   [[nodiscard]] constexpr auto where(Condition&& condition)
   {
     return statement<no_where_t>{}.where(std::forward<Condition>(condition));
+  }
+
+  [[nodiscard]] constexpr auto unconditionally()
+  {
+    return statement<no_where_t>{}.unconditionally();
   }
 }  // namespace sqlpp
