@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2017i - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -24,21 +24,36 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <iostream>
+#include <sqlpp17/case.h>
+#include <sqlpp17/operator.h>
+
 #include <tables/TabDepartment.h>
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
 
-#include <sqlpp17/case.h>
-#include <sqlpp17/operator.h>
+#include <connections/mock_db.h>
+#include <serialize/assert_equality.h>
+
+using ::sqlpp::test::assert_equality;
+using ::sqlpp::test::mock_context_t;
 
 int main()
 {
-  auto context = 0;
   using test::tabPerson;
   constexpr auto c = case_when(tabPerson.id % 3 == 2, then(tabPerson.id > 7))
                          .when(tabPerson.id % 3 == 1, then(tabPerson.id > 9))
                          .else_(tabPerson.id > 17);
-  std::cout << to_sql_string_c(context, c) << std::endl;
-#warning : need to test results
+  try
+  {
+    assert_equality(" CASE "
+                    "WHEN ((tab_person.id % 3) = 2) THEN (tab_person.id > 7) "
+                    "WHEN ((tab_person.id % 3) = 1) THEN (tab_person.id > 9) "
+                    "ELSE (tab_person.id > 17)",
+                    to_sql_string_c(mock_context_t{}, c));
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << e.what() << '\n';
+    return 1;
+  }
 }
