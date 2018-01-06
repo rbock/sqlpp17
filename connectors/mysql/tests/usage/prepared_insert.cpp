@@ -28,7 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/clause/create_table.h>
 #include <sqlpp17/clause/drop_table.h>
-#include <sqlpp17/clause/insert.h>
+#include <sqlpp17/clause/insert_into.h>
 
 #include <sqlpp17/mysql/connection.h>
 
@@ -66,7 +66,7 @@ int main()
     db(drop_table(test::tabDepartment));
     db(create_table(test::tabDepartment));
 
-    auto prepared_insert = db.prepare(sqlpp::insert().into(test::tabDepartment).default_values());
+    auto prepared_insert = db.prepare(insert_into(test::tabDepartment).default_values());
     auto id = execute(prepared_insert);
   }
   catch (const std::exception& e)

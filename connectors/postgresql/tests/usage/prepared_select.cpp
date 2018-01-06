@@ -28,7 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/clause/create_table.h>
 #include <sqlpp17/clause/drop_table.h>
-#include <sqlpp17/clause/insert.h>
+#include <sqlpp17/clause/insert_into.h>
 #include <sqlpp17/clause/select.h>
 
 #include <sqlpp17/postgresql/connection.h>
@@ -63,8 +63,8 @@ int main()
     db(drop_table(test::tabDepartment));
     db(create_table(test::tabDepartment));
 
-    auto id = db(sqlpp::insert().into(test::tabDepartment).default_values());
-    id = db(sqlpp::insert().into(test::tabDepartment).set(test::tabDepartment.name = "hansi"));
+    auto id = db(insert_into(test::tabDepartment).default_values());
+    id = db(insert_into(test::tabDepartment).set(test::tabDepartment.name = "hansi"));
 
     auto prepared_select = db.prepare(
         sqlpp::select(test::tabDepartment.id, test::tabDepartment.name).from(test::tabDepartment).unconditionally());

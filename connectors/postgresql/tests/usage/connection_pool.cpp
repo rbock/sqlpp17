@@ -31,7 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/clause/create_table.h>
 #include <sqlpp17/clause/drop_table.h>
-#include <sqlpp17/clause/insert.h>
+#include <sqlpp17/clause/insert_into.h>
 
 #include <sqlpp17/postgresql/connection_pool.h>
 
@@ -75,7 +75,7 @@ namespace
     db(drop_table(test::tabDepartment));
     db(create_table(test::tabDepartment));
 
-    [[maybe_unused]] auto id = db(sqlpp::insert().into(test::tabDepartment).default_values());
+    [[maybe_unused]] auto id = db(insert_into(test::tabDepartment).default_values());
   }
   catch (const std::exception& e)
   {
@@ -129,7 +129,7 @@ namespace
                   << connections.back().get() << "\n";
       }
       pointers.insert(connections.back().get());
-      [[maybe_unused]] auto id = connections.back()(sqlpp::insert().into(test::tabDepartment).default_values());
+      [[maybe_unused]] auto id = connections.back()(insert_into(test::tabDepartment).default_values());
     }
   }
   catch (const std::exception& e)
@@ -165,7 +165,7 @@ namespace
           for (auto k = 0; k < call_count; ++k)
           {
             auto connection = pool.get();
-            [[maybe_unused]] auto id = connection(sqlpp::insert().into(test::tabDepartment).default_values());
+            [[maybe_unused]] auto id = connection(insert_into(test::tabDepartment).default_values());
           }
         }
         catch (const std::exception& e)

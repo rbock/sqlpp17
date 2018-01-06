@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2017 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -31,7 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
 
-#include <sqlpp17/clause/insert.h>
+#include <sqlpp17/clause/insert_into.h>
 #include <sqlpp17/operator.h>
 
 int main()
@@ -39,21 +39,6 @@ int main()
   auto db = ::sqlpp::test::mock_db{};
 
   // default way of constructing an insert statement
-  const auto id = db(sqlpp::insert().into(test::tabPerson).default_values());
-
-  // using << concatenation
-  /*
-  for (const auto& row :
-       db(sqlpp::select() << sqlpp::select_columns(test::tabPerson.id, test::tabPerson.isManager,
-                                                   test::tabPerson.address, test::tabPerson.name)
-                          << sqlpp::from(test::tabPerson)
-                          << sqlpp::where(test::tabPerson.isManager and test::tabPerson.name == "")
-                          << sqlpp::having(test::tabPerson.id == test::tabPerson.id or test::tabPerson.id == 1)))
-  {
-    std::cout << row.id << std::endl;
-    std::cout << row.isManager << std::endl;
-    std::cout << row.name << std::endl;
-    std::cout << row.address.value_or("") << std::endl;
-  }
-  */
+  const auto id = db(insert_into(test::tabPerson).default_values());
+#warning : Need more usage examples
 }

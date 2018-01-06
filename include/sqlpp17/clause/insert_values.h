@@ -127,7 +127,7 @@ namespace sqlpp
   template <typename Db, typename Statement>
   constexpr auto check_clause_preparable(const type_t<clause_base<insert_default_values_t, Statement>>&)
   {
-    using _table_t = typename Statement::into_table_t;
+    using _table_t = typename Statement::insert_into_table_t;
     constexpr auto _all_columns = columns_of_v<_table_t>;
     constexpr auto _default_columns = default_columns_of_v<_table_t>;
 
