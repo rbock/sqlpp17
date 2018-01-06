@@ -147,7 +147,7 @@ namespace sqlpp::mysql
     connection_t(const connection_config_t& config,
                  detail::unique_connection_ptr&& handle,
                  connection_pool_t* connection_pool)
-        : _debug(config.debug), _handle(std::move(handle)), _connection_pool(connection_pool)
+        : _handle(std::move(handle)), _connection_pool(connection_pool), _debug(config.debug)
     {
     }
 
