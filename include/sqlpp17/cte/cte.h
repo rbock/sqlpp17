@@ -35,30 +35,30 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  template <typename Cte, typename ResultRow>
+  template <typename TableSpec, typename ResultRow>
   struct cte_columns_t
   {
     static_assert(wrong<cte_columns_t>, "Invalid arguments for cte_columns_t");
   };
 
-  template <typename Cte, typename... ResultColumnSpecs>
-  struct cte_columns_t<Cte, result_row_t<ResultColumnSpecs...>>
-      : member_t<ResultColumnSpecs, column_t<table_spec<name_tag_of_t<Cte>, type_hash<Cte>()>, ResultColumnSpecs>>...
+  template <typename TableSpec, typename... ResultColumnSpecs>
+  struct cte_columns_t<TableSpec, result_row_t<ResultColumnSpecs...>>
+      : member_t<ResultColumnSpecs, column_t<TableSpec, ResultColumnSpecs>>...
   {
   };
 
   struct flat_t;
   struct recursive_t;
 
-  template <typename CteType, typename NameTag, typename Statement>
+  template <typename CteType, typename TableSpec, typename Statement>
   struct cte_t;
 
   namespace detail
   {
-    template <typename Cte, typename... ResultColumnSpecs>
-    [[nodiscard]] constexpr auto all_of(const cte_columns_t<Cte, ResultColumnSpecs...>& t)
+    template <typename TableSpec, typename... ResultColumnSpecs>
+    [[nodiscard]] constexpr auto all_of(const cte_columns_t<TableSpec, ResultColumnSpecs...>& t)
     {
-      return multi_column_t{column_t<table_spec<name_tag_of_t<Cte>, type_hash<Cte>()>, ResultColumnSpecs>{}...};
+      return multi_column_t{column_t<TableSpec, ResultColumnSpecs>{}...};
     }
   }  // namespace detail
 
@@ -81,11 +81,9 @@ namespace sqlpp
       return succeeded{};
   }
 
-  template <typename CteType, typename NameTag, typename Statement>
-  struct cte_t : cte_columns_t<cte_t<CteType, NameTag, Statement>, result_row_of_t<Statement>>
+  template <typename CteType, typename TableSpec, typename Statement>
+  struct cte_t : cte_columns_t<TableSpec, result_row_of_t<Statement>>
   {
-    using _base = cte_columns_t<cte_t<CteType, NameTag, Statement>, result_row_of_t<Statement>>;
-
     Statement _statement;
 
     cte_t(Statement statement) : _statement(statement)
@@ -99,7 +97,7 @@ namespace sqlpp
                     check)
       {
         auto _union = ::sqlpp::union_all(_statement, second_statement);
-        return cte_t<recursive_t, NameTag, decltype(_union)>(_union);
+        return cte_t<recursive_t, TableSpec, decltype(_union)>(_union);
       }
       else
       {
@@ -114,7 +112,7 @@ namespace sqlpp
                     check)
       {
         auto _union = ::sqlpp::union_distinct(_statement, second_statement);
-        return cte_t<recursive_t, NameTag, decltype(_union)>(_union);
+        return cte_t<recursive_t, TableSpec, decltype(_union)>(_union);
       }
       else
       {
@@ -123,71 +121,71 @@ namespace sqlpp
     }
   };
 
-  template <typename CteType, typename NameTag, typename Statement>
-  struct is_cte_recursive<cte_t<CteType, NameTag, Statement>>
+  template <typename CteType, typename TableSpec, typename Statement>
+  struct is_cte_recursive<cte_t<CteType, TableSpec, Statement>>
       : std::integral_constant<bool, std::is_same_v<CteType, recursive_t>>
   {
   };
 
-  template <typename CteType, typename NameTag, typename Statement>
-  [[nodiscard]] constexpr auto all_of(const cte_t<CteType, NameTag, Statement>& t)
+  template <typename CteType, typename TableSpec, typename Statement>
+  [[nodiscard]] constexpr auto all_of(const cte_t<CteType, TableSpec, Statement>& t)
   {
-    using _base = typename cte_t<CteType, NameTag, Statement>::_base;
+    using _base = cte_columns_t<TableSpec, result_row_of_t<Statement>>;
     return detail::all_of(static_cast<const _base&>(t));
   }
 
-  template <typename CteType, typename NameTag, typename Statement>
-  [[nodiscard]] constexpr auto provided_tables_of([[maybe_unused]] type_t<cte_t<CteType, NameTag, Statement>>)
+  template <typename CteType, typename TableSpec, typename Statement>
+  [[nodiscard]] constexpr auto provided_tables_of([[maybe_unused]] type_t<cte_t<CteType, TableSpec, Statement>>)
   {
-    return type_set<table_spec<NameTag, type_hash<cte_t<CteType, NameTag, Statement>>()>>();
+    return type_set<TableSpec>();
   }
 
-  template <typename CteType, typename NameTag, typename Statement>
-  [[nodiscard]] constexpr auto required_tables_of([[maybe_unused]] type_t<cte_t<CteType, NameTag, Statement>>)
+  template <typename CteType, typename TableSpec, typename Statement>
+  [[nodiscard]] constexpr auto required_tables_of([[maybe_unused]] type_t<cte_t<CteType, TableSpec, Statement>>)
   {
     return type_set<>();
   }
 
-  template <typename CteType, typename NameTag, typename Statement>
-  [[nodiscard]] constexpr auto required_ctes_of(type_t<cte_t<CteType, NameTag, Statement>> c)
+  template <typename CteType, typename TableSpec, typename Statement>
+  [[nodiscard]] constexpr auto required_ctes_of(type_t<cte_t<CteType, TableSpec, Statement>> c)
   {
     return provided_tables_of(c);
   };
 
-  template <typename CteType, typename NameTag, typename Statement>
-  struct nodes_of<cte_t<CteType, NameTag, Statement>>
+  template <typename CteType, typename TableSpec, typename Statement>
+  struct nodes_of<cte_t<CteType, TableSpec, Statement>>
   {
     using type = type_vector<Statement>;
   };
 
-  template <typename CteType, typename NameTag, typename Statement>
-  struct result_row_of<cte_t<CteType, NameTag, Statement>>
+  template <typename CteType, typename TableSpec, typename Statement>
+  struct result_row_of<cte_t<CteType, TableSpec, Statement>>
   {
     using type = result_row_of_t<Statement>;
   };
 
-  template <typename CteType, typename NameTag, typename Statement>
-  constexpr auto is_table_v<cte_t<CteType, NameTag, Statement>> = true;
+  template <typename CteType, typename TableSpec, typename Statement>
+  constexpr auto is_table_v<cte_t<CteType, TableSpec, Statement>> = true;
 
-  template <typename CteType, typename NameTag, typename Statement>
-  struct is_cte<cte_t<CteType, NameTag, Statement>> : std::true_type
+  template <typename CteType, typename TableSpec, typename Statement>
+  struct is_cte<cte_t<CteType, TableSpec, Statement>> : std::true_type
   {
   };
 
-  template <typename CteType, typename NameTag, typename Statement>
-  struct name_tag_of<cte_t<CteType, NameTag, Statement>>
+  template <typename CteType, typename TableSpec, typename Statement>
+  struct name_tag_of<cte_t<CteType, TableSpec, Statement>>
   {
-    using type = NameTag;
+    using type = name_tag_of_t<TableSpec>;
   };
 
-  template <typename Context, typename CteType, typename NameTag, typename Statement>
-  [[nodiscard]] auto to_full_sql_string(Context& context, const cte_t<CteType, NameTag, Statement>& t)
+  template <typename Context, typename CteType, typename TableSpec, typename Statement>
+  [[nodiscard]] auto to_full_sql_string(Context& context, const cte_t<CteType, TableSpec, Statement>& t)
   {
     return to_sql_name(context, t) + " AS (" + to_sql_string(context, t._statement) + ")";
   }
 
-  template <typename Context, typename CteType, typename NameTag, typename Statement>
-  [[nodiscard]] auto to_sql_string(Context& context, const cte_t<CteType, NameTag, Statement>& t)
+  template <typename Context, typename CteType, typename TableSpec, typename Statement>
+  [[nodiscard]] auto to_sql_string(Context& context, const cte_t<CteType, TableSpec, Statement>& t)
   {
     return to_sql_name(context, t);
   }

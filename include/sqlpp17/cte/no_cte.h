@@ -36,7 +36,7 @@ namespace sqlpp
                               "cte.as() arg must have a result_row, e.g. a select or union");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_cte_as_arg_without_with, "cte.as() arg must not contain a WITH clause");
 
-  template <typename AliasProvider, typename Statement>
+  template <typename Statement>
   constexpr auto check_cte_as_arg()
   {
     if constexpr (!is_statement_v<Statement>)
@@ -57,17 +57,17 @@ namespace sqlpp
     }
   }
 
-  template <typename AliasProvider>
+  template <typename NameTag>
   struct cte_alias_t
   {
   public:
     template <typename Statement>
     [[nodiscard]] constexpr auto as(Statement s) const
     {
-      constexpr auto check = check_cte_as_arg<AliasProvider, Statement>();
+      constexpr auto check = check_cte_as_arg<Statement>();
       if constexpr (check)
       {
-        return cte_t<flat_t, AliasProvider, Statement>{s};
+        return cte_t<flat_t, table_spec<NameTag, type_hash<Statement>()>, Statement>{s};
       }
       else
       {
