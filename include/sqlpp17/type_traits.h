@@ -673,4 +673,12 @@ namespace sqlpp
   template <typename T>
   constexpr auto char_sequence_of_v = char_sequence_of_t<T>{};
 
+  template <typename T>
+  struct is_cte_recursive : std::false_type
+  {
+  };
+
+  template <typename T>
+  inline constexpr auto is_cte_recursive_v = is_cte_recursive<T>::value;
+
 }  // namespace sqlpp
