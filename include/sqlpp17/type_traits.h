@@ -568,6 +568,36 @@ namespace sqlpp
   template <typename T>
   constexpr auto provided_tables_of_v = provided_tables_of(type_t<T>{});
 
+  template <typename... T>
+  [[nodiscard]] constexpr auto required_ctes_of(type_vector<T...>)
+  {
+    return (type_set() | ... | required_ctes_of(type_t<T>{}));
+  }
+
+  template <typename T>
+  [[nodiscard]] constexpr auto required_ctes_of(type_t<T>)
+  {
+    return required_ctes_of(nodes_of_t<T>{});
+  }
+
+  template <typename T>
+  constexpr auto required_ctes_of_v = required_ctes_of(type_t<T>{});
+
+  template <typename... T>
+  [[nodiscard]] constexpr auto provided_ctes_of(type_vector<T...>)
+  {
+    return (type_set() | ... | provided_ctes_of(type_t<T>{}));
+  }
+
+  template <typename T>
+  [[nodiscard]] constexpr auto provided_ctes_of(type_t<T>)
+  {
+    return provided_ctes_of(nodes_of_t<T>{});
+  }
+
+  template <typename T>
+  constexpr auto provided_ctes_of_v = provided_ctes_of(type_t<T>{});
+
   template <typename T>
   constexpr auto default_columns_of_v = type_set_t<>();
 
@@ -584,15 +614,6 @@ namespace sqlpp
   constexpr auto can_be_null_columns_of(const T&)
   {
     return can_be_null_columns_of_v<T>;
-  }
-
-  template <typename T>
-  constexpr auto required_cte_names_of_v = type_set_t<>();
-
-  template <typename T>
-  constexpr auto required_cte_names_of(const T&)
-  {
-    return required_cte_names_of_v<T>;
   }
 
   template <typename T>
@@ -672,6 +693,14 @@ namespace sqlpp
 
   template <typename T>
   constexpr auto char_sequence_of_v = char_sequence_of_t<T>{};
+
+  template <typename T>
+  struct is_cte : std::false_type
+  {
+  };
+
+  template <typename T>
+  inline constexpr auto is_cte_v = is_cte<T>::value;
 
   template <typename T>
   struct is_cte_recursive : std::false_type

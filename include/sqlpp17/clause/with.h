@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016 - 2017, Roland Bock
+Copyright (c) 2016 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -61,6 +61,18 @@ namespace sqlpp
   };
 
   template <with_mode Mode, typename... CommonTableExpressions>
+  [[nodiscard]] constexpr auto required_ctes_of([[maybe_unused]] type_t<with_t<Mode, CommonTableExpressions...>>)
+  {
+    return type_set();
+  };
+
+  template <with_mode Mode, typename... CommonTableExpressions>
+  [[nodiscard]] constexpr auto provided_ctes_of([[maybe_unused]] type_t<with_t<Mode, CommonTableExpressions...>>)
+  {
+    return (type_set() | ... | required_ctes_of_v<CommonTableExpressions>);
+  };
+
+  template <with_mode Mode, typename... CommonTableExpressions>
   constexpr auto clause_tag<with_t<Mode, CommonTableExpressions...>> = clause::with{};
 
   template <with_mode Mode, typename... CommonTableExpressions, typename Statement>
@@ -102,36 +114,22 @@ namespace sqlpp
            " ";
   }
 
-#warning : WITH cannot occur after a compound operator like UNION, check that, too, somehow.
-#warning : Need to add CTE checks for with
-  /*
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_with_args_are_statements, "with() args must be sql statements");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_with_args_have_result_rows, "with() args have result rows (like select)");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_with_args_have_compatible_rows, "with() args must have compatible result rows");
-  */
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_with_args_are_ctes, "with() args must be CTEs");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_with_args_not_recursive,
+                              "with() args must not be recursive, use with_recursive()");
 
   template <with_mode Mode, typename... CommonTableExpressions>
   constexpr auto check_with_args(const CommonTableExpressions&...)
   {
-#warning : Need to check wether expressions are recursive if they shouldn't
-    /*
-    if
-      constexpr(!(is_statement_v<LeftSelect> && is_statement_v<RightSelect>))
-      {
-        return failed<assert_with_args_are_statements>{};
-      }
-    else if
-      constexpr(!(has_result_row_v<LeftSelect> && has_result_row_v<RightSelect>))
-      {
-        return failed<assert_with_args_have_result_rows>{};
-      }
-    else if
-      constexpr(!result_rows_are_compatible_v<typename LeftSelect::result_row_t, typename RightSelect::result_row_t>)
-      {
-        return failed<assert_with_args_have_compatible_rows>{};
-      }
+    if constexpr (not(true and ... and is_cte_v<CommonTableExpressions>))
+    {
+      return failed<assert_with_args_are_ctes>{};
+    }
+    else if constexpr (Mode == with_mode::flat and (false or ... or is_cte_recursive_v<CommonTableExpressions>))
+    {
+      return failed<assert_with_args_not_recursive>{};
+    }
     else
-    */
     {
       return succeeded{};
     }
@@ -155,8 +153,7 @@ namespace sqlpp
     template <typename... CommonTableExpressions>
     [[nodiscard]] constexpr auto with(CommonTableExpressions... ctes) const
     {
-      constexpr auto check = check_with_args<with_mode::flat>(ctes...);
-      if constexpr (check)
+      if constexpr (constexpr auto check = check_with_args<with_mode::flat>(ctes...); check)
       {
         return Statement::replace_clause(this, with_t<with_mode::flat, CommonTableExpressions...>{ctes...});
       }
@@ -169,8 +166,7 @@ namespace sqlpp
     template <typename... CommonTableExpressions>
     [[nodiscard]] constexpr auto with_recursive(CommonTableExpressions... ctes) const
     {
-      constexpr auto check = check_with_args<with_mode::recursive>(ctes...);
-      if constexpr (check)
+      if constexpr (constexpr auto check = check_with_args<with_mode::recursive>(ctes...); check)
       {
         return Statement::replace_clause(this, with_t<with_mode::recursive, CommonTableExpressions...>{ctes...});
       }

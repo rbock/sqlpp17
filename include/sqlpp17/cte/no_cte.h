@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2016 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -34,8 +34,7 @@ namespace sqlpp
   SQLPP_WRAPPED_STATIC_ASSERT(assert_cte_as_arg_is_statement, "cte.as() arg must be an sql statement");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_cte_as_arg_has_result_row,
                               "cte.as() arg must have a result_row, e.g. a select or union");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_cte_as_arg_is_not_initially_self_referential,
-                              "cte.as() arg must not be self referential in the first part");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_cte_as_arg_without_with, "cte.as() arg must not contain a WITH clause");
 
   template <typename AliasProvider, typename Statement>
   constexpr auto check_cte_as_arg()
@@ -48,10 +47,9 @@ namespace sqlpp
     {
       return failed<assert_cte_as_arg_has_result_row>{};
     }
-#warning : Need to check for the char_sequence, not the type
-    else if constexpr (required_cte_names_of_v<Statement>.template count<AliasProvider>() != 0)
+    else if constexpr (not provided_ctes_of_v<Statement>.empty())
     {
-      return failed<assert_cte_as_arg_is_not_initially_self_referential>{};
+      return failed<assert_cte_as_arg_without_with>{};
     }
     else
     {

@@ -149,6 +149,12 @@ namespace sqlpp
   }
 
   template <typename CteType, typename NameTag, typename Statement>
+  [[nodiscard]] constexpr auto required_ctes_of(type_t<cte_t<CteType, NameTag, Statement>> c)
+  {
+    return provided_tables_of(c);
+  };
+
+  template <typename CteType, typename NameTag, typename Statement>
   struct nodes_of<cte_t<CteType, NameTag, Statement>>
   {
     using type = type_vector<Statement>;
@@ -162,6 +168,11 @@ namespace sqlpp
 
   template <typename CteType, typename NameTag, typename Statement>
   constexpr auto is_table_v<cte_t<CteType, NameTag, Statement>> = true;
+
+  template <typename CteType, typename NameTag, typename Statement>
+  struct is_cte<cte_t<CteType, NameTag, Statement>> : std::true_type
+  {
+  };
 
   template <typename CteType, typename NameTag, typename Statement>
   struct name_tag_of<cte_t<CteType, NameTag, Statement>>

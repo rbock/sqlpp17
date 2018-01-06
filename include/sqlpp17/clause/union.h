@@ -102,28 +102,32 @@ namespace sqlpp
   [[nodiscard]] auto to_sql_string(Context& context,
                                    const clause_base<union_t<Flag, LeftSelect, RightSelect>, Statement>& t)
   {
-#warning : Some DBMS allow embracing, others do not.
     return to_sql_string(context, t._left) + " UNION " + to_sql_string(context, t._right);
   }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_union_args_are_statements, "union_() args must be sql statements");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_union_args_have_result_rows, "union_() args have result rows (like select)");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_union_args_have_compatible_rows, "union_() args must have compatible result rows");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_union_rhs_arg_without_with, "union_() rhs arg must not contain a WITH clause");
 
   template <typename LeftSelect, typename RightSelect>
   constexpr auto check_union_args(const LeftSelect& l, const RightSelect& r)
   {
-    if constexpr (!(is_statement_v<LeftSelect> && is_statement_v<RightSelect>))
+    if constexpr (not(is_statement_v<LeftSelect> && is_statement_v<RightSelect>))
     {
       return failed<assert_union_args_are_statements>{};
     }
-    else if constexpr (!(has_result_row_v<LeftSelect> && has_result_row_v<RightSelect>))
+    else if constexpr (not(has_result_row_v<LeftSelect> && has_result_row_v<RightSelect>))
     {
       return failed<assert_union_args_have_result_rows>{};
     }
-    else if constexpr (!result_rows_are_compatible_v<result_row_of_t<LeftSelect>, result_row_of_t<RightSelect>>)
+    else if constexpr (not result_rows_are_compatible_v<result_row_of_t<LeftSelect>, result_row_of_t<RightSelect>>)
     {
       return failed<assert_union_args_have_compatible_rows>{};
+    }
+    else if constexpr (not provided_ctes_of_v<RightSelect>.empty())
+    {
+      return failed<assert_union_rhs_arg_without_with>{};
     }
     else
     {
