@@ -104,7 +104,7 @@ namespace sqlpp::sqlite3::detail
     return sqlite3_changes(_statement.connection());
   }
 
-  auto prepared_erase_t::run() -> size_t
+  auto prepared_delete_from_t::run() -> size_t
   {
     execute_prepared_statement(_statement);
     return sqlite3_changes(_statement.connection());

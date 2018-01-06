@@ -72,7 +72,7 @@ namespace sqlpp::postgresql::detail
     return std::strtoll(PQcmdTuples(execute_query(connection, statement).get()), nullptr, 10);
   }
 
-  auto erase(const connection_t& connection, const std::string& statement) -> size_t
+  auto delete_from(const connection_t& connection, const std::string& statement) -> size_t
   {
     return std::strtoll(PQcmdTuples(execute_query(connection, statement).get()), nullptr, 10);
   }
@@ -158,7 +158,7 @@ namespace sqlpp::postgresql::detail
     return std::strtoll(PQcmdTuples(execute_prepared_statement(_statement).get()), nullptr, 10);
   }
 
-  auto prepared_erase_t::run() -> size_t
+  auto prepared_delete_from_t::run() -> size_t
   {
     return std::strtoll(PQcmdTuples(execute_prepared_statement(_statement).get()), nullptr, 10);
   }

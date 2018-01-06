@@ -105,7 +105,7 @@ namespace sqlpp::test
     }
 
     template <typename Statement>
-    auto erase(const Statement& statement)
+    auto delete_from(const Statement& statement)
     {
       return 0ull;
     }

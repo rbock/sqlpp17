@@ -64,7 +64,7 @@ namespace sqlpp::postgresql::detail
   auto select(const connection_t&, const std::string& statement) -> char_result_t;
   auto insert(const connection_t&, const std::string& statement) -> std::size_t;
   auto update(const connection_t&, const std::string& statement) -> std::size_t;
-  auto erase(const connection_t&, const std::string& statement) -> std::size_t;
+  auto delete_from(const connection_t&, const std::string& statement) -> std::size_t;
   auto execute(const connection_t&, const std::string& statement) -> void;
 
   // prepared execution
@@ -110,12 +110,12 @@ namespace sqlpp::postgresql::detail
     auto run() -> std::size_t;
   };
 
-  class prepared_erase_t
+  class prepared_delete_from_t
   {
     ::sqlpp::postgresql::prepared_statement_t _statement;
 
   public:
-    prepared_erase_t(::sqlpp::postgresql::prepared_statement_t&& statement) : _statement(std::move(statement))
+    prepared_delete_from_t(::sqlpp::postgresql::prepared_statement_t&& statement) : _statement(std::move(statement))
     {
     }
 
@@ -247,15 +247,15 @@ namespace sqlpp::postgresql
     }
 
     template <typename Statement>
-    auto erase(const Statement& statement)
+    auto delete_from(const Statement& statement)
     {
-      return detail::erase(*this, to_sql_string_c(context_t{}, statement));
+      return detail::delete_from(*this, to_sql_string_c(context_t{}, statement));
     }
 
     template <typename Statement>
-    [[nodiscard]] auto prepare_erase(const Statement& statement)
+    [[nodiscard]] auto prepare_delete_from(const Statement& statement)
     {
-      return detail::prepared_erase_t{
+      return detail::prepared_delete_from_t{
           detail::prepare(*this, to_sql_string_c(context_t{}, statement), statement.get_no_of_parameters(), 0)};
     }
 

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2016 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,27 +26,23 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <iostream>
 
+#include <sqlpp17/clause/delete_from.h>
+#include <sqlpp17/operator.h>
+
 #include <connections/mock_db.h>
+#include <serialize/assert_equality.h>
 #include <tables/TabDepartment.h>
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
 
-#include <sqlpp17/clause/erase.h>
-#include <sqlpp17/operator.h>
+using ::sqlpp::test::assert_equality;
+using ::sqlpp::test::mock_context_t;
 
 int main()
 {
-  auto db = ::sqlpp::test::mock_db{};
-
-  // default way of constructing an erase statement
-  (void)db(sqlpp::erase_from(test::tabPerson).where(test::tabPerson.id == 17));
-
-  // pseudo default way of constructing an erase statement
-  (void)db(sqlpp::erase().from(test::tabPerson).where(test::tabPerson.id == 17));
-
-  // pseudo default way of constructing an erase statement
-  (void)db(sqlpp::erase().from(test::tabPerson).unconditionally());
-
-  // using << concatenation
-  (void)db(sqlpp::erase() << sqlpp::from(test::tabPerson) << sqlpp::where(test::tabPerson.isManager));
+  assert_equality("DELETE FROM tab_person",
+                  to_sql_string_c(mock_context_t{}, ::sqlpp::delete_from(test::tabPerson).unconditionally()));
+  assert_equality("DELETE FROM tab_person WHERE tab_person.name LIKE '%bar'",
+                  to_sql_string_c(mock_context_t{},
+                                  ::sqlpp::delete_from(test::tabPerson).where(test::tabPerson.name.like("%bar"))));
 }

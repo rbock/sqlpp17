@@ -123,7 +123,7 @@ namespace sqlpp::mysql::detail
     return mysql_affected_rows(connection.get());
   }
 
-  auto erase(const connection_t& connection, const std::string& statement) -> size_t
+  auto delete_from(const connection_t& connection, const std::string& statement) -> size_t
   {
     execute_query(connection, statement);
     return mysql_affected_rows(connection.get());
@@ -196,7 +196,7 @@ namespace sqlpp::mysql::detail
     return mysql_stmt_affected_rows(_statement.get());
   }
 
-  auto prepared_erase_t::run() -> size_t
+  auto prepared_delete_from_t::run() -> size_t
   {
     execute_prepared_statement(_statement);
     return mysql_stmt_affected_rows(_statement.get());

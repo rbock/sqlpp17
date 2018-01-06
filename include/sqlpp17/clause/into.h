@@ -65,6 +65,7 @@ namespace sqlpp
     {
     }
 
+#warning : Try doing it the create_table way (take table directly)
     clause_base(const into_t<Table>& f) : _table(f._table)
     {
     }
