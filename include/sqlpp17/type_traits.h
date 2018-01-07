@@ -340,6 +340,15 @@ namespace sqlpp
   }
 
   template <typename T>
+  struct column_spec_of
+  {
+    static_assert(wrong<T>, "Missing specialization");
+  };
+
+  template <typename T>
+  using column_spec_of_t = typename column_spec_of<T>::type;
+
+  template <typename T>
   struct table_spec_of
   {
     static_assert(wrong<T>, "Missing specialization");

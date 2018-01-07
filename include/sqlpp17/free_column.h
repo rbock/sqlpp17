@@ -38,10 +38,6 @@ namespace sqlpp
   template <typename ColumnSpec>
   struct free_column_t
   {
-    template <typename TableSpec>
-    free_column_t(const column_t<TableSpec, ColumnSpec>&)
-    {
-    }
   };
 
   template <typename Context, typename ColumnSpec>

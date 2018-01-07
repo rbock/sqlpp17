@@ -104,6 +104,12 @@ namespace sqlpp
   };
 
   template <typename TableSpec, typename ColumnSpec>
+  struct column_spec_of<column_t<TableSpec, ColumnSpec>>
+  {
+    using type = ColumnSpec;
+  };
+
+  template <typename TableSpec, typename ColumnSpec>
   struct table_spec_of<column_t<TableSpec, ColumnSpec>>
   {
     using type = TableSpec;

@@ -43,6 +43,11 @@ namespace sqlpp::sqlite3::detail
     static_assert(wrong<ValueType>, "unknown value type for CREATE TABLE");
   }
 
+  [[nodiscard]] inline auto value_type_to_sql_string(const bool&)
+  {
+    return " INTEGER";
+  }
+
   [[nodiscard]] inline auto value_type_to_sql_string(const int64_t&)
   {
     return " INTEGER";

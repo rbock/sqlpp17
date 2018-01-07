@@ -33,6 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/sqlite3/connection.h>
 
 #include <tables/TabDepartment.h>
+#include <tables/TabPerson.h>
 
 auto print_debug(std::string_view message)
 {
@@ -50,7 +51,9 @@ int main()
   {
     auto db = ::sqlpp::sqlite3::connection_t{config};
     db(drop_table(test::tabDepartment));
+    db(drop_table(test::tabPerson));
     db(create_table(test::tabDepartment));
+    db(create_table(test::tabPerson));
 
     auto id = db(insert_into(test::tabDepartment).default_values());
   }

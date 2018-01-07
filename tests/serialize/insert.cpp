@@ -24,15 +24,94 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <iostream>
+#include <sqlpp17/clause/insert_into.h>
+#include <sqlpp17/operator.h>
+
+#include <connections/mock_db.h>
 #include <tables/TabDepartment.h>
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
 
-#include <sqlpp17/clause/insert_into.h>
-#include <sqlpp17/operator.h>
+#include <serialize/assert_equality.h>
+
+using ::sqlpp::test::assert_equality;
+using ::sqlpp::test::mock_context_t;
+using test::tabDepartment;
+using test::tabPerson;
+
+static_assert(::sqlpp::required_insert_columns_of_f(tabDepartment) == ::sqlpp::type_set());
+static_assert(::sqlpp::required_insert_columns_of_f(tabPerson) ==
+              ::sqlpp::type_set(tabPerson.isManager, tabPerson.name));
 
 int main()
 {
-#warning not implemented
+  // standard way of constructing an insert statement
+  assert_equality("INSERT INTO tab_department DEFAULT VALUES",
+                  to_sql_string_c(mock_context_t{}, insert_into(tabDepartment).default_values()));
+  assert_equality(
+      "INSERT INTO tab_department (name) VALUES ('Engineering')",
+      to_sql_string_c(mock_context_t{}, insert_into(tabDepartment).set(tabDepartment.name = "Engineering")));
+  assert_equality("INSERT INTO tab_department (name) "
+                  "VALUES ('Engineering'), ('Marketing'), ('Sales')",
+                  to_sql_string_c(mock_context_t{}, insert_into(tabDepartment)
+                                                        .multiset(std::vector{
+                                                            std::tuple{tabDepartment.name = "Engineering"},
+                                                            std::tuple{tabDepartment.name = "Marketing"},
+                                                            std::tuple{tabDepartment.name = "Sales"},
+                                                        })));
+
+  assert_equality("INSERT INTO tab_person (is_manager, name) "
+                  "VALUES (1, 'Sample Name')",
+                  to_sql_string_c(mock_context_t{}, insert_into(tabPerson).set(tabPerson.isManager = true,
+                                                                               tabPerson.name = "Sample Name")));
+  assert_equality("INSERT INTO tab_person (is_manager, name, address) "
+                  "VALUES (1, 'Sample Name', 'Sample Address')",
+                  to_sql_string_c(mock_context_t{},
+                                  insert_into(tabPerson).set(tabPerson.isManager = true, tabPerson.name = "Sample Name",
+                                                             tabPerson.address = "Sample Address")));
+  assert_equality("INSERT INTO tab_person (is_manager, name, address) "
+                  "VALUES (1, 'Sample Name', 'Sample Address')",
+                  to_sql_string_c(mock_context_t{},
+                                  insert_into(tabPerson).set(tabPerson.isManager = true, tabPerson.name = "Sample Name",
+                                                             tabPerson.address = "Sample Address")));
+  assert_equality(
+      "INSERT INTO tab_person (is_manager, name) "
+      "VALUES (0, 'Mr. C++'), (1, 'Mr. CEO')",
+      to_sql_string_c(mock_context_t{}, insert_into(tabPerson).multiset(std::vector{
+                                            std::tuple{tabPerson.isManager = false, tabPerson.name = "Mr. C++"},
+                                            std::tuple{tabPerson.isManager = true, tabPerson.name = "Mr. CEO"}})));
+
+  // For columns with a default value, you can use std::optional to either pass a specific value or the default
+  assert_equality("INSERT INTO tab_person (is_manager, name, address) "
+                  "VALUES (1, 'Sample Name', 'Sample Address')",
+                  to_sql_string_c(mock_context_t{},
+                                  insert_into(tabPerson).set(
+                                      tabPerson.isManager = true, tabPerson.name = "Sample Name",
+                                      true ? std::make_optional(tabPerson.address = "Sample Address") : std::nullopt)));
+  assert_equality("INSERT INTO tab_person (is_manager, name, address, language) "
+                  "VALUES (1, 'Sample Name', NULL, 'C++')",
+                  to_sql_string_c(mock_context_t{},
+                                  insert_into(tabPerson).set(
+                                      tabPerson.isManager = true, tabPerson.name = "Sample Name",
+                                      false ? std::make_optional(tabPerson.address = "Sample Address") : std::nullopt,
+                                      false ? std::make_optional(tabPerson.language = "Java") : std::nullopt)));
+
+  assert_equality(
+      "INSERT INTO tab_person (is_manager, name, address, language) "
+      "VALUES (0, 'Mr. C++', NULL, 'C++'), (1, 'Mr. CEO', 'Sample Address', 'C++'), "
+      "(0, 'Mr. C++', NULL, 'Python'), (1, 'Mr. CEO', 'Sample Address', 'Python')",
+      to_sql_string_c(mock_context_t{},
+                      insert_into(tabPerson).multiset(std::vector{
+                          std::tuple{tabPerson.isManager = false, tabPerson.name = "Mr. C++",
+                                     false ? std::make_optional(tabPerson.address = "Sample Address") : std::nullopt,
+                                     false ? std::make_optional(tabPerson.language = "Python") : std::nullopt},
+                          std::tuple{tabPerson.isManager = true, tabPerson.name = "Mr. CEO",
+                                     true ? std::make_optional(tabPerson.address = "Sample Address") : std::nullopt,
+                                     false ? std::make_optional(tabPerson.language = "Python") : std::nullopt},
+                          std::tuple{tabPerson.isManager = false, tabPerson.name = "Mr. C++",
+                                     false ? std::make_optional(tabPerson.address = "Sample Address") : std::nullopt,
+                                     true ? std::make_optional(tabPerson.language = "Python") : std::nullopt},
+                          std::tuple{tabPerson.isManager = true, tabPerson.name = "Mr. CEO",
+                                     true ? std::make_optional(tabPerson.address = "Sample Address") : std::nullopt,
+                                     true ? std::make_optional(tabPerson.language = "Python") : std::nullopt}})));
 }

@@ -40,6 +40,41 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
+  template <typename Assignment>
+  struct insert_assignment_t
+  {
+    Assignment _assignment;
+  };
+
+  template <typename Context, typename Assignment>
+  [[nodiscard]] auto to_sql_string(Context& context, const insert_assignment_t<Assignment>& assignment)
+  {
+    if constexpr (::sqlpp::is_optional_v<Assignment>)
+    {
+      if (assignment._assignment)
+        return to_sql_string(context, assignment._assignment.value().value);
+      else
+      {
+        using _spec = column_spec_of_t<column_of_t<remove_optional_t<Assignment>>>;
+        if constexpr (std::is_same_v<decltype(_spec::default_value), const none_t>)
+        {
+          static_assert(_spec::can_be_null);
+          return std::string("NULL");
+        }
+        else
+        {
+          return to_sql_string(context, _spec::default_value);
+        }
+      }
+    }
+    else
+    {
+      return to_sql_string(context, assignment._assignment.value);
+    }
+  }
+}  // namespace sqlpp
+namespace sqlpp
+{
   namespace clause
   {
     struct insert_values
@@ -106,14 +141,15 @@ namespace sqlpp
     {
       ret += " (";
       ret += tuple_to_sql_string(context, ", ",
-                                 std::tuple(free_column_t{std::get<Assignments>(t._assignments).column}...));
+                                 std::tuple(free_column_t<column_of_t<remove_optional_t<Assignments>>>{}...));
       ret += ")";
     }
 
     // values
     {
       ret += " VALUES (";
-      ret += tuple_to_sql_string(context, ", ", std::tie(std::get<Assignments>(t._assignments).value...));
+      ret += tuple_to_sql_string(
+          context, ", ", std::tuple(insert_assignment_t<Assignments>{std::get<Assignments>(t._assignments)}...));
       ret += ")";
     }
 
@@ -252,13 +288,13 @@ namespace sqlpp
     {
       ret += " (";
       ret += tuple_to_sql_string(context, ", ",
-                                 std::tuple(free_column_t{std::get<Assignments>(t._assignments).column}...));
+                                 std::tuple(free_column_t<column_of_t<remove_optional_t<Assignments>>>{}...));
       ret += ")";
     }
 
     // values
     {
-      ret += " VALUES (";
+      ret += " VALUES ";
       auto first = true;
       for (const auto& row : t._rows)
       {
@@ -266,7 +302,8 @@ namespace sqlpp
           ret += ", ";
         first = false;
         ret += "(";
-        ret += tuple_to_sql_string(context, ", ", std::tie(std::get<Assignments>(t._assignments).value...));
+        ret += tuple_to_sql_string(context, ", ",
+                                   std::tuple(insert_assignment_t<Assignments>{std::get<Assignments>(row)}...));
         ret += ")";
       }
     }

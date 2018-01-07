@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2016 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <cstdint>
 
+#include <sqlpp17/data_types.h>
 #include <sqlpp17/name_tag.h>
 #include <sqlpp17/table.h>
 
@@ -46,7 +47,7 @@ namespace test
     struct Name : public ::sqlpp::spec_base
     {
       SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(name, name);
-      using value_type = std::string_view;
+      using value_type = ::sqlpp::fixchar<100>;
       static constexpr auto can_be_null = true;
       static constexpr auto default_value = ::sqlpp::none_t{};
     };
