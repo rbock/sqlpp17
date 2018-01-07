@@ -126,12 +126,14 @@ namespace sqlpp
   struct has_default<column_t<TableSpec, ColumnSpec>>
   {
     static constexpr auto value =
-        ColumnSpec::can_be_null or not std::is_same_v<decltype(ColumnSpec::default_value), ::sqlpp::none_t>;
+        ColumnSpec::can_be_null or not std::is_same_v<decltype(ColumnSpec::default_value), const ::sqlpp::none_t>;
   };
 
   template <typename TableSpec, typename ColumnSpec>
-  constexpr auto is_insert_required_v<column_t<TableSpec, ColumnSpec>> =
-      not has_default<column_t<TableSpec, ColumnSpec>>::value;
+  struct is_insert_required<column_t<TableSpec, ColumnSpec>>
+      : std::integral_constant<bool, not has_default_v<column_t<TableSpec, ColumnSpec>>>
+  {
+  };
 
   template <typename TableSpec, typename ColumnSpec>
   [[nodiscard]] constexpr auto required_tables_of([[maybe_unused]] type_t<column_t<TableSpec, ColumnSpec>>)

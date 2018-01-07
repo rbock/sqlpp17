@@ -133,13 +133,12 @@ namespace sqlpp
   constexpr auto provided_aggregates_v = type_set_t<>{};
 
   template <typename T>
-  constexpr auto is_insert_required_v = false;
+  struct is_insert_required : std::false_type
+  {
+  };
 
   template <typename T>
-  struct is_insert_required
-  {
-    static constexpr auto value = is_insert_required_v<T>;
-  };
+  inline constexpr auto is_insert_required_v = is_insert_required<T>::value;
 
   template <typename T>
   constexpr auto is_failed_v = false;
@@ -305,6 +304,9 @@ namespace sqlpp
   {
     static constexpr auto value = false;
   };
+
+  template <typename T>
+  inline constexpr auto has_default_v = has_default<T>::value;
 
   template <typename T>
   constexpr auto is_select_flag_v = false;
@@ -620,7 +622,7 @@ namespace sqlpp
   constexpr auto required_insert_columns_of_v = type_set_t<>();
 
   template <typename T>
-  constexpr auto required_insert_columns_of(const T&)
+  constexpr auto required_insert_columns_of_f(const T&)
   {
     return required_insert_columns_of_v<T>;
   }

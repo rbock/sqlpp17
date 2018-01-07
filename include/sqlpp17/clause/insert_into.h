@@ -61,6 +61,8 @@ namespace sqlpp
   class clause_base<insert_into_t<Table>, Statement>
   {
   public:
+    using insert_into_table_t = Table;
+
     template <typename OtherStatement>
     clause_base(const clause_base<insert_into_t<Table>, OtherStatement>& s) : _table(s._table)
     {
@@ -111,8 +113,6 @@ namespace sqlpp
   class result_base<insert_into_t<Table>, Statement>
   {
   public:
-    using insert_into_table_t = Table;
-
     template <typename Connection>
     [[nodiscard]] auto _run(Connection& connection) const
     {

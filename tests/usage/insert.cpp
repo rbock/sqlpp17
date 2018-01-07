@@ -34,11 +34,40 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/clause/insert_into.h>
 #include <sqlpp17/operator.h>
 
+using test::tabDepartment;
+using test::tabPerson;
+
+static_assert(::sqlpp::required_insert_columns_of_f(tabDepartment) == ::sqlpp::type_set());
+static_assert(::sqlpp::required_insert_columns_of_f(tabPerson) ==
+              ::sqlpp::type_set(tabPerson.isManager, tabPerson.name));
+
 int main()
 {
   auto db = ::sqlpp::test::mock_db{};
+  auto id = std::size_t{};
+  auto hasAddress = false;
 
-  // default way of constructing an insert statement
-  const auto id = db(insert_into(test::tabPerson).default_values());
-#warning : Need more usage examples
+  // standard way of constructing an insert statement
+  id = db(insert_into(tabDepartment).default_values());
+  id = db(insert_into(tabDepartment).set(tabDepartment.name = "Engineering"));
+  id = db(insert_into(tabDepartment)
+              .multiset(std::vector{
+                  std::tuple{tabDepartment.name = "Engineering"},
+                  std::tuple{tabDepartment.name = "Marketing"},
+                  std::tuple{tabDepartment.name = "Sales"},
+              }));
+
+  id = db(insert_into(tabPerson).set(tabPerson.isManager = true, tabPerson.name = "Sample Name"));
+  id = db(insert_into(tabPerson).set(tabPerson.isManager = true, tabPerson.name = "Sample Name",
+                                     tabPerson.address = "Sample Address"));
+  id = db(insert_into(tabPerson).set(tabPerson.isManager = true, tabPerson.name = "Sample Name",
+                                     tabPerson.address = "Sample Address"));
+  id = db(
+      insert_into(tabPerson).multiset(std::vector{std::tuple{tabPerson.isManager = false, tabPerson.name = "Mr. C++"},
+                                                  std::tuple{tabPerson.isManager = true, tabPerson.name = "Mr. CEO"}}));
+
+  // For columns with a default value, you can use std::optional to either pass a specific value or the default
+  id = db(
+      insert_into(tabPerson).set(tabPerson.isManager = true, tabPerson.name = "Sample Name",
+                                 hasAddress ? std::make_optional(tabPerson.address = "Sample Address") : std::nullopt));
 }

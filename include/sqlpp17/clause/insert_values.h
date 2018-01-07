@@ -78,6 +78,26 @@ namespace sqlpp
     std::tuple<Assignments...> _assignments;
   };
 
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_insert_set_is_not_missing_assignment,
+                              "at least one required column is missing in set()");
+
+  template <typename Db, typename Statement, typename... Assignments>
+  constexpr auto check_clause_preparable(const type_t<clause_base<insert_values_t<Assignments...>, Statement>>&)
+  {
+    using _table_t = typename Statement::insert_into_table_t;
+    constexpr auto _set_columns = type_set<column_of_t<remove_optional_t<Assignments>>...>();
+    constexpr auto _required_columns = required_insert_columns_of_v<_table_t>;
+
+    if constexpr (not(_set_columns >= _required_columns))
+    {
+      return failed<assert_insert_set_is_not_missing_assignment>{};
+    }
+    else
+    {
+      return succeeded{};
+    }
+  }
+
   template <typename Context, typename Statement, typename... Assignments>
   [[nodiscard]] auto to_sql_string(Context& context, const clause_base<insert_values_t<Assignments...>, Statement>& t)
   {
@@ -178,6 +198,12 @@ namespace sqlpp
     std::vector<std::tuple<Assignments...>> _rows;
   };
 
+  template <typename Db, typename Statement, typename... Assignments>
+  constexpr auto check_clause_preparable(const type_t<clause_base<insert_multi_values_t<Assignments...>, Statement>>&)
+  {
+    return check_clause_preparable<Db>(type_t<clause_base<insert_values_t<Assignments...>, Statement>>{});
+  }
+
   template <typename... Assignments>
   constexpr auto is_result_clause_v<insert_multi_values_t<Assignments...>> = true;
 
@@ -188,7 +214,8 @@ namespace sqlpp
     template <typename Connection>
     [[nodiscard]] auto _run(Connection& connection) const
     {
-      if (static_cast<const insert_multi_values_t<Assignments...>&>(Statement::of(this))._rows.empty())
+      if (static_cast<const clause_base<insert_multi_values_t<Assignments...>, Statement>&>(Statement::of(this))
+              ._rows.empty())
       {
         return decltype(connection.insert(Statement::of(this))){};
       }
@@ -201,7 +228,8 @@ namespace sqlpp
     template <typename Connection>
     [[nodiscard]] auto _prepare(Connection& connection) const
     {
-      if (static_cast<const insert_multi_values_t<Assignments...>&>(Statement::of(this))._rows.empty())
+      if (static_cast<const clause_base<insert_multi_values_t<Assignments...>, Statement>&>(Statement::of(this))
+              ._rows.empty())
       {
         throw ::sqlpp::exception("Cannot prepare zero-line insert");
       }
@@ -255,8 +283,8 @@ namespace sqlpp
                               "at least one assignment is prohibited by its column definition in set()");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_insert_set_args_affect_single_table,
                               "set() arguments contain assignments from more than one table");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_insert_set_is_not_missing_assignment,
-                              "at least one required column is missing in set()");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_insert_set_optional_args_have_default,
+                              "at least one optional assignment affects a column without a default");
 
   template <typename... Assignments>
   constexpr auto check_insert_set_args()
@@ -265,26 +293,28 @@ namespace sqlpp
     {
       return failed<assert_insert_set_at_least_one_arg>{};
     }
-    else if constexpr (!(true && ... && is_assignment_v<Assignments>))
+    else if constexpr (!(true && ... && is_assignment_v<remove_optional_t<Assignments>>))
     {
       return failed<assert_insert_set_args_are_assignments>{};
     }
-    else if constexpr (type_set<char_sequence_of_t<column_of_t<Assignments>>...>().size() != sizeof...(Assignments))
+    else if constexpr (type_set<char_sequence_of_t<column_of_t<remove_optional_t<Assignments>>>...>().size() !=
+                       sizeof...(Assignments))
     {
       return failed<assert_insert_set_args_contain_no_duplicates>{};
     }
-    else if constexpr ((false || ... || is_read_only_v<column_of_t<Assignments>>))
+    else if constexpr ((false || ... || is_read_only_v<column_of_t<remove_optional_t<Assignments>>>))
     {
       return failed<assert_insert_set_assignments_are_allowed>{};
     }
-    else if constexpr (type_set<table_spec_of_t<column_of_t<Assignments>>...>().size() != 1)
+    else if constexpr (type_set<table_spec_of_t<column_of_t<remove_optional_t<Assignments>>>...>().size() != 1)
     {
       return failed<assert_insert_set_args_affect_single_table>{};
     }
-    else if constexpr (not(type_set<column_of_t<Assignments>...>() >=
-                           required_insert_columns_of_v<table_spec_of_t<column_of_t<detail::first_t<Assignments...>>>>))
+    else if constexpr (not(true and ... and
+                           (is_optional_v<Assignments> ? has_default_v<column_of_t<remove_optional_t<Assignments>>>
+                                                       : true)))
     {
-      return failed<assert_insert_set_is_not_missing_assignment>{};
+      return failed<assert_insert_set_optional_args_have_default>{};
     }
     else
       return succeeded{};
@@ -313,7 +343,7 @@ namespace sqlpp
     template <typename... Assignments>
     [[nodiscard]] constexpr auto set(Assignments... assignments) const
     {
-      constexpr auto check = check_insert_set_args<remove_optional_t<Assignments>...>();
+      constexpr auto check = check_insert_set_args<Assignments...>();
       if constexpr (check)
       {
         using row_t = std::tuple<Assignments...>;
@@ -326,9 +356,9 @@ namespace sqlpp
     }
 
     template <typename... Assignments>
-    [[nodiscard]] constexpr auto multiset(std::vector<std::tuple<remove_optional_t<Assignments>...>> assignments) const
+    [[nodiscard]] constexpr auto multiset(std::vector<std::tuple<Assignments...>> assignments) const
     {
-      constexpr auto check = check_insert_set_args<remove_optional_t<Assignments>...>();
+      constexpr auto check = check_insert_set_args<Assignments...>();
       if constexpr (check)
       {
         return Statement::replace_clause(this, insert_multi_values_t<Assignments...>{assignments});
