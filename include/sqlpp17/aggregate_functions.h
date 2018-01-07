@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017 - 2018, Roland Bock
+Copyright (c) 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,39 +26,7 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-namespace sqlpp
-{
-  struct no_flag_t
-  {
-  };
+#include <sqlpp17/aggregate_functions/count.h>
+#include <sqlpp17/aggregate_functions/max.h>
+#include <sqlpp17/aggregate_functions/min.h>
 
-  template <typename Context>
-  [[nodiscard]] auto to_sql_string(Context& context, const no_flag_t& t)
-  {
-    return std::string{""};
-  }
-
-  struct all_t
-  {
-  };
-
-  constexpr auto all = all_t{};
-
-  template <typename Context>
-  [[nodiscard]] auto to_sql_string(Context& context, const all_t& t)
-  {
-    return std::string{" ALL "};
-  }
-
-  struct distinct_t
-  {
-  };
-
-  constexpr auto distinct = distinct_t{};
-
-  template <typename Context>
-  [[nodiscard]] auto to_sql_string(Context& context, const distinct_t& t)
-  {
-    return std::string{" DISTINCT "};
-  }
-}  // namespace sqlpp

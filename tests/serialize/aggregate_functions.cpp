@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017 - 2018, Roland Bock
+Copyright (c) 2018 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -24,47 +24,23 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <iostream>
+#include <sqlpp17/aggregate_functions.h>
+#include <sqlpp17/operator.h>
 
 #include <connections/mock_db.h>
+#include <serialize/assert_equality.h>
 #include <tables/TabDepartment.h>
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
 
-#include <sqlpp17/clause/select.h>
-#include <sqlpp17/operator.h>
-
-using test::tabPerson;
-
-template <typename Row>
-auto display_full_row(const Row& row)
-{
-  std::cout << row.id << "\n";
-  std::cout << row.isManager << "\n";
-  std::cout << row.name << "\n";
-  std::cout << row.address.value_or("") << "\n";
-}
+using ::sqlpp::test::assert_equality;
+using ::sqlpp::test::mock_context_t;
+using ::test::tabPerson;
 
 int main()
 {
-  auto db = ::sqlpp::test::mock_db{};
-
-  for (const auto& row : db(sqlpp::select(all_of(tabPerson)).from(tabPerson).where(tabPerson.isManager)))
-  {
-    display_full_row(row);
-  }
-
-  // using << concatenation
-  for (const auto& row :
-       db(sqlpp::select() << sqlpp::select_columns(test::tabPerson.id, test::tabPerson.isManager,
-                                                   test::tabPerson.address, test::tabPerson.name)
-                          << sqlpp::from(test::tabPerson)
-                          << sqlpp::where(test::tabPerson.isManager and test::tabPerson.name == "")
-                          << sqlpp::having(test::tabPerson.id == test::tabPerson.id or test::tabPerson.id == 1)))
-  {
-    std::cout << row.id << std::endl;
-    std::cout << row.isManager << std::endl;
-    std::cout << row.name << std::endl;
-    std::cout << row.address.value_or("") << std::endl;
-  }
+  assert_equality("MIN(tab_person.id)", to_sql_string_c(mock_context_t{}, min(tabPerson.id)));
+  assert_equality("MAX(tab_person.id)", to_sql_string_c(mock_context_t{}, max(tabPerson.id)));
+  assert_equality("COUNT(tab_person.id)", to_sql_string_c(mock_context_t{}, count(tabPerson.id)));
+  assert_equality("COUNT( DISTINCT tab_person.id)", to_sql_string_c(mock_context_t{}, count_distinct(tabPerson.id)));
 }

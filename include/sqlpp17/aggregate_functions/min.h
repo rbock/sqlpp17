@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,46 +26,52 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <type_traits>
+#include <sqlpp17/type_traits.h>
 
-#include <sqlpp17/alias.h>
+#include <sqlpp17/aggregate.h>
 #include <sqlpp17/bad_expression.h>
-#include <sqlpp17/to_sql_string.h>
+#include <sqlpp17/flags.h>
 #include <sqlpp17/wrapped_static_assert.h>
 
 namespace sqlpp
 {
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_first_as_arg_is_expression, "as() first arg must be a value expression");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_first_as_arg_is_not_alias, "as() first arg must not be an alias");
-  SQLPP_WRAPPED_STATIC_ASSERT(
-      assert_second_as_arg_is_name_tag_or_similar,
-      "as() second arg must be a named expression (e.g. column, table), or a column/table spec, or a name tag");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_min_arg_is_expression, "min() arg must be a value expression");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_min_arg_is_not_alias, "min() arg must not be an alias");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_min_arg_is_not_aggregate, "min() arg must not be an aggregate");
 
-  template <typename Expr, typename Tag>
-  constexpr auto check_as_args()
+  template <typename Expr>
+  constexpr auto check_min_args()
   {
     if constexpr (not is_expression_v<Expr>)
     {
-      return failed<assert_first_as_arg_is_expression>{};
+      return failed<assert_min_arg_is_expression>{};
     }
     else if constexpr (is_alias_v<Expr>)
     {
-      return failed<assert_first_as_arg_is_not_alias>{};
+      return failed<assert_min_arg_is_not_alias>{};
     }
-    else if constexpr (std::is_same_v<name_tag_of_t<Tag>, none_t>)
+    else if constexpr (::sqlpp::is_aggregate_v<Expr>)
     {
-      return failed<assert_second_as_arg_is_name_tag_or_similar>{};
+      return failed<assert_min_arg_is_not_aggregate>{};
     }
     else
       return succeeded{};
   }
 
-  template <typename Expr, typename NamedTypeOrTag>
-  [[nodiscard]] constexpr auto as(Expr expr, const NamedTypeOrTag& tag)
+  template <typename ValueType>
+  struct min_t
   {
-    if constexpr (constexpr auto check = check_as_args<Expr, NamedTypeOrTag>(); check)
+    static constexpr auto name = std::string_view{"MIN"};
+    using flag_type = no_flag_t;
+    using value_type = ValueType;
+  };
+
+  template <typename Expr>
+  [[nodiscard]] constexpr auto min(Expr expr)
+  {
+    if constexpr (constexpr auto check = check_min_args<Expr>(); check)
     {
-      return alias_t<Expr, name_tag_of_t<NamedTypeOrTag>>{expr};
+      return aggregate_t<min_t<value_type_of_t<Expr>>, Expr>{expr};
     }
     else
     {

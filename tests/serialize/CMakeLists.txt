@@ -29,6 +29,7 @@ function(test_compile name)
 	add_test(${target} ${target})
 endfunction()
 
+test_compile(aggregate_functions)
 test_compile(values)
 test_compile(case)
 test_compile(operator)
