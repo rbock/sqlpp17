@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016 - 2017, Roland Bock
+Copyright (c) 2016 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -29,10 +29,39 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tuple>
 
 #include <sqlpp17/clause_fwd.h>
+#include <sqlpp17/free_column.h>
 #include <sqlpp17/statement.h>
 #include <sqlpp17/tuple_to_sql_string.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
+
+namespace sqlpp
+{
+  template <typename Assignment>
+  struct update_assignment_t
+  {
+    Assignment _assignment;
+  };
+
+  template <typename Context, typename Assignment>
+  [[nodiscard]] auto to_sql_string(Context& context, const update_assignment_t<Assignment>& assignment)
+  {
+    auto ret = to_sql_string(context, free_column_t<column_of_t<remove_optional_t<Assignment>>>{});
+    if constexpr (::sqlpp::is_optional_v<Assignment>)
+    {
+      if (assignment._assignment)
+        return ret + " = " + to_sql_string(context, assignment._assignment.value().value);
+      else
+      {
+        return ret + " = " + ret;
+      }
+    }
+    else
+    {
+      return ret + " = " + to_sql_string(context, assignment._assignment.value);
+    }
+  }
+}  // namespace sqlpp
 
 namespace sqlpp
 {
@@ -100,7 +129,8 @@ namespace sqlpp
   [[nodiscard]] auto to_sql_string(Context& context, const clause_base<update_set_t<Assignments...>, Statement>& t)
   {
     return std::string{" SET "} +
-           tuple_to_sql_string(context, ", ", std::tie(std::get<Assignments>(t._assignments)...));
+           tuple_to_sql_string(context, ", ",
+                               std::tuple(update_assignment_t<Assignments>{std::get<Assignments>(t._assignments)}...));
   }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_update_set_at_least_one_arg, "at least one assignment required in set()");
@@ -118,15 +148,16 @@ namespace sqlpp
     {
       return failed<assert_update_set_at_least_one_arg>{};
     }
-    else if constexpr (!(true && ... && is_assignment_v<Assignments>))
+    else if constexpr (!(true && ... && is_assignment_v<remove_optional_t<Assignments>>))
     {
       return failed<assert_update_set_args_are_assignments>{};
     }
-    else if constexpr (type_set<char_sequence_of_t<column_of_t<Assignments>>...>().size() != sizeof...(Assignments))
+    else if constexpr (type_set<char_sequence_of_t<column_of_t<remove_optional_t<Assignments>>>...>().size() !=
+                       sizeof...(Assignments))
     {
       return failed<assert_update_set_args_contain_no_duplicates>{};
     }
-    else if constexpr ((false || ... || is_read_only_v<column_of_t<Assignments>>))
+    else if constexpr ((false || ... || is_read_only_v<column_of_t<remove_optional_t<Assignments>>>))
     {
       return failed<assert_update_set_assignments_are_allowed>{};
     }
@@ -155,7 +186,7 @@ namespace sqlpp
       constexpr auto check = check_update_set_arg<Assignments...>();
       if constexpr (check)
       {
-        return Statement::replace_clause(this, update_set_t<Assignments...>{assignments...});
+        return Statement::replace_clause(this, update_set_t<Assignments...>{std::tuple{assignments...}});
       }
       else
       {

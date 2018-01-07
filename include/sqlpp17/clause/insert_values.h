@@ -73,6 +73,7 @@ namespace sqlpp
     }
   }
 }  // namespace sqlpp
+
 namespace sqlpp
 {
   namespace clause

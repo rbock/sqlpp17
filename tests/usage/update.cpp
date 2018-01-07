@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2017 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -24,36 +24,33 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <iostream>
+#include <sqlpp17/clause/update.h>
+#include <sqlpp17/operator.h>
 
 #include <connections/mock_db.h>
 #include <tables/TabDepartment.h>
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
 
-#include <sqlpp17/clause/update.h>
-#include <sqlpp17/operator.h>
+using ::test::tabPerson;
 
 int main()
 {
   auto db = ::sqlpp::test::mock_db{};
+  auto id = std::size_t{};
+  const auto hasNewName = false;
 
-  // default way of constructing an insert statement
-  const auto id = db(sqlpp::update(test::tabPerson).set(test::tabPerson.isManager = true).unconditionally());
+  // normal updates
+  id = db(update(tabPerson).set(tabPerson.isManager = true).unconditionally());
+  id = db(update(tabPerson).set(tabPerson.isManager = true).where(tabPerson.isManager == false));
 
-  // using << concatenation
-  /*
-  for (const auto& row :
-       db(sqlpp::select() << sqlpp::select_columns(test::tabPerson.id, test::tabPerson.isManager,
-                                                   test::tabPerson.address, test::tabPerson.name)
-                          << sqlpp::from(test::tabPerson)
-                          << sqlpp::where(test::tabPerson.isManager and test::tabPerson.name == "")
-                          << sqlpp::having(test::tabPerson.id == test::tabPerson.id or test::tabPerson.id == 1)))
-  {
-    std::cout << row.id << std::endl;
-    std::cout << row.isManager << std::endl;
-    std::cout << row.name << std::endl;
-    std::cout << row.address.value_or("") << std::endl;
-  }
-  */
+  // update with optional assignment
+  id = db(
+      update(tabPerson)
+          .set(tabPerson.isManager = true, hasNewName ? std::make_optional(tabPerson.name = "New Name") : std::nullopt)
+          .unconditionally());
+
+  // query concatenation
+  id = db(update(tabPerson) << update_set(tabPerson.isManager = true) << sqlpp::unconditionally());
+  id = db(update(tabPerson) << update_set(tabPerson.isManager = true) << where(tabPerson.isManager == false));
 }
