@@ -31,6 +31,7 @@ endfunction()
 
 test_usage(insert)
 test_usage(select)
+test_usage(truncate)
 
 test_usage(prepared_insert)
 test_usage(prepared_select)

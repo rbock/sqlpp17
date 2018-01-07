@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017 - 2018, Roland Bock
+Copyright (c) 2018 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,5 +26,16 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/sqlite3/clause/create_table.h>
-#include <sqlpp17/sqlite3/clause/truncate.h>
+#include <sqlpp17/clause/truncate.h>
+
+#include <sqlpp17/sqlite3/context.h>
+
+namespace sqlpp
+{
+  template <typename Table, typename Statement>
+  [[nodiscard]] auto to_sql_string(sqlite3::context_t& context, const clause_base<truncate_t<Table>, Statement>& t)
+  {
+    return "DELETE FROM " + to_sql_name(context, name_tag_of_t<Table>{});
+  }
+
+}  // namespace sqlpp

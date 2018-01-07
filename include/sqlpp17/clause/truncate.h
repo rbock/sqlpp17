@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017 - 2018, Roland Bock
+Copyright (c) 2018 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,43 +26,42 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/clause/from.h>
-#include <sqlpp17/clause/where.h>
 #include <sqlpp17/clause_fwd.h>
-#include <sqlpp17/to_sql_name.h>
+#include <sqlpp17/prepared_statement.h>
+#include <sqlpp17/statement.h>
 #include <sqlpp17/type_traits.h>
+#include <sqlpp17/wrapped_static_assert.h>
 #include <sqlpp17/wrong.h>
 
 namespace sqlpp
 {
   namespace clause
   {
-    struct drop_table
+    struct truncate
     {
     };
   }  // namespace clause
 
   template <typename Table>
-  struct drop_table_t
+  struct truncate_t
   {
-    Table _table;
   };
 
   template <typename Table>
-  struct nodes_of<drop_table_t<Table>>
+  struct nodes_of<truncate_t<Table>>
   {
     using type = type_vector<Table>;
   };
 
   template <typename Table>
-  constexpr auto clause_tag<drop_table_t<Table>> = clause::drop_table{};
+  constexpr auto clause_tag<truncate_t<Table>> = clause::truncate{};
 
   template <typename Table, typename Statement>
-  class clause_base<drop_table_t<Table>, Statement>
+  class clause_base<truncate_t<Table>, Statement>
   {
   public:
     template <typename OtherStatement>
-    clause_base(const clause_base<drop_table_t<Table>, OtherStatement>& t) : _table(t.table)
+    clause_base(const clause_base<truncate_t<Table>, OtherStatement>& t) : _table(t.table)
     {
     }
 
@@ -74,10 +73,10 @@ namespace sqlpp
   };
 
   template <typename Table>
-  constexpr auto is_result_clause_v<drop_table_t<Table>> = true;
+  constexpr auto is_result_clause_v<truncate_t<Table>> = true;
 
   template <typename Table, typename Statement>
-  class result_base<drop_table_t<Table>, Statement>
+  class result_base<truncate_t<Table>, Statement>
   {
   protected:
     template <typename Connection>
@@ -94,35 +93,35 @@ namespace sqlpp
   };
 
   template <typename Context, typename Table, typename Statement>
-  [[nodiscard]] auto to_sql_string(Context& context, const clause_base<drop_table_t<Table>, Statement>& t)
+  [[nodiscard]] auto to_sql_string(Context& context, const clause_base<truncate_t<Table>, Statement>& t)
   {
-    return std::string("DROP TABLE IF EXISTS ") + to_sql_name(context, t._table);
+    return "TRUNCATE " + to_sql_name(context, name_tag_of_t<Table>{});
   }
 
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_drop_table_arg_is_table, "drop_table() arg has to be a table");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_drop_table_arg_no_read_only_table, "drop_table() arg must not be read-only table");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_truncate_arg_is_table, "truncate() arg has to be a table");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_truncate_arg_no_read_only_table, "truncate() arg must not be read-only table");
 
   template <typename T>
-  constexpr auto check_drop_table_arg()
+  constexpr auto check_truncate_arg()
   {
     if constexpr (!is_table_v<T>)
     {
-      return failed<assert_drop_table_arg_is_table>{};
+      return failed<assert_truncate_arg_is_table>{};
     }
     else if constexpr (is_read_only_v<T>)
     {
-      return failed<assert_drop_table_arg_no_read_only_table>{};
+      return failed<assert_truncate_arg_no_read_only_table>{};
     }
     else
       return succeeded{};
   }
 
   template <typename Table>
-  [[nodiscard]] constexpr auto drop_table(Table table)
+  [[nodiscard]] constexpr auto truncate(Table table)
   {
-    if constexpr (constexpr auto check = check_drop_table_arg<Table>(); check)
+    if constexpr (constexpr auto check = check_truncate_arg<Table>(); check)
     {
-      return statement<drop_table_t<Table>>{table};
+      return statement<truncate_t<Table>>{table};
     }
     else
     {

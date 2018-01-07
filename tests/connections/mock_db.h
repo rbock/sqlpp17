@@ -93,6 +93,13 @@ namespace sqlpp::test
 
   private:
     template <typename Statement>
+    auto execute(const Statement& statement)
+    {
+      [[maybe_unused]] auto x = to_sql_string_c(mock_context_t{}, statement);
+      return;
+    }
+
+    template <typename Statement>
     auto insert(const Statement& statement)
     {
       [[maybe_unused]] auto x = to_sql_string_c(mock_context_t{}, statement);

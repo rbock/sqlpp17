@@ -1,7 +1,5 @@
-#pragma once
-
 /*
-Copyright (c) 2017 - 2018, Roland Bock
+Copyright (c) 2018 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,5 +24,40 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/sqlite3/clause/create_table.h>
-#include <sqlpp17/sqlite3/clause/truncate.h>
+#include <iostream>
+
+#include <sqlpp17/clause/create_table.h>
+#include <sqlpp17/clause/drop_table.h>
+#include <sqlpp17/clause/truncate.h>
+#include <sqlpp17/operator.h>
+#include <sqlpp17/sqlite3/connection.h>
+
+#include <tables/TabPerson.h>
+
+using ::test::tabPerson;
+
+auto print_debug(std::string_view message)
+{
+  std::cout << "Debug: " << message << std::endl;
+}
+
+int main()
+{
+  auto config = ::sqlpp::sqlite3::connection_config_t{};
+  config.path_to_database = ":memory:";
+  config.flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
+  config.debug = print_debug;
+
+  try
+  {
+    auto db = ::sqlpp::sqlite3::connection_t{config};
+    db(drop_table(test::tabPerson));
+    db(create_table(test::tabPerson));
+    db(truncate(tabPerson));
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << "Exception: " << e.what() << std::endl;
+    return 1;
+  }
+}

@@ -32,5 +32,6 @@ endfunction()
 test_usage(insert)
 test_usage(update)
 test_usage(delete_from)
+test_usage(truncate)
 test_usage(select)
 

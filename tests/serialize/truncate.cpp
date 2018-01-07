@@ -1,7 +1,5 @@
-#pragma once
-
 /*
-Copyright (c) 2017 - 2018, Roland Bock
+Copyright (c) 2018 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,5 +24,20 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/sqlite3/clause/create_table.h>
-#include <sqlpp17/sqlite3/clause/truncate.h>
+#include <sqlpp17/clause/truncate.h>
+#include <sqlpp17/operator.h>
+
+#include <connections/mock_db.h>
+#include <serialize/assert_equality.h>
+#include <tables/TabDepartment.h>
+#include <tables/TabEmpty.h>
+#include <tables/TabPerson.h>
+
+using ::sqlpp::test::assert_equality;
+using ::sqlpp::test::mock_context_t;
+using ::test::tabPerson;
+
+int main()
+{
+  assert_equality("TRUNCATE tab_person", to_sql_string_c(mock_context_t{}, truncate(tabPerson)));
+}
