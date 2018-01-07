@@ -24,8 +24,6 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <iostream>
-
 #include <sqlpp17/clause/delete_from.h>
 #include <sqlpp17/operator.h>
 
@@ -37,12 +35,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using ::sqlpp::test::assert_equality;
 using ::sqlpp::test::mock_context_t;
+using ::test::tabPerson;
 
 int main()
 {
   assert_equality("DELETE FROM tab_person",
-                  to_sql_string_c(mock_context_t{}, ::sqlpp::delete_from(test::tabPerson).unconditionally()));
+                  to_sql_string_c(mock_context_t{}, delete_from(tabPerson).unconditionally()));
   assert_equality("DELETE FROM tab_person WHERE tab_person.name LIKE '%bar'",
-                  to_sql_string_c(mock_context_t{},
-                                  ::sqlpp::delete_from(test::tabPerson).where(test::tabPerson.name.like("%bar"))));
+                  to_sql_string_c(mock_context_t{}, delete_from(tabPerson).where(tabPerson.name.like("%bar"))));
+  assert_equality("DELETE FROM tab_person WHERE tab_person.name LIKE '%bar'",
+                  to_sql_string_c(mock_context_t{}, delete_from(tabPerson) << where(tabPerson.name.like("%bar"))));
 }
