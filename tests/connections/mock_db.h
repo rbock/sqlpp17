@@ -95,30 +95,35 @@ namespace sqlpp::test
     template <typename Statement>
     auto insert(const Statement& statement)
     {
+      [[maybe_unused]] auto x = to_sql_string_c(mock_context_t{}, statement);
       return 0ull;
     }
 
     template <typename Statement>
     auto update(const Statement& statement)
     {
+      [[maybe_unused]] auto x = to_sql_string_c(mock_context_t{}, statement);
       return 0ull;
     }
 
     template <typename Statement>
     auto delete_from(const Statement& statement)
     {
+      [[maybe_unused]] auto x = to_sql_string_c(mock_context_t{}, statement);
       return 0ull;
     }
 
     template <typename Statement>
     auto select(const Statement& statement)
     {
+      [[maybe_unused]] auto x = to_sql_string_c(mock_context_t{}, statement);
       return mock_result{};
     }
 
     template <typename Statement>
     [[nodiscard]] auto prepare_select(const Statement& statement)
     {
+      [[maybe_unused]] auto x = to_sql_string_c(mock_context_t{}, statement);
       return mock_prepared_select{};
     }
   };

@@ -74,7 +74,7 @@ namespace sqlpp
   template <typename Context, typename Table, typename Statement>
   [[nodiscard]] auto to_sql_string(Context& context, const clause_base<update_t<Table>, Statement>& t)
   {
-    return to_sql_string(t._table);
+    return to_sql_string(context, t._table);
   }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_update_arg_is_not_join,

@@ -97,7 +97,7 @@ namespace sqlpp
   };
 
   template <typename Context, typename... Assignments, typename Statement>
-  decltype(auto) operator<<(Context& context, const clause_base<update_set_t<Assignments...>, Statement>& t)
+  [[nodiscard]] auto to_sql_string(Context& context, const clause_base<update_set_t<Assignments...>, Statement>& t)
   {
     return std::string{" SET "} +
            tuple_to_sql_string(context, ", ", std::tie(std::get<Assignments>(t._assignments)...));
