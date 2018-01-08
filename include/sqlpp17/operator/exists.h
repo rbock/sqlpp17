@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,51 +26,41 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/bad_expression.h>
-#include <sqlpp17/wrapped_static_assert.h>
+#include <type_traits>
+#include <sqlpp17/to_sql_string.h>
 
-// logical
-#include <sqlpp17/operator/logical_and.h>
-#include <sqlpp17/operator/logical_not.h>
-#include <sqlpp17/operator/logical_or.h>
+namespace sqlpp
+{
+  template <typename SubQuery>
+  struct exists_t
+  {
+    SubQuery sub_query;
+  };
 
-// comparison
-#include <sqlpp17/operator/equal_to.h>
-#include <sqlpp17/operator/greater.h>
-#include <sqlpp17/operator/greater_equal.h>
-#include <sqlpp17/operator/less.h>
-#include <sqlpp17/operator/less_equal.h>
-#include <sqlpp17/operator/not_equal_to.h>
+  template <typename SubQuery>
+  struct nodes_of<exists_t<SubQuery>>
+  {
+    using type = type_vector<SubQuery>;
+  };
 
-// arithmetic
-#include <sqlpp17/operator/divides.h>
-#include <sqlpp17/operator/minus.h>
-#include <sqlpp17/operator/modulus.h>
-#include <sqlpp17/operator/multiplies.h>
-#include <sqlpp17/operator/negate.h>
-#include <sqlpp17/operator/plus.h>
+#warning : replace all the enable_if with check-functions
 
-// binary
-#include <sqlpp17/operator/bit_and.h>
-#include <sqlpp17/operator/bit_or.h>
-#include <sqlpp17/operator/bit_xor.h>
+  template <typename SubQuery>
+  constexpr auto exists(SubQuery sub_query)
+      -> std::enable_if_t<is_statement_v<SubQuery> and has_result_row_v<SubQuery>, exists_t<SubQuery>>
+  {
+    return exists_t<SubQuery>{sub_query};
+  }
 
-// assignment
-#include <sqlpp17/operator/assign.h>
+  template <typename SubQuery>
+  struct value_type_of<exists_t<SubQuery>>
+  {
+    using type = bool;
+  };
 
-// misc
-#include <sqlpp17/operator/as.h>
-
-#include <sqlpp17/operator/asc.h>
-#include <sqlpp17/operator/desc.h>
-
-#include <sqlpp17/operator/in.h>
-#include <sqlpp17/operator/not_in.h>
-
-#include <sqlpp17/operator/is_not_null.h>
-#include <sqlpp17/operator/is_null.h>
-
-#include <sqlpp17/operator/like.h>
-
-// quasi functions
-#include <sqlpp17/operator/exists.h>
+  template <typename Context, typename SubQuery>
+  [[nodiscard]] auto to_sql_string(Context& context, const exists_t<SubQuery>& t)
+  {
+    return " EXISTS(" + to_sql_string(context, t.sub_query) + ") ";
+  }
+}  // namespace sqlpp
