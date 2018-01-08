@@ -26,7 +26,10 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/aggregate_functions/count.h>
 #include <sqlpp17/aggregate_functions/max.h>
 #include <sqlpp17/aggregate_functions/min.h>
+
+#include <sqlpp17/aggregate_functions/avg.h>
+#include <sqlpp17/aggregate_functions/count.h>
+#include <sqlpp17/aggregate_functions/sum.h>
 

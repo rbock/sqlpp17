@@ -35,43 +35,43 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_count_arg_is_expression, "count() arg must be a value expression");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_count_arg_is_not_alias, "count() arg must not be an alias");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_count_arg_is_not_aggregate, "count() arg must not be an aggregate");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_avg_arg_is_numeric, "avg() arg must be a numeric expression");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_avg_arg_is_not_alias, "avg() arg must not be an alias");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_avg_arg_is_not_aggregate, "avg() arg must not be an aggregate");
 
   template <typename Expr>
-  constexpr auto check_count_args()
+  constexpr auto check_avg_args()
   {
-    if constexpr (not is_expression_v<Expr>)
+    if constexpr (not has_numeric_value_v<Expr>)
     {
-      return failed<assert_count_arg_is_expression>{};
+      return failed<assert_avg_arg_is_numeric>{};
     }
     else if constexpr (is_alias_v<Expr>)
     {
-      return failed<assert_count_arg_is_not_alias>{};
+      return failed<assert_avg_arg_is_not_alias>{};
     }
     else if constexpr (::sqlpp::is_aggregate_v<Expr>)
     {
-      return failed<assert_count_arg_is_not_aggregate>{};
+      return failed<assert_avg_arg_is_not_aggregate>{};
     }
     else
       return succeeded{};
   }
 
   template <typename Flag>
-  struct count_t
+  struct avg_t
   {
-    static constexpr auto name = std::string_view{"COUNT"};
+    static constexpr auto name = std::string_view{"AVG"};
     using flag_type = Flag;
-    using value_type = int64_t;
+    using value_type = numeric_t;
   };
 
   template <typename Expr>
-  [[nodiscard]] constexpr auto count(Expr expr)
+  [[nodiscard]] constexpr auto avg(Expr expr)
   {
-    if constexpr (constexpr auto check = check_count_args<Expr>(); check)
+    if constexpr (constexpr auto check = check_avg_args<Expr>(); check)
     {
-      return aggregate_t<count_t<no_flag_t>, Expr>{expr};
+      return aggregate_t<avg_t<no_flag_t>, Expr>{expr};
     }
     else
     {
@@ -80,11 +80,11 @@ namespace sqlpp
   }
 
   template <typename Expr>
-  [[nodiscard]] constexpr auto count([[maybe_unused]] distinct_t, Expr expr)
+  [[nodiscard]] constexpr auto avg([[maybe_unused]] distinct_t, Expr expr)
   {
-    if constexpr (constexpr auto check = check_count_args<Expr>(); check)
+    if constexpr (constexpr auto check = check_avg_args<Expr>(); check)
     {
-      return aggregate_t<count_t<distinct_t>, Expr>{expr};
+      return aggregate_t<avg_t<distinct_t>, Expr>{expr};
     }
     else
     {

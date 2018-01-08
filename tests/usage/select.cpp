@@ -54,6 +54,8 @@ int main()
     display_full_row(row);
   }
 
+#warning : Need more examples
+
   // using << concatenation
   for (const auto& row :
        db(sqlpp::select() << sqlpp::select_columns(test::tabPerson.id, test::tabPerson.isManager,
