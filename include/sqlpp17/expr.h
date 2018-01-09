@@ -118,7 +118,7 @@ namespace sqlpp
   }
 
   template <typename Expression>
-  [[nodiscard]] auto expr(Expression expr)
+  [[nodiscard]] constexpr auto expr(Expression expr)
   {
     if constexpr (constexpr auto check = check_expr_args<Expression>(); check)
     {

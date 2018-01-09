@@ -27,11 +27,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <iostream>
-#include <string_view>
+#include <string>
+
+#include <connections/mock_db.h>
 
 namespace sqlpp::test
 {
-  auto assert_equality(const std::string_view expected, const std::string_view received)
+  auto assert_equality(const std::string& expected, const std::string& received) -> void
   {
     if (expected != received)
     {
@@ -39,5 +41,11 @@ namespace sqlpp::test
       std::cerr << "Received: " << received << "\n";
       throw std::runtime_error("Unexpected string received");
     }
+  }
+
+  template <typename Expression>
+  auto assert_equality(const std::string& expected, const Expression& expression) -> void
+  {
+    assert_equality(expected, to_sql_string_c(sqlpp::test::mock_context_t{}, expression));
   }
 }  // namespace sqlpp::test

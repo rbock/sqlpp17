@@ -56,7 +56,7 @@ namespace sqlpp
   template <typename L, typename R>
   struct value_type_of<modulus_t<L, R>>
   {
-    using type = integral_t;
+    using type = numeric_t;
   };
 
   template <typename L, typename R>

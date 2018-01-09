@@ -24,38 +24,81 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <iostream>
+#include <sqlpp17/operator.h>
+#include <sqlpp17/value.h>
+
+#include <serialize/assert_equality.h>
 #include <tables/TabDepartment.h>
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
 
-#include <sqlpp17/operator.h>
+using ::sqlpp::test::assert_equality;
+using ::test::tabPerson;
 
 int main()
 {
-  auto context = 0;
-#warning : s should be a constexpr
+  try
   {
-    auto s = test::tabPerson.isManager and (test::tabPerson.isManager and test::tabPerson.isManager);
-    std::cout << to_sql_string_c(context, s) << std::endl;
+    // Logical
+    assert_equality("tab_person.is_manager AND 1", tabPerson.isManager and true);
+    assert_equality("tab_person.is_manager AND 1 AND 0", tabPerson.isManager and true and false);
+    assert_equality("tab_person.is_manager AND 0", tabPerson.isManager and (true and false));
+    assert_equality("1 AND (tab_person.is_manager AND 0)", true and (tabPerson.isManager and false));
+
+    assert_equality("tab_person.is_manager OR 1", tabPerson.isManager or true);
+    assert_equality("tab_person.is_manager OR 1 OR 0", tabPerson.isManager or true or false);
+    assert_equality("tab_person.is_manager OR 1", tabPerson.isManager or (true or false));
+    assert_equality("1 OR (tab_person.is_manager OR 0)", true or (tabPerson.isManager or false));
+
+    assert_equality("(tab_person.is_manager AND 1) OR 1", tabPerson.isManager and true or true);
+    assert_equality("tab_person.is_manager OR 0", tabPerson.isManager or (true and false));
+    assert_equality("1 OR (tab_person.is_manager AND 0)", true or tabPerson.isManager and false);
+    assert_equality("1 AND (tab_person.is_manager OR 0)", true and (tabPerson.isManager or false));
+
+    assert_equality("NOT tab_person.is_manager", not tabPerson.isManager);
+    assert_equality("NOT (NOT tab_person.is_manager)", not not tabPerson.isManager);
+
+    // Comparison
+    assert_equality("tab_person.name < 'Herb'", tabPerson.name < "Herb");
+    assert_equality("tab_person.name <= 'Herb'", tabPerson.name <= "Herb");
+    assert_equality("tab_person.name = 'Herb'", tabPerson.name == "Herb");
+    assert_equality("tab_person.name >= 'Herb'", tabPerson.name >= "Herb");
+    assert_equality("tab_person.name > 'Herb'", tabPerson.name > "Herb");
+    assert_equality("tab_person.name != 'Herb'", tabPerson.name != "Herb");
+    assert_equality("tab_person.name LIKE 'Herb%'", tabPerson.name.like("Herb%"));
+
+    assert_equality("'Herb' < tab_person.name", "Herb" < tabPerson.name);
+    assert_equality("'Herb' <= tab_person.name", "Herb" <= tabPerson.name);
+    assert_equality("'Herb' = tab_person.name", "Herb" == tabPerson.name);
+    assert_equality("'Herb' >= tab_person.name", "Herb" >= tabPerson.name);
+    assert_equality("'Herb' > tab_person.name", "Herb" > tabPerson.name);
+    assert_equality("'Herb' != tab_person.name", "Herb" != tabPerson.name);
+    assert_equality("'Herb' LIKE tab_person.name", ::sqlpp::value("Herb").like(tabPerson.name));
+
+    // Arithmetic
+    assert_equality("tab_person.id / 17", tabPerson.id / 17);
+    assert_equality("tab_person.id - 17", tabPerson.id - 17);
+    assert_equality("tab_person.id % 17", tabPerson.id % 17);
+    assert_equality("tab_person.id * 17", tabPerson.id * 17);
+    assert_equality("-tab_person.id", -tabPerson.id);
+    assert_equality("tab_person.id + 17", tabPerson.id + 17);
+
+    assert_equality("tab_person.id / 17 / 4", (tabPerson.id / 17) / 4);
+    assert_equality("(tab_person.id - 17) / 4", (tabPerson.id - 17) / 4);
+    assert_equality("(tab_person.id % 17) / 4", (tabPerson.id % 17) / 4);
+    assert_equality("(tab_person.id * 17) / 4", (tabPerson.id * 17) / 4);
+    assert_equality("(-tab_person.id) / 4", -tabPerson.id / 4);
+    assert_equality("(tab_person.id + 17) / 4", (tabPerson.id + 17) / 4);
+
+    assert_equality("4 + (tab_person.id / 17)", 4 + tabPerson.id / 17);
+    assert_equality("(4 + tab_person.id) - 17", 4 + tabPerson.id - 17);
+    assert_equality("4 + (tab_person.id % 17)", 4 + tabPerson.id % 17);
+    assert_equality("4 + (tab_person.id * 17)", 4 + tabPerson.id * 17);
+    assert_equality("4 + (-tab_person.id)", 4 + -tabPerson.id);
+    assert_equality("4 + tab_person.id + 17", 4 + tabPerson.id + 17);
   }
+  catch (const std::exception& e)
   {
-    auto s = test::tabPerson.isManager or test::tabPerson.isManager or test::tabPerson.isManager;
-    std::cout << to_sql_string_c(context, s) << std::endl;
+    std::cerr << "Exception: " << e.what() << "\n";
   }
-  {
-    auto s = test::tabPerson.isManager or test::tabPerson.isManager or
-             (test::tabPerson.isManager and test::tabPerson.isManager);
-    std::cout << to_sql_string_c(context, s) << std::endl;
-  }
-  {
-    auto s = (test::tabPerson.isManager or test::tabPerson.isManager or test::tabPerson.isManager) and
-             test::tabPerson.isManager;
-    std::cout << to_sql_string_c(context, s) << std::endl;
-  }
-  {
-    auto s = test::tabPerson.id + test::tabPerson.id + test::tabPerson.id;
-    std::cout << to_sql_string_c(context, s) << std::endl;
-  }
-#warning : need to test results
 }

@@ -61,6 +61,6 @@ namespace sqlpp
   template <typename Context, typename L>
   [[nodiscard]] auto to_sql_string(Context& context, const logical_not_t<L>& t)
   {
-    return std::string(" NOT ") + to_sql_string(embrace(t.l));
+    return std::string("NOT ") + to_sql_string(context, embrace(t.l));
   }
 }  // namespace sqlpp

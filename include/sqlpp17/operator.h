@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2017 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -40,6 +40,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/operator/greater_equal.h>
 #include <sqlpp17/operator/less.h>
 #include <sqlpp17/operator/less_equal.h>
+#include <sqlpp17/operator/like.h>
 #include <sqlpp17/operator/not_equal_to.h>
 
 // arithmetic
@@ -69,8 +70,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/operator/is_not_null.h>
 #include <sqlpp17/operator/is_null.h>
-
-#include <sqlpp17/operator/like.h>
 
 // quasi functions
 #include <sqlpp17/operator/exists.h>

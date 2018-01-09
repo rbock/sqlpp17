@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2017 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -28,6 +28,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <string>
 #include <string_view>
+
+#include <sqlpp17/expr.h>
 #include <sqlpp17/type_traits.h>
 
 namespace sqlpp
@@ -53,17 +55,22 @@ namespace sqlpp
   template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
   [[nodiscard]] constexpr auto value(T t)
   {
-    return value_t<T>{t};
+    return expr(value_t<T>{t});
   }
 
   [[nodiscard]] auto value(std::string t)
   {
-    return value_t<std::string>{t};
+    return expr(value_t<std::string>{t});
   }
 
   [[nodiscard]] constexpr auto value(std::string_view t)
   {
-    return value_t<std::string_view>{t};
+    return expr(value_t<std::string_view>{t});
+  }
+
+  [[nodiscard]] constexpr auto value(const char* t)
+  {
+    return expr(value_t<const char*>{t});
   }
 
   template <typename Context, typename T>
