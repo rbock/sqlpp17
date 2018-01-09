@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2017- 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,57 +26,26 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <type_traits>
-#include <sqlpp17/to_sql_string.h>
+#include <sqlpp17/comparison.h>
 
 namespace sqlpp
 {
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_valid_not_equal_to_operands, "invalid operands for operator!=");
-
-  template <typename L, typename R>
   struct not_equal_to_t
   {
-    L l;
-    R r;
+    static constexpr auto symbol = " != ";
   };
 
   template <typename L, typename R>
-  struct nodes_of<not_equal_to_t<L, R>>
+  constexpr auto operator!=(L l, R r)
   {
-    using type = type_vector<L, R>;
-  };
-
-  template <typename L,
-            typename R,
-            typename = decltype(std::declval<value_type_of_t<L>&>() != std::declval<value_type_of_t<R>&>())>
-  constexpr auto check_not_equal_to(type_t<L>, type_t<R>)
-  {
-    return succeeded{};
+    if constexpr (constexpr auto check = check_comparison_args<L, R>(); check)
+    {
+      return comparison_t<L, not_equal_to_t, R>{l, r};
+    }
+    else
+    {
+      return bad_expression_t{check};
+    }
   }
 
-  constexpr auto check_not_equal_to(...)
-  {
-    return failed<assert_valid_not_equal_to_operands>{};
-  }
-
-  template <typename L, typename R>
-  constexpr auto operator!=(L l, R r) -> std::enable_if_t<are_values_comparable_v<L, R>, not_equal_to_t<L, R>>
-  {
-    return not_equal_to_t<L, R>{l, r};
-  }
-
-  template <typename L, typename R>
-  struct value_type_of<not_equal_to_t<L, R>>
-  {
-    using type = bool;
-  };
-
-  template <typename L, typename R>
-  constexpr auto requires_braces_v<not_equal_to_t<L, R>> = true;
-
-  template <typename Context, typename L, typename R>
-  [[nodiscard]] auto to_sql_string(Context& context, const not_equal_to_t<L, R>& t)
-  {
-    return to_sql_string(context, embrace(t.l)) + " <> " + to_sql_string(context, embrace(t.r));
-  }
 }  // namespace sqlpp

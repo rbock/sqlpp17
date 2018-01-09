@@ -39,10 +39,18 @@ using ::test::tabPerson;
 
 int main()
 {
-  assert_equality("DELETE FROM tab_person",
-                  to_sql_string_c(mock_context_t{}, delete_from(tabPerson).unconditionally()));
-  assert_equality("DELETE FROM tab_person WHERE tab_person.name LIKE '%bar'",
-                  to_sql_string_c(mock_context_t{}, delete_from(tabPerson).where(tabPerson.name.like("%bar"))));
-  assert_equality("DELETE FROM tab_person WHERE tab_person.name LIKE '%bar'",
-                  to_sql_string_c(mock_context_t{}, delete_from(tabPerson) << where(tabPerson.name.like("%bar"))));
+  try
+  {
+    assert_equality("DELETE FROM tab_person",
+                    to_sql_string_c(mock_context_t{}, delete_from(tabPerson).unconditionally()));
+    assert_equality("DELETE FROM tab_person WHERE tab_person.name LIKE '%bar'",
+                    to_sql_string_c(mock_context_t{}, delete_from(tabPerson).where(tabPerson.name.like("%bar"))));
+    assert_equality("DELETE FROM tab_person WHERE tab_person.name LIKE '%bar'",
+                    to_sql_string_c(mock_context_t{}, delete_from(tabPerson) << where(tabPerson.name.like("%bar"))));
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << "Exception: " << e.what() << "\n";
+    return 1;
+  }
 }

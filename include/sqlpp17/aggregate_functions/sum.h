@@ -61,7 +61,7 @@ namespace sqlpp
   template <typename Flag>
   struct sum_t
   {
-    static constexpr auto name = std::string_view{"AVG"};
+    static constexpr auto name = std::string_view{"SUM"};
     using flag_type = Flag;
     using value_type = numeric_t;
   };
