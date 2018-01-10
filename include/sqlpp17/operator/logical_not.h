@@ -26,41 +26,19 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <type_traits>
-#include <sqlpp17/to_sql_string.h>
+#include <sqlpp17/logical.h>
 
 namespace sqlpp
 {
-  template <typename L>
   struct logical_not_t
   {
-    L l;
+    static constexpr auto symbol = "NOT ";
   };
 
-  template <typename L>
-  struct nodes_of<logical_not_t<L>>
+  template <typename R, typename = check_logical_args<R, R>>
+  constexpr auto operator!(R r)
   {
-    using type = type_vector<L>;
-  };
-
-  template <typename L>
-  constexpr auto operator!(L l) -> std::enable_if_t<has_boolean_value_v<L>, logical_not_t<L>>
-  {
-    return logical_not_t<L>{l};
+    return logical_t<none_t, logical_not_t, R>{none_t{}, r};
   }
 
-  template <typename L>
-  struct value_type_of<logical_not_t<L>>
-  {
-    using type = bool;
-  };
-
-  template <typename L>
-  constexpr auto requires_braces_v<logical_not_t<L>> = true;
-
-  template <typename Context, typename L>
-  [[nodiscard]] auto to_sql_string(Context& context, const logical_not_t<L>& t)
-  {
-    return std::string("NOT ") + to_sql_string(context, embrace(t.l));
-  }
 }  // namespace sqlpp

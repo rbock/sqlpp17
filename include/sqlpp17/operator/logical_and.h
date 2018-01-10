@@ -26,50 +26,19 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <type_traits>
-#include <sqlpp17/embrace.h>
-#include <sqlpp17/to_sql_string.h>
+#include <sqlpp17/logical.h>
 
 namespace sqlpp
 {
-  template <typename L, typename R>
   struct logical_and_t
   {
-    L l;
-    R r;
+    static constexpr auto symbol = " AND ";
   };
 
-  template <typename L, typename R>
-  struct nodes_of<logical_and_t<L, R>>
-  {
-    using type = type_vector<L, R>;
-  };
-
-  template <typename L, typename R>
+  template <typename L, typename R, typename = check_logical_args<L, R>>
   constexpr auto operator&&(L l, R r)
-      -> std::enable_if_t<has_boolean_value_v<L> and has_boolean_value_v<R>, logical_and_t<L, R>>
   {
-    return logical_and_t<L, R>{l, r};
+    return logical_t<L, logical_and_t, R>{l, r};
   }
 
-  template <typename L, typename R>
-  struct value_type_of<logical_and_t<L, R>>
-  {
-    using type = bool;
-  };
-
-  template <typename L, typename R>
-  constexpr auto requires_braces_v<logical_and_t<L, R>> = true;
-
-  template <typename Context, typename L, typename R>
-  [[nodiscard]] auto to_sql_string(Context& context, const logical_and_t<L, R>& t)
-  {
-    return to_sql_string(context, embrace(t.l)) + " AND " + to_sql_string(context, embrace(t.r));
-  }
-
-  template <typename Context, typename L1, typename R1, typename R2>
-  [[nodiscard]] auto to_sql_string(Context& context, const logical_and_t<logical_and_t<L1, R1>, R2>& t)
-  {
-    return to_sql_string(context, t.l) + " AND " + to_sql_string(context, embrace(t.r));
-  }
 }  // namespace sqlpp

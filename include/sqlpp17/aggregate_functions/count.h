@@ -42,7 +42,7 @@ namespace sqlpp
   template <typename Expr>
   constexpr auto check_count_args()
   {
-    if constexpr (not is_expression_v<Expr>)
+    if constexpr (not is_expression_v<Expr> and not std::is_integral_v<Expr>)
     {
       return failed<assert_count_arg_is_expression>{};
     }

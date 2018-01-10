@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016 - 2017, Roland Bock
+Copyright (c) 2016 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,46 +26,19 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <type_traits>
-#include <sqlpp17/to_sql_string.h>
-#include <sqlpp17/type_traits.h>
+#include <sqlpp17/binary.h>
 
 namespace sqlpp
 {
-  template <typename L, typename R>
   struct bit_or_t
   {
-    L l;
-    R r;
+    static constexpr auto symbol = " | ";
   };
 
-  template <typename L, typename R>
-  struct nodes_of<bit_or_t<L, R>>
-  {
-    using type = type_vector<L, R>;
-  };
-
-  template <typename L, typename R>
+  template <typename L, typename R, typename = check_binary_args<L, R>>
   constexpr auto operator|(L l, R r)
-      -> std::enable_if_t<sizeof(L) == sizeof(R) and has_integral_value_v<L> and has_integral_value_v<R>,
-                          bit_or_t<L, R>>
   {
-    return bit_or_t<L, R>{l, r};
-  }
-
-  template <typename L, typename R>
-  struct value_type_of<bit_or_t<L, R>>
-  {
-    using type = integral_t;
-  };
-
-  template <typename L, typename R>
-  constexpr auto requires_braces_v<bit_or_t<L, R>> = true;
-
-  template <typename Context, typename L, typename R>
-  [[nodiscard]] auto to_sql_string(Context& context, const bit_or_t<L, R>& t)
-  {
-    return to_sql_string(context, embrace(t.l)) + " | " + to_sql_string(context, embrace(t.r));
+    return binary_t<L, bit_or_t, R>{l, r};
   }
 
 }  // namespace sqlpp

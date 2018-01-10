@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,23 +26,48 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <type_traits>
-
-#include <sqlpp17/arithmetic.h>
+#include <sqlpp17/bad_expression.h>
 #include <sqlpp17/to_sql_string.h>
 #include <sqlpp17/type_traits.h>
+#include <sqlpp17/wrapped_static_assert.h>
 
 namespace sqlpp
 {
-  struct negate_t
+  template <typename L, typename Operator, typename R>
+  struct binary_t
   {
-    static constexpr auto symbol = "-";
+    L l;
+    R r;
   };
 
-  template <typename R, typename = check_arithmetic_args<R, R>>
-  constexpr auto operator-(R r)
+  template <typename L, typename Operator, typename R>
+  struct nodes_of<binary_t<L, Operator, R>>
   {
-    return arithmetic_t<none_t, negate_t, R>{none_t{}, r};
+    using type = type_vector<L, R>;
+  };
+
+  template <typename L, typename R>
+  using check_binary_args = std::enable_if_t<has_integral_value_v<L> and has_integral_value_v<R>>;
+
+  template <typename L, typename Operator, typename R>
+  struct value_type_of<binary_t<L, Operator, R>>
+  {
+    using type = integral_t;
+  };
+
+  template <typename L, typename Operator, typename R>
+  constexpr auto requires_braces_v<binary_t<L, Operator, R>> = true;
+
+  template <typename Context, typename L, typename Operator, typename R>
+  [[nodiscard]] auto to_sql_string(Context& context, const binary_t<L, Operator, R>& t)
+  {
+    return to_sql_string(context, embrace(t.l)) + Operator::symbol + to_sql_string(context, embrace(t.r));
+  }
+
+  template <typename Context, typename Operator, typename R>
+  [[nodiscard]] auto to_sql_string(Context& context, const binary_t<none_t, Operator, R>& t)
+  {
+    return Operator::symbol + to_sql_string(context, embrace(t.r));
   }
 
 }  // namespace sqlpp

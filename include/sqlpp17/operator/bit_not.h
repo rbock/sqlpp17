@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2016 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,23 +26,19 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <type_traits>
-
-#include <sqlpp17/arithmetic.h>
-#include <sqlpp17/to_sql_string.h>
-#include <sqlpp17/type_traits.h>
+#include <sqlpp17/binary.h>
 
 namespace sqlpp
 {
-  struct negate_t
+  struct bit_not_t
   {
-    static constexpr auto symbol = "-";
+    static constexpr auto symbol = "~";
   };
 
-  template <typename R, typename = check_arithmetic_args<R, R>>
-  constexpr auto operator-(R r)
+  template <typename R, typename = check_binary_args<R, R>>
+  constexpr auto operator~(R r)
   {
-    return arithmetic_t<none_t, negate_t, R>{none_t{}, r};
+    return binary_t<none_t, bit_not_t, R>{none_t{}, r};
   }
 
 }  // namespace sqlpp

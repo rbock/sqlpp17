@@ -53,6 +53,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // binary
 #include <sqlpp17/operator/bit_and.h>
+#include <sqlpp17/operator/bit_not.h>
 #include <sqlpp17/operator/bit_or.h>
 #include <sqlpp17/operator/bit_xor.h>
 
@@ -71,5 +72,4 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/operator/is_not_null.h>
 #include <sqlpp17/operator/is_null.h>
 
-// quasi functions
 #include <sqlpp17/operator/exists.h>

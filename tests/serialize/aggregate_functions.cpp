@@ -43,14 +43,15 @@ int main()
   {
     assert_equality("MIN(tab_person.id)", to_sql_string_c(mock_context_t{}, min(tabPerson.id)));
     assert_equality("MAX(tab_person.id)", to_sql_string_c(mock_context_t{}, max(tabPerson.id)));
+    assert_equality("COUNT(1)", to_sql_string_c(mock_context_t{}, ::sqlpp::count(1)));
     assert_equality("COUNT(tab_person.id)", to_sql_string_c(mock_context_t{}, count(tabPerson.id)));
-    assert_equality("COUNT( DISTINCT tab_person.id)",
+    assert_equality("COUNT(DISTINCT tab_person.id)",
                     to_sql_string_c(mock_context_t{}, count(::sqlpp::distinct, tabPerson.id)));
     assert_equality("AVG(tab_person.id)", to_sql_string_c(mock_context_t{}, avg(tabPerson.id)));
-    assert_equality("AVG( DISTINCT tab_person.id)",
+    assert_equality("AVG(DISTINCT tab_person.id)",
                     to_sql_string_c(mock_context_t{}, avg(::sqlpp::distinct, tabPerson.id)));
     assert_equality("SUM(tab_person.id)", to_sql_string_c(mock_context_t{}, sum(tabPerson.id)));
-    assert_equality("SUM( DISTINCT tab_person.id)",
+    assert_equality("SUM(DISTINCT tab_person.id)",
                     to_sql_string_c(mock_context_t{}, sum(::sqlpp::distinct, tabPerson.id)));
   }
   catch (const std::exception& e)

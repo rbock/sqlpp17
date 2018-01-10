@@ -96,6 +96,14 @@ int main()
     assert_equality("4 + (tab_person.id * 17)", 4 + tabPerson.id * 17);
     assert_equality("4 + (-tab_person.id)", 4 + -tabPerson.id);
     assert_equality("4 + tab_person.id + 17", 4 + tabPerson.id + 17);
+
+    assert_equality("-(-tab_person.id)", -(-tabPerson.id));
+
+    // Binary
+    assert_equality("tab_person.id & 17", tabPerson.id & std::int64_t{17});
+    assert_equality("tab_person.id | 17", tabPerson.id | std::int64_t{17});
+    assert_equality("tab_person.id ^ 17", tabPerson.id ^ std::int64_t{17});
+    assert_equality("~tab_person.id", ~tabPerson.id);
   }
   catch (const std::exception& e)
   {
