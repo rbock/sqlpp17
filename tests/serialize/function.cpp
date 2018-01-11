@@ -1,7 +1,5 @@
-#pragma once
-
 /*
-Copyright (c) 2018, Roland Bock
+Copyright (c) 2018 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,39 +24,29 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/to_sql_string.h>
-#include <sqlpp17/type_traits.h>
+#include <sqlpp17/function.h>
 
-namespace sqlpp
+#include <serialize/assert_equality.h>
+#include <tables/TabDepartment.h>
+#include <tables/TabEmpty.h>
+#include <tables/TabPerson.h>
+
+using ::sqlpp::test::assert_equality;
+using ::test::tabPerson;
+
+int main()
 {
-  template <typename SubQuery>
-  struct exists_t
+  try
   {
-    SubQuery sub_query;
-  };
+    assert_equality("COALESCE(tab_person.is_manager, 0)", coalesce(tabPerson.isManager, false));
+    assert_equality("COALESCE(tab_person.name, tab_person.language, 'Herb')",
+                    coalesce(tabPerson.name, tabPerson.language, "Herb"));
 
-  template <typename SubQuery>
-  struct nodes_of<exists_t<SubQuery>>
-  {
-    using type = type_vector<SubQuery>;
-  };
-
-  template <typename SubQuery>
-  constexpr auto exists(SubQuery sub_query)
-      -> std::enable_if_t<is_statement_v<SubQuery> and has_result_row_v<SubQuery>, exists_t<SubQuery>>
-  {
-    return exists_t<SubQuery>{sub_query};
+    assert_equality("tab_person.name || tab_person.language || 'Herb'",
+                    concat(tabPerson.name, tabPerson.language, "Herb"));
   }
-
-  template <typename SubQuery>
-  struct value_type_of<exists_t<SubQuery>>
+  catch (const std::exception& e)
   {
-    using type = bool;
-  };
-
-  template <typename Context, typename SubQuery>
-  [[nodiscard]] auto to_sql_string(Context& context, const exists_t<SubQuery>& t)
-  {
-    return " EXISTS(" + to_sql_string(context, t.sub_query) + ") ";
+    std::cerr << "Exception: " << e.what() << "\n";
   }
-}  // namespace sqlpp
+}

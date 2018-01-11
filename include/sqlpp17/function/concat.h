@@ -33,47 +33,59 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  template <typename L, typename Operator, typename R>
-  struct comparison_t
+  template <typename Arg0, typename Arg1, typename... Args>
+  struct concat_t
   {
-    L l;
-    R r;
+    std::tuple<Arg0, Arg1, Args...> args;
   };
 
-  template <typename L, typename Operator, typename R>
-  struct nodes_of<comparison_t<L, Operator, R>>
+  template <typename Arg0, typename Arg1, typename... Args>
+  struct nodes_of<concat_t<Arg0, Arg1, Args...>>
   {
-    using type = type_vector<L, R>;
+    using type = type_vector<Arg0, Arg1, Args...>;
   };
 
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_comparison_operands_are_compatible,
-                              "comparison operands must have compatible value types");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_concat_args_are_text, "concat() args must be text");
 
-  template <typename L, typename R>
-  constexpr auto check_comparison_args()
+  template <typename Arg0, typename Arg1, typename... Args>
+  constexpr auto check_concat_args()
   {
-    if constexpr (not values_are_compatible_v<L, R>)
+    if constexpr (not(has_text_value_v<Arg0> and (has_text_value_v<Arg1> and ... and has_text_value_v<Args>)))
     {
-      return failed<assert_comparison_operands_are_compatible>{};
+      return failed<assert_concat_args_are_text>{};
+    }
+    else
+      return succeeded{};
+  }
+
+  template <typename Arg0, typename Arg1, typename... Args, typename = check_for_expression<Arg0, Arg1, Args...>>
+  constexpr auto concat(Arg0 arg0, Arg1 arg1, Args... args)
+  {
+    if constexpr (constexpr auto check = check_concat_args<Arg0, Arg1, Args...>(); check)
+    {
+      return concat_t<Arg0, Arg1, Args...>{std::tuple{arg0, arg1, args...}};
     }
     else
     {
-      return succeeded{};
+      return bad_expression_t{check};
     }
   }
 
-  template <typename L, typename Operator, typename R>
-  struct value_type_of<comparison_t<L, Operator, R>>
+  template <typename Arg0, typename Arg1, typename... Args>
+  struct value_type_of<concat_t<Arg0, Arg1, Args...>>
   {
-    using type = bool;
+    using type = text_t;
   };
 
-  template <typename L, typename Operator, typename R>
-  constexpr auto requires_braces_v<comparison_t<L, Operator, R>> = true;
-
-  template <typename Context, typename L, typename Operator, typename R>
-  [[nodiscard]] auto to_sql_string(Context& context, const comparison_t<L, Operator, R>& t)
+  template <typename Arg0, typename Arg1, typename... Args>
+  struct requires_braces<concat_t<Arg0, Arg1, Args...>> : std::true_type
   {
-    return to_sql_string(context, embrace(t.l)) + Operator::symbol + to_sql_string(context, embrace(t.r));
+  };
+
+  template <typename Context, typename Arg0, typename Arg1, typename... Args>
+  [[nodiscard]] auto to_sql_string(Context& context, const concat_t<Arg0, Arg1, Args...>& t)
+  {
+    return tuple_to_sql_string(context, " || ", t.args);
   }
+
 }  // namespace sqlpp

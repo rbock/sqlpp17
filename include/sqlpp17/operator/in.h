@@ -46,7 +46,7 @@ namespace sqlpp
 
   template <typename L, typename... Args>
   constexpr auto in(L l, Args... args)
-      -> std::enable_if_t<((sizeof...(Args) > 0) and ... and are_values_comparable_v<L, Args>), in_t<L, Args...>>
+      -> std::enable_if_t<((sizeof...(Args) > 0) and ... and values_are_compatible_v<L, Args>), in_t<L, Args...>>
   {
     return in_t<L, Args...>{l, std::tuple{args...}};
   }

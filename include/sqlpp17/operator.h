@@ -29,6 +29,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/bad_expression.h>
 #include <sqlpp17/wrapped_static_assert.h>
 
+/* Hint
+   Most operators are using enable_if instead of wrapped static_assert.
+   This is because variants with static_assert would enter the overload
+   set and cause havoc.
+   */
+
 // logical
 #include <sqlpp17/operator/logical_and.h>
 #include <sqlpp17/operator/logical_not.h>
@@ -55,6 +61,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/operator/bit_and.h>
 #include <sqlpp17/operator/bit_not.h>
 #include <sqlpp17/operator/bit_or.h>
+#include <sqlpp17/operator/bit_shift_left.h>
+#include <sqlpp17/operator/bit_shift_right.h>
 #include <sqlpp17/operator/bit_xor.h>
 
 // assignment

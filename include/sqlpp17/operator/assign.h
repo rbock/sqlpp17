@@ -45,7 +45,7 @@ namespace sqlpp
   };
 
   template <typename L, typename R>
-  constexpr auto assign(L column, R value) -> std::enable_if_t<are_values_comparable_v<L, R>, assign_t<L, R>>
+  constexpr auto assign(L column, R value) -> std::enable_if_t<values_are_compatible_v<L, R>, assign_t<L, R>>
   {
     return assign_t<L, R>{column, value};
   }

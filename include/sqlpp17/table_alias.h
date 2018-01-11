@@ -85,10 +85,10 @@ namespace sqlpp
   {
     auto ret = std::string{};
 
-    if constexpr (requires_braces<Table>)
+    if constexpr (requires_braces_v<Table>)
       ret += "(";
     ret += to_sql_string(t._table);
-    if constexpr (requires_braces<Table>)
+    if constexpr (requires_braces_v<Table>)
       ret += ")";
     ret += " AS " + to_sql_name(t);
 

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2016 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -104,6 +104,8 @@ int main()
     assert_equality("tab_person.id | 17", tabPerson.id | std::int64_t{17});
     assert_equality("tab_person.id ^ 17", tabPerson.id ^ std::int64_t{17});
     assert_equality("~tab_person.id", ~tabPerson.id);
+    assert_equality("tab_person.id << 2", tabPerson.id << 2);
+    assert_equality("tab_person.id >> 2", tabPerson.id >> 2);
   }
   catch (const std::exception& e)
   {

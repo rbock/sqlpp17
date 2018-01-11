@@ -339,6 +339,9 @@ namespace sqlpp
     return is_expression<T>;
   }
 
+  template <typename... Ts>
+  using check_for_expression = std::enable_if_t<(false or ... or is_expression_v<Ts>)>;
+
   template <typename T>
   struct column_spec_of
   {
@@ -506,18 +509,29 @@ namespace sqlpp
   constexpr auto has_text_value_v = is_text_v<remove_optional_t<T>> or is_text_v<remove_optional_t<value_type_of_t<T>>>;
 
   template <typename L, typename R, typename Enable = void>
-  constexpr auto are_values_comparable_v = false;
+  struct values_are_compatible : std::false_type
+  {
+  };
 
   template <typename L, typename R>
-  constexpr auto are_values_comparable_v<L, R, std::enable_if_t<has_numeric_value_v<L> and has_numeric_value_v<R>>> =
-      true;
+  struct values_are_compatible<L, R, std::enable_if_t<has_numeric_value_v<L> and has_numeric_value_v<R>>>
+      : std::true_type
+  {
+  };
 
   template <typename L, typename R>
-  constexpr auto are_values_comparable_v<L, R, std::enable_if_t<has_text_value_v<L> and has_text_value_v<R>>> = true;
+  struct values_are_compatible<L, R, std::enable_if_t<has_text_value_v<L> and has_text_value_v<R>>> : std::true_type
+  {
+  };
 
   template <typename L, typename R>
-  constexpr auto are_values_comparable_v<L, R, std::enable_if_t<has_boolean_value_v<L> and has_boolean_value_v<R>>> =
-      true;
+  struct values_are_compatible<L, R, std::enable_if_t<has_boolean_value_v<L> and has_boolean_value_v<R>>>
+      : std::true_type
+  {
+  };
+
+  template <typename L, typename R>
+  inline constexpr auto values_are_compatible_v = values_are_compatible<L, R>::value;
 
   template <typename T>
   constexpr auto is_conditionless_dynamic_join = false;
@@ -526,13 +540,12 @@ namespace sqlpp
   constexpr auto is_dynamic_join = false;
 
   template <typename T>
-  constexpr auto requires_braces_v = false;
+  struct requires_braces : std::false_type
+  {
+  };
 
   template <typename T>
-  constexpr auto requires_braces(const T&)
-  {
-    return requires_braces_v<T>;
-  }
+  constexpr auto requires_braces_v = requires_braces<T>::value;
 
   template <typename... T>
   [[nodiscard]] constexpr auto parameters_of(type_vector<T...>)
