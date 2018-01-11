@@ -51,6 +51,9 @@ namespace sqlpp
     using type = typename FunctionSpec::value_type;
   };
 
+  template <typename FunctionSpec, typename Expression>
+  constexpr auto is_aggregate_v<aggregate_t<FunctionSpec, Expression>> = true;
+
   template <typename Context, typename FunctionSpec, typename Expression>
   [[nodiscard]] auto to_sql_string(Context& context, const aggregate_t<FunctionSpec, Expression>& t)
   {

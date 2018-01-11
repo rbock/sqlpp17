@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2016 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -76,10 +76,28 @@ namespace sqlpp
     std::tuple<Columns...> _columns;
   };
 
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_order_by_args_not_having_aggregates_without_group_by,
+                              "order_by() args must not be aggregates if there is no group by");
+
+  template <typename Db, typename... Columns, typename... Clauses>
+  constexpr auto check_clause_preparable(const type_t<clause_base<order_by_t<Columns...>, statement<Clauses...>>>& t)
+  {
+    using known_aggregates_t = decltype((::sqlpp::type_set() | ... | provided_aggregates_of_v<Clauses>));
+
+    if constexpr ((known_aggregates_t::empty() and ... and recursive_contains_aggregate<known_aggregates_t, Columns>()))
+    {
+      return failed<assert_order_by_args_not_having_aggregates_without_group_by>{};
+    }
+    else
+    {
+      return succeeded{};
+    }
+  }
+
   template <typename Context, typename... Columns, typename Statement>
   [[nodiscard]] auto to_sql_string(Context& context, const clause_base<order_by_t<Columns...>, Statement>& t)
   {
-    return std::string{" ORDER BY "} + tuple_to_sql_string(context, ", ", std::get<Columns>(t._columns)...);
+    return std::string{" ORDER BY "} + tuple_to_sql_string(context, ", ", t._columns);
   }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_order_by_args_not_empty, "order_by() must be called with at least one argument");

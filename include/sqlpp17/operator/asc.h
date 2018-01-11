@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2017 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -51,7 +51,7 @@ namespace sqlpp
   };
 
   template <typename L>
-  constexpr auto asc(L l) -> std::enable_if_t<has_boolean_value_v<L>, sort_order_t<L>>
+  constexpr auto asc(L l) -> std::enable_if_t<is_expression_v<L>, sort_order_t<L>>
   {
     return sort_order_t<L>{l, sort_order::asc};
   }
@@ -77,7 +77,7 @@ namespace sqlpp
   template <typename Context, typename L>
   [[nodiscard]] auto to_sql_string(Context& context, const sort_order_t<L>& t)
   {
-    return to_sql_string(embrace(t.l)) + to_sql_string(context, t.order);
+    return to_sql_string(context, embrace(t.l)) + to_sql_string(context, t.order);
   }
 
 }  // namespace sqlpp

@@ -30,6 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/aggregate.h>
 #include <sqlpp17/bad_expression.h>
+#include <sqlpp17/expr.h>
 #include <sqlpp17/flags.h>
 #include <sqlpp17/wrapped_static_assert.h>
 
@@ -39,18 +40,19 @@ namespace sqlpp
   SQLPP_WRAPPED_STATIC_ASSERT(assert_max_arg_is_not_alias, "max() arg must not be an alias");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_max_arg_is_not_aggregate, "max() arg must not be an aggregate");
 
-  template <typename Expr>
+#warning : Wrap all functions in expr()?
+  template <typename Expression>
   constexpr auto check_max_args()
   {
-    if constexpr (not is_expression_v<Expr>)
+    if constexpr (not is_expression_v<Expression>)
     {
       return failed<assert_max_arg_is_expression>{};
     }
-    else if constexpr (is_alias_v<Expr>)
+    else if constexpr (is_alias_v<Expression>)
     {
       return failed<assert_max_arg_is_not_alias>{};
     }
-    else if constexpr (::sqlpp::is_aggregate_v<Expr>)
+    else if constexpr (::sqlpp::is_aggregate_v<Expression>)
     {
       return failed<assert_max_arg_is_not_aggregate>{};
     }
@@ -66,12 +68,12 @@ namespace sqlpp
     using value_type = ValueType;
   };
 
-  template <typename Expr>
-  [[nodiscard]] constexpr auto max(Expr expr)
+  template <typename Expression>
+  [[nodiscard]] constexpr auto max(Expression expression)
   {
-    if constexpr (constexpr auto check = check_max_args<Expr>(); check)
+    if constexpr (constexpr auto check = check_max_args<Expression>(); check)
     {
-      return aggregate_t<max_t<value_type_of_t<Expr>>, Expr>{expr};
+      return expr(aggregate_t<max_t<value_type_of_t<Expression>>, Expression>{expression});
     }
     else
     {

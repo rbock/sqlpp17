@@ -31,8 +31,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
 
+#include <sqlpp17/aggregate_functions.h>
 #include <sqlpp17/clause/select.h>
 #include <sqlpp17/operator.h>
+#include <sqlpp17/result_cast.h>
 
 using test::tabPerson;
 
@@ -44,6 +46,10 @@ auto display_full_row(const Row& row)
   std::cout << row.name << "\n";
   std::cout << row.address.value_or("") << "\n";
 }
+
+SQLPP_CREATE_NAME_TAG(rowCount);
+SQLPP_CREATE_NAME_TAG(maxName);
+SQLPP_CREATE_NAME_TAG(avgId);
 
 int main()
 {
@@ -58,15 +64,16 @@ int main()
 
   // using << concatenation
   for (const auto& row :
-       db(sqlpp::select() << sqlpp::select_columns(test::tabPerson.id, test::tabPerson.isManager,
-                                                   test::tabPerson.address, test::tabPerson.name)
-                          << sqlpp::from(test::tabPerson)
-                          << sqlpp::where(test::tabPerson.isManager and test::tabPerson.name == "")
-                          << sqlpp::having(test::tabPerson.id == test::tabPerson.id or test::tabPerson.id == 1)))
+       db(sqlpp::select() << sqlpp::select_columns(::sqlpp::count(1).as(rowCount), max(tabPerson.name).as(maxName),
+#warning : Want type-casting as(), like avg(tabPerson.id).as<float>(avgId)
+                                                   ::sqlpp::result_cast<float>(avg(tabPerson.id)).as(avgId),
+                                                   tabPerson.isManager)
+                          << sqlpp::from(tabPerson) << sqlpp::where(tabPerson.isManager and tabPerson.name != "")
+                          << sqlpp::group_by(tabPerson.isManager) << sqlpp::having(::sqlpp::count(1) > 7)
+                          << order_by(max(tabPerson.id).asc())))
   {
-    std::cout << row.id << std::endl;
-    std::cout << row.isManager << std::endl;
-    std::cout << row.name << std::endl;
-    std::cout << row.address.value_or("") << std::endl;
+    std::cout << row.rowCount << std::endl;
+    std::cout << row.maxName << std::endl;
+    std::cout << row.avgId << std::endl;
   }
 }

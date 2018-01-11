@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016 - 2017, Roland Bock
+Copyright (c) 2016 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -55,6 +55,12 @@ namespace sqlpp
     using type = type_vector<Columns...>;
   };
 
+  template <typename... Columns>
+  struct provided_aggregates_of<group_by_t<Columns...>>
+  {
+    static constexpr auto value = type_set<Columns...>();
+  };
+
   template <typename Table>
   constexpr auto clause_tag<group_by_t<Table>> = clause::group_by{};
 
@@ -83,6 +89,8 @@ namespace sqlpp
   SQLPP_WRAPPED_STATIC_ASSERT(assert_group_by_args_not_empty, "group_by() must be called with at least one argument");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_group_by_args_are_expressions,
                               "group_by() args must be value expressions (e.g. columns)");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_group_by_args_contain_no_aggregate,
+                              "group_by() args must not contain aggregate expressions (e.g. max or count)");
 
   template <typename... T>
   constexpr auto check_group_by_arg(const T&...)
@@ -94,6 +102,10 @@ namespace sqlpp
     else if constexpr (!(true && ... && is_expression_v<T>))
     {
       return failed<assert_group_by_args_are_expressions>{};
+    }
+    else if constexpr (recursive_contains_aggregate<type_set_t<>>(type_vector<T...>()))
+    {
+      return failed<assert_group_by_args_contain_no_aggregate>{};
     }
     else
       return succeeded{};

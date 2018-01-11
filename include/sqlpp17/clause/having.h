@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2016 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -71,6 +71,24 @@ namespace sqlpp
 
     Condition _condition;
   };
+
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_having_condition_consists_of_aggregates,
+                              "having condition must consist of aggregates");
+
+  template <typename Db, typename Condition, typename... Clauses>
+  constexpr auto check_clause_preparable(const type_t<clause_base<having_t<Condition>, statement<Clauses...>>>& t)
+  {
+    using known_aggregates_t = decltype((::sqlpp::type_set() | ... | provided_aggregates_of_v<Clauses>));
+
+    if constexpr (not recursive_is_aggregate<known_aggregates_t, Condition>())
+    {
+      return failed<assert_having_condition_consists_of_aggregates>{};
+    }
+    else
+    {
+      return succeeded{};
+    }
+  }
 
   template <typename Context, typename Condition, typename Statement>
   [[nodiscard]] auto to_sql_string(Context& context, const clause_base<having_t<Condition>, Statement>& t)

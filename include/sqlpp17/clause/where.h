@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2016 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -109,18 +109,18 @@ namespace sqlpp
   SQLPP_WRAPPED_STATIC_ASSERT(assert_where_arg_contains_no_aggregate,
                               "where() arg must not contain aggregate expressions (e.g. max or count)");
 
-  template <typename T>
-  constexpr auto check_where_arg(const T&)
+  template <typename Condition>
+  constexpr auto check_where_arg(const Condition&)
   {
-    if constexpr (!is_expression_v<T>)
+    if constexpr (!is_expression_v<Condition>)
     {
       return failed<assert_where_arg_is_expression>{};
     }
-    else if constexpr (!has_boolean_value_v<T>)
+    else if constexpr (!has_boolean_value_v<Condition>)
     {
       return failed<assert_where_arg_is_boolean>{};
     }
-    else if constexpr (contains_aggregate_v<T>)
+    else if constexpr (recursive_contains_aggregate<type_set_t<>, Condition>())
     {
       return failed<assert_where_arg_contains_no_aggregate>{};
     }

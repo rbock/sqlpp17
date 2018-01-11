@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,6 +26,7 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <sqlpp17/expr.h>
 #include <sqlpp17/operator.h>
 #include <sqlpp17/type_traits.h>
 
@@ -50,9 +51,12 @@ namespace sqlpp
   };
 
   template <typename ValueType, typename Column>
+  constexpr auto is_aggregate_v<result_cast_t<ValueType, Column>> = is_aggregate_v<Column>;
+
+  template <typename ValueType, typename Column>
   [[nodiscard]] auto result_cast(Column column)
   {
-    return result_cast_t<ValueType, Column>{column};
+    return expr(result_cast_t<ValueType, Column>{column});
   }
 
   template <typename Context, typename ValueType, typename Column>

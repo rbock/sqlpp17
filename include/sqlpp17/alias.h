@@ -52,6 +52,9 @@ namespace sqlpp
   };
 
   template <typename Expression, typename NameTag>
+  constexpr auto is_aggregate_v<alias_t<Expression, NameTag>> = is_aggregate_v<Expression>;
+
+  template <typename Expression, typename NameTag>
   struct name_tag_of<alias_t<Expression, NameTag>>
   {
     using type = NameTag;

@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2017 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -31,7 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace sqlpp
 {
   template <typename L>
-  constexpr auto desc(L l) -> std::enable_if_t<has_boolean_value_v<L>, sort_order_t<L>>
+  constexpr auto desc(L l) -> std::enable_if_t<is_expression_v<L>, sort_order_t<L>>
   {
     return sort_order_t<L>{l, sort_order::desc};
   }

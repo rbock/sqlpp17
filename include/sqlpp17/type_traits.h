@@ -87,9 +87,6 @@ namespace sqlpp
   using nodes_of_t = typename nodes_of<T>::type;
 
   template <typename T>
-  constexpr auto is_aggregate_v = false;
-
-  template <typename T>
   struct can_be_null
   {
     static constexpr auto value = false;
@@ -98,39 +95,14 @@ namespace sqlpp
   template <typename T>
   constexpr auto can_be_null_v = can_be_null<T>::value;
 
-  template <typename KnownAggregatesSet, typename... Ts>
-  constexpr auto recursive_is_aggregate(const type_vector<Ts...>&)
-  {
-    return (true && ... && recursive_is_aggregate<KnownAggregatesSet, Ts>());
-  }
-
-  template <typename KnownAggregatesSet, typename T>
-  constexpr auto recursive_is_aggregate()
-  {
-    return (is_aggregate_v<T> || KnownAggregatesSet::template count<T>()) &&
-           recursive_is_aggregate<KnownAggregatesSet>(nodes_of_t<T>{});
-  }
-
-  // constant values and type-erased values could be treated as both,
-  // aggregate and non-aggregate
   template <typename T>
-  constexpr auto is_non_aggregate_v = false;
-
-  template <typename KnownAggregatesSet, typename... Ts>
-  constexpr auto recursive_is_non_aggregate(const type_vector<Ts...>&)
+  struct provided_aggregates_of
   {
-    return (true && ... && recursive_is_non_aggregate<KnownAggregatesSet, Ts>());
-  }
-
-  template <typename KnownAggregatesSet, typename T>
-  constexpr auto recursive_is_non_aggregate()
-  {
-    return is_non_aggregate_v<T> && (KnownAggregatesSet::template count<T>() == 0) &&
-           recursive_is_non_aggregate<KnownAggregatesSet>(nodes_of_t<T>{});
-  }
+    static constexpr auto value = type_set_t<>{};
+  };
 
   template <typename T>
-  constexpr auto provided_aggregates_v = type_set_t<>{};
+  inline constexpr auto provided_aggregates_of_v = provided_aggregates_of<T>::value;
 
   template <typename T>
   struct is_insert_required : std::false_type
@@ -159,15 +131,6 @@ namespace sqlpp
   constexpr auto is_clause(const T&)
   {
     return is_clause_v<T>;
-  }
-
-  template <typename T>
-  constexpr auto contains_aggregate_v = false;
-
-  template <typename T>
-  constexpr auto contains_aggregate(const T&)
-  {
-    return contains_aggregate_v<T>;
   }
 
   template <typename T>
@@ -341,6 +304,41 @@ namespace sqlpp
 
   template <typename... Ts>
   using check_for_expression = std::enable_if_t<(false or ... or is_expression_v<Ts>)>;
+
+  template <typename T>
+  constexpr auto is_aggregate_v = false;
+
+  template <typename KnownAggregatesSet, typename T>
+  constexpr auto recursive_is_aggregate();
+
+  template <typename KnownAggregatesSet, typename... Ts>
+  constexpr auto recursive_is_aggregate(const type_vector<Ts...>&)
+  {
+    return (true && ... && recursive_is_aggregate<KnownAggregatesSet, Ts>());
+  }
+
+  template <typename KnownAggregatesSet, typename T>
+  constexpr auto recursive_is_aggregate()
+  {
+    return not is_expression_v<T> or is_aggregate_v<T> or KnownAggregatesSet::template count<T>() or
+           (not nodes_of_t<T>::empty() and recursive_is_aggregate<KnownAggregatesSet>(nodes_of_t<T>{}));
+  }
+
+  template <typename KnownAggregatesSet, typename T>
+  constexpr auto recursive_contains_aggregate();
+
+  template <typename KnownAggregatesSet, typename... Ts>
+  constexpr auto recursive_contains_aggregate(const type_vector<Ts...>&)
+  {
+    return (false or ... or recursive_contains_aggregate<KnownAggregatesSet, Ts>());
+  }
+
+  template <typename KnownAggregatesSet, typename T>
+  constexpr auto recursive_contains_aggregate()
+  {
+    return is_aggregate_v<T> or KnownAggregatesSet::template count<T>() or
+           (not nodes_of_t<T>::empty() and recursive_contains_aggregate<KnownAggregatesSet>(nodes_of_t<T>{}));
+  }
 
   template <typename T>
   struct column_spec_of
