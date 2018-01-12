@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2017 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,13 +26,14 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <type_traits>
+#include <sqlpp17/as_base.h>
 #include <sqlpp17/to_sql_string.h>
+#include <sqlpp17/type_traits.h>
 
 namespace sqlpp
 {
   template <typename L>
-  struct is_not_null_t
+  struct is_not_null_t : public as_base<is_not_null_t<L>>
   {
     L l;
   };
