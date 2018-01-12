@@ -232,16 +232,6 @@ namespace sqlpp
     return is_result_clause_v<T>;
   }
 
-#warning : This should derived from has_value and has_name
-  template <typename T>
-  constexpr auto is_selectable_v = false;
-
-  template <typename T>
-  constexpr auto is_selectable(const T&)
-  {
-    return is_selectable_v<T>;
-  }
-
   template <typename T>
   constexpr auto is_sort_order_v = false;
 
@@ -716,6 +706,16 @@ namespace sqlpp
 
   template <typename T>
   constexpr auto char_sequence_of_v = char_sequence_of_t<T>{};
+
+  template <typename T>
+  struct is_selectable : std::integral_constant<bool,
+                                                not std::is_same_v<value_type_of_t<T>, none_t> and
+                                                    not std::is_same_v<name_tag_of_t<T>, none_t>>
+  {
+  };
+
+  template <typename T>
+  inline constexpr auto is_selectable_v = is_selectable<T>::value;
 
   template <typename T>
   struct is_cte : std::false_type
