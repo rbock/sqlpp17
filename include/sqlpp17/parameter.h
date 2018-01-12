@@ -26,13 +26,15 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <sqlpp17/as_base.h>
+#include <sqlpp17/bad_expression.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
 
 namespace sqlpp
 {
   template <typename ValueType, typename NameTag>
-  struct parameter_t
+  struct parameter_t : public as_base<parameter_t<ValueType, NameTag>>
   {
   };
 
@@ -56,7 +58,7 @@ namespace sqlpp
 
   SQLPP_WRAPPED_STATIC_ASSERT(
       assert_parameter_as_arg_is_name_tag_or_similar,
-      "as() arg must be a named expression (e.g. column, table), or a column/table spec, or a name tag");
+      "parameter() arg must be a named expression (e.g. column, table), or a column/table spec, or a name tag");
 
   template <typename Tag>
   constexpr auto check_parameter_args()
@@ -73,7 +75,7 @@ namespace sqlpp
   struct unnamed_parameter_t
   {
     template <typename NamedTypeOrTag>
-    [[nodiscard]] static constexpr auto as([[maybe_unused]] NamedTypeOrTag)
+    [[nodiscard]] constexpr auto operator()([[maybe_unused]] NamedTypeOrTag) const
     {
       if constexpr (constexpr auto check = check_parameter_args<NamedTypeOrTag>(); check)
       {

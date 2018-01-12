@@ -42,7 +42,7 @@ int main()
   try
   {
     assert_equality("?0 < ?1",
-                    to_sql_string_c(context_t{}, ::sqlpp::parameter<int>.as(foo) < ::sqlpp::parameter<int>.as(bar)));
+                    to_sql_string_c(context_t{}, ::sqlpp::parameter<int>(foo) < ::sqlpp::parameter<int>(bar)));
   }
   catch (const std::exception& e)
   {

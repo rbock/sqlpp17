@@ -27,7 +27,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string>
 
 #include <sqlpp17/clause/select.h>
-#include <sqlpp17/expr.h>
 #include <sqlpp17/name_tag.h>
 #include <sqlpp17/parameter.h>
 
@@ -68,6 +67,5 @@ int main()
                         db(select(all_of(pi)).from(qu).unconditionally()));
 
   // bad: using a parameter in a directly executed statement
-  assert_bad_expression(::sqlpp::assert_execute_without_parameters{},
-                        db(select(expr(::sqlpp::parameter<int>.as(foo)).as(foo))));
+  assert_bad_expression(::sqlpp::assert_execute_without_parameters{}, db(select(::sqlpp::parameter<int>(foo).as(foo))));
 }

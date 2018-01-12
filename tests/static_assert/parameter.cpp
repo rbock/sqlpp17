@@ -34,7 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using ::sqlpp::test::assert_bad_expression;
 using ::sqlpp::test::assert_good_expression;
 
-// Turning off static_assert for parameter<>.as()
+// Turning off static_assert for parameter<>()
 namespace sqlpp
 {
   template <typename... T>
@@ -43,7 +43,7 @@ namespace sqlpp
 
 int main()
 {
-  assert_bad_expression(::sqlpp::assert_parameter_as_arg_is_name_tag_or_similar{}, ::sqlpp::parameter<int>.as(17));
+  assert_bad_expression(::sqlpp::assert_parameter_as_arg_is_name_tag_or_similar{}, ::sqlpp::parameter<int>(17));
 
-  assert_good_expression(::sqlpp::parameter<int>.as(::test::tabDepartment.id));
+  assert_good_expression(::sqlpp::parameter<int>(::test::tabDepartment.id));
 }

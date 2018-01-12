@@ -58,10 +58,10 @@ int main()
 {
   try
   {
-    assert_equality(
-        "? = ?", to_sql_string_c(mock_context_t{}, ::sqlpp::parameter<int>.as(foo) == ::sqlpp::parameter<int>.as(bar)));
+    assert_equality("? = ?",
+                    to_sql_string_c(mock_context_t{}, ::sqlpp::parameter<int>(foo) == ::sqlpp::parameter<int>(bar)));
     assert_equality("$0 < $1", to_sql_string_c(test::count_context_t{},
-                                               ::sqlpp::parameter<int>.as(foo) < ::sqlpp::parameter<int>.as(bar)));
+                                               ::sqlpp::parameter<int>(foo) < ::sqlpp::parameter<int>(bar)));
   }
   catch (const std::exception& e)
   {

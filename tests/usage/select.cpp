@@ -31,8 +31,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <tables/TabEmpty.h>
 #include <tables/TabPerson.h>
 
-#include <sqlpp17/aggregate_functions.h>
 #include <sqlpp17/clause/select.h>
+#include <sqlpp17/function.h>
 #include <sqlpp17/operator.h>
 #include <sqlpp17/result_cast.h>
 

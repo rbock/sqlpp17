@@ -27,7 +27,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string>
 
 #include <sqlpp17/clause/select.h>
-#include <sqlpp17/expr.h>
 #include <sqlpp17/name_tag.h>
 #include <sqlpp17/parameter.h>
 
@@ -76,15 +75,15 @@ int main()
   assert_bad_expression(sqlpp::assert_statement_parameters_have_unique_names{},
                         db.prepare(select(test::tabPerson.id)
                                        .from(test::tabPerson)
-                                       .where(::sqlpp::parameter<int>.as(foo) < test::tabPerson.id and
-                                              test::tabPerson.id < ::sqlpp::parameter<float>.as(foo))));
+                                       .where(::sqlpp::parameter<int>(foo) < test::tabPerson.id and
+                                              test::tabPerson.id < ::sqlpp::parameter<float>(foo))));
 
   // good: using a parameter in a prepared statement
-  assert_good_expression(db.prepare(select(expr(::sqlpp::parameter<int>.as(foo)).as(foo))));
+  assert_good_expression(db.prepare(select(::sqlpp::parameter<int>(foo).as(foo))));
 
   // good: using two parameters with different names
   assert_good_expression(db.prepare(select(test::tabPerson.id)
                                         .from(test::tabPerson)
-                                        .where(::sqlpp::parameter<int>.as(foo) < test::tabPerson.id and
-                                               test::tabPerson.id < ::sqlpp::parameter<float>.as(bar))));
+                                        .where(::sqlpp::parameter<int>(foo) < test::tabPerson.id and
+                                               test::tabPerson.id < ::sqlpp::parameter<float>(bar))));
 }
