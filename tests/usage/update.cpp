@@ -43,6 +43,13 @@ int main()
   // normal updates
   id = db(update(tabPerson).set(tabPerson.isManager = true).unconditionally());
   id = db(update(tabPerson).set(tabPerson.isManager = true).where(tabPerson.isManager == false));
+  id = db(update(tabPerson)
+              .set(tabPerson.isManager = true, tabPerson.address = ::std::nullopt, tabPerson.language = "C++")
+              .where(tabPerson.name == "Herb"));
+  id = db(update(tabPerson)
+              .set(tabPerson.isManager = true, tabPerson.address = ::std::optional<std::string_view>{},
+                   tabPerson.language = "C++")
+              .where(tabPerson.name == "Herb"));
 
   // update with optional assignment
   id = db(

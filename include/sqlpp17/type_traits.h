@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016 - 2017, Roland Bock
+Copyright (c) 2016 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -437,6 +437,9 @@ namespace sqlpp
   template <typename T>
   constexpr auto is_boolean_v = std::is_same_v<T, bool>;
 
+  template <>
+  constexpr auto is_boolean_v<std::nullopt_t> = true;
+
   template <typename T>
   constexpr auto has_boolean_value_v =
       is_boolean_v<remove_optional_t<T>> or is_boolean_v<remove_optional_t<value_type_of_t<T>>>;
@@ -463,6 +466,9 @@ namespace sqlpp
   constexpr auto is_integral_v<bool> = false;  // bool is boolean
 
   template <>
+  constexpr auto is_integral_v<std::nullopt_t> = true;
+
+  template <>
   constexpr auto is_integral_v<integral_t> = true;
 
   template <typename T>
@@ -474,6 +480,9 @@ namespace sqlpp
 
   template <>
   constexpr auto is_numeric_v<numeric_t> = true;
+
+  template <>
+  constexpr auto is_numeric_v<std::nullopt_t> = true;
 
   template <typename T>
   constexpr auto has_numeric_value_v =
@@ -493,6 +502,9 @@ namespace sqlpp
 
   template <>
   constexpr auto is_text_v<std::string_view> = true;
+
+  template <>
+  constexpr auto is_text_v<std::nullopt_t> = true;
 
   template <typename T>
   constexpr auto has_text_value_v = is_text_v<remove_optional_t<T>> or is_text_v<remove_optional_t<value_type_of_t<T>>>;

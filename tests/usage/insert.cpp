@@ -60,6 +60,11 @@ int main()
                                      tabPerson.address = "Sample Address"));
   id = db(insert_into(tabPerson).set(tabPerson.isManager = true, tabPerson.name = "Sample Name",
                                      tabPerson.address = "Sample Address"));
+  id = db(insert_into(tabPerson).set(tabPerson.isManager = true, tabPerson.name = "Sample Name",
+                                     tabPerson.address = ::std::nullopt, tabPerson.language = "C++"));
+  id = db(insert_into(tabPerson).set(tabPerson.isManager = true, tabPerson.name = "Sample Name",
+                                     tabPerson.address = ::std::optional<std::string_view>{},
+                                     tabPerson.language = "C++"));
   id = db(
       insert_into(tabPerson).multiset(std::vector{std::tuple{tabPerson.isManager = false, tabPerson.name = "Mr. C++"},
                                                   std::tuple{tabPerson.isManager = true, tabPerson.name = "Mr. CEO"}}));

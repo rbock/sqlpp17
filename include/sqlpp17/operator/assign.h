@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2017 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,8 +26,8 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <type_traits>
 #include <sqlpp17/to_sql_string.h>
+#include <sqlpp17/type_traits.h>
 
 namespace sqlpp
 {
@@ -44,10 +44,38 @@ namespace sqlpp
     using type = type_vector<L, R>;
   };
 
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_assign_null_to_nullable_columns_only,
+                              "NULL must not be assigned to columns that cannot be NULL");
+
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_assign_optional_to_nullable_columns_only,
+                              "optional values must not be assigned to columns that cannot be NULL");
+
+  template <typename L, typename R>
+  constexpr auto check_assign_args()
+  {
+    if constexpr (not can_be_null_v<L> and std::is_same_v<::std::nullopt_t, R>)
+    {
+      return failed<assert_assign_null_to_nullable_columns_only>{};
+    }
+    else if constexpr (not can_be_null_v<L> and is_optional_v<R>)
+    {
+      return failed<assert_assign_optional_to_nullable_columns_only>{};
+    }
+    else
+      return succeeded{};
+  }
+
   template <typename L, typename R>
   constexpr auto assign(L column, R value) -> std::enable_if_t<values_are_compatible_v<L, R>, assign_t<L, R>>
   {
-    return assign_t<L, R>{column, value};
+    if constexpr (constexpr auto check = check_assign_args<L, R>())
+    {
+      return assign_t<L, R>{column, value};
+    }
+    else
+    {
+      return bad_expression_t{check};
+    }
   }
 
   template <typename L, typename R>

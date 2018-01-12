@@ -31,12 +31,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sstream>
 #include <string>
 
+#include <sqlpp17/wrong.h>
+
 namespace sqlpp
 {
   template <typename Context, typename T>
   [[nodiscard]] auto to_sql_string(Context& context, const std::optional<T>& o)
   {
     return o ? to_sql_string(context, o.value()) : "NULL";
+  }
+
+  template <typename Context>
+  [[nodiscard]] auto to_sql_string(Context& context, [[maybe_unused]] const std::nullopt_t&)
+  {
+    return "NULL";
   }
 
   template <typename Context>
@@ -59,8 +67,8 @@ namespace sqlpp
     return ret;
   }
 
-  template <typename Context, typename T>
-  [[nodiscard]] auto to_sql_string(Context& context, const T& i) -> std::enable_if_t<std::is_integral_v<T>, std::string>
+  template <typename Context, typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
+  [[nodiscard]] auto to_sql_string(Context& context, const T& i)
   {
     return std::to_string(i);
   }
