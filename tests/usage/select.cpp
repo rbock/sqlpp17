@@ -65,12 +65,10 @@ int main()
   // using << concatenation
   for (const auto& row :
        db(sqlpp::select() << sqlpp::select_columns(::sqlpp::count(1).as(rowCount), max(tabPerson.name).as(maxName),
-#warning : Want type-casting as(), like avg(tabPerson.id).as<float>(avgId)
-                                                   ::sqlpp::result_cast<float>(avg(tabPerson.id)).as(avgId),
-                                                   tabPerson.isManager)
+                                                   avg(tabPerson.id).as<float>(avgId), tabPerson.isManager)
                           << sqlpp::from(tabPerson) << sqlpp::where(tabPerson.isManager and tabPerson.name != "")
                           << sqlpp::group_by(tabPerson.isManager) << sqlpp::having(::sqlpp::count(1) > 7)
-                          << order_by(max(tabPerson.id).asc())))
+                          << order_by(asc(max(tabPerson.id)))))
   {
     std::cout << row.rowCount << std::endl;
     std::cout << row.maxName << std::endl;

@@ -73,7 +73,7 @@ int main()
     assert_equality("'Herb' >= tab_person.name", "Herb" >= tabPerson.name);
     assert_equality("'Herb' > tab_person.name", "Herb" > tabPerson.name);
     assert_equality("'Herb' != tab_person.name", "Herb" != tabPerson.name);
-    assert_equality("'Herb' LIKE tab_person.name", ::sqlpp::value("Herb").like(tabPerson.name));
+    assert_equality("'Herb' LIKE tab_person.name", like("Herb", tabPerson.name));
 
     // Arithmetic
     assert_equality("tab_person.id / 17", tabPerson.id / 17);

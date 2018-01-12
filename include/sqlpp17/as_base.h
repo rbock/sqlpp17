@@ -26,57 +26,32 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <sqlpp17/operator/as.h>
+#include <sqlpp17/result_cast.h>
 #include <sqlpp17/type_traits.h>
-
-#include <sqlpp17/aggregate.h>
-#include <sqlpp17/bad_expression.h>
-#include <sqlpp17/flags.h>
-#include <sqlpp17/wrapped_static_assert.h>
 
 namespace sqlpp
 {
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_max_arg_is_expression, "max() arg must be a value expression");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_max_arg_is_not_alias, "max() arg must not be an alias");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_max_arg_is_not_aggregate, "max() arg must not be an aggregate");
-
-  template <typename Expression>
-  constexpr auto check_max_args()
+  template <typename DerivedExpression>
+  class as_base
   {
-    if constexpr (not is_expression_v<Expression>)
+    constexpr decltype(auto) get() const
     {
-      return failed<assert_max_arg_is_expression>{};
+      return static_cast<const DerivedExpression&>(*this);
     }
-    else if constexpr (is_alias_v<Expression>)
-    {
-      return failed<assert_max_arg_is_not_alias>{};
-    }
-    else if constexpr (::sqlpp::is_aggregate_v<Expression>)
-    {
-      return failed<assert_max_arg_is_not_aggregate>{};
-    }
-    else
-      return succeeded{};
-  }
 
-  template <typename ValueType>
-  struct max_t
-  {
-    static constexpr auto name = std::string_view{"MAX"};
-    using flag_type = no_flag_t;
-    using value_type = ValueType;
+  public:
+    template <typename Alias>
+    [[nodiscard]] constexpr auto as(const Alias& alias) const
+    {
+      return ::sqlpp::as(get(), alias);
+    }
+
+    template <typename ValueType, typename Alias>
+    [[nodiscard]] constexpr auto as(const Alias& alias) const
+    {
+      return ::sqlpp::as(result_cast<ValueType>(get()), alias);
+    }
   };
-
-  template <typename Expression>
-  [[nodiscard]] constexpr auto max(Expression expression)
-  {
-    if constexpr (constexpr auto check = check_max_args<Expression>(); check)
-    {
-      return aggregate_t<max_t<value_type_of_t<Expression>>, Expression>{expression};
-    }
-    else
-    {
-      return ::sqlpp::bad_expression_t{check};
-    }
-  }
 
 }  // namespace sqlpp

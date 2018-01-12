@@ -28,21 +28,25 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/type_traits.h>
 
-#include <sqlpp17/operator/as.h>
+#include <sqlpp17/as_base.h>
 #include <sqlpp17/to_sql_string.h>
 
 namespace sqlpp
 {
   template <typename FunctionSpec, typename Expression>
-  struct aggregate_t
+  struct aggregate_t : public as_base<aggregate_t<FunctionSpec, Expression>>
   {
-    Expression _expression;
-
-    template <typename Alias>
-    [[nodiscard]] constexpr auto as(const Alias& alias) const
+    aggregate_t() = delete;
+    constexpr aggregate_t(Expression expression) : _expression(expression)
     {
-      return ::sqlpp::as(*this, alias);
     }
+    aggregate_t(const aggregate_t&) = default;
+    aggregate_t(aggregate_t&&) = default;
+    aggregate_t& operator=(const aggregate_t&) = default;
+    aggregate_t& operator=(aggregate_t&&) = default;
+    ~aggregate_t() = default;
+
+    Expression _expression;
   };
 
   template <typename FunctionSpec, typename Expression>

@@ -39,18 +39,18 @@ namespace sqlpp
   SQLPP_WRAPPED_STATIC_ASSERT(assert_min_arg_is_not_alias, "min() arg must not be an alias");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_min_arg_is_not_aggregate, "min() arg must not be an aggregate");
 
-  template <typename Expr>
+  template <typename Expression>
   constexpr auto check_min_args()
   {
-    if constexpr (not is_expression_v<Expr>)
+    if constexpr (not is_expression_v<Expression>)
     {
       return failed<assert_min_arg_is_expression>{};
     }
-    else if constexpr (is_alias_v<Expr>)
+    else if constexpr (is_alias_v<Expression>)
     {
       return failed<assert_min_arg_is_not_alias>{};
     }
-    else if constexpr (::sqlpp::is_aggregate_v<Expr>)
+    else if constexpr (::sqlpp::is_aggregate_v<Expression>)
     {
       return failed<assert_min_arg_is_not_aggregate>{};
     }
@@ -66,12 +66,12 @@ namespace sqlpp
     using value_type = ValueType;
   };
 
-  template <typename Expr>
-  [[nodiscard]] constexpr auto min(Expr expr)
+  template <typename Expression>
+  [[nodiscard]] constexpr auto min(Expression expression)
   {
-    if constexpr (constexpr auto check = check_min_args<Expr>(); check)
+    if constexpr (constexpr auto check = check_min_args<Expression>(); check)
     {
-      return aggregate_t<min_t<value_type_of_t<Expr>>, Expr>{expr};
+      return aggregate_t<min_t<value_type_of_t<Expression>>, Expression>{expression};
     }
     else
     {

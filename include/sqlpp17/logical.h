@@ -26,6 +26,7 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <sqlpp17/as_base.h>
 #include <sqlpp17/bad_expression.h>
 #include <sqlpp17/embrace.h>
 #include <sqlpp17/to_sql_string.h>
@@ -35,10 +36,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace sqlpp
 {
   template <typename L, typename Operator, typename R>
-  struct logical_t
+  struct logical_t : public as_base<logical_t<L, Operator, R>>
   {
-    L l;
-    R r;
+    logical_t() = delete;
+    constexpr logical_t(L l, R r) : _l(l), _r(r)
+    {
+    }
+    logical_t(const logical_t&) = default;
+    logical_t(logical_t&&) = default;
+    logical_t& operator=(const logical_t&) = default;
+    logical_t& operator=(logical_t&&) = default;
+    ~logical_t() = default;
+
+    L _l;
+    R _r;
   };
 
   template <typename L, typename Operator, typename R>
@@ -62,19 +73,19 @@ namespace sqlpp
   template <typename Context, typename L, typename Operator, typename R>
   [[nodiscard]] auto to_sql_string(Context& context, const logical_t<L, Operator, R>& t)
   {
-    return to_sql_string(context, embrace(t.l)) + Operator::symbol + to_sql_string(context, embrace(t.r));
+    return to_sql_string(context, embrace(t._l)) + Operator::symbol + to_sql_string(context, embrace(t._r));
   }
 
   template <typename Context, typename Operator, typename R>
   [[nodiscard]] auto to_sql_string(Context& context, const logical_t<none_t, Operator, R>& t)
   {
-    return Operator::symbol + to_sql_string(context, embrace(t.r));
+    return Operator::symbol + to_sql_string(context, embrace(t._r));
   }
 
   template <typename Context, typename L1, typename Operator, typename R1, typename R2>
   [[nodiscard]] auto to_sql_string(Context& context, const logical_t<logical_t<L1, Operator, R1>, Operator, R2>& t)
   {
-    return to_sql_string(context, t.l) + Operator::symbol + to_sql_string(context, embrace(t.r));
+    return to_sql_string(context, t._l) + Operator::symbol + to_sql_string(context, embrace(t._r));
   }
 
 }  // namespace sqlpp

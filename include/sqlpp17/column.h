@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2017 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -27,7 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/alias.h>
-#include <sqlpp17/expr.h>
+#include <sqlpp17/as_base.h>
 #include <sqlpp17/operator.h>
 #include <sqlpp17/to_sql_name.h>
 #include <sqlpp17/type_traits.h>
@@ -35,7 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace sqlpp
 {
   template <typename TableSpec, typename ColumnSpec>
-  class column_t
+  class column_t : public as_base<column_t<TableSpec, ColumnSpec>>
   {
     static_assert(std::is_base_of_v<::sqlpp::spec_base, TableSpec>);
 
@@ -82,12 +82,6 @@ namespace sqlpp
     [[nodiscard]] constexpr auto desc() const
     {
       return ::sqlpp::desc(*this);
-    }
-
-    template <typename Alias>
-    [[nodiscard]] constexpr auto as(const Alias& alias) const
-    {
-      return ::sqlpp::as(*this, alias);
     }
   };
 

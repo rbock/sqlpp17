@@ -232,6 +232,7 @@ namespace sqlpp
     return is_result_clause_v<T>;
   }
 
+#warning : This should derived from has_value and has_name
   template <typename T>
   constexpr auto is_selectable_v = false;
 

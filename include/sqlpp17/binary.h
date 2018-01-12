@@ -26,6 +26,7 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <sqlpp17/as_base.h>
 #include <sqlpp17/bad_expression.h>
 #include <sqlpp17/to_sql_string.h>
 #include <sqlpp17/type_traits.h>
@@ -34,10 +35,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace sqlpp
 {
   template <typename L, typename Operator, typename R>
-  struct binary_t
+  struct binary_t : public as_base<binary_t<L, Operator, R>>
   {
-    L l;
-    R r;
+    binary_t() = delete;
+    constexpr binary_t(L l, R r) : _l(l), _r(r)
+    {
+    }
+    binary_t(const binary_t&) = default;
+    binary_t(binary_t&&) = default;
+    binary_t& operator=(const binary_t&) = default;
+    binary_t& operator=(binary_t&&) = default;
+    ~binary_t() = default;
+
+    L _l;
+    R _r;
   };
 
   template <typename L, typename Operator, typename R>
@@ -61,13 +72,13 @@ namespace sqlpp
   template <typename Context, typename L, typename Operator, typename R>
   [[nodiscard]] auto to_sql_string(Context& context, const binary_t<L, Operator, R>& t)
   {
-    return to_sql_string(context, embrace(t.l)) + Operator::symbol + to_sql_string(context, embrace(t.r));
+    return to_sql_string(context, embrace(t._l)) + Operator::symbol + to_sql_string(context, embrace(t._r));
   }
 
   template <typename Context, typename Operator, typename R>
   [[nodiscard]] auto to_sql_string(Context& context, const binary_t<none_t, Operator, R>& t)
   {
-    return Operator::symbol + to_sql_string(context, embrace(t.r));
+    return Operator::symbol + to_sql_string(context, embrace(t._r));
   }
 
 }  // namespace sqlpp

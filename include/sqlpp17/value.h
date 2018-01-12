@@ -29,53 +29,63 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string>
 #include <string_view>
 
-#include <sqlpp17/expr.h>
+#include <sqlpp17/as_base.h>
 #include <sqlpp17/type_traits.h>
 
 namespace sqlpp
 {
-  template <typename T>
-  struct value_t
+  template <typename Expression>
+  struct value_t : public as_base<value_t<Expression>>
   {
-    T t;
+    value_t() = delete;
+    constexpr value_t(Expression expression) : _expression(expression)
+    {
+    }
+    value_t(const value_t&) = default;
+    value_t(value_t&&) = default;
+    value_t& operator=(const value_t&) = default;
+    value_t& operator=(value_t&&) = default;
+    ~value_t() = default;
+
+    Expression _expression;
   };
 
-  template <typename T>
-  struct nodes_of<value_t<T>>
+  template <typename Expression>
+  struct nodes_of<value_t<Expression>>
   {
-    using type = type_vector<T>;
+    using type = type_vector<Expression>;
   };
 
-  template <typename T>
-  struct value_type_of<value_t<T>>
+  template <typename Expression>
+  struct value_type_of<value_t<Expression>>
   {
-    using type = T;
+    using type = Expression;
   };
 
-  template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
-  [[nodiscard]] constexpr auto value(T t)
+  template <typename Expression, typename = std::enable_if_t<std::is_arithmetic_v<Expression>>>
+  [[nodiscard]] constexpr auto value(Expression expression)
   {
-    return expr(value_t<T>{t});
+    return value_t<Expression>{expression};
   }
 
-  [[nodiscard]] auto value(std::string t)
+  [[nodiscard]] auto value(std::string expression)
   {
-    return expr(value_t<std::string>{t});
+    return value_t<std::string>{expression};
   }
 
-  [[nodiscard]] constexpr auto value(std::string_view t)
+  [[nodiscard]] constexpr auto value(std::string_view expression)
   {
-    return expr(value_t<std::string_view>{t});
+    return value_t<std::string_view>{expression};
   }
 
-  [[nodiscard]] constexpr auto value(const char* t)
+  [[nodiscard]] constexpr auto value(const char* expression)
   {
-    return expr(value_t<const char*>{t});
+    return value_t<const char*>{expression};
   }
 
-  template <typename Context, typename T>
-  [[nodiscard]] auto to_sql_string(Context& context, const value_t<T>& t)
+  template <typename Context, typename Expression>
+  [[nodiscard]] auto to_sql_string(Context& context, const value_t<Expression>& t)
   {
-    return to_sql_string(context, t.t);
+    return to_sql_string(context, t._expression);
   }
 }  // namespace sqlpp

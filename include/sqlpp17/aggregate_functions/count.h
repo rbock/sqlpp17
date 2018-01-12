@@ -39,18 +39,18 @@ namespace sqlpp
   SQLPP_WRAPPED_STATIC_ASSERT(assert_count_arg_is_not_alias, "count() arg must not be an alias");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_count_arg_is_not_aggregate, "count() arg must not be an aggregate");
 
-  template <typename Expr>
+  template <typename Expression>
   constexpr auto check_count_args()
   {
-    if constexpr (not is_expression_v<Expr> and not std::is_integral_v<Expr>)
+    if constexpr (not is_expression_v<Expression> and not std::is_integral_v<Expression>)
     {
       return failed<assert_count_arg_is_expression>{};
     }
-    else if constexpr (is_alias_v<Expr>)
+    else if constexpr (is_alias_v<Expression>)
     {
       return failed<assert_count_arg_is_not_alias>{};
     }
-    else if constexpr (::sqlpp::is_aggregate_v<Expr>)
+    else if constexpr (::sqlpp::is_aggregate_v<Expression>)
     {
       return failed<assert_count_arg_is_not_aggregate>{};
     }
@@ -66,12 +66,12 @@ namespace sqlpp
     using value_type = int64_t;
   };
 
-  template <typename Expr>
-  [[nodiscard]] constexpr auto count(Expr expr)
+  template <typename Expression>
+  [[nodiscard]] constexpr auto count(Expression expression)
   {
-    if constexpr (constexpr auto check = check_count_args<Expr>(); check)
+    if constexpr (constexpr auto check = check_count_args<Expression>(); check)
     {
-      return aggregate_t<count_t<no_flag_t>, Expr>{expr};
+      return aggregate_t<count_t<no_flag_t>, Expression>{expression};
     }
     else
     {
@@ -79,12 +79,12 @@ namespace sqlpp
     }
   }
 
-  template <typename Expr>
-  [[nodiscard]] constexpr auto count([[maybe_unused]] distinct_t, Expr expr)
+  template <typename Expression>
+  [[nodiscard]] constexpr auto count([[maybe_unused]] distinct_t, Expression expression)
   {
-    if constexpr (constexpr auto check = check_count_args<Expr>(); check)
+    if constexpr (constexpr auto check = check_count_args<Expression>(); check)
     {
-      return aggregate_t<count_t<distinct_t>, Expr>{expr};
+      return aggregate_t<count_t<distinct_t>, Expression>{expression};
     }
     else
     {

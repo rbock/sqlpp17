@@ -39,18 +39,18 @@ namespace sqlpp
   SQLPP_WRAPPED_STATIC_ASSERT(assert_sum_arg_is_not_alias, "sum() arg must not be an alias");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_sum_arg_is_not_aggregate, "sum() arg must not be an aggregate");
 
-  template <typename Expr>
+  template <typename Expression>
   constexpr auto check_sum_args()
   {
-    if constexpr (not has_numeric_value_v<Expr>)
+    if constexpr (not has_numeric_value_v<Expression>)
     {
       return failed<assert_sum_arg_is_numeric>{};
     }
-    else if constexpr (is_alias_v<Expr>)
+    else if constexpr (is_alias_v<Expression>)
     {
       return failed<assert_sum_arg_is_not_alias>{};
     }
-    else if constexpr (::sqlpp::is_aggregate_v<Expr>)
+    else if constexpr (::sqlpp::is_aggregate_v<Expression>)
     {
       return failed<assert_sum_arg_is_not_aggregate>{};
     }
@@ -66,12 +66,12 @@ namespace sqlpp
     using value_type = numeric_t;
   };
 
-  template <typename Expr>
-  [[nodiscard]] constexpr auto sum(Expr expr)
+  template <typename Expression>
+  [[nodiscard]] constexpr auto sum(Expression expression)
   {
-    if constexpr (constexpr auto check = check_sum_args<Expr>(); check)
+    if constexpr (constexpr auto check = check_sum_args<Expression>(); check)
     {
-      return aggregate_t<sum_t<no_flag_t>, Expr>{expr};
+      return aggregate_t<sum_t<no_flag_t>, Expression>{expression};
     }
     else
     {
@@ -79,12 +79,12 @@ namespace sqlpp
     }
   }
 
-  template <typename Expr>
-  [[nodiscard]] constexpr auto sum([[maybe_unused]] distinct_t, Expr expr)
+  template <typename Expression>
+  [[nodiscard]] constexpr auto sum([[maybe_unused]] distinct_t, Expression expression)
   {
-    if constexpr (constexpr auto check = check_sum_args<Expr>(); check)
+    if constexpr (constexpr auto check = check_sum_args<Expression>(); check)
     {
-      return aggregate_t<sum_t<distinct_t>, Expr>{expr};
+      return aggregate_t<sum_t<distinct_t>, Expression>{expression};
     }
     else
     {
