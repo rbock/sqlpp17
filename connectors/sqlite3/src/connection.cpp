@@ -83,31 +83,31 @@ namespace sqlpp::sqlite3::detail
 
   auto prepared_select_t::run() -> prepared_statement_result_t
   {
-    sqlite3_reset(_statement.get());
-    return {_statement};
+    sqlite3_reset(this->get());
+    return {*this};
   }
 
   auto prepared_insert_t::run() -> size_t
   {
-    execute_prepared_statement(_statement);
-    return sqlite3_last_insert_rowid(_statement.connection());
+    execute_prepared_statement(*this);
+    return sqlite3_last_insert_rowid(this->connection());
   }
 
   auto prepared_execute_t::run() -> void
   {
-    execute_prepared_statement(_statement);
+    execute_prepared_statement(*this);
   }
 
   auto prepared_update_t::run() -> size_t
   {
-    execute_prepared_statement(_statement);
-    return sqlite3_changes(_statement.connection());
+    execute_prepared_statement(*this);
+    return sqlite3_changes(this->connection());
   }
 
   auto prepared_delete_from_t::run() -> size_t
   {
-    execute_prepared_statement(_statement);
-    return sqlite3_changes(_statement.connection());
+    execute_prepared_statement(*this);
+    return sqlite3_changes(this->connection());
   }
 
 }  // namespace sqlpp::sqlite3::detail

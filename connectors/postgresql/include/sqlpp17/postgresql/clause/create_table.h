@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2017 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -43,7 +43,12 @@ namespace sqlpp::postgresql::detail
     static_assert(wrong<ValueType>, "unknown value type for CREATE TABLE");
   }
 
-  [[nodiscard]] inline auto value_type_to_sql_string(const int64_t&)
+  [[nodiscard]] inline auto value_type_to_sql_string(const bool&)
+  {
+    return " BOOLEAN";
+  }
+
+  [[nodiscard]] inline auto value_type_to_sql_string(const std::int64_t&)
   {
     return " BIGINT";
   }
@@ -61,15 +66,15 @@ namespace sqlpp::postgresql::detail
 
     if constexpr (std::is_same_v<std::decay_t<decltype(columnSpec.default_value)>, ::sqlpp::auto_increment_t>)
     {
-      if constexpr (std::is_same_v<typename ColumnSpec::value_type, int16_t>)
+      if constexpr (std::is_same_v<typename ColumnSpec::value_type, std::int16_t>)
       {
         ret += " SMALLSERIAL";
       }
-      else if constexpr (std::is_same_v<typename ColumnSpec::value_type, int32_t>)
+      else if constexpr (std::is_same_v<typename ColumnSpec::value_type, std::int32_t>)
       {
         ret += " SERIAL";
       }
-      else if constexpr (std::is_same_v<typename ColumnSpec::value_type, int64_t>)
+      else if constexpr (std::is_same_v<typename ColumnSpec::value_type, std::int64_t>)
       {
         ret += " BIGSERIAL";
       }

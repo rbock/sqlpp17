@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2017 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -180,26 +180,26 @@ namespace sqlpp::mysql::detail
 
   auto prepared_select_t::run() -> prepared_statement_result_t
   {
-    execute_prepared_statement(_statement);
-    return {_statement};
+    execute_prepared_statement(*this);
+    return {*this};
   }
 
   auto prepared_insert_t::run() -> size_t
   {
-    execute_prepared_statement(_statement);
-    return mysql_stmt_insert_id(_statement.get());
+    execute_prepared_statement(*this);
+    return mysql_stmt_insert_id(this->get());
   }
 
   auto prepared_update_t::run() -> size_t
   {
-    execute_prepared_statement(_statement);
-    return mysql_stmt_affected_rows(_statement.get());
+    execute_prepared_statement(*this);
+    return mysql_stmt_affected_rows(this->get());
   }
 
   auto prepared_delete_from_t::run() -> size_t
   {
-    execute_prepared_statement(_statement);
-    return mysql_stmt_affected_rows(_statement.get());
+    execute_prepared_statement(*this);
+    return mysql_stmt_affected_rows(this->get());
   }
 
 }  // namespace sqlpp::mysql::detail

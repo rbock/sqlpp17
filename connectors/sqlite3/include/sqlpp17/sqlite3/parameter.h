@@ -34,7 +34,8 @@ namespace sqlpp
   template <typename ValueType, typename NameTag>
   [[nodiscard]] auto to_sql_string(sqlite3::context_t& context, const parameter_t<ValueType, NameTag>&)
   {
-    return "?" + std::to_string(context.parameter_index++);
+    // pre-increment, because sqlite parameters start counting at 1
+    return "?" + std::to_string(++context.parameter_index);
   }
 
 }  // namespace sqlpp

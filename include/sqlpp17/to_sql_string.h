@@ -67,8 +67,8 @@ namespace sqlpp
     return ret;
   }
 
-  template <typename Context, typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
-  [[nodiscard]] auto to_sql_string(Context& context, const T& i)
+  template <typename Context, typename T>
+  [[nodiscard]] auto to_sql_string(Context& context, const T& i) -> std::enable_if_t<std::is_integral_v<T>, std::string>
   {
     return std::to_string(i);
   }

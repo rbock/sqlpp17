@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2017 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,7 +26,9 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <functional>
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include <mysql.h>
@@ -101,6 +103,11 @@ namespace sqlpp::mysql
       return _number_of_columns;
     }
 
+    auto& get_bind_meta_data()
+    {
+      return _bind_meta_data;
+    }
+
     auto& get_bind_data()
     {
       return _bind_data;
@@ -111,5 +118,20 @@ namespace sqlpp::mysql
       return _debug;
     }
   };
+
+  auto bind_parameter(prepared_statement_t& statement, const std::nullopt_t& value, int index) -> void;
+
+  auto bind_parameter(prepared_statement_t& statement, const bool& value, int index) -> void;
+  auto bind_parameter(prepared_statement_t& statement, const std::int32_t& value, int index) -> void;
+  auto bind_parameter(prepared_statement_t& statement, const std::int64_t& value, int index) -> void;
+  auto bind_parameter(prepared_statement_t& statement, const std::string& value, int index) -> void;
+  auto bind_parameter(prepared_statement_t& statement, const std::string_view& value, int index) -> void;
+
+  template <typename T>
+  auto bind_parameter(prepared_statement_t& statement, const std::optional<T>& value, int index) -> void
+  {
+    value ? bind_parameter(statement, *value, index) : bind_parameter(statement, std::nullopt, index);
+  }
+
 }  // namespace sqlpp::mysql
 

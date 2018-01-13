@@ -55,7 +55,7 @@ namespace test
     struct Name : public ::sqlpp::spec_base
     {
       SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(name, name);
-      using value_type = std::string_view;
+      using value_type = ::sqlpp::varchar<255>;
       static constexpr auto can_be_null = false;
       static constexpr auto default_value = ::sqlpp::none_t{};
     };
@@ -63,19 +63,30 @@ namespace test
     struct Address : public ::sqlpp::spec_base
     {
       SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(address, address);
-      using value_type = std::string_view;
+      using value_type = ::sqlpp::varchar<255>;
       static constexpr auto can_be_null = true;
-#warning The default value should be a string_view.
-      static constexpr char default_value[] = "";
+      static constexpr auto default_value = ::sqlpp::none_t{};
+    };
+
+    struct Language : public ::sqlpp::spec_base
+    {
+      SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(language, language);
+      using value_type = ::sqlpp::varchar<255>;
+      static constexpr auto can_be_null = false;
+      static constexpr auto default_value = std::string_view{"C++"};
     };
 
     struct _ : public ::sqlpp::spec_base
     {
-      SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(tab_person, tab_person);
+      SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(tab_person, tabPerson);
       using primary_key = Id;
     };
   }  // namespace TabPerson_
 
-  constexpr auto tabPerson =
-      sqlpp::table_t<TabPerson_::_, TabPerson_::Id, TabPerson_::IsManager, TabPerson_::Name, TabPerson_::Address>{};
+  constexpr auto tabPerson = sqlpp::table_t<TabPerson_::_,
+                                            TabPerson_::Id,
+                                            TabPerson_::IsManager,
+                                            TabPerson_::Name,
+                                            TabPerson_::Address,
+                                            TabPerson_::Language>{};
 }  // namespace test

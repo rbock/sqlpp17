@@ -91,7 +91,7 @@ namespace sqlpp::postgresql::detail
         std::to_string(connection.get_statement_index()) + "at" + std::to_string(::time(nullptr));
 
     if (connection.debug())
-      connection.debug()("Preparing" + statement_name + ": '" + statement + "'");
+      connection.debug()("Preparing " + statement_name + ": '" + statement + "'");
 
     auto result = detail::unique_result_ptr(
         PQprepare(connection.get(), statement_name.c_str(), statement.c_str(), no_of_parameters, nullptr), {});
@@ -145,22 +145,22 @@ namespace sqlpp::postgresql::detail
 
   auto prepared_select_t::run() -> char_result_t
   {
-    return {execute_prepared_statement(_statement), _statement.debug()};
+    return {execute_prepared_statement(*this), this->debug()};
   }
 
   auto prepared_insert_t::run() -> size_t
   {
-    return PQoidValue(execute_prepared_statement(_statement).get());
+    return PQoidValue(execute_prepared_statement(*this).get());
   }
 
   auto prepared_update_t::run() -> size_t
   {
-    return std::strtoll(PQcmdTuples(execute_prepared_statement(_statement).get()), nullptr, 10);
+    return std::strtoll(PQcmdTuples(execute_prepared_statement(*this).get()), nullptr, 10);
   }
 
   auto prepared_delete_from_t::run() -> size_t
   {
-    return std::strtoll(PQcmdTuples(execute_prepared_statement(_statement).get()), nullptr, 10);
+    return std::strtoll(PQcmdTuples(execute_prepared_statement(*this).get()), nullptr, 10);
   }
 
 }  // namespace sqlpp::postgresql::detail

@@ -26,16 +26,18 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/parameter.h>
+#include <string>
+#include <type_traits>
+
 #include <sqlpp17/postgresql/context.h>
 
 namespace sqlpp
 {
-  template <typename ValueType, typename NameTag>
-  [[nodiscard]] auto to_sql_string(postgresql::context_t& context, const parameter_t<ValueType, NameTag>&)
+  template <typename T>
+  [[nodiscard]] auto to_sql_string(postgresql::context_t& context, const T& b)
+      -> std::enable_if_t<std::is_integral_v<T>, std::string>
   {
-    // pre-increment since parameter numbers start at 1
-    return "$" + std::to_string(++context.parameter_index);
+    return b ? std::string("TRUE") : std::string("FALSE");
   }
 
 }  // namespace sqlpp

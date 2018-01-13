@@ -1,6 +1,7 @@
 add_library(sqlpp17-connector-sqlite3
 		connection.cpp
 		connection_pool.cpp
+		prepared_statement.cpp
 		prepared_statement_result.cpp
 )
 

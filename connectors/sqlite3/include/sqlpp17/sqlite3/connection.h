@@ -67,62 +67,55 @@ namespace sqlpp::sqlite3::detail
   // prepared execution
   auto prepare(const connection_t&, const std::string& statement) -> ::sqlpp::sqlite3::prepared_statement_t;
 
-  class prepared_select_t
+  class prepared_select_t : public ::sqlpp::sqlite3::prepared_statement_t
   {
-    ::sqlpp::sqlite3::prepared_statement_t _statement;
-    std::function<void(std::string_view)> _debug;
-
   public:
     prepared_select_t(::sqlpp::sqlite3::prepared_statement_t&& statement, std::function<void(std::string_view)> debug)
-        : _statement(std::move(statement)), _debug(debug)
+        : ::sqlpp::sqlite3::prepared_statement_t(std::move(statement))
     {
     }
 
     auto run() -> prepared_statement_result_t;
   };
 
-  class prepared_execute_t
+  class prepared_execute_t : public ::sqlpp::sqlite3::prepared_statement_t
   {
-    ::sqlpp::sqlite3::prepared_statement_t _statement;
-
   public:
-    prepared_execute_t(::sqlpp::sqlite3::prepared_statement_t&& statement) : _statement(std::move(statement))
+    prepared_execute_t(::sqlpp::sqlite3::prepared_statement_t&& statement)
+        : ::sqlpp::sqlite3::prepared_statement_t(std::move(statement))
     {
     }
 
     auto run() -> void;
   };
 
-  class prepared_insert_t
+  class prepared_insert_t : public ::sqlpp::sqlite3::prepared_statement_t
   {
-    ::sqlpp::sqlite3::prepared_statement_t _statement;
-
   public:
-    prepared_insert_t(::sqlpp::sqlite3::prepared_statement_t&& statement) : _statement(std::move(statement))
+    prepared_insert_t(::sqlpp::sqlite3::prepared_statement_t&& statement)
+        : ::sqlpp::sqlite3::prepared_statement_t(std::move(statement))
     {
     }
 
     auto run() -> std::size_t;
   };
 
-  class prepared_update_t
+  class prepared_update_t : public ::sqlpp::sqlite3::prepared_statement_t
   {
-    ::sqlpp::sqlite3::prepared_statement_t _statement;
-
   public:
-    prepared_update_t(::sqlpp::sqlite3::prepared_statement_t&& statement) : _statement(std::move(statement))
+    prepared_update_t(::sqlpp::sqlite3::prepared_statement_t&& statement)
+        : ::sqlpp::sqlite3::prepared_statement_t(std::move(statement))
     {
     }
 
     auto run() -> std::size_t;
   };
 
-  class prepared_delete_from_t
+  class prepared_delete_from_t : public ::sqlpp::sqlite3::prepared_statement_t
   {
-    ::sqlpp::sqlite3::prepared_statement_t _statement;
-
   public:
-    prepared_delete_from_t(::sqlpp::sqlite3::prepared_statement_t&& statement) : _statement(std::move(statement))
+    prepared_delete_from_t(::sqlpp::sqlite3::prepared_statement_t&& statement)
+        : ::sqlpp::sqlite3::prepared_statement_t(std::move(statement))
     {
     }
 

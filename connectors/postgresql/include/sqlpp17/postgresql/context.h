@@ -26,9 +26,11 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <sqlpp17/context_base.h>
+
 namespace sqlpp::postgresql
 {
-  struct context_t
+  struct context_t : public ::sqlpp::context_base
   {
     int parameter_index = 0;
   };

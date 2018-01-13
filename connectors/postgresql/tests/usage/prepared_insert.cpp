@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2017 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -33,6 +33,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/postgresql/connection.h>
 
 #include <tables/TabDepartment.h>
+#include <tables/TabPerson.h>
+
+using test::tabDepartment;
+using test::tabPerson;
+
+SQLPP_CREATE_NAME_TAG(pName);
+SQLPP_CREATE_NAME_TAG(pIsManager);
+SQLPP_CREATE_NAME_TAG(pAddress);
 
 auto print_debug(std::string_view message)
 {
@@ -60,10 +68,35 @@ int main()
   {
     auto db = postgresql::connection_t{config};
     db(drop_table(test::tabDepartment));
+    db(drop_table(test::tabPerson));
     db(create_table(test::tabDepartment));
+    db(create_table(test::tabPerson));
 
-    auto prepared_insert = db.prepare(insert_into(test::tabDepartment).default_values());
-    auto id = execute(prepared_insert);
+    {
+      auto prepared_insert = db.prepare(insert_into(test::tabDepartment).default_values());
+      [[maybe_unused]] const auto id = execute(prepared_insert);
+    }
+
+    {
+      auto s = db.prepare(insert_into(tabPerson).set(tabPerson.isManager = true,
+                                                     tabPerson.name = ::sqlpp::parameter<std::string>(pName)));
+      s.pName = "Herb";
+      [[maybe_unused]] const auto id = execute(s);
+    }
+
+    {
+      auto s = db.prepare(insert_into(tabPerson).set(
+          tabPerson.isManager = ::sqlpp::parameter<bool>(pIsManager),
+          tabPerson.name = ::sqlpp::parameter<std::string>(pName),
+          tabPerson.address = ::sqlpp::parameter<::std::optional<std::string>>(pAddress), tabPerson.language = "C++"));
+      s.pIsManager = true;
+      s.pName = "Herb";
+      s.pAddress = "Somewhere";
+      s.pAddress = std::nullopt;
+      s.pAddress.reset();
+
+      [[maybe_unused]] const auto id = execute(s);
+    }
   }
   catch (const std::exception& e)
   {

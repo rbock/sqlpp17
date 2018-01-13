@@ -2,6 +2,7 @@ add_library(sqlpp17-connector-postgresql
 		char_result.cpp
 		connection.cpp
 		connection_pool.cpp
+		prepared_statement.cpp
 )
 
 target_include_directories(sqlpp17-connector-postgresql PUBLIC ${PostgreSQL_INCLUDE_DIRS})

@@ -46,6 +46,11 @@ namespace sqlpp::mysql::detail
     static_assert(wrong<ValueType>, "unknown value type for CREATE TABLE");
   }
 
+  [[nodiscard]] inline auto value_type_to_sql_string(const bool&)
+  {
+    return " BOOLEAN";
+  }
+
   [[nodiscard]] inline auto value_type_to_sql_string(const int64_t&)
   {
     return " BIGINT";
