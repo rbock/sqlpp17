@@ -563,6 +563,9 @@ namespace sqlpp
   template <typename T>
   constexpr auto parameters_of_v = parameters_of(type_t<T>{});
 
+  template <typename T>
+  using parameters_of_t = std::decay_t<decltype(parameters_of(type_t<T>{}))>;
+
   template <typename... T>
   [[nodiscard]] constexpr auto required_tables_of(type_vector<T...>)
   {

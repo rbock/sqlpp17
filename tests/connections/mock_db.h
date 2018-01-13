@@ -44,6 +44,14 @@ namespace sqlpp::test
     }
   };
 
+  struct mock_prepared_insert
+  {
+    [[nodiscard]] auto run()
+    {
+      return std::size_t{};
+    }
+  };
+
   struct mock_prepared_select
   {
     [[nodiscard]] auto run()
@@ -105,6 +113,13 @@ namespace sqlpp::test
     {
       [[maybe_unused]] auto x = to_sql_string_c(mock_context_t{}, statement);
       return 0ull;
+    }
+
+    template <typename Statement>
+    [[nodiscard]] auto prepare_insert(const Statement& statement)
+    {
+      [[maybe_unused]] auto x = to_sql_string_c(mock_context_t{}, statement);
+      return mock_prepared_insert{};
     }
 
     template <typename Statement>

@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2016 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -31,5 +31,5 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace sqlpp
 {
   template <typename MemberSpec, typename Type>
-  using member_t = typename MemberSpec::_sqlpp_name_tag::template _sqlpp_member_base<Type>;
+  using member_t = typename name_tag_of_t<MemberSpec>::template _sqlpp_member_base<Type>;
 }

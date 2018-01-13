@@ -166,6 +166,13 @@ namespace sqlpp
     using type = result_row_t<make_column_spec_t<Statement, Columns>...>;
   };
 
+  template <typename... Columns, typename Statement>
+  [[nodiscard]] constexpr auto parameters_of([
+      [maybe_unused]] type_t<result_base<select_columns_t<Columns...>, Statement>>)
+  {
+    return parameters_of_v<Statement>;
+  }
+
   template <typename Context, typename... Columns, typename Statement>
   [[nodiscard]] auto to_sql_string(Context& context, const clause_base<select_columns_t<Columns...>, Statement>& t)
   {

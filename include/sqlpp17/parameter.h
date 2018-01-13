@@ -53,7 +53,7 @@ namespace sqlpp
   template <typename ValueType, typename NameTag>
   [[nodiscard]] constexpr auto parameters_of([[maybe_unused]] type_t<parameter_t<ValueType, NameTag>>)
   {
-    return type_vector<NameTag>{};
+    return type_vector<parameter_t<ValueType, NameTag>>{};
   }
 
   SQLPP_WRAPPED_STATIC_ASSERT(

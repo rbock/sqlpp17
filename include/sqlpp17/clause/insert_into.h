@@ -126,6 +126,12 @@ namespace sqlpp
     }
   };
 
+  template <typename Table, typename Statement>
+  [[nodiscard]] constexpr auto parameters_of([[maybe_unused]] type_t<result_base<insert_into_t<Table>, Statement>>)
+  {
+    return parameters_of_v<Statement>;
+  }
+
   template <typename Table>
   [[nodiscard]] constexpr auto insert_into(Table t)
   {

@@ -37,7 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   template <typename T>                                     \
   struct _sqlpp_member_base                                 \
   {                                                         \
-    T CPP_NAME;                                             \
+    T CPP_NAME = {};                                        \
     T& operator()()                                         \
     {                                                       \
       return CPP_NAME;                                      \
