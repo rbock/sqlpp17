@@ -121,14 +121,16 @@ namespace sqlpp::mysql
 
   auto bind_parameter(prepared_statement_t& statement, const std::nullopt_t& value, int index) -> void;
 
-  auto bind_parameter(prepared_statement_t& statement, const bool& value, int index) -> void;
-  auto bind_parameter(prepared_statement_t& statement, const std::int32_t& value, int index) -> void;
-  auto bind_parameter(prepared_statement_t& statement, const std::int64_t& value, int index) -> void;
-  auto bind_parameter(prepared_statement_t& statement, const std::string& value, int index) -> void;
-  auto bind_parameter(prepared_statement_t& statement, const std::string_view& value, int index) -> void;
+  // Taking parameters by non-const reference to prevent temporaries being created which
+  // would lead to dangling pointers in the implementation
+  auto bind_parameter(prepared_statement_t& statement, bool& value, int index) -> void;
+  auto bind_parameter(prepared_statement_t& statement, std::int32_t& value, int index) -> void;
+  auto bind_parameter(prepared_statement_t& statement, std::int64_t& value, int index) -> void;
+  auto bind_parameter(prepared_statement_t& statement, std::string& value, int index) -> void;
+  auto bind_parameter(prepared_statement_t& statement, std::string_view& value, int index) -> void;
 
   template <typename T>
-  auto bind_parameter(prepared_statement_t& statement, const std::optional<T>& value, int index) -> void
+  auto bind_parameter(prepared_statement_t& statement, std::optional<T>& value, int index) -> void
   {
     value ? bind_parameter(statement, *value, index) : bind_parameter(statement, std::nullopt, index);
   }

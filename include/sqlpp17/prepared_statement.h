@@ -68,7 +68,9 @@ namespace sqlpp
     auto _bind(Handle& handle)
     {
       int index = -1;
-      (..., bind_parameter(handle, static_cast<const parameter_base_t<ParameterSpecs>&>(*this)(), ++index));
+      // Allow connectors to receive non-const references to prevent implicit conversions with temporaries.
+      // (Some connectors store the address of the parameter, so temporaries would be pretty bad)
+      (..., bind_parameter(handle, static_cast<parameter_base_t<ParameterSpecs>&>(*this)(), ++index));
     }
   };
 

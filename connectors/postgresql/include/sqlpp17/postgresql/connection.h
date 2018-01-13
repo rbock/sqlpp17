@@ -262,10 +262,9 @@ namespace sqlpp::postgresql
     template <typename Statement>
     [[nodiscard]] auto prepare_select(const Statement& statement)
     {
-      return detail::prepared_select_t{
-          detail::prepare(*this, to_sql_string_c(context_t{}, statement), statement.get_no_of_parameters(),
-                          statement.get_no_of_result_columns()),
-          _debug};
+      return detail::prepared_select_t{detail::prepare(*this, to_sql_string_c(context_t{}, statement),
+                                                       statement.get_no_of_parameters(),
+                                                       statement.get_no_of_result_columns())};
     }
   };  // namespace sqlpp::postgresql
 
