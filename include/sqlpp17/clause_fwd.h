@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2016 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,7 +26,7 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/wrong.h>
+#include <sqlpp17/type_traits.h>
 
 namespace sqlpp
 {
@@ -44,4 +44,11 @@ namespace sqlpp
 
   template <typename Clause, typename Statement>
   class result_base;
+
+  template <typename Clause, typename Statement>
+  struct parameters_of<result_base<Clause, Statement>>
+  {
+    using type = parameters_of_t<Statement>;
+  };
+
 }  // namespace sqlpp

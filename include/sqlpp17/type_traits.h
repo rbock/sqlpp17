@@ -548,23 +548,20 @@ namespace sqlpp
   template <typename T>
   constexpr auto requires_braces_v = requires_braces<T>::value;
 
+  template <typename T>
+  struct parameters_of
+  {
+    using type = typename parameters_of<nodes_of_t<T>>::type;
+  };
+
+  template <typename T>
+  using parameters_of_t = typename parameters_of<T>::type;
+
   template <typename... T>
-  [[nodiscard]] constexpr auto parameters_of(type_vector<T...>)
+  struct parameters_of<type_vector<T...>>
   {
-    return (type_vector<>{} + ... + parameters_of(type_t<T>{}));
-  }
-
-  template <typename T>
-  [[nodiscard]] constexpr auto parameters_of(type_t<T>)
-  {
-    return parameters_of(nodes_of_t<T>{});
-  }
-
-  template <typename T>
-  constexpr auto parameters_of_v = parameters_of(type_t<T>{});
-
-  template <typename T>
-  using parameters_of_t = std::decay_t<decltype(parameters_of(type_t<T>{}))>;
+    using type = decltype((type_vector<>{} + ... + parameters_of_t<T>{}));
+  };
 
   template <typename... T>
   [[nodiscard]] constexpr auto required_tables_of(type_vector<T...>)

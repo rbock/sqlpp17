@@ -101,7 +101,7 @@ namespace sqlpp
   {
     using _statement_t = statement<Clauses...>;
 
-    if constexpr (not detail::have_unique_names(parameters_of_v<_statement_t>))
+    if constexpr (not detail::have_unique_names(parameters_of_t<_statement_t>{}))
     {
       return failed<assert_statement_parameters_have_unique_names>{};
     }
@@ -172,7 +172,7 @@ namespace sqlpp
 
     [[nodiscard]] static constexpr auto get_no_of_parameters()
     {
-      return parameters_of_v<statement>.size();
+      return parameters_of_t<statement>::size();
     }
 
     template <typename Connection>

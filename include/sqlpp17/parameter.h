@@ -51,10 +51,10 @@ namespace sqlpp
   };
 
   template <typename ValueType, typename NameTag>
-  [[nodiscard]] constexpr auto parameters_of([[maybe_unused]] type_t<parameter_t<ValueType, NameTag>>)
+  struct parameters_of<parameter_t<ValueType, NameTag>>
   {
-    return type_vector<parameter_t<ValueType, NameTag>>{};
-  }
+    using type = type_vector<parameter_t<ValueType, NameTag>>;
+  };
 
   SQLPP_WRAPPED_STATIC_ASSERT(
       assert_parameter_as_arg_is_name_tag_or_similar,
