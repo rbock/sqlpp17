@@ -44,7 +44,16 @@ namespace sqlpp::test
     }
   };
 
-  struct mock_prepared_insert
+  struct prepared_statement
+  {
+  };
+
+  template <typename Parameter>
+  auto bind_parameter(prepared_statement&, [[maybe_unused]] const Parameter& parameter, [[maybe_unused]] int index)
+  {
+  }
+
+  struct mock_prepared_insert : public prepared_statement
   {
     [[nodiscard]] auto run()
     {
@@ -52,7 +61,7 @@ namespace sqlpp::test
     }
   };
 
-  struct mock_prepared_select
+  struct mock_prepared_select : public prepared_statement
   {
     [[nodiscard]] auto run()
     {

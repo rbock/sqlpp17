@@ -51,6 +51,9 @@ namespace sqlpp::detail
 
 namespace sqlpp
 {
+  template <typename ParameterSpec>
+  using parameter_base_t = member_t<name_tag_of_t<ParameterSpec>, value_type_of_t<ParameterSpec>>;
+
   template <typename ParameterSpecVector>
   struct prepared_statement_parameters
   {
@@ -58,9 +61,15 @@ namespace sqlpp
   };
 
   template <typename... ParameterSpecs>
-  struct prepared_statement_parameters<type_vector<ParameterSpecs...>>
-      : member_t<name_tag_of_t<ParameterSpecs>, value_type_of_t<ParameterSpecs>>...
+  class prepared_statement_parameters<type_vector<ParameterSpecs...>> : public parameter_base_t<ParameterSpecs>...
   {
+  protected:
+    template <typename Handle>
+    auto _bind(Handle& handle)
+    {
+      int index = -1;
+      (..., bind_parameter(handle, static_cast<const parameter_base_t<ParameterSpecs>&>(*this)(), ++index));
+    }
   };
 
   template <typename ResultBase, typename Handle, typename = void>
@@ -72,6 +81,7 @@ namespace sqlpp
 
     auto run()
     {
+      this->_bind(_handle);
       return _handle.run();
     }
 
@@ -83,6 +93,7 @@ namespace sqlpp
 
   template <typename ResultBase, typename Handle>
   class prepared_statement_t<ResultBase, Handle, std::enable_if_t<has_result_row_v<ResultBase>>>
+      : public prepared_statement_parameters<parameters_of_t<ResultBase>>
   {
     Handle _handle;
     using result_type = ::sqlpp::result_t<result_row_of_t<ResultBase>, decltype(_handle.run())>;
@@ -93,6 +104,7 @@ namespace sqlpp
 
     decltype(auto) run()
     {
+      this->_bind(_handle);
       _result = result_type{_handle.run()};
       return *this;
     }
