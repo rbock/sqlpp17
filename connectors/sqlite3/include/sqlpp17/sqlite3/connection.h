@@ -283,6 +283,6 @@ namespace sqlpp::sqlite3
     {
       return detail::prepared_select_t{detail::prepare(*this, to_sql_string_c(context_t{}, statement)), _debug};
     }
-  };  // namespace sqlpp::sqlite3
+  };
 
 }  // namespace sqlpp::sqlite3

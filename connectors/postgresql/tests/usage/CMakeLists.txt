@@ -35,5 +35,7 @@ test_usage(select)
 test_usage(prepared_insert)
 test_usage(prepared_select)
 
+test_usage(transaction)
+
 test_usage(connection_pool Threads::Threads)
 

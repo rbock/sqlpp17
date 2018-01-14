@@ -48,7 +48,7 @@ namespace sqlpp::sqlite3::detail
       if (rc != SQLITE_OK)
       {
         throw sqlpp::exception(
-            "Sqlite3 error: Could not prepare statement: " + std::string(sqlite3_errmsg(connection.get())) +
+            "Sqlite3: Could not prepare statement: " + std::string(sqlite3_errmsg(connection.get())) +
             " (statement was >>" + statement + "<<)\n");
       }
 
@@ -72,7 +72,7 @@ namespace sqlpp::sqlite3::detail
       case SQLITE_DONE:
         return;
       default:
-        throw sqlpp::exception("Sqlite3 error: Could not execute statement: " + std::string(sqlite3_errstr(rc)));
+        throw sqlpp::exception("Sqlite3: Could not execute statement: " + std::string(sqlite3_errstr(rc)));
     }
   }
 
@@ -123,7 +123,7 @@ namespace sqlpp::sqlite3
 
     if (rc != SQLITE_OK)
     {
-      throw sqlpp::exception("Sqlite3 error: Can't open database: " + std::string(sqlite3_errmsg(connection_ptr)));
+      throw sqlpp::exception("Sqlite3: Can't open database: " + std::string(sqlite3_errmsg(connection_ptr)));
     }
 
 #ifdef SQLITE_HAS_CODEC
@@ -133,7 +133,7 @@ namespace sqlpp::sqlite3
       if (ret != SQLITE_OK)
       {
         const std::string msg = sqlite3_errmsg(sqlite);
-        throw sqlpp::exception("Sqlite3 error: Can't set password for database: " +
+        throw sqlpp::exception("Sqlite3: Can't set password for database: " +
                                std::string(sqlite3_errmsg(connection_ptr)));
       }
     }
@@ -154,7 +154,7 @@ namespace sqlpp::sqlite3
   {
     if (_transaction_active)
     {
-      throw sqlpp::exception("Sqlite3 error: Cannot have more than one open transaction per connection");
+      throw sqlpp::exception("Sqlite3: Cannot have more than one open transaction per connection");
     }
 
     auto prepared_statement = detail::prepare(*this, "BEGIN TRANSACTION");
@@ -166,7 +166,7 @@ namespace sqlpp::sqlite3
   {
     if (not _transaction_active)
     {
-      throw sqlpp::exception("Sqlite3 error: Cannot commit without active transaction");
+      throw sqlpp::exception("Sqlite3: Cannot commit without active transaction");
     }
 
     _transaction_active = false;
@@ -178,7 +178,7 @@ namespace sqlpp::sqlite3
   {
     if (not _transaction_active)
     {
-      throw sqlpp::exception("Sqlite3 error: Cannot rollback without active transaction");
+      throw sqlpp::exception("Sqlite3: Cannot rollback without active transaction");
     }
 
     _transaction_active = false;

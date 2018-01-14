@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <functional>
 #include <type_traits>
 
+#include <sqlpp17/connection_base.h>
 #include <sqlpp17/result.h>
 #include <sqlpp17/statement.h>
 
@@ -120,10 +121,11 @@ namespace sqlpp::postgresql::detail
 
 namespace sqlpp::postgresql
 {
-  class connection_t
+  class connection_t : public ::sqlpp::connection_base
   {
     detail::unique_connection_ptr _handle;
     connection_pool_t* _connection_pool = nullptr;
+    bool _transaction_active = false;
     std::function<void(std::string_view)> _debug;
 
     mutable std::size_t _statement_index = 0;
@@ -189,6 +191,14 @@ namespace sqlpp::postgresql
         return ::sqlpp::bad_expression_t{check};
       }
     }
+
+    auto start_transaction() -> void;
+
+    auto commit() -> void;
+
+    auto rollback() -> void;
+
+    auto destroy_transaction() noexcept -> void;
 
     auto debug() const
     {
@@ -266,6 +276,6 @@ namespace sqlpp::postgresql
                                                        statement.get_no_of_parameters(),
                                                        statement.get_no_of_result_columns())};
     }
-  };  // namespace sqlpp::postgresql
+  };
 
 }  // namespace sqlpp::postgresql
