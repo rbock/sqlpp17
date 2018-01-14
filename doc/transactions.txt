@@ -1,0 +1,63 @@
+sqlite does not allow starting a transaction while there is an open transaction.
+```
+sqlite> begin transaction;
+sqlite> begin transaction;
+Error: cannot start a transaction within a transaction
+sqlite> commit;
+sqlite> commit;
+Error: cannot commit - no transaction is active
+```
+
+mysql always allows starting a transaction, but silently commits any open transaction.
+```
+mysql> truncate tab_person;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> start transaction;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> insert into tab_person (name, language) VALUES ('Bjarne', 'C++');
+Query OK, 1 row affected (0.00 sec)
+
+mysql> start transaction;  -- This silently commits the previous transaction
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> rollback;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> rollback;  -- This does nothing since there is no open transaction
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> select * from tab_person;
++----+--------+----------+
+| id | name   | language |
++----+--------+----------+
+|  1 | Bjarne | C++      |
++----+--------+----------+
+```
+
+postgresql warns when starting a transaction while there is an open transaction and does nothing (i.e. there is still just one transaction).
+```
+sqlpp17_test=> truncate tab_person;
+TRUNCATE TABLE
+sqlpp17_test=> start transaction;
+START TRANSACTION
+sqlpp17_test=> insert into tab_person (name, language) VALUES ('Bjarne', 'C++');
+INSERT 0 1
+sqlpp17_test=> start transaction;  -- This does nothing
+WARNING:  there is already a transaction in progress
+START TRANSACTION
+sqlpp17_test=> insert into tab_person (name, language) VALUES ('Guido', 'Python');
+INSERT 0 1
+sqlpp17_test=> commit; -- This commits both inserts
+COMMIT
+sqlpp17_test=> rollback; -- This does nothing
+WARNING:  there is no transaction in progress
+ROLLBACK
+sqlpp17_test=> select * from tab_person;
+ id | name   | language 
+----+--------+----------
+  6 | Bjarne | C++
+  7 | Guido  | Python
+(2 rows)
+```
