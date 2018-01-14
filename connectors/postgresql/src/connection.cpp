@@ -252,7 +252,7 @@ namespace sqlpp::postgresql
   {
     if (_transaction_active)
     {
-      throw sqlpp::exception("Sqlite3: Cannot have more than one open transaction per connection");
+      throw sqlpp::exception("Postgresql: Cannot have more than one open transaction per connection");
     }
 
     detail::execute(*this, "START TRANSACTION");
@@ -263,7 +263,7 @@ namespace sqlpp::postgresql
   {
     if (not _transaction_active)
     {
-      throw sqlpp::exception("Sqlite3: Cannot commit without active transaction");
+      throw sqlpp::exception("Postgresql: Cannot commit without active transaction");
     }
 
     _transaction_active = false;
@@ -274,7 +274,7 @@ namespace sqlpp::postgresql
   {
     if (not _transaction_active)
     {
-      throw sqlpp::exception("Sqlite3: Cannot rollback without active transaction");
+      throw sqlpp::exception("Postgresql: Cannot rollback without active transaction");
     }
 
     _transaction_active = false;

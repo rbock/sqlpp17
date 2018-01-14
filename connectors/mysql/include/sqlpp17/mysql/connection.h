@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <functional>
 #include <type_traits>
 
+#include <sqlpp17/connection_base.h>
 #include <sqlpp17/context_base.h>
 #include <sqlpp17/result.h>
 #include <sqlpp17/statement.h>
@@ -125,10 +126,11 @@ namespace sqlpp::mysql
 
   void global_library_init(int argc = 0, char** argv = nullptr, char** groups = nullptr);
 
-  class connection_t
+  class connection_t : public ::sqlpp::connection_base
   {
     detail::unique_connection_ptr _handle;
     connection_pool_t* _connection_pool = nullptr;
+    bool _transaction_active = false;
     std::function<void(std::string_view)> _debug;
 
     template <typename... Clauses>
@@ -192,6 +194,14 @@ namespace sqlpp::mysql
         return ::sqlpp::bad_expression_t{check};
       }
     }
+
+    auto start_transaction() -> void;
+
+    auto commit() -> void;
+
+    auto rollback() -> void;
+
+    auto destroy_transaction() noexcept -> void;
 
     auto debug() const
     {

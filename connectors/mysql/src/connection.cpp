@@ -267,5 +267,54 @@ namespace sqlpp::mysql
       _connection_pool->put(std::move(_handle));
     }
   }
+
+  auto connection_t::start_transaction() -> void
+  {
+    if (_transaction_active)
+    {
+      throw sqlpp::exception("MySQL: Cannot have more than one open transaction per connection");
+    }
+
+    detail::execute(*this, "START TRANSACTION");
+    _transaction_active = true;
+  }
+
+  auto connection_t::commit() -> void
+  {
+    if (not _transaction_active)
+    {
+      throw sqlpp::exception("MySQL: Cannot commit without active transaction");
+    }
+
+    _transaction_active = false;
+    detail::execute(*this, "COMMIT");
+  }
+
+  auto connection_t::rollback() -> void
+  {
+    if (not _transaction_active)
+    {
+      throw sqlpp::exception("MySQL: Cannot rollback without active transaction");
+    }
+
+    _transaction_active = false;
+    detail::execute(*this, "ROLLBACK");
+  }
+
+  auto connection_t::destroy_transaction() noexcept -> void
+  {
+    try
+    {
+      if (debug())
+        debug()("Auto rollback!");
+
+      rollback();
+    }
+    catch (...)
+    {
+      // This is called in ~transaction().
+      // We must not throw
+    }
+  }
 }  // namespace sqlpp::mysql
 

@@ -28,9 +28,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <connections/mock_db.h>
 
-inline constexpr auto everythingIsGood = true;
-inline constexpr auto everythingIsBad = false;
-
 int main()
 {
   auto db = ::sqlpp::test::mock_db{};

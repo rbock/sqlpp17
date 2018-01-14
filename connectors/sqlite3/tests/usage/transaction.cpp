@@ -30,9 +30,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/sqlite3/connection.h>
 
-inline constexpr auto everythingIsGood = true;
-inline constexpr auto everythingIsBad = false;
-
 auto print_debug(std::string_view message)
 {
   std::cout << "Debug: " << message << std::endl;
