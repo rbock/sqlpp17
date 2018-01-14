@@ -26,9 +26,11 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <sqlpp17/connection_base.h>
 #include <sqlpp17/context_base.h>
 #include <sqlpp17/result.h>
 #include <sqlpp17/statement.h>
+#include <sqlpp17/transaction.h>
 
 namespace sqlpp::test
 {
@@ -74,10 +76,12 @@ namespace sqlpp::test
   {
   }
 
-  class mock_db
+  class mock_db : public ::sqlpp::connection_base
   {
     template <typename... Clauses>
     friend class ::sqlpp::statement;
+
+    friend class ::sqlpp::transaction_t<mock_db>;
 
     template <typename Clause, typename Statement>
     friend class ::sqlpp::result_base;
@@ -107,6 +111,22 @@ namespace sqlpp::test
       {
         return ::sqlpp::bad_expression_t{check};
       }
+    }
+
+    auto start_transaction() -> void
+    {
+    }
+
+    auto commit() -> void
+    {
+    }
+
+    auto rollback() -> void
+    {
+    }
+
+    auto destroy_transaction() noexcept -> void
+    {
     }
 
   private:

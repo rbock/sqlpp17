@@ -5,6 +5,13 @@ cmake .. -DCMAKE_CXX_COMPILER=/usr/local/clang-trunk/bin/clang++          -DCMAK
 cmake .. -DCMAKE_CXX_COMPILER=/usr/local/clang-trunk/bin/clang++          -DCMAKE_CXX_FLAGS='-std=c++17 -stdlib=libc++ -fcolor-diagnostics -Wall -Wpedantic -fsanitize=thread -O1 -g'
 ...
 
+transaction isolation levels:
+=================
+Make them configurable?
+Make them read/write in connections?
+
+Do not set them in the transaction (as in sqlpp11-connector-sqlite3), that would violate separation of duties.
+
 table_alias and CTE:
 ====================
  - Using just the name_tag to identify the table in column_t is too little information
