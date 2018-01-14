@@ -24,35 +24,55 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <iostream>
+
 #include <sqlpp17/transaction.h>
 
-#include <connections/mock_db.h>
+#include <sqlpp17/sqlite3/connection.h>
 
 inline constexpr auto everythingIsGood = true;
 inline constexpr auto everythingIsBad = false;
 
+auto print_debug(std::string_view message)
+{
+  std::cout << "Debug: " << message << std::endl;
+}
+
 int main()
 {
-  auto db = ::sqlpp::test::mock_db{};
+  auto config = ::sqlpp::sqlite3::connection_config_t{};
+  config.path_to_database = ":memory:";
+  config.flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
+  config.debug = print_debug;
 
-  // good case
+  try
   {
-    auto tx = start_transaction(db);
-    // ...
-    tx.commit();
+    auto db = ::sqlpp::sqlite3::connection_t{config};
+
+    // good case
+    {
+      auto tx = start_transaction(db);
+      // ...
+      tx.commit();
+    }
+
+    // expected bad case
+    {
+      auto tx = start_transaction(db);
+      // ...
+      tx.rollback();
+    }
+
+    // exceptional case
+    {
+      auto tx = start_transaction(db);
+      // ...
+      // tx' destructor will auto-rollback the transaction
+    }
   }
-
-  // expected bad case
+  catch (const std::exception& e)
   {
-    auto tx = start_transaction(db);
-    // ...
-    tx.rollback();
-  }
-
-  // exceptional case
-  {
-    auto tx = start_transaction(db);
-    // ...
-    // tx' destructor will auto-rollback the transaction
+    std::cerr << "Exception: " << e.what() << std::endl;
+    return 1;
   }
 }

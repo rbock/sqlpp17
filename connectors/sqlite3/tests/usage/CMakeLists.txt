@@ -37,5 +37,7 @@ test_usage(prepared_insert)
 test_usage(prepared_select)
 test_usage(with_recursive)
 
+test_usage(transaction)
+
 test_usage(connection_pool Threads::Threads)
 

@@ -41,6 +41,7 @@ namespace sqlpp
   public:
     transaction_t(Connection& connection) : _connection(connection)
     {
+      _connection.start_transaction();
     }
 
     transaction_t(const transaction_t&) = delete;

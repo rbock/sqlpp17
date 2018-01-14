@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2017 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <functional>
 #include <type_traits>
 
+#include <sqlpp17/connection_base.h>
 #include <sqlpp17/exception.h>
 #include <sqlpp17/prepared_statement.h>
 #include <sqlpp17/result.h>
@@ -126,10 +127,11 @@ namespace sqlpp::sqlite3::detail
 
 namespace sqlpp::sqlite3
 {
-  class connection_t
+  class connection_t : public ::sqlpp::connection_base
   {
     detail::unique_connection_ptr _handle;
     connection_pool_t* _connection_pool = nullptr;
+    bool _transaction_active = false;
     std::function<void(std::string_view)> _debug;
 
     template <typename... Clauses>
@@ -194,6 +196,14 @@ namespace sqlpp::sqlite3
         return ::sqlpp::bad_expression_t{check};
       }
     }
+
+    auto start_transaction() -> void;
+
+    auto commit() -> void;
+
+    auto rollback() -> void;
+
+    auto destroy_transaction() noexcept -> void;
 
     auto debug() const
     {

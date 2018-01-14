@@ -149,5 +149,58 @@ namespace sqlpp::sqlite3
       _connection_pool->put(std::move(_handle));
     }
   }
+
+  auto connection_t::start_transaction() -> void
+  {
+    if (_transaction_active)
+    {
+      throw sqlpp::exception("Sqlite3 error: Cannot have more than one open transaction per connection");
+    }
+
+    auto prepared_statement = detail::prepare(*this, "BEGIN TRANSACTION");
+    detail::execute_prepared_statement(prepared_statement);
+    _transaction_active = true;
+  }
+
+  auto connection_t::commit() -> void
+  {
+    if (not _transaction_active)
+    {
+      throw sqlpp::exception("Sqlite3 error: Cannot commit without active transaction");
+    }
+
+    _transaction_active = false;
+    auto prepared_statement = detail::prepare(*this, "COMMIT");
+    detail::execute_prepared_statement(prepared_statement);
+  }
+
+  auto connection_t::rollback() -> void
+  {
+    if (not _transaction_active)
+    {
+      throw sqlpp::exception("Sqlite3 error: Cannot rollback without active transaction");
+    }
+
+    _transaction_active = false;
+    auto prepared_statement = detail::prepare(*this, "ROLLBACK");
+    detail::execute_prepared_statement(prepared_statement);
+  }
+
+  auto connection_t::destroy_transaction() noexcept -> void
+  {
+    try
+    {
+      if (debug())
+        debug()("Auto rollback!");
+
+      rollback();
+    }
+    catch (...)
+    {
+      // This is called in ~transaction().
+      // We must not throw
+    }
+  }
+
 }  // namespace sqlpp::sqlite3
 
