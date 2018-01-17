@@ -55,20 +55,36 @@ int main()
 {
   auto db = ::sqlpp::test::mock_db{};
 
-  for (const auto& row : db(sqlpp::select(all_of(tabPerson)).from(tabPerson).where(tabPerson.isManager)))
+  // A simple select from where
+  for (const auto& row : db(select(all_of(tabPerson)).from(tabPerson).where(tabPerson.isManager)))
   {
     display_full_row(row);
+  }
+
+  for (const auto& row : db(select(::sqlpp::count(1).as(rowCount), max(tabPerson.name).as(maxName),
+                                   avg(tabPerson.id).as<float>(avgId), tabPerson.isManager)
+                                .from(tabPerson)
+                                .where(tabPerson.isManager and tabPerson.name != "")
+                                .group_by(tabPerson.isManager)
+                                .having(::sqlpp::count(1) > 7)
+                                .order_by(asc(max(tabPerson.id)))
+                                .limit(1)
+                                .offset(1)))
+  {
+    std::cout << row.rowCount << std::endl;
+    std::cout << row.maxName << std::endl;
+    std::cout << row.avgId << std::endl;
   }
 
 #warning : Need more examples
 
   // using << concatenation
   for (const auto& row :
-       db(sqlpp::select() << sqlpp::select_columns(::sqlpp::count(1).as(rowCount), max(tabPerson.name).as(maxName),
-                                                   avg(tabPerson.id).as<float>(avgId), tabPerson.isManager)
-                          << sqlpp::from(tabPerson) << sqlpp::where(tabPerson.isManager and tabPerson.name != "")
-                          << sqlpp::group_by(tabPerson.isManager) << sqlpp::having(::sqlpp::count(1) > 7)
-                          << order_by(asc(max(tabPerson.id)))))
+       db(::sqlpp::select() << select_columns(::sqlpp::count(1).as(rowCount), max(tabPerson.name).as(maxName),
+                                              avg(tabPerson.id).as<float>(avgId), tabPerson.isManager)
+                            << from(tabPerson) << where(tabPerson.isManager and tabPerson.name != "")
+                            << group_by(tabPerson.isManager) << having(::sqlpp::count(1) > 7)
+                            << order_by(asc(max(tabPerson.id)))))
   {
     std::cout << row.rowCount << std::endl;
     std::cout << row.maxName << std::endl;

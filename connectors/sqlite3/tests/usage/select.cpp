@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2017 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -30,15 +30,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/clause/drop_table.h>
 #include <sqlpp17/clause/insert_into.h>
 #include <sqlpp17/clause/select.h>
+#include <sqlpp17/function.h>
 
 #include <sqlpp17/sqlite3/connection.h>
 
 #include <tables/TabDepartment.h>
+#include <tables/TabPerson.h>
+
+using test::tabDepartment;
+using test::tabPerson;
 
 auto print_debug(std::string_view message)
 {
   std::cout << "Debug: " << message << std::endl;
 }
+
+SQLPP_CREATE_NAME_TAG(rowCount);
+SQLPP_CREATE_NAME_TAG(maxName);
+SQLPP_CREATE_NAME_TAG(avgId);
 
 int main()
 {
@@ -50,17 +59,33 @@ int main()
   try
   {
     auto db = ::sqlpp::sqlite3::connection_t{config};
-    db(drop_table(test::tabDepartment));
-    db(create_table(test::tabDepartment));
+    db(drop_table(tabDepartment));
+    db(drop_table(tabPerson));
+    db(create_table(tabDepartment));
+    db(create_table(tabPerson));
 
-    auto id = db(insert_into(test::tabDepartment).default_values());
-    id = db(insert_into(test::tabDepartment).set(test::tabDepartment.name = "hansi"));
+    auto id = db(insert_into(tabDepartment).default_values());
+    id = db(insert_into(tabDepartment).set(tabDepartment.name = "hansi"));
 
-    for (const auto& row : db(sqlpp::select(test::tabDepartment.id, test::tabDepartment.name)
-                                  .from(test::tabDepartment)
-                                  .unconditionally()))
+    for (const auto& row :
+         db(sqlpp::select(tabDepartment.id, tabDepartment.name).from(tabDepartment).unconditionally()))
     {
       std::cout << row.id << ", " << row.name.value_or("NULL") << std::endl;
+    }
+
+    for (const auto& row : db(select(::sqlpp::count(1).as(rowCount), max(tabPerson.name).as(maxName),
+                                     avg(tabPerson.id).as<float>(avgId), tabPerson.isManager)
+                                  .from(tabPerson)
+                                  .where(tabPerson.isManager and tabPerson.name != "")
+                                  .group_by(tabPerson.isManager)
+                                  .having(::sqlpp::count(1) > 7)
+                                  .order_by(asc(max(tabPerson.id)))
+                                  .limit(1)
+                                  .offset(1)))
+    {
+      std::cout << row.rowCount << std::endl;
+      std::cout << row.maxName << std::endl;
+      std::cout << row.avgId << std::endl;
     }
   }
   catch (const std::exception& e)

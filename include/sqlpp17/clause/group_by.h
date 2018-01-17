@@ -83,7 +83,7 @@ namespace sqlpp
   template <typename Context, typename... Columns, typename Statement>
   [[nodiscard]] auto to_sql_string(Context& context, const clause_base<group_by_t<Columns...>, Statement>& t)
   {
-    return std::string{" "} + tuple_to_sql_string(context, ", ", std::tie(std::get<Columns>(t._columns)...));
+    return std::string{" GROUP BY "} + tuple_to_sql_string(context, ", ", std::tie(std::get<Columns>(t._columns)...));
   }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_group_by_args_not_empty, "group_by() must be called with at least one argument");

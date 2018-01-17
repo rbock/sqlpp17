@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2016 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -96,7 +96,7 @@ namespace sqlpp
     if (has_value(t._number))
       return std::string{};
 
-    return std::string(" LIMIT ") + to_sql_string(get_value(t._number));
+    return std::string(" LIMIT ") + to_sql_string(context, get_value(t._number));
   }
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_limit_arg_is_integral_value, "limit() arg has to be an integral value");

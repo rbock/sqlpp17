@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2017 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -54,38 +54,53 @@ namespace sqlpp::sqlite3::detail
 
 namespace sqlpp::sqlite3
 {
-  auto post_bind_field(prepared_statement_result_t& result, std::int64_t& value, std::size_t index) -> void
+  auto post_bind_field(prepared_statement_result_t& result, bool& value, int index) -> void
   {
     if (result.debug())
-      result.debug()("Binding integral result at index " + std::to_string(index));
+      result.debug()("Binding bool result at index " + std::to_string(index));
 
-    value = sqlite3_column_int64(result.get(), static_cast<int>(index));
+    value = sqlite3_column_int(result.get(), index);
   }
 
-  auto post_bind_field(prepared_statement_result_t& result, std::int32_t& value, std::size_t index) -> void
+  auto post_bind_field(prepared_statement_result_t& result, std::int32_t& value, int index) -> void
   {
     if (result.debug())
-      result.debug()("Binding integral result at index " + std::to_string(index));
+      result.debug()("Binding int32_t result at index " + std::to_string(index));
 
-    value = sqlite3_column_int(result.get(), static_cast<int>(index));
+    value = sqlite3_column_int(result.get(), index);
   }
 
-  auto post_bind_field(prepared_statement_result_t& result, std::optional<std::string_view>& value, std::size_t index)
-      -> void
+  auto post_bind_field(prepared_statement_result_t& result, std::int64_t& value, int index) -> void
   {
     if (result.debug())
-      result.debug()("Binding optional string_view result at index " + std::to_string(index));
+      result.debug()("Binding int64_t result at index " + std::to_string(index));
 
-    if (sqlite3_column_type(result.get(), static_cast<int>(index)) == SQLITE_NULL)
-    {
-      value.reset();
-    }
-    else
-    {
-      value =
-          std::string_view{reinterpret_cast<const char*>(sqlite3_column_text(result.get(), static_cast<int>(index))),
-                           static_cast<std::size_t>(sqlite3_column_bytes(result.get(), static_cast<int>(index)))};
-    }
+    value = sqlite3_column_int64(result.get(), index);
+  }
+
+  auto post_bind_field(prepared_statement_result_t& result, double& value, int index) -> void
+  {
+    if (result.debug())
+      result.debug()("Binding double result at index " + std::to_string(index));
+
+    value = sqlite3_column_double(result.get(), index);
+  }
+
+  auto post_bind_field(prepared_statement_result_t& result, float& value, int index) -> void
+  {
+    if (result.debug())
+      result.debug()("Binding float result at index " + std::to_string(index));
+
+    value = sqlite3_column_double(result.get(), index);
+  }
+
+  auto post_bind_field(prepared_statement_result_t& result, std::string_view& value, int index) -> void
+  {
+    if (result.debug())
+      result.debug()("Binding string_view result at index " + std::to_string(index));
+
+    value = std::string_view{reinterpret_cast<const char*>(sqlite3_column_text(result.get(), index)),
+                             static_cast<std::size_t>(sqlite3_column_bytes(result.get(), index))};
   }
 
 }  // namespace sqlpp::sqlite3

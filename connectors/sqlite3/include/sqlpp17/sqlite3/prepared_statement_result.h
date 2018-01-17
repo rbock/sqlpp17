@@ -107,9 +107,27 @@ namespace sqlpp::sqlite3
     }
   }
 
-  auto post_bind_field(prepared_statement_result_t& result, std::int32_t& value, std::size_t index) -> void;
-  auto post_bind_field(prepared_statement_result_t& result, std::int64_t& value, std::size_t index) -> void;
+  auto post_bind_field(prepared_statement_result_t& result, bool& value, int index) -> void;
+  auto post_bind_field(prepared_statement_result_t& result, std::int32_t& value, int index) -> void;
+  auto post_bind_field(prepared_statement_result_t& result, std::int64_t& value, int index) -> void;
+  auto post_bind_field(prepared_statement_result_t& result, float& value, int index) -> void;
+  auto post_bind_field(prepared_statement_result_t& result, double& value, int index) -> void;
+  auto post_bind_field(prepared_statement_result_t& result, std::string_view& value, int index) -> void;
 
-  auto post_bind_field(prepared_statement_result_t& result, std::optional<std::string_view>& value, std::size_t index)
-      -> void;
+  template <typename T>
+  auto post_bind_field(prepared_statement_result_t& result, std::optional<T>& value, int index) -> void
+  {
+    if (result.debug())
+      result.debug()("Binding optional result at index " + std::to_string(index));
+
+    if (sqlite3_column_type(result.get(), index) == SQLITE_NULL)
+    {
+      value.reset();
+    }
+    else
+    {
+      value = T{};
+      post_bind_field(result, *value, index);
+    }
+  }
 }  // namespace sqlpp::sqlite3

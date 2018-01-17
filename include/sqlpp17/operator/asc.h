@@ -68,9 +68,9 @@ namespace sqlpp
     switch (t)
     {
       case sort_order::asc:
-        return std::string("ASC");
+        return std::string(" ASC");
       case sort_order::desc:
-        return std::string("DESC");
+        return std::string(" DESC");
     }
   }
 
