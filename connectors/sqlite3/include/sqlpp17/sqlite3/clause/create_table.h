@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2017 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -48,9 +48,25 @@ namespace sqlpp::sqlite3::detail
     return " INTEGER";
   }
 
+  [[nodiscard]] inline auto value_type_to_sql_string(const int32_t&)
+  {
+    return " INTEGER";
+  }
+
   [[nodiscard]] inline auto value_type_to_sql_string(const int64_t&)
   {
     return " INTEGER";
+  }
+
+  [[nodiscard]] inline auto value_type_to_sql_string(const float&)
+  {
+    return " FLOAT";
+  }
+
+#warning : Might wanna pin the values types down a bit better
+  [[nodiscard]] inline auto value_type_to_sql_string(const double&)
+  {
+    return " DOUBLE";
   }
 
   template <uint8_t Size>

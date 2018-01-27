@@ -48,7 +48,7 @@ namespace
       throw std::logic_error("Trying to obtain value from non-existing row");
   }
 
-  auto assert_field(sqlpp::mysql::direct_execution_result_t& result, std::size_t index) -> void
+  auto assert_field(sqlpp::mysql::direct_execution_result_t& result, int index) -> void
   {
     assert_row(result);
     if (!result.get_data()[index])
@@ -58,24 +58,49 @@ namespace
 
 namespace sqlpp::mysql
 {
-  auto bind_field(direct_execution_result_t& result, std::int64_t& value, std::size_t index) -> void
+  auto bind_field(direct_execution_result_t& result, std::int64_t& value, int index) -> void
   {
+    if (result.debug())
+      result.debug()("Binding int64_t result at index " + std::to_string(index));
+
     assert_field(result, index);
     value = std::strtoll(result.get_data()[index], nullptr, 10);
   }
 
-  auto bind_field(direct_execution_result_t& result, std::string_view& value, std::size_t index) -> void
+  auto bind_field(direct_execution_result_t& result, std::int32_t& value, int index) -> void
   {
+    if (result.debug())
+      result.debug()("Binding int32_t result at index " + std::to_string(index));
+
+    assert_field(result, index);
+    value = std::strtol(result.get_data()[index], nullptr, 10);
+  }
+
+  auto bind_field(direct_execution_result_t& result, float& value, int index) -> void
+  {
+    if (result.debug())
+      result.debug()("Binding float result at index " + std::to_string(index));
+
+    assert_field(result, index);
+    value = std::strtof(result.get_data()[index], nullptr);
+  }
+
+  auto bind_field(direct_execution_result_t& result, double& value, int index) -> void
+  {
+    if (result.debug())
+      result.debug()("Binding double result at index " + std::to_string(index));
+
+    assert_field(result, index);
+    value = std::strtod(result.get_data()[index], nullptr);
+  }
+
+  auto bind_field(direct_execution_result_t& result, std::string_view& value, int index) -> void
+  {
+    if (result.debug())
+      result.debug()("Binding string_view result at index " + std::to_string(index));
+
     assert_field(result, index);
     value = std::string_view(result.get_data()[index], result.get_lengths()[index]);
   }
 
-  auto bind_field(direct_execution_result_t& result, std::optional<std::string_view>& value, std::size_t index) -> void
-  {
-    assert_row(result);
-    value =
-        result.get_data()[index]
-            ? std::optional<std::string_view>{std::string_view(result.get_data()[index], result.get_lengths()[index])}
-            : std::nullopt;
-  }
 }  // namespace sqlpp::mysql

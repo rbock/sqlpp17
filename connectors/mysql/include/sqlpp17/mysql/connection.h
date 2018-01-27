@@ -30,12 +30,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <type_traits>
 
 #include <sqlpp17/connection_base.h>
-#include <sqlpp17/context_base.h>
 #include <sqlpp17/result.h>
 #include <sqlpp17/statement.h>
 
 #include <sqlpp17/mysql/clause.h>
 #include <sqlpp17/mysql/connection_config.h>
+#include <sqlpp17/mysql/context.h>
 #include <sqlpp17/mysql/direct_execution_result.h>
 #include <sqlpp17/mysql/prepared_statement.h>
 #include <sqlpp17/mysql/prepared_statement_result.h>
@@ -120,10 +120,6 @@ namespace sqlpp::mysql::detail
 
 namespace sqlpp::mysql
 {
-  struct context_t : public ::sqlpp::context_base
-  {
-  };
-
   void global_library_init(int argc = 0, char** argv = nullptr, char** groups = nullptr);
 
   class connection_t : public ::sqlpp::connection_base

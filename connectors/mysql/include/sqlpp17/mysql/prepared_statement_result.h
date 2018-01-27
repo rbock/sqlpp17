@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2017 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -133,8 +133,24 @@ namespace sqlpp::mysql
     }
   }
 
+  auto pre_bind_field(prepared_statement_result_t& result, std::int32_t& value, std::size_t index) -> void;
   auto pre_bind_field(prepared_statement_result_t& result, std::int64_t& value, std::size_t index) -> void;
+  auto pre_bind_field(prepared_statement_result_t& result, float& value, std::size_t index) -> void;
+  auto pre_bind_field(prepared_statement_result_t& result, double& value, std::size_t index) -> void;
+
   inline auto post_bind_field(prepared_statement_result_t& result, std::int64_t& value, std::size_t index) -> void
+  {
+  }
+
+  inline auto post_bind_field(prepared_statement_result_t& result, std::int32_t& value, std::size_t index) -> void
+  {
+  }
+
+  inline auto post_bind_field(prepared_statement_result_t& result, float& value, std::size_t index) -> void
+  {
+  }
+
+  inline auto post_bind_field(prepared_statement_result_t& result, double& value, std::size_t index) -> void
   {
   }
 
@@ -142,4 +158,5 @@ namespace sqlpp::mysql
       -> void;
   auto post_bind_field(prepared_statement_result_t& result, std::optional<std::string_view>& value, std::size_t index)
       -> void;
+
 }  // namespace sqlpp::mysql

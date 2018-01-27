@@ -71,7 +71,7 @@ namespace sqlpp::mysql
   auto bind_parameter(prepared_statement_t& statement, std::int32_t& value, int index) -> void
   {
     if (statement.debug())
-      statement.debug()("binding int64_t parameter " + std::to_string(value) + " at index: " + std::to_string(index));
+      statement.debug()("binding int32_t parameter " + std::to_string(value) + " at index: " + std::to_string(index));
 
     auto& meta_data = statement.get_bind_meta_data()[index];
     meta_data.bound_is_null = false;
@@ -97,6 +97,42 @@ namespace sqlpp::mysql
     auto& parameter = statement.get_bind_data()[index];
     parameter.is_null = &meta_data.bound_is_null;
     parameter.buffer_type = MYSQL_TYPE_LONGLONG;
+    parameter.buffer = &value;
+    parameter.buffer_length = sizeof(value);
+    parameter.length = &parameter.buffer_length;
+    parameter.is_unsigned = false;
+    parameter.error = nullptr;
+  }
+
+  auto bind_parameter(prepared_statement_t& statement, float& value, int index) -> void
+  {
+    if (statement.debug())
+      statement.debug()("binding float parameter " + std::to_string(value) + " at index: " + std::to_string(index));
+
+    auto& meta_data = statement.get_bind_meta_data()[index];
+    meta_data.bound_is_null = false;
+
+    auto& parameter = statement.get_bind_data()[index];
+    parameter.is_null = &meta_data.bound_is_null;
+    parameter.buffer_type = MYSQL_TYPE_FLOAT;
+    parameter.buffer = &value;
+    parameter.buffer_length = sizeof(value);
+    parameter.length = &parameter.buffer_length;
+    parameter.is_unsigned = false;
+    parameter.error = nullptr;
+  }
+
+  auto bind_parameter(prepared_statement_t& statement, double& value, int index) -> void
+  {
+    if (statement.debug())
+      statement.debug()("binding double parameter " + std::to_string(value) + " at index: " + std::to_string(index));
+
+    auto& meta_data = statement.get_bind_meta_data()[index];
+    meta_data.bound_is_null = false;
+
+    auto& parameter = statement.get_bind_data()[index];
+    parameter.is_null = &meta_data.bound_is_null;
+    parameter.buffer_type = MYSQL_TYPE_DOUBLE;
     parameter.buffer = &value;
     parameter.buffer_length = sizeof(value);
     parameter.length = &parameter.buffer_length;

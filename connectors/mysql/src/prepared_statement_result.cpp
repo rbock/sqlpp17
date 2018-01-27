@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2017 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -94,15 +94,66 @@ namespace sqlpp::mysql::detail
 
 namespace sqlpp::mysql
 {
+  auto pre_bind_field(prepared_statement_result_t& result, std::int32_t& value, std::size_t index) -> void
+  {
+    if (result.debug())
+      result.debug()("Binding int32_t result at index " + std::to_string(index));
+
+    auto& meta_data = result.get_bind_meta_data()[index];
+
+    auto& param = result.get_bind_data()[index];
+    param.buffer_type = MYSQL_TYPE_LONG;
+    param.buffer = &value;
+    param.buffer_length = sizeof(value);
+    param.length = &meta_data.bound_len;
+    param.is_null = &meta_data.bound_is_null;
+    param.is_unsigned = false;
+    param.error = &meta_data.bound_error;
+  }
+
   auto pre_bind_field(prepared_statement_result_t& result, std::int64_t& value, std::size_t index) -> void
   {
     if (result.debug())
-      result.debug()("Binding integral result at index " + std::to_string(index));
+      result.debug()("Binding int64_t result at index " + std::to_string(index));
 
     auto& meta_data = result.get_bind_meta_data()[index];
 
     auto& param = result.get_bind_data()[index];
     param.buffer_type = MYSQL_TYPE_LONGLONG;
+    param.buffer = &value;
+    param.buffer_length = sizeof(value);
+    param.length = &meta_data.bound_len;
+    param.is_null = &meta_data.bound_is_null;
+    param.is_unsigned = false;
+    param.error = &meta_data.bound_error;
+  }
+
+  auto pre_bind_field(prepared_statement_result_t& result, float& value, std::size_t index) -> void
+  {
+    if (result.debug())
+      result.debug()("Binding float result at index " + std::to_string(index));
+
+    auto& meta_data = result.get_bind_meta_data()[index];
+
+    auto& param = result.get_bind_data()[index];
+    param.buffer_type = MYSQL_TYPE_FLOAT;
+    param.buffer = &value;
+    param.buffer_length = sizeof(value);
+    param.length = &meta_data.bound_len;
+    param.is_null = &meta_data.bound_is_null;
+    param.is_unsigned = false;
+    param.error = &meta_data.bound_error;
+  }
+
+  auto pre_bind_field(prepared_statement_result_t& result, double& value, std::size_t index) -> void
+  {
+    if (result.debug())
+      result.debug()("Binding double result at index " + std::to_string(index));
+
+    auto& meta_data = result.get_bind_meta_data()[index];
+
+    auto& param = result.get_bind_data()[index];
+    param.buffer_type = MYSQL_TYPE_DOUBLE;
     param.buffer = &value;
     param.buffer_length = sizeof(value);
     param.length = &meta_data.bound_len;

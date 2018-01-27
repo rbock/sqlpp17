@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2017 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <functional>
 #include <memory>
 #include <optional>
+#include <string>
 #include <string_view>
 
 #include <mysql.h>
@@ -121,9 +122,28 @@ namespace sqlpp ::mysql
     }
   }
 
-  auto bind_field(direct_execution_result_t& result, std::int64_t& value, std::size_t index) -> void;
-  auto bind_field(direct_execution_result_t& result, std::string_view& value, std::size_t index) -> void;
-  auto bind_field(direct_execution_result_t& result, std::optional<std::string_view>& value, std::size_t index) -> void;
+  auto bind_field(direct_execution_result_t& result, std::int32_t& value, int index) -> void;
+  auto bind_field(direct_execution_result_t& result, std::int64_t& value, int index) -> void;
+  auto bind_field(direct_execution_result_t& result, float& value, int index) -> void;
+  auto bind_field(direct_execution_result_t& result, double& value, int index) -> void;
+  auto bind_field(direct_execution_result_t& result, std::string_view& value, int index) -> void;
+
+  template <typename T>
+  auto bind_field(direct_execution_result_t& result, std::optional<T>& value, int index) -> void
+  {
+    if (result.debug())
+      result.debug()("Binding optional result at index " + std::to_string(index));
+
+    if (!result.get_data()[index])
+    {
+      value.reset();
+    }
+    else
+    {
+      value = T{};
+      bind_field(result, *value, index);
+    }
+  }
 
 }  // namespace sqlpp::mysql
 

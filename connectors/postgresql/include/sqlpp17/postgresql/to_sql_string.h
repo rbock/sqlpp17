@@ -26,18 +26,25 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <string>
-#include <type_traits>
+#include <sqlpp17/to_sql_string.h>
 
 #include <sqlpp17/postgresql/context.h>
 
 namespace sqlpp
 {
-  template <typename T>
-  [[nodiscard]] auto to_sql_string(postgresql::context_t& context, const T& b)
-      -> std::enable_if_t<std::is_same_v<T, bool>, std::string>
+  [[nodiscard]] inline auto nan_to_sql_string(::sqlpp::postgresql::context_t& context) -> std::string
   {
-    return b ? std::string("TRUE") : std::string("FALSE");
+    return std::string{"NaN"};
+  }
+
+  [[nodiscard]] inline auto inf_to_sql_string(::sqlpp::postgresql::context_t& context) -> std::string
+  {
+    return std::string{"Infinity"};
+  }
+
+  [[nodiscard]] inline auto neg_inf_to_sql_string(::sqlpp::postgresql::context_t& context) -> std::string
+  {
+    return std::string{"-Infinity"};
   }
 
 }  // namespace sqlpp

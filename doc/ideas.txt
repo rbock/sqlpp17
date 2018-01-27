@@ -1,9 +1,24 @@
+(posix reserves _t suffixes)
+
+
 USE SANITIZERS!
 ===============
 cmake .. -DCMAKE_CXX_COMPILER=/usr/local/clang-trunk/bin/clang++          -DCMAKE_CXX_FLAGS='-std=c++17 -stdlib=libc++ -fcolor-diagnostics -Wall -Wpedantic -fsanitize=memory -fno-omit-frame-pointer -O1 -g -fsanitize-memory-track-origins -fno-optimize-sibling-calls -fsanitize-blacklist=/home/rbock/projects/sqlpp17/build/blacklist.txt'
 cmake .. -DCMAKE_CXX_COMPILER=/usr/local/clang-trunk/bin/clang++          -DCMAKE_CXX_FLAGS='-std=c++17 -stdlib=libc++ -fcolor-diagnostics -Wall -Wpedantic -fsanitize=address -O1 -g'
 cmake .. -DCMAKE_CXX_COMPILER=/usr/local/clang-trunk/bin/clang++          -DCMAKE_CXX_FLAGS='-std=c++17 -stdlib=libc++ -fcolor-diagnostics -Wall -Wpedantic -fsanitize=thread -O1 -g'
 ...
+
+float:
+=====
+need a way to deal with NaN or +-inf.
+
+This is really annoying.
+MySQL does not have support for non-finite values.
+sqlite3 accepts anything in any column, including strings for REAL values (e.g. 'NaN', '+Inf', '-Inf'), but well, those would be strings then (in a REAL column).
+Postgresql actually knows 'NaN', 'Infinity' and '-Infinity' but only if there is a real or double precision operand next to the value. NUMERIC does not work with any of the special values.
+As of now, the postgresql connector uses strings for binding.
+
+MySQL and sqlite use binary bindings for prepared statements. Need to run tests if those work OK.
 
 transaction isolation levels:
 =================

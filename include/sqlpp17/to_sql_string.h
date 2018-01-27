@@ -26,12 +26,13 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <cmath>
 #include <iomanip>
 #include <optional>
 #include <sstream>
 #include <string>
 
-#include <sqlpp17/wrong.h>
+#include <sqlpp17/exception.h>
 
 namespace sqlpp
 {
@@ -73,14 +74,46 @@ namespace sqlpp
     return std::to_string(i);
   }
 
+  template <typename Context>
+  [[nodiscard]] auto nan_to_sql_string(Context& context) -> std::string
+  {
+    throw ::sqlpp::exception("Serialization of NaN is not supported by this connector");
+  }
+
+  template <typename Context>
+  [[nodiscard]] auto inf_to_sql_string(Context& context) -> std::string
+  {
+    throw ::sqlpp::exception("Serialization of Infinity is not supported by this connector");
+  }
+
+  template <typename Context>
+  [[nodiscard]] auto neg_inf_to_sql_string(Context& context) -> std::string
+  {
+    throw ::sqlpp::exception("Serialization of Infinity is not supported by this connector");
+  }
+
   template <typename Context, typename T>
   [[nodiscard]] auto to_sql_string(Context& context, const T& f)
       -> std::enable_if_t<std::is_floating_point_v<T>, std::string>
   {
-    // TODO: Once gcc and clang support to_chars, try that
-    auto oss = std::ostringstream{};
-    oss << std::setprecision(std::numeric_limits<long double>::digits10 + 1) << f;
-    return oss.str();
+#warning : Might need special handling for such values when binding parameters
+#warning : Might need special handling when reading results
+#warning : And tests for mock and all "real" databases
+    if (std::isnan(f))
+    {
+      return nan_to_sql_string(context);
+    }
+    else if (std::isinf(f))
+    {
+      return f > std::numeric_limits<T>::max() ? inf_to_sql_string(context) : neg_inf_to_sql_string(context);
+    }
+    else
+    {
+      // TODO: Once gcc and clang support to_chars, try that
+      auto oss = std::ostringstream{};
+      oss << std::setprecision(std::numeric_limits<long double>::digits10 + 1) << f;
+      return oss.str();
+    }
   }
 
   // This version will bind to a temporary context, all others won't

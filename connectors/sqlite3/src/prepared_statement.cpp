@@ -60,7 +60,16 @@ namespace sqlpp::sqlite3
     check_bind_result(result, "NULL");
   }
 
-  auto bind_parameter(prepared_statement_t& statement, const std::int32_t& value, int index) -> void
+  auto bind_parameter(prepared_statement_t& statement, bool& value, int index) -> void
+  {
+    if (statement.debug())
+      statement.debug()("binding bool parameter " + std::to_string(value) + " at index: " + std::to_string(index));
+
+    const auto result = sqlite3_bind_int(statement.get(), index + 1, value);
+    check_bind_result(result, "bool");
+  }
+
+  auto bind_parameter(prepared_statement_t& statement, std::int32_t& value, int index) -> void
   {
     if (statement.debug())
       statement.debug()("binding int32_t parameter " + std::to_string(value) + " at index: " + std::to_string(index));
@@ -69,7 +78,7 @@ namespace sqlpp::sqlite3
     check_bind_result(result, "int32_t");
   }
 
-  auto bind_parameter(prepared_statement_t& statement, const std::int64_t& value, int index) -> void
+  auto bind_parameter(prepared_statement_t& statement, std::int64_t& value, int index) -> void
   {
     if (statement.debug())
       statement.debug()("binding int64_t parameter " + std::to_string(value) + " at index: " + std::to_string(index));
@@ -78,7 +87,26 @@ namespace sqlpp::sqlite3
     check_bind_result(result, "int64_t");
   }
 
-  auto bind_parameter(prepared_statement_t& statement, const std::string& value, int index) -> void
+  auto bind_parameter(prepared_statement_t& statement, float& value, int index) -> void
+  {
+    if (statement.debug())
+      statement.debug()("binding float parameter " + std::to_string(value) + " at index: " + std::to_string(index));
+
+    // There is no bind_float
+    const auto result = sqlite3_bind_double(statement.get(), index + 1, value);
+    check_bind_result(result, "float");
+  }
+
+  auto bind_parameter(prepared_statement_t& statement, double& value, int index) -> void
+  {
+    if (statement.debug())
+      statement.debug()("binding double parameter " + std::to_string(value) + " at index: " + std::to_string(index));
+
+    const auto result = sqlite3_bind_double(statement.get(), index + 1, value);
+    check_bind_result(result, "double");
+  }
+
+  auto bind_parameter(prepared_statement_t& statement, std::string& value, int index) -> void
   {
     if (statement.debug())
       statement.debug()("binding string parameter '" + value + "' at index: " + std::to_string(index));
@@ -88,7 +116,7 @@ namespace sqlpp::sqlite3
     check_bind_result(result, "string");
   }
 
-  auto bind_parameter(prepared_statement_t& statement, const std::string_view& value, int index) -> void
+  auto bind_parameter(prepared_statement_t& statement, std::string_view& value, int index) -> void
   {
     if (statement.debug())
       statement.debug()("binding string_view parameter '" + std::string(value) +

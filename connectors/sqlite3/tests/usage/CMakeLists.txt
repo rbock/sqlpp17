@@ -1,4 +1,4 @@
-# Copyright (c) 2017, Roland Bock
+# Copyright (c) 2017 - 2018, Roland Bock
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without modification,
@@ -38,6 +38,8 @@ test_usage(prepared_select)
 test_usage(with_recursive)
 
 test_usage(transaction)
+
+test_usage(float)
 
 test_usage(connection_pool Threads::Threads)
 

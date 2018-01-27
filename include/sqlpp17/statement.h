@@ -153,8 +153,8 @@ namespace sqlpp
     static auto replace_clause(const clause_base<OldClause, statement>* base, NewClause newClause)
     {
       const auto& old_statement = statement::of(base);
-      using new_clauses = algorithm::replace_t<_clauses, OldClause, NewClause>;
-      return algorithm::copy_t<new_clauses, new_statement>{detail::statement_constructor_arg(old_statement, newClause)};
+      return statement<std::conditional_t<std::is_same_v<Clauses, OldClause>, NewClause, Clauses>...>{
+          detail::statement_constructor_arg(old_statement, newClause)};
     }
 
   public:

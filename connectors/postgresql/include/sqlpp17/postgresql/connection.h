@@ -41,6 +41,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/postgresql/operator.h>
 #include <sqlpp17/postgresql/parameter.h>
 #include <sqlpp17/postgresql/prepared_statement.h>
+#include <sqlpp17/postgresql/to_sql_string.h>
 
 namespace sqlpp::postgresql
 {

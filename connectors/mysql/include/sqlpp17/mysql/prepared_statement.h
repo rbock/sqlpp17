@@ -126,6 +126,8 @@ namespace sqlpp::mysql
   auto bind_parameter(prepared_statement_t& statement, bool& value, int index) -> void;
   auto bind_parameter(prepared_statement_t& statement, std::int32_t& value, int index) -> void;
   auto bind_parameter(prepared_statement_t& statement, std::int64_t& value, int index) -> void;
+  auto bind_parameter(prepared_statement_t& statement, float& value, int index) -> void;
+  auto bind_parameter(prepared_statement_t& statement, double& value, int index) -> void;
   auto bind_parameter(prepared_statement_t& statement, std::string& value, int index) -> void;
   auto bind_parameter(prepared_statement_t& statement, std::string_view& value, int index) -> void;
 

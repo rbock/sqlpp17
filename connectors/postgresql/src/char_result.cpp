@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2017 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -31,18 +31,33 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp::postgresql
 {
-  auto bind_field(char_result_t& result, std::int64_t& value, std::size_t index) -> void
+  auto bind_field(char_result_t& result, std::int32_t& value, int index) -> void
+  {
+    value = std::strtol(PQgetvalue(result.get(), result.get_row_index(), index), nullptr, 10);
+  }
+
+  auto bind_field(char_result_t& result, std::int64_t& value, int index) -> void
   {
     value = std::strtoll(PQgetvalue(result.get(), result.get_row_index(), index), nullptr, 10);
   }
 
-  auto bind_field(char_result_t& result, std::string_view& value, std::size_t index) -> void
+  auto bind_field(char_result_t& result, float& value, int index) -> void
+  {
+    value = std::strtof(PQgetvalue(result.get(), result.get_row_index(), index), nullptr);
+  }
+
+  auto bind_field(char_result_t& result, double& value, int index) -> void
+  {
+    value = std::strtod(PQgetvalue(result.get(), result.get_row_index(), index), nullptr);
+  }
+
+  auto bind_field(char_result_t& result, std::string_view& value, int index) -> void
   {
     value = std::string_view(PQgetvalue(result.get(), result.get_row_index(), index),
                              PQgetlength(result.get(), result.get_row_index(), index));
   }
 
-  auto bind_field(char_result_t& result, std::optional<std::string_view>& value, std::size_t index) -> void
+  auto bind_field(char_result_t& result, std::optional<std::string_view>& value, int index) -> void
   {
     value = PQgetisnull(result.get(), result.get_row_index(), index)
                 ? std::nullopt

@@ -78,18 +78,19 @@ namespace sqlpp::sqlite3
     value = sqlite3_column_int64(result.get(), index);
   }
 
-  auto post_bind_field(prepared_statement_result_t& result, double& value, int index) -> void
-  {
-    if (result.debug())
-      result.debug()("Binding double result at index " + std::to_string(index));
-
-    value = sqlite3_column_double(result.get(), index);
-  }
-
   auto post_bind_field(prepared_statement_result_t& result, float& value, int index) -> void
   {
     if (result.debug())
       result.debug()("Binding float result at index " + std::to_string(index));
+
+    // There is no column_float
+    value = sqlite3_column_double(result.get(), index);
+  }
+
+  auto post_bind_field(prepared_statement_result_t& result, double& value, int index) -> void
+  {
+    if (result.debug())
+      result.debug()("Binding double result at index " + std::to_string(index));
 
     value = sqlite3_column_double(result.get(), index);
   }

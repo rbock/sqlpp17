@@ -48,9 +48,24 @@ namespace sqlpp::postgresql::detail
     return " BOOLEAN";
   }
 
+  [[nodiscard]] inline auto value_type_to_sql_string(const std::int32_t&)
+  {
+    return " INTEGER";
+  }
+
   [[nodiscard]] inline auto value_type_to_sql_string(const std::int64_t&)
   {
     return " BIGINT";
+  }
+
+  [[nodiscard]] inline auto value_type_to_sql_string(const float&)
+  {
+    return " REAL";
+  }
+
+  [[nodiscard]] inline auto value_type_to_sql_string(const double&)
+  {
+    return " DOUBLE PRECISION";
   }
 
   template <uint8_t Size>

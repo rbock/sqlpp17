@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2017 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,7 +26,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <string>
 
+#include <sqlpp17/to_sql_string.h>
+
+#include <sqlpp17/postgresql/context.h>
 #include <sqlpp17/postgresql/prepared_statement.h>
+#include <sqlpp17/postgresql/to_sql_string.h>
 
 namespace sqlpp::postgresql
 {
@@ -38,7 +42,7 @@ namespace sqlpp::postgresql
     statement.get_parameter_pointers()[index] = nullptr;
   }
 
-  auto bind_parameter(prepared_statement_t& statement, const bool& value, int index) -> void
+  auto bind_parameter(prepared_statement_t& statement, bool& value, int index) -> void
   {
     if (statement.debug())
       statement.debug()("binding bool parameter '" + (value ? std::string("TRUE") : std::string("FALSE")) +
@@ -48,7 +52,7 @@ namespace sqlpp::postgresql
     statement.get_parameter_pointers()[index] = statement.get_parameter_data()[index].data();
   }
 
-  auto bind_parameter(prepared_statement_t& statement, const std::int32_t& value, int index) -> void
+  auto bind_parameter(prepared_statement_t& statement, std::int32_t& value, int index) -> void
   {
     if (statement.debug())
       statement.debug()("binding int32_t parameter '" + std::to_string(value) + "' at index: " + std::to_string(index));
@@ -57,7 +61,7 @@ namespace sqlpp::postgresql
     statement.get_parameter_pointers()[index] = statement.get_parameter_data()[index].data();
   }
 
-  auto bind_parameter(prepared_statement_t& statement, const std::int64_t& value, int index) -> void
+  auto bind_parameter(prepared_statement_t& statement, std::int64_t& value, int index) -> void
   {
     if (statement.debug())
       statement.debug()("binding int64_t parameter '" + std::to_string(value) + "' at index: " + std::to_string(index));
@@ -66,7 +70,25 @@ namespace sqlpp::postgresql
     statement.get_parameter_pointers()[index] = statement.get_parameter_data()[index].data();
   }
 
-  auto bind_parameter(prepared_statement_t& statement, const std::string& value, int index) -> void
+  auto bind_parameter(prepared_statement_t& statement, float& value, int index) -> void
+  {
+    if (statement.debug())
+      statement.debug()("binding float parameter '" + std::to_string(value) + "' at index: " + std::to_string(index));
+
+    statement.get_parameter_data()[index] = to_sql_string_c(::sqlpp::postgresql::context_t{}, value);
+    statement.get_parameter_pointers()[index] = statement.get_parameter_data()[index].data();
+  }
+
+  auto bind_parameter(prepared_statement_t& statement, double& value, int index) -> void
+  {
+    if (statement.debug())
+      statement.debug()("binding double parameter '" + std::to_string(value) + "' at index: " + std::to_string(index));
+
+    statement.get_parameter_data()[index] = to_sql_string_c(::sqlpp::postgresql::context_t{}, value);
+    statement.get_parameter_pointers()[index] = statement.get_parameter_data()[index].data();
+  }
+
+  auto bind_parameter(prepared_statement_t& statement, std::string& value, int index) -> void
   {
     if (statement.debug())
       statement.debug()("binding string parameter '" + value + "' at index: " + std::to_string(index));
@@ -75,7 +97,7 @@ namespace sqlpp::postgresql
     statement.get_parameter_pointers()[index] = statement.get_parameter_data()[index].data();
   }
 
-  auto bind_parameter(prepared_statement_t& statement, const std::string_view& value, int index) -> void
+  auto bind_parameter(prepared_statement_t& statement, std::string_view& value, int index) -> void
   {
     if (statement.debug())
       statement.debug()("binding string_view parameter '" + std::string(value) +

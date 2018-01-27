@@ -26,18 +26,11 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <string>
-#include <type_traits>
+#include <sqlpp17/context_base.h>
 
-#include <sqlpp17/postgresql/context.h>
-
-namespace sqlpp
+namespace sqlpp::mysql
 {
-  template <typename T>
-  [[nodiscard]] auto to_sql_string(postgresql::context_t& context, const T& b)
-      -> std::enable_if_t<std::is_same_v<T, bool>, std::string>
+  struct context_t : public ::sqlpp::context_base
   {
-    return b ? std::string("TRUE") : std::string("FALSE");
-  }
-
-}  // namespace sqlpp
+  };
+}  // namespace sqlpp::mysql
