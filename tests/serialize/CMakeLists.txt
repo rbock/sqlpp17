@@ -29,6 +29,7 @@ function(test_compile name)
 	add_test(${target} ${target})
 endfunction()
 
+test_compile(float)
 test_compile(function)
 test_compile(aggregate_function)
 test_compile(values)

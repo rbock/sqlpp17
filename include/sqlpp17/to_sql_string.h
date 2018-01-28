@@ -96,9 +96,6 @@ namespace sqlpp
   [[nodiscard]] auto to_sql_string(Context& context, const T& f)
       -> std::enable_if_t<std::is_floating_point_v<T>, std::string>
   {
-#warning : Might need special handling for such values when binding parameters
-#warning : Might need special handling when reading results
-#warning : And tests for mock and all "real" databases
     if (std::isnan(f))
     {
       return nan_to_sql_string(context);
