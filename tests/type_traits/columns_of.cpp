@@ -24,9 +24,9 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <tables/TabDepartment.h>
-#include <tables/TabEmpty.h>
-#include <tables/TabPerson.h>
+#include <sqlpp17_test/tables/TabDepartment.h>
+#include <sqlpp17_test/tables/TabEmpty.h>
+#include <sqlpp17_test/tables/TabPerson.h>
 #include <sqlpp17/name_tag.h>
 #include <sqlpp17/operator/equal_to.h>
 
@@ -48,7 +48,7 @@ static_assert(columns_of(tabPerson.id.as(tabPerson)).empty());
 static_assert(columns_of(tabEmpty).empty());
 static_assert(columns_of(tabPerson) ==
               type_set(tabPerson.id, tabPerson.isManager, tabPerson.name, tabPerson.address, tabPerson.language));
-static_assert(columns_of(tabDepartment) == type_set(tabDepartment.id, tabDepartment.name));
+static_assert(columns_of(tabDepartment) == type_set(tabDepartment.id, tabDepartment.name, tabDepartment.division));
 
 // aliased tables
 static_assert(columns_of(tabEmpty.as(foo)).empty());
@@ -57,7 +57,8 @@ static_assert(columns_of(tabPerson.as(foo)) == type_set(tabPerson.as(foo).id,
                                                         tabPerson.as(foo).name,
                                                         tabPerson.as(foo).address,
                                                         tabPerson.as(foo).language));
-static_assert(columns_of(tabDepartment.as(foo)) == type_set(tabDepartment.as(foo).id, tabDepartment.as(foo).name));
+static_assert(columns_of(tabDepartment.as(foo)) ==
+              type_set(tabDepartment.as(foo).id, tabDepartment.as(foo).name, tabDepartment.as(foo).division));
 
 // conditionless joins
 constexpr auto colsOfDepartmentAndPerson = (columns_of(tabDepartment) | columns_of(tabPerson));

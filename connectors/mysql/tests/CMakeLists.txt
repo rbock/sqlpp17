@@ -25,6 +25,7 @@
 add_library(sqlpp17-connector-mysql-testing INTERFACE)
 
 target_include_directories(sqlpp17-connector-mysql-testing INTERFACE
+  $<BUILD_INTERFACE:${sqlpp17_SOURCE_DIR}/tests/include>
   $<BUILD_INTERFACE:${sqlpp17_SOURCE_DIR}/connectors/mysql/tests>
   )
 

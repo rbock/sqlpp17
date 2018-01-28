@@ -35,7 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/postgresql/connection_pool.h>
 
-#include <tables/TabDepartment.h>
+#include <sqlpp17_test/tables/TabDepartment.h>
 
 namespace postgresql = ::sqlpp::postgresql;
 namespace

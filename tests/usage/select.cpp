@@ -26,10 +26,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <iostream>
 
-#include <connections/mock_db.h>
-#include <tables/TabDepartment.h>
-#include <tables/TabEmpty.h>
-#include <tables/TabPerson.h>
+#include <sqlpp17_test/mock_db.h>
+#include <sqlpp17_test/tables/TabDepartment.h>
+#include <sqlpp17_test/tables/TabEmpty.h>
+#include <sqlpp17_test/tables/TabPerson.h>
 
 #include <sqlpp17/clause/select.h>
 #include <sqlpp17/function.h>

@@ -34,7 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace test
 {
-  namespace TabFloat_
+  struct TabFloat : public ::sqlpp::spec_base
   {
     struct Id : public ::sqlpp::spec_base
     {
@@ -68,14 +68,12 @@ namespace test
       static constexpr auto default_value = 0;
     };
 
-    struct _ : public ::sqlpp::spec_base
-    {
-      SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(tab_float, tabFloat);
-      using primary_key = Id;
-    };
-  }  // namespace TabFloat_
+    using _columns = ::sqlpp::type_vector<Id, ValueFloat, ValueDouble, ValueInt>;
 
-  inline constexpr auto tabFloat =
-      sqlpp::table_t<TabFloat_::_, TabFloat_::Id, TabFloat_::ValueFloat, TabFloat_::ValueDouble, TabFloat_::ValueInt>{};
+    SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(tab_float, tabFloat);
+    using primary_key = Id;
+  };
+
+  inline constexpr auto tabFloat = sqlpp::table_t<TabFloat>{};
 
 }  // namespace test

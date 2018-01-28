@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2016 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -30,12 +30,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace test
 {
-  namespace TabEmpty_
+  struct TabEmpty : public ::sqlpp::spec_base
   {
-    struct _ : public ::sqlpp::spec_base
-    {
-      SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(tab_empty, tabEmpty);
-    };
-  }  // namespace TabEmpty_
-  constexpr auto tabEmpty = sqlpp::table_t<TabEmpty_::_>{};
+    using _columns = ::sqlpp::type_vector<>;
+
+    SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(tab_empty, tabEmpty);
+  };
+
+  constexpr auto tabEmpty = sqlpp::table_t<TabEmpty>{};
 }  // namespace test

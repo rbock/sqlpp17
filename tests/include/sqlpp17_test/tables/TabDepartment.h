@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2018, Roland Bock
+Copyright (c) 2016 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -34,7 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace test
 {
-  namespace TabFloat_
+  struct TabDepartment : public ::sqlpp::spec_base
   {
     struct Id : public ::sqlpp::spec_base
     {
@@ -44,38 +44,28 @@ namespace test
       static constexpr auto default_value = ::sqlpp::auto_increment_t{};
     };
 
-    struct ValueFloat : public ::sqlpp::spec_base
+    struct Name : public ::sqlpp::spec_base
     {
-      SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(value_float, valueFloat);
-      using value_type = float;
-      static constexpr auto can_be_null = false;
+      SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(name, name);
+      using value_type = ::sqlpp::fixchar<100>;
+      static constexpr auto can_be_null = true;
       static constexpr auto default_value = ::sqlpp::none_t{};
     };
 
-    struct ValueDouble : public ::sqlpp::spec_base
+    struct Division : public ::sqlpp::spec_base
     {
-      SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(value_double, valueDouble);
-      using value_type = double;
+      SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(division, division);
+      using value_type = ::sqlpp::varchar<255>;
       static constexpr auto can_be_null = false;
-      static constexpr auto default_value = ::sqlpp::none_t{};
+      static constexpr auto default_value = std::string_view("engineering");
     };
 
-    struct ValueInt : public ::sqlpp::spec_base
-    {
-      SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(value_int, valueInt);
-      using value_type = std::int32_t;
-      static constexpr auto can_be_null = false;
-      static constexpr auto default_value = 0;
-    };
+    using _columns = ::sqlpp::type_vector<Id, Name, Division>;
 
-    struct _ : public ::sqlpp::spec_base
-    {
-      SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(tab_float, tabFloat);
-      using primary_key = Id;
-    };
-  }  // namespace TabFloat_
+    SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(tab_department, tabDepartment);
+    using primary_key = Id;
+  };
 
-  inline constexpr auto tabFloat =
-      sqlpp::table_t<TabFloat_::_, TabFloat_::Id, TabFloat_::ValueFloat, TabFloat_::ValueDouble, TabFloat_::ValueInt>{};
+  inline constexpr auto tabDepartment = sqlpp::table_t<TabDepartment>{};
 
 }  // namespace test

@@ -28,8 +28,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/operator.h>
 #include <sqlpp17/parameter.h>
 
-#include <connections/mock_db.h>
-#include <serialize/assert_equality.h>
+#include <sqlpp17_test/mock_db.h>
+
+#include "assert_equality.h"
 
 using ::sqlpp::test::assert_equality;
 using ::sqlpp::test::mock_context_t;

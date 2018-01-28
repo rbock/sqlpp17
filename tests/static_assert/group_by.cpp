@@ -24,13 +24,13 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <tables/TabDepartment.h>
-#include <tables/TabEmpty.h>
-#include <tables/TabPerson.h>
+#include <sqlpp17_test/tables/TabDepartment.h>
+#include <sqlpp17_test/tables/TabEmpty.h>
+#include <sqlpp17_test/tables/TabPerson.h>
 
 #include <sqlpp17/clause/group_by.h>
 
-#include <static_assert/assert_bad_expression.h>
+#include "assert_bad_expression.h"
 
 using ::sqlpp::test::assert_bad_expression;
 using ::sqlpp::test::assert_good_expression;

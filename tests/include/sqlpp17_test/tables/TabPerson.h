@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2018, Roland Bock
+Copyright (c) 2016 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,7 +26,7 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <cstdint>
+#include <string_view>
 
 #include <sqlpp17/data_types.h>
 #include <sqlpp17/name_tag.h>
@@ -34,7 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace test
 {
-  namespace TabFloat_
+  struct TabPerson : public ::sqlpp::spec_base
   {
     struct Id : public ::sqlpp::spec_base
     {
@@ -44,38 +44,43 @@ namespace test
       static constexpr auto default_value = ::sqlpp::auto_increment_t{};
     };
 
-    struct ValueFloat : public ::sqlpp::spec_base
+    struct IsManager : public ::sqlpp::spec_base
     {
-      SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(value_float, valueFloat);
-      using value_type = float;
+      SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(is_manager, isManager);
+      using value_type = bool;
       static constexpr auto can_be_null = false;
       static constexpr auto default_value = ::sqlpp::none_t{};
     };
 
-    struct ValueDouble : public ::sqlpp::spec_base
+    struct Name : public ::sqlpp::spec_base
     {
-      SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(value_double, valueDouble);
-      using value_type = double;
+      SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(name, name);
+      using value_type = ::sqlpp::varchar<255>;
       static constexpr auto can_be_null = false;
       static constexpr auto default_value = ::sqlpp::none_t{};
     };
 
-    struct ValueInt : public ::sqlpp::spec_base
+    struct Address : public ::sqlpp::spec_base
     {
-      SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(value_int, valueInt);
-      using value_type = std::int32_t;
+      SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(address, address);
+      using value_type = ::sqlpp::varchar<255>;
+      static constexpr auto can_be_null = true;
+      static constexpr auto default_value = ::sqlpp::none_t{};
+    };
+
+    struct Language : public ::sqlpp::spec_base
+    {
+      SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(language, language);
+      using value_type = ::sqlpp::varchar<255>;
       static constexpr auto can_be_null = false;
-      static constexpr auto default_value = 0;
+      static constexpr auto default_value = std::string_view{"C++"};
     };
 
-    struct _ : public ::sqlpp::spec_base
-    {
-      SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(tab_float, tabFloat);
-      using primary_key = Id;
-    };
-  }  // namespace TabFloat_
+    using _columns = ::sqlpp::type_vector<Id, IsManager, Name, Address, Language>;
 
-  inline constexpr auto tabFloat =
-      sqlpp::table_t<TabFloat_::_, TabFloat_::Id, TabFloat_::ValueFloat, TabFloat_::ValueDouble, TabFloat_::ValueInt>{};
+    SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(tab_person, tabPerson);
+    using primary_key = Id;
+  };
 
+  constexpr auto tabPerson = sqlpp::table_t<TabPerson>{};
 }  // namespace test

@@ -30,58 +30,65 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/column.h>
 #include <sqlpp17/join.h>
 #include <sqlpp17/member.h>
+#include <sqlpp17/table_columns.h>
 #include <sqlpp17/table_spec.h>
 #include <sqlpp17/to_sql_name.h>
 
 namespace sqlpp
 {
-  template <typename Table, typename TableSpec, typename... ColumnSpecs>
-  struct table_alias_t : public join_functions<table_alias_t<Table, TableSpec, ColumnSpecs...>>,
-                         public member_t<ColumnSpecs, column_t<TableSpec, ColumnSpecs>>...
+  template <typename Table, typename AliasTableSpec, typename TableSpec>
+  struct table_alias_t : public join_functions<table_alias_t<Table, AliasTableSpec, TableSpec>>,
+                         public table_columns<AliasTableSpec, typename TableSpec::_columns>
   {
     Table _table;
   };
 
-  template <typename Table, typename TableSpec, typename... ColumnSpecs>
-  struct nodes_of<table_alias_t<Table, TableSpec, ColumnSpecs...>>
+  template <typename Table, typename AliasTableSpec, typename TableSpec>
+  struct nodes_of<table_alias_t<Table, AliasTableSpec, TableSpec>>
   {
     using type = type_vector<Table>;
   };
 
-  template <typename Table, typename TableSpec, typename... ColumnSpecs>
-  struct name_tag_of<table_alias_t<Table, TableSpec, ColumnSpecs...>>
+  template <typename Table, typename AliasTableSpec, typename TableSpec>
+  struct name_tag_of<table_alias_t<Table, AliasTableSpec, TableSpec>>
   {
-    using type = name_tag_of_t<TableSpec>;
+    using type = name_tag_of_t<AliasTableSpec>;
   };
 
-  template <typename Table, typename TableSpec, typename... ColumnSpecs>
-  struct table_spec_of<table_alias_t<Table, TableSpec, ColumnSpecs...>>
+  template <typename Table, typename AliasTableSpec, typename TableSpec>
+  struct table_spec_of<table_alias_t<Table, AliasTableSpec, TableSpec>>
   {
-    using type = TableSpec;
+    using type = AliasTableSpec;
   };
 
-  template <typename Table, typename TableSpec, typename... ColumnSpecs>
-  constexpr auto is_table_v<table_alias_t<Table, TableSpec, ColumnSpecs...>> = true;
+  template <typename Table, typename AliasTableSpec, typename TableSpec>
+  constexpr auto is_table_v<table_alias_t<Table, AliasTableSpec, TableSpec>> = true;
 
-  template <typename Table, typename TableSpec, typename... ColumnSpecs>
-  constexpr auto columns_of_v<table_alias_t<Table, TableSpec, ColumnSpecs...>> =
-      type_set<column_t<TableSpec, ColumnSpecs>...>();
-
-  template <typename Table, typename TableSpec, typename... ColumnSpecs>
-  [[nodiscard]] constexpr auto all_of(const table_alias_t<Table, TableSpec, ColumnSpecs...>& t)
+  template <typename Table, typename AliasTableSpec, typename TableSpec>
+  [[nodiscard]] constexpr auto column_tuple_of(const table_alias_t<Table, AliasTableSpec, TableSpec>& t)
   {
-    return multi_column_t{column_t<TableSpec, ColumnSpecs>{}...};
+    return column_tuple_of(table_columns<AliasTableSpec, typename TableSpec::_columns>{});
   }
 
-  template <typename Table, typename TableSpec, typename... ColumnSpecs>
+  template <typename Table, typename AliasTableSpec, typename TableSpec>
+  constexpr auto columns_of_v<table_alias_t<Table, AliasTableSpec, TableSpec>> =
+      columns_of_v<table_columns<AliasTableSpec, typename TableSpec::_columns>>;
+
+  template <typename Table, typename AliasTableSpec, typename TableSpec>
+  [[nodiscard]] constexpr auto all_of(const table_alias_t<Table, AliasTableSpec, TableSpec>& t)
+  {
+    return multi_column_t{column_tuple_of(t)};
+  }
+
+  template <typename Table, typename AliasTableSpec, typename TableSpec>
   [[nodiscard]] constexpr auto provided_tables_of([
-      [maybe_unused]] type_t<table_alias_t<Table, TableSpec, ColumnSpecs...>>)
+      [maybe_unused]] type_t<table_alias_t<Table, AliasTableSpec, TableSpec>>)
   {
-    return type_set<TableSpec>();
+    return type_set<AliasTableSpec>();
   }
 
-  template <typename Context, typename Table, typename TableSpec, typename... ColumnSpecs>
-  [[nodiscard]] auto to_sql_string(Context& context, const table_alias_t<Table, TableSpec, ColumnSpecs...>& t)
+  template <typename Context, typename Table, typename AliasTableSpec, typename TableSpec>
+  [[nodiscard]] auto to_sql_string(Context& context, const table_alias_t<Table, AliasTableSpec, TableSpec>& t)
   {
     auto ret = std::string{};
 

@@ -1,4 +1,4 @@
-# Copyright (c) 2017, Roland Bock
+# Copyright (c) 2017 - 2018, Roland Bock
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without modification,
@@ -27,7 +27,7 @@ SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -Wpedantic")
 add_library(sqlpp17_testing INTERFACE)
 
 target_include_directories(sqlpp17_testing INTERFACE
-  $<BUILD_INTERFACE:${sqlpp17_SOURCE_DIR}/tests>
+  $<BUILD_INTERFACE:${sqlpp17_SOURCE_DIR}/tests/include>
   )
 
 add_subdirectory(usage)

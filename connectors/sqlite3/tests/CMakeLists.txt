@@ -25,6 +25,7 @@
 add_library(sqlpp17-connector-sqlite3-testing INTERFACE)
 
 target_include_directories(sqlpp17-connector-sqlite3-testing INTERFACE
+  $<BUILD_INTERFACE:${sqlpp17_SOURCE_DIR}/tests/include>
   $<BUILD_INTERFACE:${sqlpp17_SOURCE_DIR}/connectors/sqlite3/tests>
   )
 

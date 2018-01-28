@@ -32,8 +32,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/sqlite3/connection.h>
 
-#include <tables/TabDepartment.h>
-#include <tables/TabPerson.h>
+#include <sqlpp17_test/tables/TabDepartment.h>
+#include <sqlpp17_test/tables/TabPerson.h>
 
 auto print_debug(std::string_view message)
 {

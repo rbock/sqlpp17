@@ -30,12 +30,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/name_tag.h>
 #include <sqlpp17/parameter.h>
 
-#include <connections/mock_db.h>
-#include <tables/TabDepartment.h>
-#include <tables/TabEmpty.h>
-#include <tables/TabPerson.h>
+#include <sqlpp17_test/mock_db.h>
+#include <sqlpp17_test/tables/TabDepartment.h>
+#include <sqlpp17_test/tables/TabEmpty.h>
+#include <sqlpp17_test/tables/TabPerson.h>
 
-#include <static_assert/assert_bad_expression.h>
+#include "assert_bad_expression.h"
 
 using ::sqlpp::test::assert_bad_expression;
 using ::sqlpp::test::assert_good_expression;

@@ -27,11 +27,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/function.h>
 #include <sqlpp17/operator.h>
 
-#include <connections/mock_db.h>
-#include <serialize/assert_equality.h>
-#include <tables/TabDepartment.h>
-#include <tables/TabEmpty.h>
-#include <tables/TabPerson.h>
+#include <sqlpp17_test/mock_db.h>
+#include <sqlpp17_test/tables/TabDepartment.h>
+#include <sqlpp17_test/tables/TabEmpty.h>
+#include <sqlpp17_test/tables/TabPerson.h>
+
+#include "assert_equality.h"
 
 using ::sqlpp::test::assert_equality;
 using ::sqlpp::test::mock_context_t;

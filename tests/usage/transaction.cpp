@@ -26,7 +26,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/transaction.h>
 
-#include <connections/mock_db.h>
+#include <sqlpp17_test/mock_db.h>
 
 int main()
 {

@@ -32,7 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/postgresql/connection.h>
 
-#include <tables/TabDepartment.h>
+#include <sqlpp17_test/tables/TabDepartment.h>
 
 auto print_debug(std::string_view message)
 {

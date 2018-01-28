@@ -1,4 +1,4 @@
-# Copyright (c) 2017, Roland Bock
+# Copyright (c) 2017 - 2018, Roland Bock
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without modification,
@@ -25,6 +25,7 @@
 add_library(sqlpp17-connector-postgresql-testing INTERFACE)
 
 target_include_directories(sqlpp17-connector-postgresql-testing INTERFACE
+  $<BUILD_INTERFACE:${sqlpp17_SOURCE_DIR}/tests/include>
   $<BUILD_INTERFACE:${sqlpp17_SOURCE_DIR}/connectors/postgresql/tests>
   )
 

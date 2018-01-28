@@ -33,8 +33,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/mysql/connection.h>
 
-#include <tables/TabDepartment.h>
-#include <tables/TabPerson.h>
+#include <sqlpp17_test/tables/TabDepartment.h>
+#include <sqlpp17_test/tables/TabPerson.h>
 
 using test::tabDepartment;
 using test::tabPerson;

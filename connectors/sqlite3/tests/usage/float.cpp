@@ -36,7 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/sqlite3/connection.h>
 
-#include <tables/TabFloat.h>
+#include <sqlpp17_test/tables/TabFloat.h>
 
 using test::tabFloat;
 

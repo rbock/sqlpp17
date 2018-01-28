@@ -69,6 +69,12 @@ namespace sqlpp::postgresql::detail
   }
 
   template <uint8_t Size>
+  [[nodiscard]] inline auto value_type_to_sql_string(const ::sqlpp::fixchar<Size>&)
+  {
+    return " CHAR(" + std::to_string(Size) + ")";
+  }
+
+  template <uint8_t Size>
   [[nodiscard]] inline auto value_type_to_sql_string(const ::sqlpp::varchar<Size>&)
   {
     return " VARCHAR(" + std::to_string(Size) + ")";
@@ -143,9 +149,8 @@ namespace sqlpp::postgresql::detail
     return (std ::string{} + ... + (separator.to_string() + to_sql_column_spec_string(context, ColumnSpecs{})));
   }
 
-  template <typename TableSpec, typename... ColumnSpecs>
-  [[nodiscard]] auto to_sql_primary_key(postgresql::context_t& context,
-                                        const ::sqlpp::table_t<TableSpec, ColumnSpecs...>& t)
+  template <typename TableSpec>
+  [[nodiscard]] auto to_sql_primary_key(postgresql::context_t& context, const ::sqlpp::table_t<TableSpec>& t)
   {
     using _primary_key = typename TableSpec::primary_key;
     if constexpr (std::is_same_v<_primary_key, ::sqlpp::none_t>)
