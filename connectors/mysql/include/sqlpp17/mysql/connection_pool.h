@@ -44,18 +44,52 @@ namespace sqlpp::mysql::detail
     std::size_t _tail = 0;
     std::size_t _size = 0;
 
-    auto increment(std::size_t& pos);
+    auto increment(std::size_t& pos)
+    {
+      ++pos;
+      if (pos == _data.size())
+        pos = 0;
+    }
 
   public:
-    circular_connection_buffer_t(std::size_t capacity);
+    circular_connection_buffer_t(std::size_t capacity) : _data(capacity)
+    {
+      (void)_data;  // This line is just here because my version of clang-format barfs on this otherwise
+    }
 
-    [[nodiscard]] auto empty() const;
+    [[nodiscard]] auto empty() const
+    {
+      return _size == 0;
+    }
 
-    [[nodiscard]] auto& front();
+    [[nodiscard]] auto& front()
+    {
+      return _data[_tail];
+    }
 
-    auto pop_front() -> void;
+    auto pop_front() -> void
+    {
+      if ((_head != _tail) or not empty())
+      {
+        increment(_tail);
+        --_size;
+      }
+    }
 
-    auto push_back(detail::unique_connection_ptr t);
+    auto push_back(detail::unique_connection_ptr t)
+    {
+      _data[_head] = std::move(t);
+      if ((_head != _tail) or empty())
+      {
+        increment(_head);
+        ++_size;
+      }
+      else  // (head == tail) and not empty()
+      {
+        increment(_head);
+        _tail = _head;
+      }
+    }
   };
 }  // namespace sqlpp::mysql::detail
 
@@ -81,10 +115,31 @@ namespace sqlpp::mysql
     connection_pool_t& operator=(connection_pool_t&&) = default;
     ~connection_pool_t() = default;
 
-    [[nodiscard]] __attribute__((no_sanitize("memory"))) auto get() -> ::sqlpp::mysql::connection_t;
+    [[nodiscard]] __attribute__((no_sanitize("memory"))) auto get() -> ::sqlpp::mysql::connection_t
+    {
+      detail::thread_init();
+
+      const auto lock = std::scoped_lock{_mutex};
+
+      auto handle = detail::unique_connection_ptr(std::move(_handles.front()));
+      _handles.pop_front();
+
+      // destroy dead connections
+      if (handle != nullptr and mysql_ping(handle.get()) != 0)
+      {
+        handle.reset();
+      }
+
+      return handle ? ::sqlpp::mysql::connection_t{_connection_config, std::move(handle), this}
+                    : ::sqlpp::mysql::connection_t{_connection_config, this};
+    }
 
   private:
-    auto put(detail::unique_connection_ptr handle) -> void;
+    auto put(detail::unique_connection_ptr handle) -> void
+    {
+      const auto lock = std::scoped_lock{_mutex};
+      _handles.push_back(std::move(handle));
+    }
   };
 
 }  // namespace sqlpp::mysql

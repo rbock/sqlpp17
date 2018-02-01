@@ -1,4 +1,4 @@
-# Copyright (c) 2017, Roland Bock
+# Copyright (c) 2017 - 2018, Roland Bock
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without modification,
@@ -34,11 +34,21 @@ endif()
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 find_package(MySql REQUIRED)
 
-include_directories("${MYSQL_INCLUDE_DIRS}")
-include_directories("${PROJECT_SOURCE_DIR}/connectors/mysql/include")
+add_library(sqlpp17-connector-mysql INTERFACE)
 
-add_subdirectory(src)
+target_include_directories(sqlpp17-connector-mysql INTERFACE
+  ${MYSQL_INCLUDE_DIRS}
+  $<BUILD_INTERFACE:${sqlpp17_SOURCE_DIR}/connectors/mysql/include>
+  $<INSTALL_INTERFACE:include>
+  )
+
+target_link_libraries(sqlpp17-connector-mysql INTERFACE sqlpp17)
+target_link_libraries(sqlpp17-connector-mysql INTERFACE "${MYSQL_LIBRARIES}")
+if (APPLE)
+	target_link_libraries(sqlpp17-connector-mysql INTERFACE "${Boost_THREAD_LIBRARY}")
+endif()
+
 add_subdirectory(tests)
 
-install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/sqlpp11" DESTINATION include)
+install(DIRECTORY "${sqlpp17_SOURCE_DIR}/connectors/mysql/include" DESTINATION include)
 

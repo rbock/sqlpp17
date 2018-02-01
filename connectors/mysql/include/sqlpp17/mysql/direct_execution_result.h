@@ -108,9 +108,34 @@ namespace sqlpp ::mysql
       *this = direct_execution_result_t{};
     }
   };
+}  // namespace sqlpp::mysql
 
+namespace sqlpp::mysql::detail
+{
+  inline auto assert_field(sqlpp::mysql::direct_execution_result_t& result, int index) -> void
+  {
+    if (!result.get_data())
+      throw std::logic_error("Trying to obtain value from non-existing row");
+    if (!result.get_data()[index])
+      throw std::logic_error("Trying to obtain NULL for non-nullable value");
+  }
+
+  inline auto get_next_result_row(direct_execution_result_t& result) -> bool
+  {
+    if (result.debug())
+      result.debug()("Reading char row");
+
+    result._data = mysql_fetch_row(result.get());
+    result._lengths = mysql_fetch_lengths(result.get());
+
+    return !!result._data;
+  }
+}  // namespace sqlpp::mysql::detail
+
+namespace sqlpp::mysql
+{
   template <typename Row>
-  auto get_next_result_row(direct_execution_result_t& result, Row& row) -> void
+  inline auto get_next_result_row(direct_execution_result_t& result, Row& row) -> void
   {
     if (detail::get_next_result_row(result))
     {
@@ -120,13 +145,53 @@ namespace sqlpp ::mysql
     {
       result.reset();
     }
+  }  // namespace
+     // sqlpp::mysqltemplate<typenameRow>autoget_next_result_row(direct_execution_result_t&result,Row&row)->void
+
+  inline auto bind_field(direct_execution_result_t& result, std::int64_t& value, int index) -> void
+  {
+    if (result.debug())
+      result.debug()("Binding int64_t result at index " + std::to_string(index));
+
+    detail::assert_field(result, index);
+    value = std::strtoll(result.get_data()[index], nullptr, 10);
   }
 
-  auto bind_field(direct_execution_result_t& result, std::int32_t& value, int index) -> void;
-  auto bind_field(direct_execution_result_t& result, std::int64_t& value, int index) -> void;
-  auto bind_field(direct_execution_result_t& result, float& value, int index) -> void;
-  auto bind_field(direct_execution_result_t& result, double& value, int index) -> void;
-  auto bind_field(direct_execution_result_t& result, std::string_view& value, int index) -> void;
+  inline auto bind_field(direct_execution_result_t& result, std::int32_t& value, int index) -> void
+  {
+    if (result.debug())
+      result.debug()("Binding int32_t result at index " + std::to_string(index));
+
+    detail::assert_field(result, index);
+    value = std::strtol(result.get_data()[index], nullptr, 10);
+  }
+
+  inline auto bind_field(direct_execution_result_t& result, float& value, int index) -> void
+  {
+    if (result.debug())
+      result.debug()("Binding float result at index " + std::to_string(index));
+
+    detail::assert_field(result, index);
+    value = std::strtof(result.get_data()[index], nullptr);
+  }
+
+  inline auto bind_field(direct_execution_result_t& result, double& value, int index) -> void
+  {
+    if (result.debug())
+      result.debug()("Binding double result at index " + std::to_string(index));
+
+    detail::assert_field(result, index);
+    value = std::strtod(result.get_data()[index], nullptr);
+  }
+
+  inline auto bind_field(direct_execution_result_t& result, std::string_view& value, int index) -> void
+  {
+    if (result.debug())
+      result.debug()("Binding string_view result at index " + std::to_string(index));
+
+    detail::assert_field(result, index);
+    value = std::string_view(result.get_data()[index], result.get_lengths()[index]);
+  }
 
   template <typename T>
   auto bind_field(direct_execution_result_t& result, std::optional<T>& value, int index) -> void

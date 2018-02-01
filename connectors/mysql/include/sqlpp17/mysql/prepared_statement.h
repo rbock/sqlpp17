@@ -29,7 +29,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <functional>
 #include <memory>
 #include <optional>
+#include <string>
 #include <vector>
+
+#include <sqlpp17/exception.h>
 
 #include <mysql.h>
 
@@ -41,7 +44,7 @@ namespace sqlpp::mysql::detail
     my_bool bound_is_null;
     my_bool bound_error;
     bool use_buffer = false;
-    std::vector<char> bound_buffer;
+    std::string bound_buffer;
   };
 
   struct prepared_statement_cleanup_t
@@ -119,17 +122,152 @@ namespace sqlpp::mysql
     }
   };
 
-  auto bind_parameter(prepared_statement_t& statement, const std::nullopt_t& value, int index) -> void;
+  inline auto bind_parameter(prepared_statement_t& statement, const std::nullopt_t& value, int index) -> void
+  {
+    if (statement.debug())
+      statement.debug()("binding parameter NULL at index: " + std::to_string(index));
+
+    auto& meta_data = statement.get_bind_meta_data()[index];
+    meta_data.bound_is_null = true;
+
+    auto& parameter = statement.get_bind_data()[index];
+    parameter.is_null = &meta_data.bound_is_null;
+    parameter.buffer_type = MYSQL_TYPE_NULL;
+    parameter.buffer = nullptr;
+    parameter.buffer_length = 0;
+    parameter.length = &parameter.buffer_length;
+    parameter.is_unsigned = false;
+    parameter.error = nullptr;
+  }
 
   // Taking parameters by non-const reference to prevent temporaries being created which
   // would lead to dangling pointers in the implementation
-  auto bind_parameter(prepared_statement_t& statement, bool& value, int index) -> void;
-  auto bind_parameter(prepared_statement_t& statement, std::int32_t& value, int index) -> void;
-  auto bind_parameter(prepared_statement_t& statement, std::int64_t& value, int index) -> void;
-  auto bind_parameter(prepared_statement_t& statement, float& value, int index) -> void;
-  auto bind_parameter(prepared_statement_t& statement, double& value, int index) -> void;
-  auto bind_parameter(prepared_statement_t& statement, std::string& value, int index) -> void;
-  auto bind_parameter(prepared_statement_t& statement, std::string_view& value, int index) -> void;
+  inline auto bind_parameter(prepared_statement_t& statement, bool& value, int index) -> void
+  {
+    if (statement.debug())
+      statement.debug()("binding bool parameter '" + std::to_string(value) + "' at index: " + std::to_string(index));
+
+    auto& meta_data = statement.get_bind_meta_data()[index];
+    meta_data.bound_is_null = false;
+
+    auto& parameter = statement.get_bind_data()[index];
+    parameter.is_null = &meta_data.bound_is_null;
+    parameter.buffer_type = MYSQL_TYPE_TINY;
+    parameter.buffer = &value;
+    parameter.buffer_length = sizeof(value);
+    parameter.length = &parameter.buffer_length;
+    parameter.is_unsigned = false;
+    parameter.error = nullptr;
+  }
+
+  inline auto bind_parameter(prepared_statement_t& statement, std::int32_t& value, int index) -> void
+  {
+    if (statement.debug())
+      statement.debug()("binding int32_t parameter " + std::to_string(value) + " at index: " + std::to_string(index));
+
+    auto& meta_data = statement.get_bind_meta_data()[index];
+    meta_data.bound_is_null = false;
+
+    auto& parameter = statement.get_bind_data()[index];
+    parameter.is_null = &meta_data.bound_is_null;
+    parameter.buffer_type = MYSQL_TYPE_LONG;
+    parameter.buffer = &value;
+    parameter.buffer_length = sizeof(value);
+    parameter.length = &parameter.buffer_length;
+    parameter.is_unsigned = false;
+    parameter.error = nullptr;
+  }
+
+  inline auto bind_parameter(prepared_statement_t& statement, std::int64_t& value, int index) -> void
+  {
+    if (statement.debug())
+      statement.debug()("binding int64_t parameter " + std::to_string(value) + " at index: " + std::to_string(index));
+
+    auto& meta_data = statement.get_bind_meta_data()[index];
+    meta_data.bound_is_null = false;
+
+    auto& parameter = statement.get_bind_data()[index];
+    parameter.is_null = &meta_data.bound_is_null;
+    parameter.buffer_type = MYSQL_TYPE_LONGLONG;
+    parameter.buffer = &value;
+    parameter.buffer_length = sizeof(value);
+    parameter.length = &parameter.buffer_length;
+    parameter.is_unsigned = false;
+    parameter.error = nullptr;
+  }
+
+  inline auto bind_parameter(prepared_statement_t& statement, float& value, int index) -> void
+  {
+    if (statement.debug())
+      statement.debug()("binding float parameter " + std::to_string(value) + " at index: " + std::to_string(index));
+
+    auto& meta_data = statement.get_bind_meta_data()[index];
+    meta_data.bound_is_null = false;
+
+    auto& parameter = statement.get_bind_data()[index];
+    parameter.is_null = &meta_data.bound_is_null;
+    parameter.buffer_type = MYSQL_TYPE_FLOAT;
+    parameter.buffer = &value;
+    parameter.buffer_length = sizeof(value);
+    parameter.length = &parameter.buffer_length;
+    parameter.is_unsigned = false;
+    parameter.error = nullptr;
+  }
+
+  inline auto bind_parameter(prepared_statement_t& statement, double& value, int index) -> void
+  {
+    if (statement.debug())
+      statement.debug()("binding double parameter " + std::to_string(value) + " at index: " + std::to_string(index));
+
+    auto& meta_data = statement.get_bind_meta_data()[index];
+    meta_data.bound_is_null = false;
+
+    auto& parameter = statement.get_bind_data()[index];
+    parameter.is_null = &meta_data.bound_is_null;
+    parameter.buffer_type = MYSQL_TYPE_DOUBLE;
+    parameter.buffer = &value;
+    parameter.buffer_length = sizeof(value);
+    parameter.length = &parameter.buffer_length;
+    parameter.is_unsigned = false;
+    parameter.error = nullptr;
+  }
+
+  inline auto bind_parameter(prepared_statement_t& statement, std::string& value, int index) -> void
+  {
+    if (statement.debug())
+      statement.debug()("binding string parameter '" + value + "' at index: " + std::to_string(index));
+
+    auto& meta_data = statement.get_bind_meta_data()[index];
+    meta_data.bound_is_null = false;
+
+    auto& parameter = statement.get_bind_data()[index];
+    parameter.is_null = &meta_data.bound_is_null;
+    parameter.buffer_type = MYSQL_TYPE_STRING;
+    parameter.buffer = value.data();
+    parameter.buffer_length = value.size();
+    parameter.length = &parameter.buffer_length;
+    parameter.is_unsigned = false;
+    parameter.error = nullptr;
+  }
+
+  inline auto bind_parameter(prepared_statement_t& statement, std::string_view& value, int index) -> void
+  {
+    if (statement.debug())
+      statement.debug()("binding string_view parameter '" + std::string(value) +
+                        "' at index: " + std::to_string(index));
+
+    auto& meta_data = statement.get_bind_meta_data()[index];
+    meta_data.bound_is_null = false;
+
+    auto& parameter = statement.get_bind_data()[index];
+    parameter.is_null = &meta_data.bound_is_null;
+    parameter.buffer_type = MYSQL_TYPE_STRING;
+    parameter.buffer = const_cast<char*>(value.data());  // Sigh...
+    parameter.buffer_length = value.size();
+    parameter.length = &parameter.buffer_length;
+    parameter.is_unsigned = false;
+    parameter.error = nullptr;
+  }
 
   template <typename T>
   auto bind_parameter(prepared_statement_t& statement, std::optional<T>& value, int index) -> void
