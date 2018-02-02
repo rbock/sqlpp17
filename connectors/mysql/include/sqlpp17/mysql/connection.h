@@ -78,7 +78,18 @@ namespace sqlpp::mysql::detail
 
 namespace sqlpp::mysql
 {
-  class connection_t;
+  struct no_debug
+  {
+  };
+
+  struct no_pool
+  {
+  };
+
+  template <typename Debug = no_debug, typename Pool = no_pool>
+  class base_connection;
+
+  using connection_t = base_connection<>;
 
 };  // namespace sqlpp::mysql
 
@@ -94,18 +105,82 @@ namespace sqlpp::mysql::detail
   };
   using unique_connection_ptr = std::unique_ptr<MYSQL, detail::connection_cleanup_t>;
 
-  auto thread_init() -> void;
+#ifdef __APPLE__
+  boost::thread_specific_ptr<MySqlThreadInitializer> mysqlThreadInit;
+  inline auto thread_init() -> void
+  {
+    if (!mysqlThreadInit.get())
+    {
+      mysqlThreadInit.reset(new MySqlThreadInitializer);
+    }
+  }
+#else
+  inline auto thread_init() -> void
+  {
+    thread_local MySqlThreadInitializer threadInitializer;
+  }
+#endif
 
-  // direct execution
-  auto select(const connection_t&, const std::string& statement) -> direct_execution_result_t;
-  auto insert(const connection_t&, const std::string& statement) -> std::size_t;
-  auto update(const connection_t&, const std::string& statement) -> std::size_t;
-  auto delete_from(const connection_t&, const std::string& statement) -> std::size_t;
-  auto execute(const connection_t&, const std::string& statement) -> void;
+  template <typename Debug, typename Pool>
+  inline auto execute_query(const base_connection<Debug, Pool>& connection, const std::string& query) -> void
+  {
+    detail::thread_init();
 
-  // prepared execution
-  auto prepare(const connection_t&, const std::string& statement, size_t no_of_parameters, size_t no_of_columns)
-      -> ::sqlpp::mysql::prepared_statement_t;
+    if constexpr (base_connection<Debug, Pool>::has_debug())
+      connection.debug("Executing: '" + query + "'");
+
+    if (mysql_real_query(connection.get(), query.c_str(), query.size()))
+    {
+      throw sqlpp::exception("MySQL: Could not execute query: " + std::string(mysql_error(connection.get())) +
+                             " (query was >>" + query + "<<\n");
+    }
+  }
+
+  template <typename Debug, typename Pool>
+  inline auto prepare(const base_connection<Debug, Pool>& connection,
+                      const std::string& statement,
+                      size_t no_of_parameters,
+                      size_t no_of_columns) -> ::sqlpp::mysql::prepared_statement_t
+  {
+    thread_init();
+
+    if constexpr (base_connection<Debug, Pool>::has_debug())
+      connection.debug("Preparing: '" + statement + "'");
+
+    auto statement_handle = detail::unique_prepared_statement_ptr(mysql_stmt_init(connection.get()), {});
+    if (not statement_handle)
+    {
+      throw sqlpp::exception("MySQL: Could not allocate prepared statement\n");
+    }
+    if (mysql_stmt_prepare(statement_handle.get(), statement.data(), statement.size()))
+    {
+      throw sqlpp::exception("MySQL: Could not prepare statement: " + std::string(mysql_error(connection.get())) +
+                             " (statement was >>" + statement + "<<\n");
+    }
+
+#warning : Need to pass a separate debug handle here
+    return {std::move(statement_handle), no_of_parameters, no_of_columns, nullptr};
+  }
+
+  inline auto execute_prepared_statement(::sqlpp::mysql::prepared_statement_t& prepared_statement) -> void
+  {
+    thread_init();
+
+    if (prepared_statement.debug())
+      prepared_statement.debug()("Executing prepared_statement");
+
+    if (mysql_stmt_bind_param(prepared_statement.get(), prepared_statement.get_bind_data().data()))
+    {
+      throw sqlpp::exception(std::string("MySQL: Could not bind parameters to statement") +
+                             mysql_stmt_error(prepared_statement.get()));
+    }
+
+    if (mysql_stmt_execute(prepared_statement.get()))
+    {
+      throw sqlpp::exception(std::string("MySQL: Could not execute prepared statement: ") +
+                             mysql_stmt_error(prepared_statement.get()));
+    }
+  }
 
   class prepared_select_t : public ::sqlpp::mysql::prepared_statement_t
   {
@@ -160,7 +235,8 @@ namespace sqlpp::mysql
     static const auto global_init_and_end = detail::scoped_library_initializer_t(argc, argv, groups);
   }
 
-  class connection_t : public ::sqlpp::connection_base
+  template <typename Debug, typename Pool>
+  class base_connection : public ::sqlpp::connection_base
   {
     detail::unique_connection_ptr _handle;
     bool _transaction_active = false;
@@ -175,8 +251,8 @@ namespace sqlpp::mysql
     friend class ::sqlpp::result_base;
 
   public:
-    connection_t() = delete;
-    connection_t(const connection_config_t& config)
+    base_connection() = delete;
+    base_connection(const connection_config_t& config)
     {
       if (not _handle)
       {
@@ -220,11 +296,11 @@ namespace sqlpp::mysql
       }
     }
 
-    connection_t(const connection_t&) = delete;
-    connection_t(connection_t&&) = default;
-    connection_t& operator=(const connection_t&) = delete;
-    connection_t& operator=(connection_t&&) = default;
-    ~connection_t()
+    base_connection(const base_connection&) = delete;
+    base_connection(base_connection&&) = default;
+    base_connection& operator=(const base_connection&) = delete;
+    base_connection& operator=(base_connection&&) = default;
+    ~base_connection()
     {
     }
 
@@ -232,7 +308,7 @@ namespace sqlpp::mysql
     auto operator()(const ::sqlpp::statement<Clauses...>& statement)
     {
       if constexpr (constexpr auto check =
-                        check_statement_executable<connection_t>(type_v<::sqlpp::statement<Clauses...>>);
+                        check_statement_executable<base_connection>(type_v<::sqlpp::statement<Clauses...>>);
                     check)
       {
         return statement.run(*this);
@@ -245,13 +321,13 @@ namespace sqlpp::mysql
 
     auto execute(const std::string& query)
     {
-      return detail::execute(*this, query);
+      detail::execute_query(*this, query);
     }
 
     template <typename Statement>
     auto prepare(const Statement& statement)
     {
-      if constexpr (constexpr auto check = check_statement_preparable<connection_t>(type_v<Statement>); check)
+      if constexpr (constexpr auto check = check_statement_preparable<base_connection>(type_v<Statement>); check)
       {
         return statement.prepare(*this);
       }
@@ -268,7 +344,7 @@ namespace sqlpp::mysql
         throw sqlpp::exception("MySQL: Cannot have more than one open transaction per connection");
       }
 
-      detail::execute(*this, "START TRANSACTION");
+      this->execute("START TRANSACTION");
       _transaction_active = true;
     }
 
@@ -280,7 +356,7 @@ namespace sqlpp::mysql
       }
 
       _transaction_active = false;
-      detail::execute(*this, "COMMIT");
+      this->execute("COMMIT");
     }
     auto rollback() -> void
     {
@@ -290,15 +366,20 @@ namespace sqlpp::mysql
       }
 
       _transaction_active = false;
-      detail::execute(*this, "ROLLBACK");
+      this->execute("ROLLBACK");
+    }
+
+    static constexpr auto has_debug()
+    {
+      return not std::is_same_v<Debug, no_debug>;
     }
 
     auto destroy_transaction() noexcept -> void
     {
       try
       {
-        if (debug())
-          debug()("Auto rollback!");
+        if constexpr (has_debug())
+          debug("Auto rollback!");
 
         rollback();
       }
@@ -309,9 +390,10 @@ namespace sqlpp::mysql
       }
     }
 
-    auto debug() const -> std::function<void(std::string_view)>
+    auto debug([[maybe_unused]] std::string_view message)
     {
-      return _debug;
+      if constexpr (has_debug())
+        _debug(message);
     }
 
     auto get() const -> MYSQL*
@@ -328,13 +410,15 @@ namespace sqlpp::mysql
     template <typename... Clauses>
     auto execute(const ::sqlpp::statement<Clauses...>& statement)
     {
-      return detail::execute(*this, to_sql_string_c(context_t{}, statement));
+      return this->execute(to_sql_string_c(context_t{}, statement));
     }
 
     template <typename Statement>
     auto insert(const Statement& statement)
     {
-      return detail::insert(*this, to_sql_string_c(context_t{}, statement));
+      this->execute(statement);
+
+      return mysql_insert_id(this->get());
     }
 
     template <typename Statement>
@@ -347,7 +431,8 @@ namespace sqlpp::mysql
     template <typename Statement>
     auto update(const Statement& statement)
     {
-      return detail::update(*this, to_sql_string_c(context_t{}, statement));
+      this->execute(statement);
+      return mysql_affected_rows(this->get());
     }
 
     template <typename Statement>
@@ -360,7 +445,8 @@ namespace sqlpp::mysql
     template <typename Statement>
     auto delete_from(const Statement& statement)
     {
-      return detail::delete_from(*this, to_sql_string_c(context_t{}, statement));
+      this->execute(statement);
+      return mysql_affected_rows(this->get());
     }
 
     template <typename Statement>
@@ -373,7 +459,15 @@ namespace sqlpp::mysql
     template <typename Statement>
     [[nodiscard]] auto select(const Statement& statement)
     {
-      return detail::select(*this, to_sql_string_c(context_t{}, statement));
+      this->execute(statement);
+      auto result_handle = detail::unique_result_ptr(mysql_store_result(this->get()), {});
+      if (!result_handle)
+      {
+        throw sqlpp::exception("MySQL: Could not store result set: " + std::string(mysql_error(this->get())));
+      }
+
+#warning : pass a separate debug handler
+      return direct_execution_result_t{std::move(result_handle), nullptr};
     }
 
     template <typename Statement>
@@ -389,116 +483,6 @@ namespace sqlpp::mysql
 
 namespace sqlpp::mysql::detail
 {
-#ifdef __APPLE__
-  boost::thread_specific_ptr<MySqlThreadInitializer> mysqlThreadInit;
-  inline auto thread_init() -> void
-  {
-    if (!mysqlThreadInit.get())
-    {
-      mysqlThreadInit.reset(new MySqlThreadInitializer);
-    }
-  }
-#else
-  inline auto thread_init() -> void
-  {
-    thread_local MySqlThreadInitializer threadInitializer;
-  }
-#endif
-
-  inline auto execute_query(const connection_t& connection, const std::string& query) -> void
-  {
-    detail::thread_init();
-
-    if (connection.debug())
-      connection.debug()("Executing: '" + query + "'");
-
-    if (mysql_real_query(connection.get(), query.c_str(), query.size()))
-    {
-      throw sqlpp::exception("MySQL: Could not execute query: " + std::string(mysql_error(connection.get())) +
-                             " (query was >>" + query + "<<\n");
-    }
-  }
-
-  inline auto select(const connection_t& connection, const std::string& query) -> direct_execution_result_t
-  {
-    execute_query(connection, query);
-    auto result_handle = unique_result_ptr(mysql_store_result(connection.get()), {});
-    if (!result_handle)
-    {
-      throw sqlpp::exception("MySQL: Could not store result set: " + std::string(mysql_error(connection.get())));
-    }
-
-    return {std::move(result_handle), connection.debug()};
-  }
-
-  inline auto insert(const connection_t& connection, const std::string& query) -> size_t
-  {
-    execute_query(connection, query);
-
-    return mysql_insert_id(connection.get());
-  }
-
-  inline auto update(const connection_t& connection, const std::string& statement) -> size_t
-  {
-    execute_query(connection, statement);
-    return mysql_affected_rows(connection.get());
-  }
-
-  inline auto delete_from(const connection_t& connection, const std::string& statement) -> size_t
-  {
-    execute_query(connection, statement);
-    return mysql_affected_rows(connection.get());
-  }
-
-  inline auto execute(const connection_t& connection, const std::string& statement) -> void
-  {
-    execute_query(connection, statement);
-  }
-
-  inline auto prepare(const connection_t& connection,
-                      const std::string& statement,
-                      size_t no_of_parameters,
-                      size_t no_of_columns) -> ::sqlpp::mysql::prepared_statement_t
-  {
-    thread_init();
-
-    if (connection.debug())
-      connection.debug()("Preparing: '" + statement + "'");
-
-    auto statement_handle = detail::unique_prepared_statement_ptr(mysql_stmt_init(connection.get()), {});
-    if (not statement_handle)
-    {
-      throw sqlpp::exception("MySQL: Could not allocate prepared statement\n");
-    }
-    if (mysql_stmt_prepare(statement_handle.get(), statement.data(), statement.size()))
-    {
-      throw sqlpp::exception("MySQL: Could not prepare statement: " + std::string(mysql_error(connection.get())) +
-                             " (statement was >>" + statement + "<<\n");
-    }
-
-    return {std::move(statement_handle), no_of_parameters, no_of_columns, connection.debug()};
-  }
-
-  inline auto execute_prepared_statement(::sqlpp::mysql::prepared_statement_t& prepared_statement) -> void
-  {
-    thread_init();
-
-    if (prepared_statement.debug())
-      prepared_statement.debug()("Executing prepared_statement");
-
-    if (mysql_stmt_bind_param(prepared_statement.get(), prepared_statement.get_bind_data().data()))
-    {
-      throw sqlpp::exception(std::string("MySQL: Could not bind parameters to statement") +
-                             mysql_stmt_error(prepared_statement.get()));
-    }
-
-    if (mysql_stmt_execute(prepared_statement.get()))
-    {
-      throw sqlpp::exception(std::string("MySQL: Could not execute prepared statement: ") +
-                             mysql_stmt_error(prepared_statement.get()));
-    }
-  }
-
   inline auto prepared_select_t::run() -> prepared_statement_result_t
   {
     execute_prepared_statement(*this);

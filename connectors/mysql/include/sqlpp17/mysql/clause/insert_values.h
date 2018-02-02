@@ -28,11 +28,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/clause/insert_values.h>
 
-namespace sqlpp::mysql
-{
-  class connection_t;
-}
-
 namespace sqlpp
 {
   template <typename Statement>
