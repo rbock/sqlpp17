@@ -115,7 +115,7 @@ namespace sqlpp
     template <typename Connection>
     [[nodiscard]] auto _run(Connection& connection) const
     {
-      return connection.delete_from(Statement::of(*this));
+      return connection.delete_from(statement_of(*this));
     }
   };
 

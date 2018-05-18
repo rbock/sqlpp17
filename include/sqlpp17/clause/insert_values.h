@@ -251,28 +251,28 @@ namespace sqlpp
     template <typename Connection>
     [[nodiscard]] auto _run(Connection& connection) const
     {
-      if (static_cast<const clause_base<insert_multi_values_t<Assignments...>, Statement>&>(Statement::of(*this))
+      if (static_cast<const clause_base<insert_multi_values_t<Assignments...>, Statement>&>(statement_of(*this))
               ._rows.empty())
       {
-        return decltype(connection.insert(Statement::of(*this))){};
+        return decltype(connection.insert(statement_of(*this))){};
       }
       else
       {
-        return connection.insert(Statement::of(*this));
+        return connection.insert(statement_of(*this));
       }
     }
 
     template <typename Connection>
     [[nodiscard]] auto _prepare(Connection& connection) const
     {
-      if (static_cast<const clause_base<insert_multi_values_t<Assignments...>, Statement>&>(Statement::of(*this))
+      if (static_cast<const clause_base<insert_multi_values_t<Assignments...>, Statement>&>(statement_of(*this))
               ._rows.empty())
       {
         throw ::sqlpp::exception("Cannot prepare zero-line insert");
       }
       else
       {
-        return connection.prepare_insert(Statement::of(*this));
+        return connection.prepare_insert(statement_of(*this));
       }
     }
   };

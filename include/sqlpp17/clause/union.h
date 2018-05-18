@@ -88,7 +88,7 @@ namespace sqlpp
     template <typename Connection>
     [[nodiscard]] auto _run(Connection& connection) const
     {
-      return connection.select(Statement::of(*this), result_row_t{});
+      return connection.select(statement_of(*this), result_row_t{});
     }
   };
 
@@ -153,13 +153,13 @@ namespace sqlpp
     template <typename RightSelect>
     [[nodiscard]] constexpr auto union_all(RightSelect rhs) const
     {
-      return union_all(Statement::of(*this), rhs);
+      return union_all(statement_of(*this), rhs);
     }
 
     template <typename RightSelect>
     [[nodiscard]] constexpr auto union_distinct(RightSelect rhs) const
     {
-      return union_all(Statement::of(*this), rhs);
+      return union_all(statement_of(*this), rhs);
     }
   };
 

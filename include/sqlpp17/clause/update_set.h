@@ -113,14 +113,14 @@ namespace sqlpp
     template <typename Connection>
     [[nodiscard]] auto _run(Connection& connection) const
     {
-      if (any_has_value(static_cast<const clause_base<update_set_t<Assignments...>, Statement>&>(Statement::of(*this))
+      if (any_has_value(static_cast<const clause_base<update_set_t<Assignments...>, Statement>&>(statement_of(*this))
                             ._assignments))
       {
-        return connection.update(Statement::of(*this));
+        return connection.update(statement_of(*this));
       }
       else
       {
-        return decltype(connection.update(Statement::of(*this))){};
+        return decltype(connection.update(statement_of(*this))){};
       }
     }
   };

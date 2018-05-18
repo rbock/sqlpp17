@@ -135,22 +135,22 @@ namespace sqlpp
     template <typename Connection>
     [[nodiscard]] auto _run(Connection& connection) const
     {
-      using _result_handle_t = decltype(connection.select(Statement::of(*this)));
+      using _result_handle_t = decltype(connection.select(statement_of(*this)));
       if constexpr (has_result_row_v<_result_handle_t>)
       {
-        return connection.select(Statement::of(*this));
+        return connection.select(statement_of(*this));
       }
       else
       {
         return ::sqlpp::result_t<result_row_of_t<result_base>, _result_handle_t>{
-            connection.select(Statement::of(*this))};
+            connection.select(statement_of(*this))};
       }
     }
 
     template <typename Connection>
     [[nodiscard]] auto _prepare(Connection& connection) const
     {
-      return prepared_statement_t{*this, connection.prepare_select(Statement::of(*this))};
+      return prepared_statement_t{*this, connection.prepare_select(statement_of(*this))};
     }
 
   public:

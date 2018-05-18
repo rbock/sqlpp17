@@ -133,19 +133,6 @@ namespace sqlpp
 #warning: result_base is not needed as a base class, it can be determined in the run method
                     public result_base<get_result_clause_t<Clauses...>, statement<Clauses...>>
   {
-    template <typename, typename>
-    friend class clause_base;
-
-    template <typename, typename>
-    friend class result_base;
-
-		// Make free function
-    template <typename Base>
-    static auto of(const Base& base)
-    {
-      return static_cast<const statement&>(base);
-    }
-
   public:
     constexpr statement()
     {
@@ -193,6 +180,13 @@ namespace sqlpp
 
 	template<typename Clause, typename... Clauses>
 	auto statement_of(const clause_base<Clause, statement<Clauses...>>& base)
+	{
+		return static_cast<const statement<Clauses...>&>(base);
+	}
+
+	// Get rid of this
+	template<typename Clause, typename... Clauses>
+	auto statement_of(const result_base<Clause, statement<Clauses...>>& base)
 	{
 		return static_cast<const statement<Clauses...>&>(base);
 	}
