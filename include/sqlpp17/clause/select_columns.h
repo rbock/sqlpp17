@@ -135,22 +135,22 @@ namespace sqlpp
     template <typename Connection>
     [[nodiscard]] auto _run(Connection& connection) const
     {
-      using _result_handle_t = decltype(connection.select(Statement::of(this)));
+      using _result_handle_t = decltype(connection.select(Statement::of(*this)));
       if constexpr (has_result_row_v<_result_handle_t>)
       {
-        return connection.select(Statement::of(this));
+        return connection.select(Statement::of(*this));
       }
       else
       {
         return ::sqlpp::result_t<result_row_of_t<result_base>, _result_handle_t>{
-            connection.select(Statement::of(this))};
+            connection.select(Statement::of(*this))};
       }
     }
 
     template <typename Connection>
     [[nodiscard]] auto _prepare(Connection& connection) const
     {
-      return prepared_statement_t{*this, connection.prepare_select(Statement::of(this))};
+      return prepared_statement_t{*this, connection.prepare_select(Statement::of(*this))};
     }
 
   public:
@@ -218,7 +218,7 @@ namespace sqlpp
     {
       if constexpr (constexpr auto check = check_select_columns_arg<remove_optional_t<Columns>...>(); check)
       {
-        return Statement::replace_clause(this, select_columns_t<Columns...>{std::tuple(columns...)});
+        return Statement::replace_clause(*this, select_columns_t<Columns...>{std::tuple(columns...)});
       }
       else
       {
@@ -231,7 +231,7 @@ namespace sqlpp
     {
       if constexpr (constexpr auto check = check_select_columns_arg<remove_optional_t<Columns>...>(); check)
       {
-        return Statement::replace_clause(this, select_columns_t<Columns...>{columns});
+        return Statement::replace_clause(*this, select_columns_t<Columns...>{columns});
       }
       else
       {
@@ -244,7 +244,7 @@ namespace sqlpp
     {
       if constexpr (constexpr auto check = check_select_columns_arg<remove_optional_t<Columns>...>(); check)
       {
-        return Statement::replace_clause(this, select_columns_t<Columns...>{columns._columns});
+        return Statement::replace_clause(*this, select_columns_t<Columns...>{columns._columns});
       }
       else
       {

@@ -116,13 +116,13 @@ namespace sqlpp
     template <typename Connection>
     [[nodiscard]] auto _run(Connection& connection) const
     {
-      return connection.insert(Statement::of(this));
+      return connection.insert(Statement::of(*this));
     }
 
     template <typename Connection>
     [[nodiscard]] auto _prepare(Connection& connection) const
     {
-      return prepared_statement_t{*this, connection.prepare_insert(Statement::of(this))};
+      return prepared_statement_t{*this, connection.prepare_insert(Statement::of(*this))};
     }
   };
 

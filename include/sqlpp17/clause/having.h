@@ -135,7 +135,7 @@ namespace sqlpp
       constexpr auto check = check_having_arg(condition);
       if constexpr (check)
       {
-        return Statement::replace_clause(this, having_t<Condition>{condition});
+        return Statement::replace_clause(*this, having_t<Condition>{condition});
       }
       else
       {

@@ -131,7 +131,7 @@ namespace sqlpp
       constexpr auto check = check_offset_arg<remove_optional_t<Value>>();
       if constexpr (check)
       {
-        return Statement::replace_clause(this, offset_t<Value>{value});
+        return Statement::replace_clause(*this, offset_t<Value>{value});
       }
       else
       {

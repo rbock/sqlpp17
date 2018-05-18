@@ -139,7 +139,7 @@ namespace sqlpp
     {
       if constexpr (constexpr auto check = check_order_by_arg(expressions...); check)
       {
-        return Statement::replace_clause(this, order_by_t{std::tuple{expressions...}});
+        return Statement::replace_clause(*this, order_by_t{std::tuple{expressions...}});
       }
       else
       {
@@ -152,7 +152,7 @@ namespace sqlpp
     {
       if constexpr (constexpr auto check = check_order_by_arg(std::declval<Expressions>()...); check)
       {
-        return Statement::replace_clause(this, order_by_t{expressions});
+        return Statement::replace_clause(*this, order_by_t{expressions});
       }
       else
       {

@@ -251,28 +251,28 @@ namespace sqlpp
     template <typename Connection>
     [[nodiscard]] auto _run(Connection& connection) const
     {
-      if (static_cast<const clause_base<insert_multi_values_t<Assignments...>, Statement>&>(Statement::of(this))
+      if (static_cast<const clause_base<insert_multi_values_t<Assignments...>, Statement>&>(Statement::of(*this))
               ._rows.empty())
       {
-        return decltype(connection.insert(Statement::of(this))){};
+        return decltype(connection.insert(Statement::of(*this))){};
       }
       else
       {
-        return connection.insert(Statement::of(this));
+        return connection.insert(Statement::of(*this));
       }
     }
 
     template <typename Connection>
     [[nodiscard]] auto _prepare(Connection& connection) const
     {
-      if (static_cast<const clause_base<insert_multi_values_t<Assignments...>, Statement>&>(Statement::of(this))
+      if (static_cast<const clause_base<insert_multi_values_t<Assignments...>, Statement>&>(Statement::of(*this))
               ._rows.empty())
       {
         throw ::sqlpp::exception("Cannot prepare zero-line insert");
       }
       else
       {
-        return connection.prepare_insert(Statement::of(this));
+        return connection.prepare_insert(Statement::of(*this));
       }
     }
   };
@@ -375,7 +375,7 @@ namespace sqlpp
 
     [[nodiscard]] constexpr auto default_values() const
     {
-      return Statement::replace_clause(this, insert_default_values_t{});
+      return Statement::replace_clause(*this, insert_default_values_t{});
     }
 
     template <typename... Assignments>
@@ -385,7 +385,7 @@ namespace sqlpp
       if constexpr (check)
       {
         using row_t = std::tuple<Assignments...>;
-        return Statement::replace_clause(this, insert_values_t<Assignments...>{row_t{assignments...}});
+        return Statement::replace_clause(*this, insert_values_t<Assignments...>{row_t{assignments...}});
       }
       else
       {
@@ -399,7 +399,7 @@ namespace sqlpp
       constexpr auto check = check_insert_set_args<Assignments...>();
       if constexpr (check)
       {
-        return Statement::replace_clause(this, insert_multi_values_t<Assignments...>{assignments});
+        return Statement::replace_clause(*this, insert_multi_values_t<Assignments...>{assignments});
       }
       else
       {

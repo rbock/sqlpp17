@@ -139,16 +139,16 @@ namespace sqlpp
     template <typename, typename>
     friend class result_base;
 
-		// Make free function (and no pointer!)
+		// Make free function
     template <typename Base>
-    static auto of(const Base* base)
+    static auto of(const Base& base)
     {
-      return static_cast<const statement&>(*base);
+      return static_cast<const statement&>(base);
     }
 
-		// Make free function (and no pointer!)
+		// Make free function
     template <typename OldClause, typename NewClause>
-    static auto replace_clause(const clause_base<OldClause, statement>* base, NewClause newClause)
+    static auto replace_clause(const clause_base<OldClause, statement>& base, NewClause newClause)
     {
       const auto& old_statement = statement::of(base);
       return statement<std::conditional_t<std::is_same_v<Clauses, OldClause>, NewClause, Clauses>...>{

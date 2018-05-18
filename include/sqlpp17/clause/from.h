@@ -123,7 +123,7 @@ namespace sqlpp
       constexpr auto check = check_from_arg(t);
       if constexpr (check)
       {
-        return Statement::replace_clause(this, from_t<Table>{t});
+        return Statement::replace_clause(*this, from_t<Table>{t});
       }
       else
       {
