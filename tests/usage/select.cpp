@@ -55,6 +55,18 @@ int main()
 {
   auto db = ::sqlpp::test::mock_db{};
 
+  // A simple select from without condition
+  for (const auto& row : db(select(all_of(tabPerson)).from(tabPerson)))
+  {
+    display_full_row(row);
+  }
+
+  // A simple select from explicitly without condition
+  for (const auto& row : db(select(all_of(tabPerson)).from(tabPerson).unconditionally()))
+  {
+    display_full_row(row);
+  }
+
   // A simple select from where
   for (const auto& row : db(select(all_of(tabPerson)).from(tabPerson).where(tabPerson.isManager)))
   {
