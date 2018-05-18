@@ -133,7 +133,7 @@ namespace sqlpp
       constexpr auto check = check_limit_arg<remove_optional_t<Value>>();
       if constexpr (check)
       {
-        return Statement::replace_clause(*this, limit_t<Value>{value});
+        return new_statement(*this, limit_t<Value>{value});
       }
       else
       {

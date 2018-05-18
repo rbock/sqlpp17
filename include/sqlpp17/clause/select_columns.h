@@ -218,7 +218,7 @@ namespace sqlpp
     {
       if constexpr (constexpr auto check = check_select_columns_arg<remove_optional_t<Columns>...>(); check)
       {
-        return Statement::replace_clause(*this, select_columns_t<Columns...>{std::tuple(columns...)});
+        return new_statement(*this, select_columns_t<Columns...>{std::tuple(columns...)});
       }
       else
       {
@@ -231,7 +231,7 @@ namespace sqlpp
     {
       if constexpr (constexpr auto check = check_select_columns_arg<remove_optional_t<Columns>...>(); check)
       {
-        return Statement::replace_clause(*this, select_columns_t<Columns...>{columns});
+        return new_statement(*this, select_columns_t<Columns...>{columns});
       }
       else
       {
@@ -244,7 +244,7 @@ namespace sqlpp
     {
       if constexpr (constexpr auto check = check_select_columns_arg<remove_optional_t<Columns>...>(); check)
       {
-        return Statement::replace_clause(*this, select_columns_t<Columns...>{columns._columns});
+        return new_statement(*this, select_columns_t<Columns...>{columns._columns});
       }
       else
       {

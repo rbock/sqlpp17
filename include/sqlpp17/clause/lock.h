@@ -111,12 +111,12 @@ namespace sqlpp
 
     [[nodiscard]] constexpr auto for_update() const
     {
-      return Statement::replace_clause(*this, for_update_t{});
+      return new_statement(*this, for_update_t{});
     }
 
     [[nodiscard]] constexpr auto for_share() const
     {
-      return Statement::replace_clause(*this, for_share_t{});
+      return new_statement(*this, for_share_t{});
     }
   };
 

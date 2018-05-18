@@ -146,15 +146,6 @@ namespace sqlpp
       return static_cast<const statement&>(base);
     }
 
-		// Make free function
-    template <typename OldClause, typename NewClause>
-    static auto replace_clause(const clause_base<OldClause, statement>& base, NewClause newClause)
-    {
-      const auto& old_statement = statement::of(base);
-      return statement<std::conditional_t<std::is_same_v<Clauses, OldClause>, NewClause, Clauses>...>{
-          detail::statement_constructor_arg(old_statement, newClause)};
-    }
-
   public:
     constexpr statement()
     {
@@ -199,6 +190,20 @@ namespace sqlpp
       }
     }
   };
+
+	template<typename Clause, typename... Clauses>
+	auto statement_of(const clause_base<Clause, statement<Clauses...>>& base)
+	{
+		return static_cast<const statement<Clauses...>&>(base);
+	}
+
+	template <typename OldClause, typename... Clauses, typename NewClause>
+	auto new_statement(const clause_base<OldClause, statement<Clauses...>>& oldBase, NewClause newClause)
+	{
+		const auto& old_statement = statement_of(oldBase);
+		return statement<std::conditional_t<std::is_same_v<Clauses, OldClause>, NewClause, Clauses>...>{
+				detail::statement_constructor_arg(old_statement, newClause)};
+	}
 
   template <typename... Clauses>
   struct nodes_of<statement<Clauses...>>

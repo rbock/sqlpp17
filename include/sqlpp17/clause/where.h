@@ -145,7 +145,7 @@ namespace sqlpp
 
     [[nodiscard]] constexpr auto unconditionally() const
     {
-      return Statement::replace_clause(*this, unconditionally_t{});
+      return new_statement(*this, unconditionally_t{});
     }
 
     template <typename Condition>
@@ -154,7 +154,7 @@ namespace sqlpp
       constexpr auto check = check_where_arg(condition);
       if constexpr (check)
       {
-        return Statement::replace_clause(*this, where_t<Condition>{condition});
+        return new_statement(*this, where_t<Condition>{condition});
       }
       else
       {
