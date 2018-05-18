@@ -130,6 +130,7 @@ namespace sqlpp
 
   template <typename... Clauses>
   class statement : public clause_base<Clauses, statement<Clauses...>>...,
+#warning: result_base is not needed as a base class, it can be determined in the run method
                     public result_base<get_result_clause_t<Clauses...>, statement<Clauses...>>
   {
     template <typename, typename>
@@ -138,17 +139,14 @@ namespace sqlpp
     template <typename, typename>
     friend class result_base;
 
-    using _clauses = type_vector<Clauses...>;
-
-    template <typename... Cs>
-    using new_statement = statement<Cs...>;
-
+		// Make free function (and no pointer!)
     template <typename Base>
     static auto of(const Base* base)
     {
       return static_cast<const statement&>(*base);
     }
 
+		// Make free function (and no pointer!)
     template <typename OldClause, typename NewClause>
     static auto replace_clause(const clause_base<OldClause, statement>* base, NewClause newClause)
     {

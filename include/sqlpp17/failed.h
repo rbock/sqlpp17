@@ -31,6 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
+#warning: This needs to be in a different namespace to prevent operator overloading with other operator&& (aka operator and)
   template <typename T>
   struct failed : public std::false_type
   {

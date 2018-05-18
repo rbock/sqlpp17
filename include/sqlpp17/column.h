@@ -38,6 +38,7 @@ namespace sqlpp
   class column_t : public as_base<column_t<TableSpec, ColumnSpec>>
   {
     static_assert(std::is_base_of_v<::sqlpp::spec_base, TableSpec>);
+    static_assert(std::is_base_of_v<::sqlpp::spec_base, ColumnSpec>);
 
   public:
     template <typename T>
