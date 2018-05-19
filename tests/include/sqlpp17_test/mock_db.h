@@ -92,7 +92,7 @@ namespace sqlpp::test
     {
       if constexpr (constexpr auto check = check_statement_executable<mock_db>(type_v<Statement>); check)
       {
-        return statement.run(*this);
+        return run_statement(*this, statement);
       }
       else
       {

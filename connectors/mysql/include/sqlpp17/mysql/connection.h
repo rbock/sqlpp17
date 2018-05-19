@@ -311,7 +311,7 @@ namespace sqlpp::mysql
                         check_statement_executable<base_connection>(type_v<::sqlpp::statement<Clauses...>>);
                     check)
       {
-        return statement.run(*this);
+        return run_statement(*this, statement);
       }
       else
       {

@@ -136,19 +136,6 @@ namespace sqlpp
     using result_row_t = result_row_of_t<result_base_t>;
 
     template <typename Connection>
-    [[nodiscard]] auto run(Connection& connection) const
-    {
-      if constexpr (constexpr auto check = check_statement_executable<Connection>(type_v<statement>); check)
-      {
-        return result_base_t::_run(connection);
-      }
-      else
-      {
-        return ::sqlpp::bad_expression_t{check};
-      }
-    }
-
-    template <typename Connection>
     [[nodiscard]] auto prepare(Connection& connection) const
     {
       if constexpr (constexpr auto check = check_statement_preparable<Connection>(type_v<statement>); check)
@@ -163,6 +150,12 @@ namespace sqlpp
   };
 
   template <typename Clause, typename... Clauses>
+  auto clause_of(const statement<Clauses...>& s)
+  {
+    return static_cast<const clause_base<Clause, statement<Clauses...>>&>(s);
+  }
+
+  template <typename Clause, typename... Clauses>
   auto statement_of(const clause_base<Clause, statement<Clauses...>>& base)
   {
     return static_cast<const statement<Clauses...>&>(base);
@@ -174,6 +167,19 @@ namespace sqlpp
     const auto& old_statement = statement_of(oldBase);
     return statement<std::conditional_t<std::is_same_v<Clauses, OldClause>, NewClause, Clauses>...>{
         detail::statement_constructor_arg(old_statement, newClause)};
+  }
+
+  template <typename Connection, typename... Clauses>
+  [[nodiscard]] auto run_statement(Connection& connection, const statement<Clauses...>& s)
+  {
+    if constexpr (constexpr auto check = check_statement_executable<Connection>(type_v<statement<Clauses...>>); check)
+    {
+      return clause_of<get_result_clause_t<Clauses...>>(s)._run(connection);
+    }
+    else
+    {
+      return ::sqlpp::bad_expression_t{check};
+    }
   }
 
   template <typename... Clauses>

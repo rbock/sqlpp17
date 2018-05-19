@@ -167,7 +167,7 @@ namespace sqlpp::postgresql
                         check_statement_executable<connection_t>(type_v<::sqlpp::statement<Clauses...>>);
                     check)
       {
-        return statement.run(*this);
+        return run_statement(*this, statement);
       }
       else
       {
