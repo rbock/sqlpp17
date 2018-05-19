@@ -111,8 +111,7 @@ namespace sqlpp
   template <typename Db, typename... Clauses>
   constexpr auto check_statement_executable(const type_t<statement<Clauses...>>& s)
   {
-    using _statement_t = statement<Clauses...>;
-    if constexpr (_statement_t::get_no_of_parameters() != 0)
+    if constexpr (parameters_of_t<statement<Clauses...>>::size() != 0)
     {
       return failed<assert_execute_without_parameters>{};
     }
@@ -135,11 +134,6 @@ namespace sqlpp
 
     using result_base_t = clause_base<get_result_clause_t<Clauses...>, statement<Clauses...>>;
     using result_row_t = result_row_of_t<result_base_t>;
-
-    [[nodiscard]] static constexpr auto get_no_of_parameters()
-    {
-      return parameters_of_t<statement>::size();
-    }
 
     template <typename Connection>
     [[nodiscard]] auto run(Connection& connection) const
@@ -168,19 +162,19 @@ namespace sqlpp
     }
   };
 
-	template<typename Clause, typename... Clauses>
-	auto statement_of(const clause_base<Clause, statement<Clauses...>>& base)
-	{
-		return static_cast<const statement<Clauses...>&>(base);
-	}
+  template <typename Clause, typename... Clauses>
+  auto statement_of(const clause_base<Clause, statement<Clauses...>>& base)
+  {
+    return static_cast<const statement<Clauses...>&>(base);
+  }
 
-	template <typename OldClause, typename... Clauses, typename NewClause>
-	auto new_statement(const clause_base<OldClause, statement<Clauses...>>& oldBase, NewClause newClause)
-	{
-		const auto& old_statement = statement_of(oldBase);
-		return statement<std::conditional_t<std::is_same_v<Clauses, OldClause>, NewClause, Clauses>...>{
-				detail::statement_constructor_arg(old_statement, newClause)};
-	}
+  template <typename OldClause, typename... Clauses, typename NewClause>
+  auto new_statement(const clause_base<OldClause, statement<Clauses...>>& oldBase, NewClause newClause)
+  {
+    const auto& old_statement = statement_of(oldBase);
+    return statement<std::conditional_t<std::is_same_v<Clauses, OldClause>, NewClause, Clauses>...>{
+        detail::statement_constructor_arg(old_statement, newClause)};
+  }
 
   template <typename... Clauses>
   struct nodes_of<statement<Clauses...>>

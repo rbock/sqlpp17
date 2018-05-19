@@ -425,7 +425,7 @@ namespace sqlpp::mysql
     [[nodiscard]] auto prepare_insert(const Statement& statement)
     {
       return detail::prepared_insert_t{
-          detail::prepare(*this, to_sql_string_c(context_t{}, statement), statement.get_no_of_parameters(), 0)};
+          detail::prepare(*this, to_sql_string_c(context_t{}, statement), parameters_of_t<Statement>::size(), 0)};
     }
 
     template <typename Statement>
@@ -439,7 +439,7 @@ namespace sqlpp::mysql
     [[nodiscard]] auto prepare_update(const Statement& statement)
     {
       return detail::prepared_update_t{
-          detail::prepare(*this, to_sql_string_c(context_t{}, statement), statement.get_no_of_parameters(), 0)};
+          detail::prepare(*this, to_sql_string_c(context_t{}, statement), parameters_of_t<Statement>::size(), 0)};
     }
 
     template <typename Statement>
@@ -453,7 +453,7 @@ namespace sqlpp::mysql
     [[nodiscard]] auto prepare_delete_from(const Statement& statement)
     {
       return detail::prepared_delete_from_t{
-          detail::prepare(*this, to_sql_string_c(context_t{}, statement), statement.get_no_of_parameters(), 0)};
+          detail::prepare(*this, to_sql_string_c(context_t{}, statement), parameters_of_t<Statement>::size(), 0)};
     }
 
     template <typename Statement>
@@ -474,7 +474,7 @@ namespace sqlpp::mysql
     [[nodiscard]] auto prepare_select(const Statement& statement)
     {
       return detail::prepared_select_t{detail::prepare(*this, to_sql_string_c(context_t{}, statement),
-                                                       statement.get_no_of_parameters(),
+                                                       parameters_of_t<Statement>::size(),
                                                        statement.get_no_of_result_columns())};
     }
   };
