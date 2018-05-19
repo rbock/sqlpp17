@@ -138,7 +138,7 @@ namespace sqlpp::sqlite3
     friend class ::sqlpp::statement;
 
     template <typename Clause, typename Statement>
-    friend class ::sqlpp::result_base;
+    friend class ::sqlpp::clause_base;
 
     friend class ::sqlpp::sqlite3::connection_pool_t;
 

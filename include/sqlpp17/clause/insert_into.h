@@ -72,6 +72,18 @@ namespace sqlpp
     {
     }
 
+    template <typename Connection>
+    [[nodiscard]] auto _run(Connection& connection) const
+    {
+      return connection.insert(statement_of(*this));
+    }
+
+    template <typename Connection>
+    [[nodiscard]] auto _prepare(Connection& connection) const
+    {
+      return prepared_statement_t{*this, connection.prepare_insert(statement_of(*this))};
+    }
+
     Table _table;
   };
 
@@ -108,23 +120,6 @@ namespace sqlpp
 
   template <typename Table>
   constexpr auto is_result_clause_v<insert_into_t<Table>> = true;
-
-  template <typename Table, typename Statement>
-  class result_base<insert_into_t<Table>, Statement>
-  {
-  public:
-    template <typename Connection>
-    [[nodiscard]] auto _run(Connection& connection) const
-    {
-      return connection.insert(statement_of(*this));
-    }
-
-    template <typename Connection>
-    [[nodiscard]] auto _prepare(Connection& connection) const
-    {
-      return prepared_statement_t{*this, connection.prepare_insert(statement_of(*this))};
-    }
-  };
 
   template <typename Table>
   [[nodiscard]] constexpr auto insert_into(Table t)

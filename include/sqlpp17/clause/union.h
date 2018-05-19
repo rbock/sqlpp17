@@ -76,24 +76,19 @@ namespace sqlpp
     {
     }
 
+    template <typename Connection>
+    [[nodiscard]] auto _run(Connection& connection) const
+    {
+      return connection.select(statement_of(*this), result_row_t{});
+    }
+
     Flag _flag;
     LeftSelect _left;
     RightSelect _right;
   };
 
   template <typename Flag, typename LeftSelect, typename RightSelect, typename Statement>
-  class result_base<union_t<Flag, LeftSelect, RightSelect>, Statement>
-  {
-  public:
-    template <typename Connection>
-    [[nodiscard]] auto _run(Connection& connection) const
-    {
-      return connection.select(statement_of(*this), result_row_t{});
-    }
-  };
-
-  template <typename Flag, typename LeftSelect, typename RightSelect, typename Statement>
-  struct result_row_of<result_base<union_t<Flag, LeftSelect, RightSelect>, Statement>>
+  struct result_row_of<clause_base<union_t<Flag, LeftSelect, RightSelect>, Statement>>
   {
     using type = result_row_of_t<LeftSelect>;
   };

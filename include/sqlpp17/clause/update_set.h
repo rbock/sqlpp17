@@ -100,16 +100,6 @@ namespace sqlpp
     {
     }
 
-    std::tuple<Assignments...> _assignments;
-  };
-
-  template <typename... Assignments>
-  constexpr auto is_result_clause_v<update_set_t<Assignments...>> = true;
-
-  template <typename... Assignments, typename Statement>
-  class result_base<update_set_t<Assignments...>, Statement>
-  {
-  public:
     template <typename Connection>
     [[nodiscard]] auto _run(Connection& connection) const
     {
@@ -123,7 +113,12 @@ namespace sqlpp
         return decltype(connection.update(statement_of(*this))){};
       }
     }
+
+    std::tuple<Assignments...> _assignments;
   };
+
+  template <typename... Assignments>
+  constexpr auto is_result_clause_v<update_set_t<Assignments...>> = true;
 
   template <typename Context, typename... Assignments, typename Statement>
   [[nodiscard]] auto to_sql_string(Context& context, const clause_base<update_set_t<Assignments...>, Statement>& t)

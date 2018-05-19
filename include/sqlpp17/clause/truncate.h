@@ -69,16 +69,6 @@ namespace sqlpp
     {
     }
 
-    Table _table;
-  };
-
-  template <typename Table>
-  constexpr auto is_result_clause_v<truncate_t<Table>> = true;
-
-  template <typename Table, typename Statement>
-  class result_base<truncate_t<Table>, Statement>
-  {
-  protected:
     template <typename Connection>
     [[nodiscard]] auto _run(Connection& connection) const
     {
@@ -90,7 +80,11 @@ namespace sqlpp
     {
       return prepared_statement_t{*this, connection.prepare_execute(statement_of(*this))};
     }
+    Table _table;
   };
+
+  template <typename Table>
+  constexpr auto is_result_clause_v<truncate_t<Table>> = true;
 
   template <typename Context, typename Table, typename Statement>
   [[nodiscard]] auto to_sql_string(Context& context, const clause_base<truncate_t<Table>, Statement>& t)

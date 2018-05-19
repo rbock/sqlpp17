@@ -41,14 +41,6 @@ namespace sqlpp
   {
   };
 
-  template <typename Statement>
-  class result_base<no_result, Statement>
-  {
-  };
-
-  template <>
-  constexpr auto is_result_clause_v<no_result> = true;  // yes, no result is also a result :-)
-
   template <typename T>
   struct result_wrapper
   {
@@ -129,9 +121,7 @@ namespace sqlpp
   }
 
   template <typename... Clauses>
-  class statement : public clause_base<Clauses, statement<Clauses...>>...,
-#warning: result_base is not needed as a base class, it can be determined in the run method
-                    public result_base<get_result_clause_t<Clauses...>, statement<Clauses...>>
+  class statement : public clause_base<Clauses, statement<Clauses...>>...
   {
   public:
     constexpr statement()
@@ -143,7 +133,7 @@ namespace sqlpp
     {
     }
 
-    using result_base_t = result_base<get_result_clause_t<Clauses...>, statement<Clauses...>>;
+    using result_base_t = clause_base<get_result_clause_t<Clauses...>, statement<Clauses...>>;
     using result_row_t = result_row_of_t<result_base_t>;
 
     [[nodiscard]] static constexpr auto get_no_of_parameters()
@@ -180,13 +170,6 @@ namespace sqlpp
 
 	template<typename Clause, typename... Clauses>
 	auto statement_of(const clause_base<Clause, statement<Clauses...>>& base)
-	{
-		return static_cast<const statement<Clauses...>&>(base);
-	}
-
-	// Get rid of this
-	template<typename Clause, typename... Clauses>
-	auto statement_of(const result_base<Clause, statement<Clauses...>>& base)
 	{
 		return static_cast<const statement<Clauses...>&>(base);
 	}

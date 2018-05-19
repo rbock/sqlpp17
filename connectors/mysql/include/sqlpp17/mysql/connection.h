@@ -248,7 +248,7 @@ namespace sqlpp::mysql
     friend class ::sqlpp::statement;
 
     template <typename Clause, typename Statement>
-    friend class ::sqlpp::result_base;
+    friend class ::sqlpp::clause_base;
 
   public:
     base_connection() = delete;

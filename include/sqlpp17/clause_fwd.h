@@ -43,10 +43,7 @@ namespace sqlpp
   };
 
   template <typename Clause, typename Statement>
-  class result_base;
-
-  template <typename Clause, typename Statement>
-  struct parameters_of<result_base<Clause, Statement>>
+  struct parameters_of<clause_base<Clause, Statement>>
   {
     using type = parameters_of_t<Statement>;
   };

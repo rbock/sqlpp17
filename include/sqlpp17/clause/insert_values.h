@@ -232,22 +232,6 @@ namespace sqlpp
     {
     }
 
-    std::vector<std::tuple<Assignments...>> _rows;
-  };
-
-  template <typename Db, typename Statement, typename... Assignments>
-  constexpr auto check_clause_preparable(const type_t<clause_base<insert_multi_values_t<Assignments...>, Statement>>&)
-  {
-    return check_clause_preparable<Db>(type_t<clause_base<insert_values_t<Assignments...>, Statement>>{});
-  }
-
-  template <typename... Assignments>
-  constexpr auto is_result_clause_v<insert_multi_values_t<Assignments...>> = true;
-
-  template <typename... Assignments, typename Statement>
-  class result_base<insert_multi_values_t<Assignments...>, Statement>
-  {
-  public:
     template <typename Connection>
     [[nodiscard]] auto _run(Connection& connection) const
     {
@@ -275,7 +259,17 @@ namespace sqlpp
         return connection.prepare_insert(statement_of(*this));
       }
     }
+    std::vector<std::tuple<Assignments...>> _rows;
   };
+
+  template <typename Db, typename Statement, typename... Assignments>
+  constexpr auto check_clause_preparable(const type_t<clause_base<insert_multi_values_t<Assignments...>, Statement>>&)
+  {
+    return check_clause_preparable<Db>(type_t<clause_base<insert_values_t<Assignments...>, Statement>>{});
+  }
+
+  template <typename... Assignments>
+  constexpr auto is_result_clause_v<insert_multi_values_t<Assignments...>> = true;
 
   // this function assumes that there is something to do
   // the check if there is at least one row has to be performed elsewhere
