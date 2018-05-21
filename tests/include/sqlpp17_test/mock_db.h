@@ -105,7 +105,7 @@ namespace sqlpp::test
     {
       if constexpr (constexpr auto check = check_statement_preparable<mock_db>(type_v<Statement>); check)
       {
-        return statement.prepare(*this);
+        return prepare_statement(*this, statement);
       }
       else
       {

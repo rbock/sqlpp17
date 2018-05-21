@@ -131,22 +131,6 @@ namespace sqlpp
     constexpr statement(Arg arg) : clause_base<Clauses, statement>(arg)...
     {
     }
-
-    using result_base_t = clause_base<get_result_clause_t<Clauses...>, statement<Clauses...>>;
-    using result_row_t = result_row_of_t<result_base_t>;
-
-    template <typename Connection>
-    [[nodiscard]] auto prepare(Connection& connection) const
-    {
-      if constexpr (constexpr auto check = check_statement_preparable<Connection>(type_v<statement>); check)
-      {
-        return result_base_t::_prepare(connection);
-      }
-      else
-      {
-        return ::sqlpp::bad_expression_t{check};
-      }
-    }
   };
 
   template <typename Clause, typename... Clauses>
@@ -182,6 +166,19 @@ namespace sqlpp
     }
   }
 
+  template <typename Connection, typename... Clauses>
+  [[nodiscard]] auto prepare_statement(Connection& connection, const statement<Clauses...>& s)
+  {
+    if constexpr (constexpr auto check = check_statement_preparable<Connection>(type_v<statement<Clauses...>>); check)
+    {
+      return clause_of<get_result_clause_t<Clauses...>>(s)._prepare(connection);
+    }
+    else
+    {
+      return ::sqlpp::bad_expression_t{check};
+    }
+  }
+
   template <typename... Clauses>
   struct nodes_of<statement<Clauses...>>
   {
@@ -197,7 +194,7 @@ namespace sqlpp
   template <typename... Clauses>
   struct result_row_of<statement<Clauses...>>
   {
-    using type = typename statement<Clauses...>::result_row_t;
+    using type = result_row_of_t<clause_base<get_result_clause_t<Clauses...>, statement<Clauses...>>>;
   };
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_statement_contains_unique_clauses,

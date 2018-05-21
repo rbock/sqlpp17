@@ -329,7 +329,7 @@ namespace sqlpp::mysql
     {
       if constexpr (constexpr auto check = check_statement_preparable<base_connection>(type_v<Statement>); check)
       {
-        return statement.prepare(*this);
+        return prepare_statement(*this, statement);
       }
       else
       {

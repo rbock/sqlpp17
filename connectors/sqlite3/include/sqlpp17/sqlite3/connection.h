@@ -189,7 +189,7 @@ namespace sqlpp::sqlite3
     {
       if constexpr (constexpr auto check = check_statement_preparable<connection_t>(type_v<Statement>); check)
       {
-        return statement.prepare(*this);
+        return prepare_statement(*this, statement);
       }
       else
       {
