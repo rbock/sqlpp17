@@ -107,8 +107,9 @@ namespace sqlpp
   constexpr auto is_result_clause_v<update_set_t<Assignments...>> = true;
 
   template <typename... Assignments>
-  struct is_update_clause<update_set_t<Assignments...>> : public std::true_type
+  struct clause_result_type<update_set_t<Assignments...>>
   {
+    using type = update_result;
   };
 
   template <typename Context, typename... Assignments, typename Statement>

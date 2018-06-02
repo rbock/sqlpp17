@@ -112,45 +112,40 @@ namespace sqlpp
   template <typename T>
   inline constexpr auto is_insert_required_v = is_insert_required<T>::value;
 
+  struct no_result;
+
+  struct insert_result;
+  struct update_result;
+  struct delete_result;
+  struct select_result;
+  struct execute_result;
+
   template <typename T>
-  struct is_insert_clause : std::false_type
+  struct result_clause_of
   {
+    using type = no_result;
   };
 
   template <typename T>
-  inline constexpr auto is_insert_clause_v = is_insert_clause<T>::value;
+  using result_clause_of_t = typename result_clause_of<T>::type;
 
   template <typename T>
-  struct is_delete_clause : std::false_type
+  struct result_type_of
   {
+    using type = no_result;
   };
 
   template <typename T>
-  inline constexpr auto is_delete_clause_v = is_delete_clause<T>::value;
+  using result_type_of_t = typename result_type_of<T>::type;
 
   template <typename T>
-  struct is_update_clause : std::false_type
+  struct clause_result_type
   {
+    using type = no_result;
   };
 
-  template <typename T>
-  inline constexpr auto is_update_clause_v = is_update_clause<T>::value;
-
-  template <typename T>
-  struct is_select_clause : std::false_type
-  {
-  };
-
-  template <typename T>
-  inline constexpr auto is_select_clause_v = is_select_clause<T>::value;
-
-  template <typename T>
-  struct is_execute_clause : std::false_type
-  {
-  };
-
-  template <typename T>
-  inline constexpr auto is_execute_clause_v = is_execute_clause<T>::value;
+  template<typename T>
+  using clause_result_type_t = typename clause_result_type<T>::type;
 
   template <typename T>
   constexpr auto is_failed_v = false;
@@ -200,14 +195,13 @@ namespace sqlpp
     return is_column_v<T>;
   }
 
-  template <typename T>
-  constexpr auto is_statement_v = false;
+  template<typename >
+  struct is_statement : public std::false_type
+  {
+  };
 
   template <typename T>
-  constexpr auto is_statement(const T&)
-  {
-    return is_statement_v<T>;
-  }
+  constexpr auto is_statement_v = is_statement<T>::value;
 
   template <typename T>
   struct result_row_of

@@ -75,8 +75,9 @@ namespace sqlpp
   constexpr auto is_result_clause_v<truncate_t<Table>> = true;
 
   template <typename Table>
-  struct is_execute_clause<truncate_t<Table>> : public std::true_type
+  struct clause_result_type<truncate_t<Table>>
   {
+    using type = execute_result;
   };
 
   template <typename Context, typename Table, typename Statement>

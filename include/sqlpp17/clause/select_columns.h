@@ -135,8 +135,9 @@ namespace sqlpp
   constexpr auto is_result_clause_v<select_columns_t<Columns...>> = true;
 
   template <typename... Columns>
-  struct is_select_clause<select_columns_t<Columns...>> : public std::true_type
+  struct clause_result_type<select_columns_t<Columns...>>
   {
+    using type = select_result;
   };
 
   template <typename... Columns, typename Statement>

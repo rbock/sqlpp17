@@ -60,8 +60,9 @@ namespace sqlpp
   constexpr auto is_result_clause_v<union_t<Flag, LeftSelect, RightSelect>> = true;
 
   template <typename Flag, typename LeftSelect, typename RightSelect>
-  struct is_select_clause<union_t<Flag, LeftSelect, RightSelect>> : public std::true_type
+  struct clause_result_type<union_t<Flag, LeftSelect, RightSelect>>
   {
+    using type = select_result;
   };
 
   template <typename Flag, typename LeftSelect, typename RightSelect>

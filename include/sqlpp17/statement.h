@@ -37,10 +37,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  struct no_result
-  {
-  };
-
   template <typename T>
   struct result_wrapper
   {
@@ -61,13 +57,19 @@ namespace sqlpp
   };
 
   template <typename... Clauses>
-  struct get_result_clause
+  struct result_clause_of<statement<Clauses...>>
   {
     using type = typename decltype((result_wrapper<no_result>{} << ... << result_wrapper<Clauses>{}))::type;
   };
 
   template <typename... Clauses>
-  using get_result_clause_t = typename get_result_clause<Clauses...>::type;
+  struct result_type_of<statement<Clauses...>>
+  {
+    using type = clause_result_type_t<result_clause_of_t<statement<Clauses...>>>;
+  };
+
+  template <typename T>
+  using result_type_of_t = typename result_type_of<T>::type;
 
   template <typename Db, typename Clause, typename Statement>
   constexpr auto check_clause_preparable(const type_t<clause_base<Clause, Statement>>&)
@@ -134,25 +136,15 @@ namespace sqlpp
   };
 
   template<typename T>
-  struct is_insert_statement : public std::false_type
+  struct is_insert_statement : public std::conjunction<is_statement<T>, std::is_same<result_type_of_t<T>, insert_result>>
   {
   };
 
   template<typename T>
   inline static constexpr auto is_insert_statement_v = is_insert_statement<T>::value;
 
-  template<typename... Clauses>
-  struct is_insert_statement<statement<Clauses...>>: public is_insert_clause<get_result_clause_t<Clauses...>>
-  {
-  };
-
   template<typename T>
-  struct is_delete_statement : public std::false_type
-  {
-  };
-
-  template<typename... Clauses>
-  struct is_delete_statement<statement<Clauses...>>: public is_delete_clause<get_result_clause_t<Clauses...>>
+  struct is_delete_statement : public std::conjunction<is_statement<T>, std::is_same<result_type_of_t<T>, delete_result>>
   {
   };
 
@@ -160,12 +152,7 @@ namespace sqlpp
   inline static constexpr auto is_delete_statement_v = is_delete_statement<T>::value;
 
   template<typename T>
-  struct is_update_statement : public std::false_type
-  {
-  };
-
-  template<typename... Clauses>
-  struct is_update_statement<statement<Clauses...>>: public is_update_clause<get_result_clause_t<Clauses...>>
+  struct is_update_statement : public std::conjunction<is_statement<T>, std::is_same<result_type_of_t<T>, update_result>>
   {
   };
 
@@ -173,12 +160,7 @@ namespace sqlpp
   inline static constexpr auto is_update_statement_v = is_update_statement<T>::value;
 
   template<typename T>
-  struct is_select_statement : public std::false_type
-  {
-  };
-
-  template<typename... Clauses>
-  struct is_select_statement<statement<Clauses...>>: public is_select_clause<get_result_clause_t<Clauses...>>
+  struct is_select_statement : public std::conjunction<is_statement<T>, std::is_same<result_type_of_t<T>, select_result>>
   {
   };
 
@@ -186,12 +168,7 @@ namespace sqlpp
   inline static constexpr auto is_select_statement_v = is_select_statement<T>::value;
 
   template<typename T>
-  struct is_execute_statement : public std::false_type
-  {
-  };
-
-  template<typename... Clauses>
-  struct is_execute_statement<statement<Clauses...>>: public is_execute_clause<get_result_clause_t<Clauses...>>
+  struct is_execute_statement : public std::conjunction<is_statement<T>, std::is_same<result_type_of_t<T>, execute_result>>
   {
   };
 
@@ -225,7 +202,9 @@ namespace sqlpp
   };
 
   template <typename... Clauses>
-  constexpr auto is_statement_v<statement<Clauses...>> = true;
+  struct is_statement<statement<Clauses...>> : public std::true_type
+  {
+  };
 
   template <typename... Clauses>
   constexpr auto requires_braces_v<statement<Clauses...>> = true;
@@ -233,7 +212,7 @@ namespace sqlpp
   template <typename... Clauses>
   struct result_row_of<statement<Clauses...>>
   {
-    using type = result_row_of_t<clause_base<get_result_clause_t<Clauses...>, statement<Clauses...>>>;
+    using type = result_row_of_t<clause_base<result_clause_of_t<statement<Clauses...>>, statement<Clauses...>>>;
   };
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_statement_contains_unique_clauses,

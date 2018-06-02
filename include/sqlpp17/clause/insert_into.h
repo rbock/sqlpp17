@@ -109,8 +109,9 @@ namespace sqlpp
   constexpr auto is_result_clause_v<insert_into_t<Table>> = true;
 
   template <typename Table>
-  struct is_insert_clause<insert_into_t<Table>> : public std::true_type
+  struct clause_result_type<insert_into_t<Table>>
   {
+    using type = insert_result;
   };
 
   template <typename Table>

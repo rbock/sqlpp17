@@ -77,8 +77,9 @@ namespace sqlpp
   constexpr auto is_result_clause_v<drop_table_t<Table>> = true;
 
   template <typename Table>
-  struct is_execute_clause<drop_table_t<Table>> : public std::true_type
+  struct clause_result_type<drop_table_t<Table>>
   {
+    using type = execute_result;
   };
 
   template <typename Context, typename Table, typename Statement>

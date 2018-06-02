@@ -109,8 +109,9 @@ namespace sqlpp
   constexpr auto is_result_clause_v<delete_from_t<Table>> = true;
 
   template <typename Table>
-  struct is_delete_clause<delete_from_t<Table>> : public std::true_type
+  struct clause_result_type<delete_from_t<Table>>
   {
+    using type = delete_result;
   };
 
   template <typename Context, typename Table, typename Statement>
