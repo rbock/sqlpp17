@@ -310,23 +310,24 @@ namespace sqlpp::mysql
       using Statement = ::sqlpp::statement<Clauses...>;
       if constexpr (constexpr auto check = check_statement_executable<base_connection>(type_v<Statement>); check)
       {
-        if constexpr (is_insert_statement_v<Statement>)
+        using ResultType = result_type_of_t<Statement>;
+        if constexpr (std::is_same_v<ResultType, insert_result>)
         {
           return insert(statement);
         }
-        else if constexpr (is_delete_statement_v<Statement>)
+        else if constexpr (std::is_same_v<ResultType, delete_result>)
         {
           return delete_from(statement);
         }
-        else if constexpr (is_update_statement_v<Statement>)
+        else if constexpr (std::is_same_v<ResultType, update_result>)
         {
           return update(statement);
         }
-        else if constexpr (is_select_statement_v<Statement>)
+        else if constexpr (std::is_same_v<ResultType, select_result>)
         {
           return select(statement);
         }
-        else if constexpr (is_execute_statement_v<Statement>)
+        else if constexpr (std::is_same_v<ResultType, execute_result>)
         {
           return execute(statement);
         }
@@ -342,33 +343,30 @@ namespace sqlpp::mysql
       }
     }
 
-    auto execute(const std::string& query)
+    template <typename... Clauses>
+    auto prepare(const ::sqlpp::statement<Clauses...>& statement)
     {
-      detail::execute_query(*this, query);
-    }
-
-    template <typename Statement>
-    auto prepare(const Statement& statement)
-    {
+      using Statement = ::sqlpp::statement<Clauses...>;
       if constexpr (constexpr auto check = check_statement_preparable<base_connection>(type_v<Statement>); check)
       {
-        if constexpr (is_insert_statement_v<Statement>)
+        using ResultType = result_type_of_t<Statement>;
+        if constexpr (std::is_same_v<ResultType, insert_result>)
         {
           return prepare_insert(statement);
         }
-        else if constexpr (is_delete_statement_v<Statement>)
+        else if constexpr (std::is_same_v<ResultType, delete_result>)
         {
           return prepare_delete_from(statement);
         }
-        else if constexpr (is_update_statement_v<Statement>)
+        else if constexpr (std::is_same_v<ResultType, update_result>)
         {
           return prepare_update(statement);
         }
-        else if constexpr (is_select_statement_v<Statement>)
+        else if constexpr (std::is_same_v<ResultType, select_result>)
         {
           return prepare_select(statement);
         }
-        else if constexpr (is_execute_statement_v<Statement>)
+        else if constexpr (std::is_same_v<ResultType, execute_result>)
         {
           return prepare_execute(statement);
         }
@@ -390,7 +388,7 @@ namespace sqlpp::mysql
         throw sqlpp::exception("MySQL: Cannot have more than one open transaction per connection");
       }
 
-      this->execute("START TRANSACTION");
+      detail::execute_query(*this, "START TRANSACTION");
       _transaction_active = true;
     }
 
@@ -402,7 +400,7 @@ namespace sqlpp::mysql
       }
 
       _transaction_active = false;
-      this->execute("COMMIT");
+      detail::execute_query(*this, "COMMIT");
     }
     auto rollback() -> void
     {
@@ -412,7 +410,7 @@ namespace sqlpp::mysql
       }
 
       _transaction_active = false;
-      this->execute("ROLLBACK");
+      detail::execute_query(*this, "ROLLBACK");
     }
 
     static constexpr auto has_debug()
@@ -456,7 +454,7 @@ namespace sqlpp::mysql
     template <typename... Clauses>
     auto execute(const ::sqlpp::statement<Clauses...>& statement)
     {
-      return this->execute(to_sql_string_c(context_t{}, statement));
+      return detail::execute_query(*this, to_sql_string_c(context_t{}, statement));
     }
 
     template <typename Statement>

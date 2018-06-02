@@ -135,46 +135,6 @@ namespace sqlpp
     }
   };
 
-  template<typename T>
-  struct is_insert_statement : public std::conjunction<is_statement<T>, std::is_same<result_type_of_t<T>, insert_result>>
-  {
-  };
-
-  template<typename T>
-  inline static constexpr auto is_insert_statement_v = is_insert_statement<T>::value;
-
-  template<typename T>
-  struct is_delete_statement : public std::conjunction<is_statement<T>, std::is_same<result_type_of_t<T>, delete_result>>
-  {
-  };
-
-  template<typename T>
-  inline static constexpr auto is_delete_statement_v = is_delete_statement<T>::value;
-
-  template<typename T>
-  struct is_update_statement : public std::conjunction<is_statement<T>, std::is_same<result_type_of_t<T>, update_result>>
-  {
-  };
-
-  template<typename T>
-  inline static constexpr auto is_update_statement_v = is_update_statement<T>::value;
-
-  template<typename T>
-  struct is_select_statement : public std::conjunction<is_statement<T>, std::is_same<result_type_of_t<T>, select_result>>
-  {
-  };
-
-  template<typename T>
-  inline static constexpr auto is_select_statement_v = is_select_statement<T>::value;
-
-  template<typename T>
-  struct is_execute_statement : public std::conjunction<is_statement<T>, std::is_same<result_type_of_t<T>, execute_result>>
-  {
-  };
-
-  template<typename T>
-  inline static constexpr auto is_execute_statement_v = is_execute_statement<T>::value;
-
   template <typename Clause, typename... Clauses>
   auto clause_of(const statement<Clauses...>& s)
   {

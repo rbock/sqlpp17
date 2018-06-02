@@ -87,28 +87,30 @@ namespace sqlpp::test
     friend class ::sqlpp::clause_base;
 
   public:
-    template <typename Statement>
-    auto operator()(const Statement& statement)
+    template <typename... Clauses>
+    auto operator()(const ::sqlpp::statement<Clauses...>& statement)
     {
+      using Statement = ::sqlpp::statement<Clauses...>;
       if constexpr (constexpr auto check = check_statement_executable<mock_db>(type_v<Statement>); check)
       {
-        if constexpr (is_insert_statement_v<Statement>)
+        using ResultType = result_type_of_t<Statement>;
+        if constexpr (std::is_same_v<ResultType, insert_result>)
         {
           return insert(statement);
         }
-        else if constexpr (is_delete_statement_v<Statement>)
+        else if constexpr (std::is_same_v<ResultType, delete_result>)
         {
           return delete_from(statement);
         }
-        else if constexpr (is_update_statement_v<Statement>)
+        else if constexpr (std::is_same_v<ResultType, update_result>)
         {
           return update(statement);
         }
-        else if constexpr (is_select_statement_v<Statement>)
+        else if constexpr (std::is_same_v<ResultType, select_result>)
         {
           return select(statement);
         }
-        else if constexpr (is_execute_statement_v<Statement>)
+        else if constexpr (std::is_same_v<ResultType, execute_result>)
         {
           return execute(statement);
         }
@@ -124,28 +126,30 @@ namespace sqlpp::test
       }
     }
 
-    template <typename Statement>
-    auto prepare(const Statement& statement)
+    template <typename... Clauses>
+    auto prepare(const ::sqlpp::statement<Clauses...>& statement)
     {
+      using Statement = ::sqlpp::statement<Clauses...>;
       if constexpr (constexpr auto check = check_statement_preparable<mock_db>(type_v<Statement>); check)
       {
-        if constexpr (is_insert_statement_v<Statement>)
+        using ResultType = result_type_of_t<Statement>;
+        if constexpr (std::is_same_v<ResultType, insert_result>)
         {
           return prepare_insert(statement);
         }
-        else if constexpr (is_delete_statement_v<Statement>)
+        else if constexpr (std::is_same_v<ResultType, delete_result>)
         {
           return prepare_delete_from(statement);
         }
-        else if constexpr (is_update_statement_v<Statement>)
+        else if constexpr (std::is_same_v<ResultType, update_result>)
         {
           return prepare_update(statement);
         }
-        else if constexpr (is_select_statement_v<Statement>)
+        else if constexpr (std::is_same_v<ResultType, select_result>)
         {
           return prepare_select(statement);
         }
-        else if constexpr (is_execute_statement_v<Statement>)
+        else if constexpr (std::is_same_v<ResultType, execute_result>)
         {
           return prepare_execute(statement);
         }
