@@ -113,6 +113,46 @@ namespace sqlpp
   inline constexpr auto is_insert_required_v = is_insert_required<T>::value;
 
   template <typename T>
+  struct is_insert_clause : std::false_type
+  {
+  };
+
+  template <typename T>
+  inline constexpr auto is_insert_clause_v = is_insert_clause<T>::value;
+
+  template <typename T>
+  struct is_delete_clause : std::false_type
+  {
+  };
+
+  template <typename T>
+  inline constexpr auto is_delete_clause_v = is_delete_clause<T>::value;
+
+  template <typename T>
+  struct is_update_clause : std::false_type
+  {
+  };
+
+  template <typename T>
+  inline constexpr auto is_update_clause_v = is_update_clause<T>::value;
+
+  template <typename T>
+  struct is_select_clause : std::false_type
+  {
+  };
+
+  template <typename T>
+  inline constexpr auto is_select_clause_v = is_select_clause<T>::value;
+
+  template <typename T>
+  struct is_execute_clause : std::false_type
+  {
+  };
+
+  template <typename T>
+  inline constexpr auto is_execute_clause_v = is_execute_clause<T>::value;
+
+  template <typename T>
   constexpr auto is_failed_v = false;
 
   template <typename T>

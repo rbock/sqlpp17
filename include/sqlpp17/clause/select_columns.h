@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016 - 2017, Roland Bock
+Copyright (c) 2016 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -100,27 +100,7 @@ namespace sqlpp
     {
     }
 
-    template <typename Connection>
-    [[nodiscard]] auto _run(Connection& connection) const
-    {
-      using _result_handle_t = decltype(connection.select(statement_of(*this)));
-      if constexpr (has_result_row_v<_result_handle_t>)
-      {
-        return connection.select(statement_of(*this));
-      }
-      else
-      {
-        return ::sqlpp::result_t<result_row_of_t<clause_base>, _result_handle_t>{
-            connection.select(statement_of(*this))};
-      }
-    }
-
-    template <typename Connection>
-    [[nodiscard]] auto _prepare(Connection& connection) const
-    {
-      return prepared_statement_t{*this, connection.prepare_select(statement_of(*this))};
-    }
-
+#warning: This should be a free function
     [[nodiscard]] constexpr auto get_no_of_result_columns() const
     {
       return sizeof...(Columns);
@@ -153,6 +133,11 @@ namespace sqlpp
 
   template <typename... Columns>
   constexpr auto is_result_clause_v<select_columns_t<Columns...>> = true;
+
+  template <typename... Columns>
+  struct is_select_clause<select_columns_t<Columns...>> : public std::true_type
+  {
+  };
 
   template <typename... Columns, typename Statement>
   struct result_row_of<clause_base<select_columns_t<Columns...>, Statement>>

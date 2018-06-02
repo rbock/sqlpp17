@@ -133,6 +133,71 @@ namespace sqlpp
     }
   };
 
+  template<typename T>
+  struct is_insert_statement : public std::false_type
+  {
+  };
+
+  template<typename T>
+  inline static constexpr auto is_insert_statement_v = is_insert_statement<T>::value;
+
+  template<typename... Clauses>
+  struct is_insert_statement<statement<Clauses...>>: public is_insert_clause<get_result_clause_t<Clauses...>>
+  {
+  };
+
+  template<typename T>
+  struct is_delete_statement : public std::false_type
+  {
+  };
+
+  template<typename... Clauses>
+  struct is_delete_statement<statement<Clauses...>>: public is_delete_clause<get_result_clause_t<Clauses...>>
+  {
+  };
+
+  template<typename T>
+  inline static constexpr auto is_delete_statement_v = is_delete_statement<T>::value;
+
+  template<typename T>
+  struct is_update_statement : public std::false_type
+  {
+  };
+
+  template<typename... Clauses>
+  struct is_update_statement<statement<Clauses...>>: public is_update_clause<get_result_clause_t<Clauses...>>
+  {
+  };
+
+  template<typename T>
+  inline static constexpr auto is_update_statement_v = is_update_statement<T>::value;
+
+  template<typename T>
+  struct is_select_statement : public std::false_type
+  {
+  };
+
+  template<typename... Clauses>
+  struct is_select_statement<statement<Clauses...>>: public is_select_clause<get_result_clause_t<Clauses...>>
+  {
+  };
+
+  template<typename T>
+  inline static constexpr auto is_select_statement_v = is_select_statement<T>::value;
+
+  template<typename T>
+  struct is_execute_statement : public std::false_type
+  {
+  };
+
+  template<typename... Clauses>
+  struct is_execute_statement<statement<Clauses...>>: public is_execute_clause<get_result_clause_t<Clauses...>>
+  {
+  };
+
+  template<typename T>
+  inline static constexpr auto is_execute_statement_v = is_execute_statement<T>::value;
+
   template <typename Clause, typename... Clauses>
   auto clause_of(const statement<Clauses...>& s)
   {
@@ -151,32 +216,6 @@ namespace sqlpp
     const auto& old_statement = statement_of(oldBase);
     return statement<std::conditional_t<std::is_same_v<Clauses, OldClause>, NewClause, Clauses>...>{
         detail::statement_constructor_arg(old_statement, newClause)};
-  }
-
-  template <typename Connection, typename... Clauses>
-  [[nodiscard]] auto run_statement(Connection& connection, const statement<Clauses...>& s)
-  {
-    if constexpr (constexpr auto check = check_statement_executable<Connection>(type_v<statement<Clauses...>>); check)
-    {
-      return clause_of<get_result_clause_t<Clauses...>>(s)._run(connection);
-    }
-    else
-    {
-      return ::sqlpp::bad_expression_t{check};
-    }
-  }
-
-  template <typename Connection, typename... Clauses>
-  [[nodiscard]] auto prepare_statement(Connection& connection, const statement<Clauses...>& s)
-  {
-    if constexpr (constexpr auto check = check_statement_preparable<Connection>(type_v<statement<Clauses...>>); check)
-    {
-      return clause_of<get_result_clause_t<Clauses...>>(s)._prepare(connection);
-    }
-    else
-    {
-      return ::sqlpp::bad_expression_t{check};
-    }
   }
 
   template <typename... Clauses>

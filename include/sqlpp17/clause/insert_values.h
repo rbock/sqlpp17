@@ -232,33 +232,6 @@ namespace sqlpp
     {
     }
 
-    template <typename Connection>
-    [[nodiscard]] auto _run(Connection& connection) const
-    {
-      if (static_cast<const clause_base<insert_multi_values_t<Assignments...>, Statement>&>(statement_of(*this))
-              ._rows.empty())
-      {
-        return decltype(connection.insert(statement_of(*this))){};
-      }
-      else
-      {
-        return connection.insert(statement_of(*this));
-      }
-    }
-
-    template <typename Connection>
-    [[nodiscard]] auto _prepare(Connection& connection) const
-    {
-      if (static_cast<const clause_base<insert_multi_values_t<Assignments...>, Statement>&>(statement_of(*this))
-              ._rows.empty())
-      {
-        throw ::sqlpp::exception("Cannot prepare zero-line insert");
-      }
-      else
-      {
-        return connection.prepare_insert(statement_of(*this));
-      }
-    }
     std::vector<std::tuple<Assignments...>> _rows;
   };
 
@@ -267,9 +240,6 @@ namespace sqlpp
   {
     return check_clause_preparable<Db>(type_t<clause_base<insert_values_t<Assignments...>, Statement>>{});
   }
-
-  template <typename... Assignments>
-  constexpr auto is_result_clause_v<insert_multi_values_t<Assignments...>> = true;
 
   // this function assumes that there is something to do
   // the check if there is at least one row has to be performed elsewhere

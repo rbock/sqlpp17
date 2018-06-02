@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016 - 2017, Roland Bock
+Copyright (c) 2016 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -60,6 +60,11 @@ namespace sqlpp
   constexpr auto is_result_clause_v<union_t<Flag, LeftSelect, RightSelect>> = true;
 
   template <typename Flag, typename LeftSelect, typename RightSelect>
+  struct is_select_clause<union_t<Flag, LeftSelect, RightSelect>> : public std::true_type
+  {
+  };
+
+  template <typename Flag, typename LeftSelect, typename RightSelect>
   constexpr auto clause_tag<union_t<Flag, LeftSelect, RightSelect>> = clause::union_{};
 
   template <typename Flag, typename LeftSelect, typename RightSelect, typename Statement>
@@ -74,12 +79,6 @@ namespace sqlpp
 
     clause_base(const union_t<Flag, LeftSelect, RightSelect>& f) : _flag(f._flag), _left(f._left), _right(f._right)
     {
-    }
-
-    template <typename Connection>
-    [[nodiscard]] auto _run(Connection& connection) const
-    {
-      return connection.select(statement_of(*this), result_row_t{});
     }
 
     Flag _flag;

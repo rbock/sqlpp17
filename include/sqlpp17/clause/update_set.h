@@ -100,25 +100,16 @@ namespace sqlpp
     {
     }
 
-    template <typename Connection>
-    [[nodiscard]] auto _run(Connection& connection) const
-    {
-      if (any_has_value(static_cast<const clause_base<update_set_t<Assignments...>, Statement>&>(statement_of(*this))
-                            ._assignments))
-      {
-        return connection.update(statement_of(*this));
-      }
-      else
-      {
-        return decltype(connection.update(statement_of(*this))){};
-      }
-    }
-
     std::tuple<Assignments...> _assignments;
   };
 
   template <typename... Assignments>
   constexpr auto is_result_clause_v<update_set_t<Assignments...>> = true;
+
+  template <typename... Assignments>
+  struct is_update_clause<update_set_t<Assignments...>> : public std::true_type
+  {
+  };
 
   template <typename Context, typename... Assignments, typename Statement>
   [[nodiscard]] auto to_sql_string(Context& context, const clause_base<update_set_t<Assignments...>, Statement>& t)

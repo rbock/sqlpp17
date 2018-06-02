@@ -27,7 +27,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/clause_fwd.h>
-#include <sqlpp17/prepared_statement.h>
 #include <sqlpp17/statement.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
@@ -70,23 +69,16 @@ namespace sqlpp
     {
     }
 
-    template <typename Connection>
-    [[nodiscard]] auto _run(Connection& connection) const
-    {
-      return connection.execute(statement_of(*this));
-    }
-
-    template <typename Connection>
-    [[nodiscard]] auto _prepare(Connection& connection) const
-    {
-      return prepared_statement_t{*this, connection.prepare_execute(statement_of(*this))};
-    }
-
     Table _table;
   };
 
   template <typename Table>
   constexpr auto is_result_clause_v<create_table_t<Table>> = true;
+
+  template <typename Table>
+  struct is_execute_clause<create_table_t<Table>> : public std::true_type
+  {
+  };
 
   template <typename Context, typename Table, typename Statement>
   [[nodiscard]] auto to_sql_string(Context& context, const clause_base<create_table_t<Table>, Statement>& t)

@@ -163,11 +163,36 @@ namespace sqlpp::postgresql
     template <typename... Clauses>
     auto operator()(const ::sqlpp::statement<Clauses...>& statement)
     {
+      using Statement = ::sqlpp::statement<Clauses...>;
       if constexpr (constexpr auto check =
-                        check_statement_executable<connection_t>(type_v<::sqlpp::statement<Clauses...>>);
+                        check_statement_executable<connection_t>(type_v<Statement>);
                     check)
       {
-        return run_statement(*this, statement);
+        if constexpr (is_insert_statement_v<Statement>)
+        {
+          return insert(statement);
+        }
+        else if constexpr (is_delete_statement_v<Statement>)
+        {
+          return delete_from(statement);
+        }
+        else if constexpr (is_update_statement_v<Statement>)
+        {
+          return update(statement);
+        }
+        else if constexpr (is_select_statement_v<Statement>)
+        {
+          return select(statement);
+        }
+        else if constexpr (is_execute_statement_v<Statement>)
+        {
+          return execute(statement);
+        }
+        else
+        {
+#warning: return ::sqlpp::bad_expression_t{failure<UnknownStatementType>{}};
+          static_assert(wrong<Statement>, "Unknown statement type");
+        }
       }
       else
       {
@@ -185,7 +210,30 @@ namespace sqlpp::postgresql
     {
       if constexpr (constexpr auto check = check_statement_preparable<connection_t>(type_v<Statement>); check)
       {
-        return prepare_statement(*this, statement);
+        if constexpr (is_insert_statement_v<Statement>)
+        {
+          return prepare_insert(statement);
+        }
+        else if constexpr (is_delete_statement_v<Statement>)
+        {
+          return prepare_delete_from(statement);
+        }
+        else if constexpr (is_update_statement_v<Statement>)
+        {
+          return prepare_update(statement);
+        }
+        else if constexpr (is_select_statement_v<Statement>)
+        {
+          return prepare_select(statement);
+        }
+        else if constexpr (is_execute_statement_v<Statement>)
+        {
+          return prepare_execute(statement);
+        }
+        else
+        {
+          static_assert(wrong<Statement>, "Unknown statement type");
+        }
       }
       else
       {
@@ -234,8 +282,9 @@ namespace sqlpp::postgresql
     template <typename Statement>
     [[nodiscard]] auto prepare_insert(const Statement& statement)
     {
-      return detail::prepared_insert_t{
-          detail::prepare(*this, to_sql_string_c(context_t{}, statement), parameters_of_t<Statement>::size(), 0)};
+      return ::sqlpp::prepared_statement_t{
+          statement, detail::prepared_insert_t{detail::prepare(*this, to_sql_string_c(context_t{}, statement),
+                                                               parameters_of_t<Statement>::size(), 0)}};
     }
 
     template <typename Statement>
@@ -247,8 +296,9 @@ namespace sqlpp::postgresql
     template <typename Statement>
     [[nodiscard]] auto prepare_update(const Statement& statement)
     {
-      return detail::prepared_update_t{
-          detail::prepare(*this, to_sql_string_c(context_t{}, statement), parameters_of_t<Statement>::size(), 0)};
+      return ::sqlpp::prepared_statement_t{
+          statement, detail::prepared_update_t{detail::prepare(*this, to_sql_string_c(context_t{}, statement),
+                                                               parameters_of_t<Statement>::size(), 0)}};
     }
 
     template <typename Statement>
@@ -260,22 +310,25 @@ namespace sqlpp::postgresql
     template <typename Statement>
     [[nodiscard]] auto prepare_delete_from(const Statement& statement)
     {
-      return detail::prepared_delete_from_t{
-          detail::prepare(*this, to_sql_string_c(context_t{}, statement), parameters_of_t<Statement>::size(), 0)};
+      return ::sqlpp::prepared_statement_t{
+          statement, detail::prepared_delete_from_t{detail::prepare(*this, to_sql_string_c(context_t{}, statement),
+                                                                    parameters_of_t<Statement>::size(), 0)}};
     }
 
     template <typename Statement>
     [[nodiscard]] auto select(const Statement& statement)
     {
-      return detail::select(*this, to_sql_string_c(context_t{}, statement));
+      return ::sqlpp::result_t<result_row_of_t<Statement>, char_result_t>{
+          detail::select(*this, to_sql_string_c(context_t{}, statement))};
     }
 
     template <typename Statement>
     [[nodiscard]] auto prepare_select(const Statement& statement)
     {
-      return detail::prepared_select_t{detail::prepare(*this, to_sql_string_c(context_t{}, statement),
-                                                       parameters_of_t<Statement>::size(),
-                                                       statement.get_no_of_result_columns())};
+      return ::sqlpp::prepared_statement_t{
+          statement, detail::prepared_select_t{detail::prepare(*this, to_sql_string_c(context_t{}, statement),
+                                                               parameters_of_t<Statement>::size(),
+                                                               statement.get_no_of_result_columns())}};
     }
   };
 

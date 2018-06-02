@@ -102,17 +102,16 @@ namespace sqlpp
     {
     }
 
-    template <typename Connection>
-    [[nodiscard]] auto _run(Connection& connection) const
-    {
-      return connection.delete_from(statement_of(*this));
-    }
-
     Table _table;
   };
 
   template <typename Table>
   constexpr auto is_result_clause_v<delete_from_t<Table>> = true;
+
+  template <typename Table>
+  struct is_delete_clause<delete_from_t<Table>> : public std::true_type
+  {
+  };
 
   template <typename Context, typename Table, typename Statement>
   [[nodiscard]] auto to_sql_string(Context& context, const clause_base<delete_from_t<Table>, Statement>& t)

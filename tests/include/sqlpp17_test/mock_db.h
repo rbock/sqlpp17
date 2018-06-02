@@ -92,7 +92,31 @@ namespace sqlpp::test
     {
       if constexpr (constexpr auto check = check_statement_executable<mock_db>(type_v<Statement>); check)
       {
-        return run_statement(*this, statement);
+        if constexpr (is_insert_statement_v<Statement>)
+        {
+          return insert(statement);
+        }
+        else if constexpr (is_delete_statement_v<Statement>)
+        {
+          return delete_from(statement);
+        }
+        else if constexpr (is_update_statement_v<Statement>)
+        {
+          return update(statement);
+        }
+        else if constexpr (is_select_statement_v<Statement>)
+        {
+          return select(statement);
+        }
+        else if constexpr (is_execute_statement_v<Statement>)
+        {
+          return execute(statement);
+        }
+        else
+        {
+#warning: return ::sqlpp::bad_expression_t{failure<UnknownStatementType>{}};
+          static_assert(wrong<Statement>, "Unknown statement type");
+        }
       }
       else
       {
@@ -105,7 +129,30 @@ namespace sqlpp::test
     {
       if constexpr (constexpr auto check = check_statement_preparable<mock_db>(type_v<Statement>); check)
       {
-        return prepare_statement(*this, statement);
+        if constexpr (is_insert_statement_v<Statement>)
+        {
+          return prepare_insert(statement);
+        }
+        else if constexpr (is_delete_statement_v<Statement>)
+        {
+          return prepare_delete_from(statement);
+        }
+        else if constexpr (is_update_statement_v<Statement>)
+        {
+          return prepare_update(statement);
+        }
+        else if constexpr (is_select_statement_v<Statement>)
+        {
+          return prepare_select(statement);
+        }
+        else if constexpr (is_execute_statement_v<Statement>)
+        {
+          return prepare_execute(statement);
+        }
+        else
+        {
+          static_assert(wrong<Statement>, "Unknown statement type");
+        }
       }
       else
       {
@@ -129,7 +176,6 @@ namespace sqlpp::test
     {
     }
 
-  private:
     template <typename Statement>
     auto execute(const Statement& statement)
     {
@@ -148,7 +194,7 @@ namespace sqlpp::test
     [[nodiscard]] auto prepare_insert(const Statement& statement)
     {
       [[maybe_unused]] auto x = to_sql_string_c(mock_context_t{}, statement);
-      return mock_prepared_insert{};
+      return prepared_statement_t{statement, mock_prepared_insert{}};
     }
 
     template <typename Statement>
@@ -169,14 +215,14 @@ namespace sqlpp::test
     auto select(const Statement& statement)
     {
       [[maybe_unused]] auto x = to_sql_string_c(mock_context_t{}, statement);
-      return mock_result{};
+      return ::sqlpp::result_t<result_row_of_t<Statement>, mock_result>{mock_result{}};
     }
 
     template <typename Statement>
     [[nodiscard]] auto prepare_select(const Statement& statement)
     {
       [[maybe_unused]] auto x = to_sql_string_c(mock_context_t{}, statement);
-      return mock_prepared_select{};
+      return prepared_statement_t{statement, mock_prepared_select{}};
     }
   };
 
