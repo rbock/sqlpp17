@@ -167,30 +167,30 @@ namespace sqlpp
   template <typename LeftSelect, typename RightSelect>
   [[nodiscard]] constexpr auto union_all(LeftSelect l, RightSelect r)
   {
-    constexpr auto check = check_union_args(l, r);
-    if constexpr (check)
+    constexpr auto _check = check_union_args(l, r);
+    if constexpr (_check)
     {
       using u = union_t<all_t, LeftSelect, RightSelect>;
       return statement<u>{detail::statement_constructor_arg(u{all, l, r})};
     }
     else
     {
-      return ::sqlpp::bad_expression_t{check};
+      return ::sqlpp::bad_expression_t{_check};
     }
   }
 
   template <typename LeftSelect, typename RightSelect>
   [[nodiscard]] constexpr auto union_distinct(LeftSelect l, RightSelect r)
   {
-    constexpr auto check = check_union_args(l, r);
-    if constexpr (check)
+    constexpr auto _check = check_union_args(l, r);
+    if constexpr (_check)
     {
       using u = union_t<distinct_t, LeftSelect, RightSelect>;
       return statement<u>{detail::statement_constructor_arg(u{distinct, l, r})};
     }
     else
     {
-      return ::sqlpp::bad_expression_t{check};
+      return ::sqlpp::bad_expression_t{_check};
     }
   }
 }  // namespace sqlpp

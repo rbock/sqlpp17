@@ -116,28 +116,28 @@ namespace sqlpp
     template <typename... Fields>
     [[nodiscard]] constexpr auto flags(Fields... flags) const
     {
-      constexpr auto check = check_select_flags_arg(flags...);
-      if constexpr (check)
+      constexpr auto _check = check_select_flags_arg(flags...);
+      if constexpr (_check)
       {
         return new_statement(*this, select_flags_t<Fields...>{std::tuple(flags...)});
       }
       else
       {
-        return ::sqlpp::bad_expression_t{check};
+        return ::sqlpp::bad_expression_t{_check};
       }
     }
 
     template <typename... Fields>
     [[nodiscard]] constexpr auto flags(std::tuple<Fields...> flags) const
     {
-      constexpr auto check = check_select_flags_arg(std::declval<Fields>()...);
-      if constexpr (check)
+      constexpr auto _check = check_select_flags_arg(std::declval<Fields>()...);
+      if constexpr (_check)
       {
         return new_statement(*this, select_flags_t<Fields...>{flags});
       }
       else
       {
-        return ::sqlpp::bad_expression_t{check};
+        return ::sqlpp::bad_expression_t{_check};
       }
     }
   };

@@ -43,8 +43,8 @@ namespace sqlpp
     template <typename... T>                       \
     constexpr bad_expression_t(T&&...)             \
     {                                              \
-      constexpr auto check = wrong<name, T...>;    \
-      static_assert(check, message);               \
+      constexpr auto _check = wrong<name, T...>;    \
+      static_assert(_check, message);               \
     }                                              \
   }
 }  // namespace sqlpp

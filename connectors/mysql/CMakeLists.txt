@@ -24,7 +24,7 @@
 
 find_package(Threads REQUIRED)
 
-#FIXME: It might be better to actually check if thread_local can be compiled and linked
+#FIXME: It might be better to actually _check if thread_local can be compiled and linked
 #       (one fine day, Apple will have thread_local, too, I assume)
 if (APPLE)
  	message("Apple XCode does not have thread_local, thus we need to wrap that via boost thread")

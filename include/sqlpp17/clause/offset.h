@@ -128,14 +128,14 @@ namespace sqlpp
     template <typename Value>
     [[nodiscard]] constexpr auto offset(Value value) const
     {
-      constexpr auto check = check_offset_arg<remove_optional_t<Value>>();
-      if constexpr (check)
+      constexpr auto _check = check_offset_arg<remove_optional_t<Value>>();
+      if constexpr (_check)
       {
         return new_statement(*this, offset_t<Value>{value});
       }
       else
       {
-        return ::sqlpp::bad_expression_t{check};
+        return ::sqlpp::bad_expression_t{_check};
       }
     }
   };

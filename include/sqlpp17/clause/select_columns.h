@@ -196,39 +196,39 @@ namespace sqlpp
     template <typename... Columns>
     [[nodiscard]] constexpr auto columns(Columns... columns) const
     {
-      if constexpr (constexpr auto check = check_select_columns_arg<remove_optional_t<Columns>...>(); check)
+      if constexpr (constexpr auto _check = check_select_columns_arg<remove_optional_t<Columns>...>(); _check)
       {
         return new_statement(*this, select_columns_t<Columns...>{std::tuple(columns...)});
       }
       else
       {
-        return ::sqlpp::bad_expression_t{check};
+        return ::sqlpp::bad_expression_t{_check};
       }
     }
 
     template <typename... Columns>
     [[nodiscard]] constexpr auto columns(std::tuple<Columns...> columns) const
     {
-      if constexpr (constexpr auto check = check_select_columns_arg<remove_optional_t<Columns>...>(); check)
+      if constexpr (constexpr auto _check = check_select_columns_arg<remove_optional_t<Columns>...>(); _check)
       {
         return new_statement(*this, select_columns_t<Columns...>{columns});
       }
       else
       {
-        return ::sqlpp::bad_expression_t{check};
+        return ::sqlpp::bad_expression_t{_check};
       }
     }
 
     template <typename... Columns>
     [[nodiscard]] constexpr auto columns(multi_column_t<Columns...> columns) const
     {
-      if constexpr (constexpr auto check = check_select_columns_arg<remove_optional_t<Columns>...>(); check)
+      if constexpr (constexpr auto _check = check_select_columns_arg<remove_optional_t<Columns>...>(); _check)
       {
         return new_statement(*this, select_columns_t<Columns...>{columns._columns});
       }
       else
       {
-        return ::sqlpp::bad_expression_t{check};
+        return ::sqlpp::bad_expression_t{_check};
       }
     }
   };

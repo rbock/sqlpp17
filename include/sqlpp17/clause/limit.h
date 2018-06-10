@@ -130,14 +130,14 @@ namespace sqlpp
     template <typename Value>
     [[nodiscard]] constexpr auto limit(Value value) const
     {
-      constexpr auto check = check_limit_arg<remove_optional_t<Value>>();
-      if constexpr (check)
+      constexpr auto _check = check_limit_arg<remove_optional_t<Value>>();
+      if constexpr (_check)
       {
         return new_statement(*this, limit_t<Value>{value});
       }
       else
       {
-        return ::sqlpp::bad_expression_t{check};
+        return ::sqlpp::bad_expression_t{_check};
       }
     }
   };

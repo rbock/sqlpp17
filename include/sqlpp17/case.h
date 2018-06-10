@@ -106,27 +106,27 @@ namespace sqlpp
     template <typename When, typename Then>
     [[nodiscard]] constexpr auto when(When when, then_t<Then> then) const
     {
-      if constexpr (constexpr auto check = check_when_then_args<value_type_of_t<case_when_then_t>, When, Then>(); check)
+      if constexpr (constexpr auto _check = check_when_then_args<value_type_of_t<case_when_then_t>, When, Then>(); _check)
       {
         auto _wt = when_then_t<When, Then>{when, then._expr};
         return case_when_then_t<WhenThens..., decltype(_wt)>{std::tuple_cat(_when_thens, std::tuple{_wt})};
       }
       else
       {
-        return bad_expression_t{check};
+        return bad_expression_t{_check};
       }
     }
 
     template <typename Else>
     [[nodiscard]] constexpr auto else_(Else els) const
     {
-      if constexpr (constexpr auto check = check_else_arg<value_type_of_t<case_when_then_t>, Else>(); check)
+      if constexpr (constexpr auto _check = check_else_arg<value_type_of_t<case_when_then_t>, Else>(); _check)
       {
         return case_when_then_else_t<case_when_then_t, Else>{*this, els};
       }
       else
       {
-        return bad_expression_t{check};
+        return bad_expression_t{_check};
       }
     }
   };
@@ -184,13 +184,13 @@ namespace sqlpp
   template <typename Then>
   [[nodiscard]] constexpr auto then(Then expr)
   {
-    if constexpr (constexpr auto check = check_then_args<Then>(); check)
+    if constexpr (constexpr auto _check = check_then_args<Then>(); _check)
     {
       return then_t<Then>{expr};
     }
     else
     {
-      return ::sqlpp::bad_expression_t{check};
+      return ::sqlpp::bad_expression_t{_check};
     }
   }
 
@@ -208,14 +208,14 @@ namespace sqlpp
   template <typename When, typename Then>
   [[nodiscard]] constexpr auto case_when(When when, then_t<Then> then)
   {
-    if constexpr (constexpr auto check = check_then_args<When>(); check)
+    if constexpr (constexpr auto _check = check_then_args<When>(); _check)
     {
       auto wt = when_then_t<When, Then>{when, then._expr};
       return case_when_then_t<decltype(wt)>{std::tuple{wt}};
     }
     else
     {
-      return ::sqlpp::bad_expression_t{check};
+      return ::sqlpp::bad_expression_t{_check};
     }
   }
 

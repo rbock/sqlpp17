@@ -113,14 +113,14 @@ namespace sqlpp::mysql
     template <typename Table>
     [[nodiscard]] constexpr auto using_(Table t) const
     {
-      constexpr auto check = check_using_arg(t);
-      if constexpr (check)
+      constexpr auto _check = check_using_arg(t);
+      if constexpr (_check)
       {
         return Statement::of(this).template replace_clause<no_using_t>(using_t<Table>{t});
       }
       else
       {
-        return ::sqlpp::bad_expression_t{check};
+        return ::sqlpp::bad_expression_t{_check};
       }
     }
   };

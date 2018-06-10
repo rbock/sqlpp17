@@ -91,7 +91,7 @@ namespace sqlpp::test
     auto operator()(const ::sqlpp::statement<Clauses...>& statement)
     {
       using Statement = ::sqlpp::statement<Clauses...>;
-      if constexpr (constexpr auto check = check_statement_executable<mock_db>(type_v<Statement>); check)
+      if constexpr (constexpr auto _check = check_statement_executable<mock_db>(type_v<Statement>); _check)
       {
         using ResultType = result_type_of_t<Statement>;
         if constexpr (std::is_same_v<ResultType, insert_result>)
@@ -122,7 +122,7 @@ namespace sqlpp::test
       }
       else
       {
-        return ::sqlpp::bad_expression_t{check};
+        return ::sqlpp::bad_expression_t{_check};
       }
     }
 
@@ -130,7 +130,7 @@ namespace sqlpp::test
     auto prepare(const ::sqlpp::statement<Clauses...>& statement)
     {
       using Statement = ::sqlpp::statement<Clauses...>;
-      if constexpr (constexpr auto check = check_statement_preparable<mock_db>(type_v<Statement>); check)
+      if constexpr (constexpr auto _check = check_statement_preparable<mock_db>(type_v<Statement>); _check)
       {
         using ResultType = result_type_of_t<Statement>;
         if constexpr (std::is_same_v<ResultType, insert_result>)
@@ -160,7 +160,7 @@ namespace sqlpp::test
       }
       else
       {
-        return ::sqlpp::bad_expression_t{check};
+        return ::sqlpp::bad_expression_t{_check};
       }
     }
 

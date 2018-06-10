@@ -68,13 +68,13 @@ namespace sqlpp
   template <typename L, typename R>
   constexpr auto assign(L column, R value) -> std::enable_if_t<values_are_compatible_v<L, R>, assign_t<L, R>>
   {
-    if constexpr (constexpr auto check = check_assign_args<L, R>())
+    if constexpr (constexpr auto _check = check_assign_args<L, R>())
     {
       return assign_t<L, R>{column, value};
     }
     else
     {
-      return bad_expression_t{check};
+      return bad_expression_t{_check};
     }
   }
 

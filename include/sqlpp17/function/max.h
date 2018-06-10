@@ -69,13 +69,13 @@ namespace sqlpp
   template <typename Expression>
   [[nodiscard]] constexpr auto max(Expression expression)
   {
-    if constexpr (constexpr auto check = check_max_args<Expression>(); check)
+    if constexpr (constexpr auto _check = check_max_args<Expression>(); _check)
     {
       return aggregate_t<max_t<value_type_of_t<Expression>>, Expression>{expression};
     }
     else
     {
-      return ::sqlpp::bad_expression_t{check};
+      return ::sqlpp::bad_expression_t{_check};
     }
   }
 

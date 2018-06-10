@@ -123,13 +123,13 @@ namespace sqlpp
   template <typename Table>
   [[nodiscard]] constexpr auto delete_from(Table table)
   {
-    if constexpr (constexpr auto check = check_delete_from_arg<Table>(); check)
+    if constexpr (constexpr auto _check = check_delete_from_arg<Table>(); _check)
     {
       return statement<delete_from_t<Table>>{table} << statement<no_where_t>{};
     }
     else
     {
-      return bad_expression_t{check};
+      return bad_expression_t{_check};
     }
   }
 }  // namespace sqlpp

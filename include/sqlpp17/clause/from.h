@@ -120,14 +120,14 @@ namespace sqlpp
     template <typename Table>
     [[nodiscard]] constexpr auto from(Table t) const
     {
-      constexpr auto check = check_from_arg(t);
-      if constexpr (check)
+      constexpr auto _check = check_from_arg(t);
+      if constexpr (_check)
       {
         return new_statement(*this, from_t<Table>{t});
       }
       else
       {
-        return ::sqlpp::bad_expression_t{check};
+        return ::sqlpp::bad_expression_t{_check};
       }
     }
   };

@@ -64,14 +64,14 @@ namespace sqlpp
     template <typename Statement>
     [[nodiscard]] constexpr auto as(Statement s) const
     {
-      constexpr auto check = check_cte_as_arg<Statement>();
-      if constexpr (check)
+      constexpr auto _check = check_cte_as_arg<Statement>();
+      if constexpr (_check)
       {
         return cte_t<flat_t, table_spec<NameTag, type_hash<Statement>()>, Statement>{s};
       }
       else
       {
-        return ::sqlpp::bad_expression_t{check};
+        return ::sqlpp::bad_expression_t{_check};
       }
     }
   };
@@ -94,13 +94,13 @@ namespace sqlpp
   template <typename NamedTypeOrTag>
   [[nodiscard]] constexpr auto cte([[maybe_unused]] NamedTypeOrTag)
   {
-    if constexpr (constexpr auto check = check_cte_args<NamedTypeOrTag>(); check)
+    if constexpr (constexpr auto _check = check_cte_args<NamedTypeOrTag>(); _check)
     {
       return cte_alias_t<name_tag_of_t<NamedTypeOrTag>>{};
     }
     else
     {
-      return ::sqlpp::bad_expression_t{check};
+      return ::sqlpp::bad_expression_t{_check};
     }
   }
 }  // namespace sqlpp

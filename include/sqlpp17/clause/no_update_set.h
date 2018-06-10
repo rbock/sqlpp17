@@ -80,14 +80,14 @@ namespace sqlpp
     template <typename... Assignments>
     [[nodiscard]] constexpr auto update_set(Assignments... assignments) const
     {
-      constexpr auto check = check_update_set_arg<Assignments...>();
-      if constexpr (check)
+      constexpr auto _check = check_update_set_arg<Assignments...>();
+      if constexpr (_check)
       {
         return new_statement(*this, update_set_t<Assignments...>{assignments...});
       }
       else
       {
-        return ::sqlpp::bad_expression_t{check};
+        return ::sqlpp::bad_expression_t{_check};
       }
     }
   };

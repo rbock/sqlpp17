@@ -129,28 +129,28 @@ namespace sqlpp
     template <typename... Columns>
     [[nodiscard]] constexpr auto group_by(Columns... columns) const
     {
-      constexpr auto check = check_group_by_arg(columns...);
-      if constexpr (check)
+      constexpr auto _check = check_group_by_arg(columns...);
+      if constexpr (_check)
       {
         return new_statement(*this, group_by_t<Columns...>{std::tuple(columns...)});
       }
       else
       {
-        return ::sqlpp::bad_expression_t{check};
+        return ::sqlpp::bad_expression_t{_check};
       }
     }
 
     template <typename... Columns>
     [[nodiscard]] constexpr auto group_by(std::tuple<Columns...> columns) const
     {
-      constexpr auto check = check_group_by_arg(std::declval<Columns>()...);
-      if constexpr (check)
+      constexpr auto _check = check_group_by_arg(std::declval<Columns>()...);
+      if constexpr (_check)
       {
         return new_statement(*this, group_by_t<Columns...>{columns});
       }
       else
       {
-        return ::sqlpp::bad_expression_t{check};
+        return ::sqlpp::bad_expression_t{_check};
       }
     }
   };

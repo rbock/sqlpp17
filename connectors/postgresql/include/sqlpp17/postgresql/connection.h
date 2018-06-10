@@ -164,7 +164,7 @@ namespace sqlpp::postgresql
     auto operator()(const ::sqlpp::statement<Clauses...>& statement)
     {
       using Statement = ::sqlpp::statement<Clauses...>;
-      if constexpr (constexpr auto check = check_statement_executable<connection_t>(type_v<Statement>); check)
+      if constexpr (constexpr auto _check = check_statement_executable<connection_t>(type_v<Statement>); _check)
       {
         using ResultType = result_type_of_t<Statement>;
         if constexpr (std::is_same_v<ResultType, insert_result>)
@@ -195,7 +195,7 @@ namespace sqlpp::postgresql
       }
       else
       {
-        return ::sqlpp::bad_expression_t{check};
+        return ::sqlpp::bad_expression_t{_check};
       }
     }
 
@@ -203,7 +203,7 @@ namespace sqlpp::postgresql
     auto prepare(const ::sqlpp::statement<Clauses...>& statement)
     {
       using Statement = ::sqlpp::statement<Clauses...>;
-      if constexpr (constexpr auto check = check_statement_preparable<connection_t>(type_v<Statement>); check)
+      if constexpr (constexpr auto _check = check_statement_preparable<connection_t>(type_v<Statement>); _check)
       {
         using ResultType = result_type_of_t<Statement>;
         if constexpr (std::is_same_v<ResultType, insert_result>)
@@ -233,7 +233,7 @@ namespace sqlpp::postgresql
       }
       else
       {
-        return ::sqlpp::bad_expression_t{check};
+        return ::sqlpp::bad_expression_t{_check};
       }
     }
 

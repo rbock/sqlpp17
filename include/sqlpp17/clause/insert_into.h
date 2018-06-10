@@ -117,14 +117,14 @@ namespace sqlpp
   template <typename Table>
   [[nodiscard]] constexpr auto insert_into(Table t)
   {
-    constexpr auto check = check_insert_into_arg(t);
-    if constexpr (check)
+    constexpr auto _check = check_insert_into_arg(t);
+    if constexpr (_check)
     {
       return statement<insert_into_t<Table>>{t} << statement<no_insert_values_t>{};
     }
     else
     {
-      return ::sqlpp::bad_expression_t{check};
+      return ::sqlpp::bad_expression_t{_check};
     }
   }
 }  // namespace sqlpp

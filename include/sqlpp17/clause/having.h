@@ -132,14 +132,14 @@ namespace sqlpp
     template <typename Condition>
     [[nodiscard]] constexpr auto having(Condition condition) const
     {
-      constexpr auto check = check_having_arg(condition);
-      if constexpr (check)
+      constexpr auto _check = check_having_arg(condition);
+      if constexpr (_check)
       {
         return new_statement(*this, having_t<Condition>{condition});
       }
       else
       {
-        return ::sqlpp::bad_expression_t{check};
+        return ::sqlpp::bad_expression_t{_check};
       }
     }
   };

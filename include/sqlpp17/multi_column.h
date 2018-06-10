@@ -67,17 +67,17 @@ namespace sqlpp
 
     constexpr multi_column_t(Columns... columns) : _columns(columns...)
     {
-      if constexpr (constexpr auto check = check_multi_column_arg<remove_optional_t<Columns>...>(); not check)
+      if constexpr (constexpr auto _check = check_multi_column_arg<remove_optional_t<Columns>...>(); not _check)
       {
-        ::sqlpp::bad_expression_t{check};
+        ::sqlpp::bad_expression_t{_check};
       }
     }
 
     constexpr multi_column_t(std::tuple<Columns...> columns) : _columns(columns)
     {
-      if constexpr (constexpr auto check = check_multi_column_arg<remove_optional_t<Columns>...>(); not check)
+      if constexpr (constexpr auto _check = check_multi_column_arg<remove_optional_t<Columns>...>(); not _check)
       {
-        ::sqlpp::bad_expression_t{check};
+        ::sqlpp::bad_expression_t{_check};
       }
     }
   };

@@ -38,13 +38,13 @@ namespace sqlpp
   template <typename L, typename R>
   constexpr auto operator<=(L l, R r)
   {
-    if constexpr (constexpr auto check = check_comparison_args<L, R>(); check)
+    if constexpr (constexpr auto _check = check_comparison_args<L, R>(); _check)
     {
       return comparison_t<L, less_equal_t, R>{l, r};
     }
     else
     {
-      return bad_expression_t{check};
+      return bad_expression_t{_check};
     }
   }
 

@@ -202,8 +202,8 @@ namespace sqlpp
   template <typename... LClauses, typename... RClauses>
   constexpr auto operator<<(statement<LClauses...> l, statement<RClauses...> r)
   {
-    constexpr auto check = check_statement_clauses<LClauses..., RClauses...>();
-    if constexpr (check)
+    constexpr auto _check = check_statement_clauses<LClauses..., RClauses...>();
+    if constexpr (_check)
     {
       // remove non-clauses from left part
       using clauses_t = decltype(
@@ -213,7 +213,7 @@ namespace sqlpp
     }
     else
     {
-      return ::sqlpp::bad_expression_t{check};
+      return ::sqlpp::bad_expression_t{_check};
     }
   }
 }  // namespace sqlpp

@@ -93,30 +93,30 @@ namespace sqlpp
     template <typename... Clauses>
     constexpr auto union_all(statement<Clauses...> second_statement)
     {
-      if constexpr (constexpr auto check = check_cte_union_args(type_t<cte_t>{}, type_t<statement<Clauses...>>{});
-                    check)
+      if constexpr (constexpr auto _check = check_cte_union_args(type_t<cte_t>{}, type_t<statement<Clauses...>>{});
+                    _check)
       {
         auto _union = ::sqlpp::union_all(_statement, second_statement);
         return cte_t<recursive_t, TableSpec, decltype(_union)>(_union);
       }
       else
       {
-        return bad_expression_t{check};
+        return bad_expression_t{_check};
       }
     }
 
     template <typename... Clauses>
     constexpr auto union_distinct(statement<Clauses...> second_statement)
     {
-      if constexpr (constexpr auto check = check_cte_union_args(type_t<cte_t>{}, type_t<statement<Clauses...>>{});
-                    check)
+      if constexpr (constexpr auto _check = check_cte_union_args(type_t<cte_t>{}, type_t<statement<Clauses...>>{});
+                    _check)
       {
         auto _union = ::sqlpp::union_distinct(_statement, second_statement);
         return cte_t<recursive_t, TableSpec, decltype(_union)>(_union);
       }
       else
       {
-        return bad_expression_t{check};
+        return bad_expression_t{_check};
       }
     }
   };

@@ -242,7 +242,7 @@ namespace sqlpp
   }
 
   // this function assumes that there is something to do
-  // the check if there is at least one row has to be performed elsewhere
+  // the _check if there is at least one row has to be performed elsewhere
   template <typename Context, typename Statement, typename... Assignments>
   [[nodiscard]] auto to_sql_string(Context& context,
                                    const clause_base<insert_multi_values_t<Assignments...>, Statement>& t)
@@ -345,29 +345,29 @@ namespace sqlpp
     template <typename... Assignments>
     [[nodiscard]] constexpr auto set(Assignments... assignments) const
     {
-      constexpr auto check = check_insert_set_args<Assignments...>();
-      if constexpr (check)
+      constexpr auto _check = check_insert_set_args<Assignments...>();
+      if constexpr (_check)
       {
         using row_t = std::tuple<Assignments...>;
         return new_statement(*this, insert_values_t<Assignments...>{row_t{assignments...}});
       }
       else
       {
-        return ::sqlpp::bad_expression_t{check};
+        return ::sqlpp::bad_expression_t{_check};
       }
     }
 
     template <typename... Assignments>
     [[nodiscard]] constexpr auto multiset(std::vector<std::tuple<Assignments...>> assignments) const
     {
-      constexpr auto check = check_insert_set_args<Assignments...>();
-      if constexpr (check)
+      constexpr auto _check = check_insert_set_args<Assignments...>();
+      if constexpr (_check)
       {
         return new_statement(*this, insert_multi_values_t<Assignments...>{assignments});
       }
       else
       {
-        return ::sqlpp::bad_expression_t{check};
+        return ::sqlpp::bad_expression_t{_check};
       }
     }
   };

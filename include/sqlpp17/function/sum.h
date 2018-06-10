@@ -69,26 +69,26 @@ namespace sqlpp
   template <typename Expression>
   [[nodiscard]] constexpr auto sum(Expression expression)
   {
-    if constexpr (constexpr auto check = check_sum_args<Expression>(); check)
+    if constexpr (constexpr auto _check = check_sum_args<Expression>(); _check)
     {
       return aggregate_t<sum_t<no_flag_t>, Expression>{expression};
     }
     else
     {
-      return ::sqlpp::bad_expression_t{check};
+      return ::sqlpp::bad_expression_t{_check};
     }
   }
 
   template <typename Expression>
   [[nodiscard]] constexpr auto sum([[maybe_unused]] distinct_t, Expression expression)
   {
-    if constexpr (constexpr auto check = check_sum_args<Expression>(); check)
+    if constexpr (constexpr auto _check = check_sum_args<Expression>(); _check)
     {
       return aggregate_t<sum_t<distinct_t>, Expression>{expression};
     }
     else
     {
-      return ::sqlpp::bad_expression_t{check};
+      return ::sqlpp::bad_expression_t{_check};
     }
   }
 

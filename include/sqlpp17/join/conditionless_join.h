@@ -65,14 +65,14 @@ namespace sqlpp
     template <typename Expr>
     [[nodiscard]] constexpr auto on(const Expr& expr) const
     {
-      constexpr auto check = detail::check_join<conditionless_join_t, Expr>();
-      if constexpr (check)
+      constexpr auto _check = detail::check_join<conditionless_join_t, Expr>();
+      if constexpr (_check)
       {
         return join_t{_lhs, JoinType{}, _rhs, on_t<Expr>{expr}};
       }
       else
       {
-        return ::sqlpp::bad_expression_t{check};
+        return ::sqlpp::bad_expression_t{_check};
       }
     }
 

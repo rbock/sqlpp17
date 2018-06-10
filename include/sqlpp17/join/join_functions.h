@@ -71,14 +71,14 @@ namespace sqlpp
     template <typename JoinType, typename Lhs, typename Rhs>
     constexpr auto join_impl(Lhs lhs, Rhs rhs)
     {
-      constexpr auto check = check_conditionless_join(lhs, rhs);
-      if constexpr (check)
+      constexpr auto _check = check_conditionless_join(lhs, rhs);
+      if constexpr (_check)
       {
         return conditionless_join_t{lhs, JoinType{}, rhs};
       }
       else
       {
-        return ::sqlpp::bad_expression_t{check};
+        return ::sqlpp::bad_expression_t{_check};
       }
     }
   }  // namespace detail
@@ -118,14 +118,14 @@ namespace sqlpp
     template <typename Lhs, typename Rhs>
     constexpr auto cross_join_impl(Lhs lhs, Rhs rhs)
     {
-      constexpr auto check = check_conditionless_join(lhs, rhs);
-      if constexpr (check)
+      constexpr auto _check = check_conditionless_join(lhs, rhs);
+      if constexpr (_check)
       {
         return detail::join_impl<cross_join_t>(lhs, rhs).unconditionally();
       }
       else
       {
-        return ::sqlpp::bad_expression_t{check};
+        return ::sqlpp::bad_expression_t{_check};
       }
     }
   }  // namespace detail
