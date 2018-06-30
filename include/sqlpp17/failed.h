@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2016 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -31,29 +31,26 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-#warning: This needs to be in a different namespace to prevent operator overloading with other operator&& (aka operator and)
   template <typename T>
   struct failed : public std::false_type
   {
+    template <typename U>
+    constexpr auto operator&&(const failed<U>&)
+    {
+      return failed{};
+    }
+
+    constexpr auto operator&&(const succeeded&)
+    {
+      return failed{};
+    }
   };
 
   template <typename T>
   constexpr auto is_failed_v<failed<T>> = true;
 
-  template <typename T, typename U>
-  constexpr auto operator&&(const failed<T>&, const failed<U>&)
-  {
-    return failed<T>{};
-  }
-
   template <typename T>
-  constexpr auto operator&&(const succeeded&, const failed<T>&)
-  {
-    return failed<T>{};
-  }
-
-  template <typename T>
-  constexpr auto operator&&(const failed<T>&, const succeeded&)
+  constexpr auto succeeded::operator&&(const failed<T>&)
   {
     return failed<T>{};
   }

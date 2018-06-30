@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016, Roland Bock
+Copyright (c) 2016 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -30,22 +30,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
+  template <typename T>
+  struct failed;
+
   struct succeeded : public std::true_type
   {
-  };
-
-  template <typename ValueType>
-  struct succeeded_value_type : public std::true_type
-  {
-    constexpr succeeded_value_type(ValueType vt) : value_type(vt)
+    constexpr auto operator&&(const succeeded&)
     {
+      return succeeded{};
     }
 
-    ValueType value_type;
+    template <typename T>
+    constexpr auto operator&&(const failed<T>&);
   };
-
-  constexpr auto operator&&(const succeeded&, const succeeded&)
-  {
-    return succeeded{};
-  }
 }
