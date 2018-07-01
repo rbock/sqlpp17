@@ -30,11 +30,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/mysql/connection.h>
 
-namespace sqlpp::mysql
-{
-  class connection_t;
-}
-
 namespace sqlpp::mysql::detail
 {
   class circular_connection_buffer_t
@@ -101,7 +96,8 @@ namespace sqlpp::mysql
     detail::circular_connection_buffer_t _handles;
     std::mutex _mutex;
 
-    friend class ::sqlpp::mysql::connection_t<connection_pool_t, Debug>;
+    using _connection_t = ::sqlpp::mysql::base_connection<connection_pool_t, Debug>;
+    friend class connection_t;
 
   public:
     connection_pool_t() = delete;
@@ -115,7 +111,7 @@ namespace sqlpp::mysql
     connection_pool_t& operator=(connection_pool_t&&) = default;
     ~connection_pool_t() = default;
 
-    [[nodiscard]] __attribute__((no_sanitize("memory"))) auto get() -> ::sqlpp::mysql::connection_t
+    [[nodiscard]] __attribute__((no_sanitize("memory"))) auto get() -> _connection_t
     {
       detail::thread_init();
 
@@ -130,8 +126,8 @@ namespace sqlpp::mysql
         handle.reset();
       }
 
-      return handle ? ::sqlpp::mysql::connection_t{_connection_config, std::move(handle), this}
-                    : ::sqlpp::mysql::connection_t{_connection_config, this};
+      return handle ? _connection_t{_connection_config, std::move(handle), this}
+                    : _connection_t{_connection_config, this};
     }
 
   private:

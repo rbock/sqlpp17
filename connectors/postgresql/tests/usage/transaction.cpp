@@ -46,7 +46,7 @@ int main()
 
   try
   {
-    auto db = ::sqlpp::postgresql::connection_t{config};
+    auto db = ::sqlpp::postgresql::connection_t<::sqlpp::debug::allowed>{config};
 
     // good case
     {

@@ -32,4 +32,14 @@ namespace sqlpp
   {
   };
 
+  enum class debug
+  {
+    none,
+    allowed
+  };
+
+  struct no_pool
+  {
+  };
+
 }  // namespace sqlpp

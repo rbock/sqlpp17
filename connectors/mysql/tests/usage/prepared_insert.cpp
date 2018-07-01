@@ -61,7 +61,7 @@ int main()
   config.debug = print_debug;
   try
   {
-    auto db = mysql::connection_t<mysql::debug::none>{config};
+    auto db = mysql::connection_t<sqlpp::debug::none>{config};
   }
   catch (const sqlpp::exception& e)
   {
@@ -71,7 +71,7 @@ int main()
   }
   try
   {
-    auto db = mysql::connection_t<mysql::debug::allowed>{config};
+    auto db = mysql::connection_t<sqlpp::debug::allowed>{config};
     db(drop_table(tabDepartment));
     db(drop_table(tabPerson));
     db(create_table(tabDepartment));

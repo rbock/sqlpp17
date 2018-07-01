@@ -98,15 +98,52 @@ namespace sqlpp::postgresql
     }
   };
 
-  auto bind_parameter(prepared_statement_t& statement, const std::nullopt_t& value, int index) -> void;
+  inline auto bind_parameter(prepared_statement_t& statement, const std::nullopt_t& value, int index) -> void
+  {
+    statement.get_parameter_pointers()[index] = nullptr;
+  }
 
-  auto bind_parameter(prepared_statement_t& statement, bool& value, int index) -> void;
-  auto bind_parameter(prepared_statement_t& statement, std::int32_t& value, int index) -> void;
-  auto bind_parameter(prepared_statement_t& statement, std::int64_t& value, int index) -> void;
-  auto bind_parameter(prepared_statement_t& statement, float& value, int index) -> void;
-  auto bind_parameter(prepared_statement_t& statement, double& value, int index) -> void;
-  auto bind_parameter(prepared_statement_t& statement, std::string& value, int index) -> void;
-  auto bind_parameter(prepared_statement_t& statement, std::string_view& value, int index) -> void;
+  inline auto bind_parameter(prepared_statement_t& statement, bool& value, int index) -> void
+  {
+    statement.get_parameter_data()[index] = value ? "TRUE" : "FALSE";
+    statement.get_parameter_pointers()[index] = statement.get_parameter_data()[index].data();
+  }
+
+  inline auto bind_parameter(prepared_statement_t& statement, std::int32_t& value, int index) -> void
+  {
+    statement.get_parameter_data()[index] = std::to_string(value);
+    statement.get_parameter_pointers()[index] = statement.get_parameter_data()[index].data();
+  }
+
+  inline auto bind_parameter(prepared_statement_t& statement, std::int64_t& value, int index) -> void
+  {
+    statement.get_parameter_data()[index] = std::to_string(value);
+    statement.get_parameter_pointers()[index] = statement.get_parameter_data()[index].data();
+  }
+
+  inline auto bind_parameter(prepared_statement_t& statement, float& value, int index) -> void
+  {
+    statement.get_parameter_data()[index] = to_sql_string_c(::sqlpp::postgresql::context_t{}, value);
+    statement.get_parameter_pointers()[index] = statement.get_parameter_data()[index].data();
+  }
+
+  inline auto bind_parameter(prepared_statement_t& statement, double& value, int index) -> void
+  {
+    statement.get_parameter_data()[index] = to_sql_string_c(::sqlpp::postgresql::context_t{}, value);
+    statement.get_parameter_pointers()[index] = statement.get_parameter_data()[index].data();
+  }
+
+  inline auto bind_parameter(prepared_statement_t& statement, std::string& value, int index) -> void
+  {
+    statement.get_parameter_data()[index] = value;
+    statement.get_parameter_pointers()[index] = statement.get_parameter_data()[index].data();
+  }
+
+  inline auto bind_parameter(prepared_statement_t& statement, std::string_view& value, int index) -> void
+  {
+    statement.get_parameter_data()[index] = value;
+    statement.get_parameter_pointers()[index] = statement.get_parameter_data()[index].data();
+  }
 
   template <typename T>
   auto bind_parameter(prepared_statement_t& statement, std::optional<T>& value, int index) -> void

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2017 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -48,7 +48,7 @@ namespace
     return config;
   };
 
-  auto pool = postgresql::connection_pool_t{5, get_config()};
+  auto pool = postgresql::connection_pool_t<::sqlpp::debug::none>{5, get_config()};
 }  // namespace
 
 [[nodiscard]] auto test_setup()
@@ -118,7 +118,7 @@ namespace
 {
   try
   {
-    auto connections = std::vector<postgresql::connection_t>{};
+    auto connections = std::vector<std::decay_t<decltype(pool.get())>>{};
     auto pointers = std::set<void*>{};
     for (auto i = 0; i < 50; ++i)
     {

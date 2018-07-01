@@ -55,7 +55,7 @@ int main()
   config.debug = print_debug;
   try
   {
-    auto db = postgresql::connection_t{config};
+    auto db = postgresql::connection_t<::sqlpp::debug::none>{config};
   }
   catch (const sqlpp::exception& e)
   {
@@ -66,7 +66,7 @@ int main()
   }
   try
   {
-    auto db = postgresql::connection_t{config};
+    auto db = postgresql::connection_t<::sqlpp::debug::allowed>{config};
     db(drop_table(test::tabDepartment));
     db(drop_table(test::tabPerson));
     db(create_table(test::tabDepartment));

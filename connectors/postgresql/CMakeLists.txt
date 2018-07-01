@@ -1,4 +1,4 @@
-# Copyright (c) 2017, Roland Bock
+# Copyright (c) 2017 - 2018, Roland Bock
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without modification,
@@ -31,7 +31,6 @@ if (PostgresSQL_FOUND)
     include_directories("${PostgreSQL_INCLUDE_DIRS}")
     include_directories("${PROJECT_SOURCE_DIR}/connectors/postgresql/include")
 
-    add_subdirectory(src)
     add_subdirectory(tests)
 
     install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/sqlpp17" DESTINATION include)

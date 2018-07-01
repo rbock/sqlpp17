@@ -78,20 +78,10 @@ namespace sqlpp::mysql::detail
 
 namespace sqlpp::mysql
 {
-  enum class debug
-  {
-    none,
-    allowed
-  };
-
-  struct no_pool
-  {
-  };
-
-  template <typename Pool, debug Debug>
+  template <typename Pool, ::sqlpp::debug Debug>
   class base_connection;
 
-  template<debug Debug = debug::allowed>
+  template<::sqlpp::debug Debug = ::sqlpp::debug::allowed>
   using connection_t = base_connection<no_pool, Debug>;
 
 };  // namespace sqlpp::mysql
@@ -124,12 +114,13 @@ namespace sqlpp::mysql::detail
   }
 #endif
 
-  template <typename Pool, debug Debug>
+  template <typename Pool, ::sqlpp::debug Debug>
   inline auto execute_query(const base_connection<Pool, Debug>& connection, const std::string& query) -> void
   {
     detail::thread_init();
 
-    connection.debug("Executing: '" + query + "'");
+    if (connection.is_debug_allowed())
+      connection.debug("Executing: '" + query + "'");
 
     if (mysql_real_query(connection.get(), query.c_str(), query.size()))
     {
@@ -138,7 +129,7 @@ namespace sqlpp::mysql::detail
     }
   }
 
-  template <typename Pool, debug Debug>
+  template <typename Pool, ::sqlpp::debug Debug>
   inline auto prepare(const base_connection<Pool, Debug>& connection,
                       const std::string& statement,
                       size_t no_of_parameters,
@@ -146,7 +137,8 @@ namespace sqlpp::mysql::detail
   {
     thread_init();
 
-    connection.debug("Preparing: '" + statement + "'");
+    if (connection.is_debug_allowed())
+      connection.debug("Preparing: '" + statement + "'");
 
     auto statement_handle = detail::unique_prepared_statement_ptr(mysql_stmt_init(connection.get()), {});
     if (not statement_handle)
@@ -232,7 +224,7 @@ namespace sqlpp::mysql
     static const auto global_init_and_end = detail::scoped_library_initializer_t(argc, argv, groups);
   }
 
-  template <typename Pool, debug Debug>
+  template <typename Pool, ::sqlpp::debug Debug>
   class base_connection : public ::sqlpp::connection_base
   {
     detail::unique_connection_ptr _handle;
@@ -417,7 +409,8 @@ namespace sqlpp::mysql
     {
       try
       {
-        debug("Auto rollback!");
+        if (is_debug_allowed())
+          debug("Auto rollback!");
 
         rollback();
       }
@@ -428,9 +421,14 @@ namespace sqlpp::mysql
       }
     }
 
+    constexpr auto is_debug_allowed() const
+    {
+      return Debug == ::sqlpp::debug::allowed;
+    }
+
     auto debug([[maybe_unused]] std::string_view message) const
     {
-      if constexpr (Debug == debug::allowed)
+      if (is_debug_allowed())
         _debug(message);
     }
 

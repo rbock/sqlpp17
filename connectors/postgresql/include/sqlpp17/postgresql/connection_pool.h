@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2017 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -30,11 +30,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/postgresql/connection.h>
 
-namespace sqlpp::postgresql
-{
-  class connection_t;
-}
-
 namespace sqlpp::postgresql::detail
 {
   class circular_connection_buffer_t
@@ -44,30 +39,65 @@ namespace sqlpp::postgresql::detail
     std::size_t _tail = 0;
     std::size_t _size = 0;
 
-    auto increment(std::size_t& pos);
+    auto increment(std::size_t& pos)
+    {
+      ++pos;
+      if (pos == _data.size())
+        pos = 0;
+    }
 
   public:
-    circular_connection_buffer_t(std::size_t capacity);
+    circular_connection_buffer_t(std::size_t capacity) : _data(capacity)
+    {
+    }
 
-    [[nodiscard]] auto empty() const;
+    [[nodiscard]] auto empty() const
+    {
+      return _size == 0;
+    }
 
-    [[nodiscard]] auto& front();
+    [[nodiscard]] auto& front()
+    {
+      return _data[_tail];
+    }
 
-    auto pop_front() -> void;
+    auto pop_front() -> void
+    {
+      if ((_head != _tail) or not empty())
+      {
+        increment(_tail);
+        --_size;
+      }
+    }
 
-    auto push_back(detail::unique_connection_ptr t);
+    auto push_back(detail::unique_connection_ptr t)
+    {
+      _data[_head] = std::move(t);
+      if ((_head != _tail) or empty())
+      {
+        increment(_head);
+        ++_size;
+      }
+      else  // (head == tail) and not empty()
+      {
+        increment(_head);
+        _tail = _head;
+      }
+    }
   };
 }  // namespace sqlpp::postgresql::detail
 
 namespace sqlpp::postgresql
 {
+  template<::sqlpp::debug Debug>
   class connection_pool_t
   {
     connection_config_t _connection_config;
     detail::circular_connection_buffer_t _handles;
     std::mutex _mutex;
 
-    friend class ::sqlpp::postgresql::connection_t;
+    using _connection_t = ::sqlpp::postgresql::base_connection<connection_pool_t, Debug>;
+    friend _connection_t;
 
   public:
     connection_pool_t() = delete;
@@ -81,10 +111,29 @@ namespace sqlpp::postgresql
     connection_pool_t& operator=(connection_pool_t&&) = default;
     ~connection_pool_t() = default;
 
-    [[nodiscard]] __attribute__((no_sanitize("memory"))) auto get() -> ::sqlpp::postgresql::connection_t;
+    [[nodiscard]] __attribute__((no_sanitize("memory"))) auto get() -> _connection_t
+    {
+      const auto lock = std::scoped_lock{_mutex};
+
+      auto handle = detail::unique_connection_ptr(std::move(_handles.front()));
+      _handles.pop_front();
+
+      // destroy dead connections
+      if (handle and PQstatus(handle.get()) != CONNECTION_OK)
+      {
+        handle.reset();
+      }
+
+      return handle ? _connection_t{_connection_config, std::move(handle), this}
+                    : _connection_t{_connection_config, this};
+    }
 
   private:
-    auto put(detail::unique_connection_ptr handle) -> void;
+    auto put(detail::unique_connection_ptr handle) -> void
+    {
+      const auto lock = std::scoped_lock{_mutex};
+      _handles.push_back(std::move(handle));
+    }
   };
 
 }  // namespace sqlpp::postgresql
