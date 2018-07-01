@@ -79,8 +79,7 @@ namespace sqlpp::mysql
     prepared_statement_result_t& operator=(prepared_statement_result_t&&) = default;
     ~prepared_statement_result_t(){}
 
-        [[nodiscard]]
-        operator bool() const
+    [[nodiscard]] operator bool() const
     {
       return !!_handle;
     }
@@ -95,13 +94,11 @@ namespace sqlpp::mysql
       return _debug;
     }
 
-#warning : This should be private
     [[nodiscard]] auto& get_bind_meta_data()
     {
       return _bind_meta_data;
     }
 
-#warning : This should be private
     [[nodiscard]] auto& get_bind_data()
     {
       return _bind_data;
@@ -127,7 +124,7 @@ namespace sqlpp::mysql
 
     // This binds optional values.
     // It has the side effect of turning all NULL values into T{}
-    // before reading the next row.
+    // before reading the next row (otherwise there would be nothing to bind).
     row.bind(result);
 
     if (detail::get_next_result_row(result))

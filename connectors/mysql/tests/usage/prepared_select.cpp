@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2017 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -53,7 +53,7 @@ int main()
   config.debug = print_debug;
   try
   {
-    auto db = mysql::connection_t{config};
+    auto db = mysql::connection_t<mysql::debug::none>{config};
   }
   catch (const sqlpp::exception& e)
   {
@@ -63,7 +63,7 @@ int main()
   }
   try
   {
-    auto db = mysql::connection_t{config};
+    auto db = mysql::connection_t<mysql::debug::allowed>{config};
     db(drop_table(test::tabDepartment));
     db(create_table(test::tabDepartment));
 

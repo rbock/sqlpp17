@@ -78,18 +78,21 @@ namespace sqlpp::mysql::detail
 
 namespace sqlpp::mysql
 {
-  struct no_debug
+  enum class debug
   {
+    none,
+    allowed
   };
 
   struct no_pool
   {
   };
 
-  template <typename Debug = no_debug, typename Pool = no_pool>
+  template <typename Pool, debug Debug>
   class base_connection;
 
-  using connection_t = base_connection<>;
+  template<debug Debug = debug::allowed>
+  using connection_t = base_connection<no_pool, Debug>;
 
 };  // namespace sqlpp::mysql
 
@@ -121,13 +124,12 @@ namespace sqlpp::mysql::detail
   }
 #endif
 
-  template <typename Debug, typename Pool>
-  inline auto execute_query(const base_connection<Debug, Pool>& connection, const std::string& query) -> void
+  template <typename Pool, debug Debug>
+  inline auto execute_query(const base_connection<Pool, Debug>& connection, const std::string& query) -> void
   {
     detail::thread_init();
 
-    if constexpr (base_connection<Debug, Pool>::has_debug())
-      connection.debug("Executing: '" + query + "'");
+    connection.debug("Executing: '" + query + "'");
 
     if (mysql_real_query(connection.get(), query.c_str(), query.size()))
     {
@@ -136,16 +138,15 @@ namespace sqlpp::mysql::detail
     }
   }
 
-  template <typename Debug, typename Pool>
-  inline auto prepare(const base_connection<Debug, Pool>& connection,
+  template <typename Pool, debug Debug>
+  inline auto prepare(const base_connection<Pool, Debug>& connection,
                       const std::string& statement,
                       size_t no_of_parameters,
                       size_t no_of_columns) -> ::sqlpp::mysql::prepared_statement_t
   {
     thread_init();
 
-    if constexpr (base_connection<Debug, Pool>::has_debug())
-      connection.debug("Preparing: '" + statement + "'");
+    connection.debug("Preparing: '" + statement + "'");
 
     auto statement_handle = detail::unique_prepared_statement_ptr(mysql_stmt_init(connection.get()), {});
     if (not statement_handle)
@@ -235,14 +236,13 @@ namespace sqlpp::mysql
     static const auto global_init_and_end = detail::scoped_library_initializer_t(argc, argv, groups);
   }
 
-  template <typename Debug, typename Pool>
+  template <typename Pool, debug Debug>
   class base_connection : public ::sqlpp::connection_base
   {
     detail::unique_connection_ptr _handle;
     bool _transaction_active = false;
-#warning : The type of _debug needs to be configurable (a no-op by default)
-#warning : The ownership policy (return to pool)
     std::function<void(std::string_view)> _debug;
+    Pool* _pool = nullptr;
 
     template <typename... Clauses>
     friend class ::sqlpp::statement;
@@ -302,6 +302,11 @@ namespace sqlpp::mysql
     base_connection& operator=(base_connection&&) = default;
     ~base_connection()
     {
+      if constexpr (not std::is_same_v<Pool, no_pool>)
+      {
+        if (_pool)
+          _pool->put(std::move(_handle));
+      }
     }
 
     template <typename... Clauses>
@@ -333,7 +338,6 @@ namespace sqlpp::mysql
         }
         else
         {
-#warning: return ::sqlpp::bad_expression_t{failure<UnknownStatementType>{}};
           static_assert(wrong<Statement>, "Unknown statement type");
         }
       }
@@ -413,17 +417,11 @@ namespace sqlpp::mysql
       detail::execute_query(*this, "ROLLBACK");
     }
 
-    static constexpr auto has_debug()
-    {
-      return not std::is_same_v<Debug, no_debug>;
-    }
-
     auto destroy_transaction() noexcept -> void
     {
       try
       {
-        if constexpr (has_debug())
-          debug("Auto rollback!");
+        debug("Auto rollback!");
 
         rollback();
       }
@@ -434,9 +432,9 @@ namespace sqlpp::mysql
       }
     }
 
-    auto debug([[maybe_unused]] std::string_view message)
+    auto debug([[maybe_unused]] std::string_view message) const
     {
-      if constexpr (has_debug())
+      if constexpr (Debug == debug::allowed)
         _debug(message);
     }
 
@@ -524,7 +522,7 @@ namespace sqlpp::mysql
       return ::sqlpp::prepared_statement_t{
           statement, detail::prepared_select_t{detail::prepare(*this, to_sql_string_c(context_t{}, statement),
                                                                parameters_of_t<Statement>::size(),
-                                                               statement.get_no_of_result_columns())}};
+                                                               get_no_of_result_columns(statement))}};
     }
   };
 

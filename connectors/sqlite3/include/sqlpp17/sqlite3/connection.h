@@ -192,7 +192,6 @@ namespace sqlpp::sqlite3
         }
         else
         {
-#warning: return ::sqlpp::bad_expression_t{failure<UnknownStatementType>{}};
           static_assert(wrong<Statement>, "Unknown statement type");
         }
       }

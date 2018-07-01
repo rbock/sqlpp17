@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2017 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -54,7 +54,6 @@ namespace sqlpp::mysql::detail
   public:
     circular_connection_buffer_t(std::size_t capacity) : _data(capacity)
     {
-      (void)_data;  // This line is just here because my version of clang-format barfs on this otherwise
     }
 
     [[nodiscard]] auto empty() const
@@ -95,13 +94,14 @@ namespace sqlpp::mysql::detail
 
 namespace sqlpp::mysql
 {
+  template <debug Debug>
   class connection_pool_t
   {
     connection_config_t _connection_config;
     detail::circular_connection_buffer_t _handles;
     std::mutex _mutex;
 
-    friend class ::sqlpp::mysql::connection_t;
+    friend class ::sqlpp::mysql::connection_t<connection_pool_t, Debug>;
 
   public:
     connection_pool_t() = delete;
@@ -125,7 +125,7 @@ namespace sqlpp::mysql
       _handles.pop_front();
 
       // destroy dead connections
-      if (handle != nullptr and mysql_ping(handle.get()) != 0)
+      if (handle and mysql_ping(handle.get()) != 0)
       {
         handle.reset();
       }

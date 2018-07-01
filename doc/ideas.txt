@@ -1,3 +1,5 @@
+The connection doe not hold on to the config. Thus, it cannot call a callback in the destructor
+
 (posix reserves _t suffixes)
 
 Get rid of the string-execute. Add some string-to-statement-function

@@ -189,7 +189,6 @@ namespace sqlpp::postgresql
         }
         else
         {
-#warning: return ::sqlpp::bad_expression_t{failure<UnknownStatementType>{}};
           static_assert(wrong<Statement>, "Unknown statement type");
         }
       }
@@ -324,7 +323,7 @@ namespace sqlpp::postgresql
       return ::sqlpp::prepared_statement_t{
           statement, detail::prepared_select_t{detail::prepare(*this, to_sql_string_c(context_t{}, statement),
                                                                parameters_of_t<Statement>::size(),
-                                                               statement.get_no_of_result_columns())}};
+                                                               get_no_of_result_columns(statement))}};
     }
   };
 
