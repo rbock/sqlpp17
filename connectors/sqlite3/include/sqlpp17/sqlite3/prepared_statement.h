@@ -58,14 +58,12 @@ namespace sqlpp::sqlite3
   {
     detail::unique_prepared_statement_ptr _handle;
     ::sqlite3* _connection;
-    std::function<void(std::string_view)> _debug;
 
   public:
     prepared_statement_t() = default;
     prepared_statement_t(detail::unique_prepared_statement_ptr handle,
-                         ::sqlite3* connection,
-                         std::function<void(std::string_view)> debug)
-        : _handle(std::move(handle)), _connection(connection), _debug(debug)
+                         ::sqlite3* connection)
+        : _handle(std::move(handle)), _connection(connection)
     {
     }
     prepared_statement_t(const prepared_statement_t&) = delete;
@@ -82,11 +80,6 @@ namespace sqlpp::sqlite3
     auto* connection() const
     {
       return _connection;
-    }
-
-    auto debug() const
-    {
-      return _debug;
     }
   };
 

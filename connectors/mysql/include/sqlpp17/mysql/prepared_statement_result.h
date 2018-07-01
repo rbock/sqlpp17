@@ -56,7 +56,6 @@ namespace sqlpp::mysql
     MYSQL_STMT* _handle = nullptr;
     std::vector<detail::bind_meta_data_t> _bind_meta_data;
     std::vector<MYSQL_BIND> _bind_data;
-    std::function<void(std::string_view)> _debug;
     void* _result_row_address = nullptr;
 
     friend auto detail::bind_impl(prepared_statement_result_t& result) -> void;
@@ -69,8 +68,7 @@ namespace sqlpp::mysql
     prepared_statement_result_t(::sqlpp::mysql::prepared_statement_t& statement)
         : _handle(statement.get()),
           _bind_meta_data(statement.get_number_of_columns()),
-          _bind_data(statement.get_number_of_columns()),
-          _debug(statement.debug())
+          _bind_data(statement.get_number_of_columns())
     {
     }
     prepared_statement_result_t(const prepared_statement_result_t&) = delete;
@@ -87,11 +85,6 @@ namespace sqlpp::mysql
     [[nodiscard]] auto* get() const
     {
       return _handle;
-    }
-
-    [[nodiscard]] auto debug() const
-    {
-      return _debug;
     }
 
     [[nodiscard]] auto& get_bind_meta_data()
@@ -140,9 +133,6 @@ namespace sqlpp::mysql
 
   inline auto pre_bind_field(prepared_statement_result_t& result, std::int32_t& value, std::size_t index) -> void
   {
-    if (result.debug())
-      result.debug()("Binding int32_t result at index " + std::to_string(index));
-
     auto& meta_data = result.get_bind_meta_data()[index];
 
     auto& param = result.get_bind_data()[index];
@@ -157,9 +147,6 @@ namespace sqlpp::mysql
 
   inline auto pre_bind_field(prepared_statement_result_t& result, std::int64_t& value, std::size_t index) -> void
   {
-    if (result.debug())
-      result.debug()("Binding int64_t result at index " + std::to_string(index));
-
     auto& meta_data = result.get_bind_meta_data()[index];
 
     auto& param = result.get_bind_data()[index];
@@ -174,9 +161,6 @@ namespace sqlpp::mysql
 
   inline auto pre_bind_field(prepared_statement_result_t& result, float& value, std::size_t index) -> void
   {
-    if (result.debug())
-      result.debug()("Binding float result at index " + std::to_string(index));
-
     auto& meta_data = result.get_bind_meta_data()[index];
 
     auto& param = result.get_bind_data()[index];
@@ -191,9 +175,6 @@ namespace sqlpp::mysql
 
   inline auto pre_bind_field(prepared_statement_result_t& result, double& value, std::size_t index) -> void
   {
-    if (result.debug())
-      result.debug()("Binding double result at index " + std::to_string(index));
-
     auto& meta_data = result.get_bind_meta_data()[index];
 
     auto& param = result.get_bind_data()[index];
@@ -210,9 +191,6 @@ namespace sqlpp::mysql
                              [[maybe_unused]] std::string_view& value,
                              std::size_t index) -> void
   {
-    if (result.debug())
-      result.debug()("Binding string_view result at index " + std::to_string(index));
-
     auto& meta_data = result.get_bind_meta_data()[index];
     meta_data.use_buffer = true;
 
@@ -229,9 +207,6 @@ namespace sqlpp::mysql
   template <typename T>
   inline auto pre_bind_field(prepared_statement_result_t& result, std::optional<T>& value, std::size_t index) -> void
   {
-    if (result.debug())
-      result.debug()("Binding optional result at index " + std::to_string(index));
-
     if (not value)
       value = {};
     pre_bind_field(result, *value, index);
@@ -244,9 +219,6 @@ namespace sqlpp::mysql
   template <typename T>
   inline auto bind_field(prepared_statement_result_t& result, std::optional<T>& value, std::size_t index) -> void
   {
-    if (result.debug())
-      result.debug()("Rebinding optional result at index " + std::to_string(index));
-
     if (not value)
       value = {};
 
@@ -259,9 +231,6 @@ namespace sqlpp::mysql
 
   inline auto post_bind_field(prepared_statement_result_t& result, std::string_view& value, std::size_t index) -> void
   {
-    if (result.debug())
-      result.debug()("Assigning string_view result at index " + std::to_string(index));
-
     const auto& meta_data = result.get_bind_meta_data()[index];
 
     value = std::string_view{meta_data.bound_buffer.data(), meta_data.bound_len};
@@ -271,9 +240,6 @@ namespace sqlpp::mysql
                               std::optional<std::string_view>& value,
                               std::size_t index) -> void
   {
-    if (result.debug())
-      result.debug()("Assigning optional string_view result at index " + std::to_string(index));
-
     const auto& meta_data = result.get_bind_meta_data()[index];
 
     if (meta_data.bound_is_null)
@@ -292,9 +258,6 @@ namespace sqlpp::mysql::detail
 {
   inline auto bind_impl(prepared_statement_result_t& result) -> void
   {
-    if (result.debug())
-      result.debug()("Binding results");
-
     if (mysql_stmt_bind_result(result.get(), result.get_bind_data().data()))
     {
       throw sqlpp::exception(std::string("MySQL: mysql_stmt_prepared_statement_result: ") +
@@ -304,9 +267,6 @@ namespace sqlpp::mysql::detail
 
   inline auto get_next_result_row(prepared_statement_result_t& result) -> bool
   {
-    if (result.debug())
-      result.debug()("Reading bound row");
-
     auto flag = mysql_stmt_fetch(result.get());
 
     switch (flag)
@@ -320,8 +280,6 @@ namespace sqlpp::mysql::detail
         {
           if (r.use_buffer and r.bound_len > r.bound_buffer.size())
           {
-            if (result.debug())
-              result.debug()("Reallocating buffer at index " + std::to_string(index));
             need_to_rebind = true;
             r.bound_buffer.resize(r.bound_len);
             MYSQL_BIND& param = result.get_bind_data()[index];

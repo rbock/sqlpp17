@@ -1,3 +1,5 @@
+debugging every bound value is nonsense
+
 The connection doe not hold on to the config. Thus, it cannot call a callback in the destructor
 
 (posix reserves _t suffixes)

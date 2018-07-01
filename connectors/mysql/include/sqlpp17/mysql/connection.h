@@ -159,16 +159,12 @@ namespace sqlpp::mysql::detail
                              " (statement was >>" + statement + "<<\n");
     }
 
-#warning : Need to pass a separate debug handle here
-    return {std::move(statement_handle), no_of_parameters, no_of_columns, nullptr};
+    return {std::move(statement_handle), no_of_parameters, no_of_columns};
   }
 
   inline auto execute_prepared_statement(::sqlpp::mysql::prepared_statement_t& prepared_statement) -> void
   {
     thread_init();
-
-    if (prepared_statement.debug())
-      prepared_statement.debug()("Executing prepared_statement");
 
     if (mysql_stmt_bind_param(prepared_statement.get(), prepared_statement.get_bind_data().data()))
     {
@@ -511,9 +507,8 @@ namespace sqlpp::mysql
         throw sqlpp::exception("MySQL: Could not store result set: " + std::string(mysql_error(this->get())));
       }
 
-#warning : pass a separate debug handler
       return ::sqlpp::result_t<result_row_of_t<Statement>, direct_execution_result_t>{
-          direct_execution_result_t{std::move(result_handle), nullptr}};
+          direct_execution_result_t{std::move(result_handle)}};
     }
 
     template <typename Statement>

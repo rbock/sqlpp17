@@ -51,14 +51,13 @@ namespace sqlpp::postgresql
   class char_result_t
   {
     detail::unique_result_ptr _handle;
-    std::function<void(std::string_view)> _debug;
     int _row_index = -1;
     int _row_count;
 
   public:
     char_result_t() = default;
-    char_result_t(detail::unique_result_ptr handle, std::function<void(std::string_view)> debug)
-        : _handle(std::move(handle)), _debug(debug)
+    char_result_t(detail::unique_result_ptr handle)
+        : _handle(std::move(handle))
     {
       _row_count = PQntuples(_handle.get());
     }
@@ -93,11 +92,6 @@ namespace sqlpp::postgresql
     auto get_row_count() const
     {
       return _row_count;
-    }
-
-    auto debug() const
-    {
-      return _debug;
     }
 
     auto reset() -> void

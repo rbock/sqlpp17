@@ -56,12 +56,11 @@ namespace sqlpp::sqlite3
   class prepared_statement_result_t
   {
     ::sqlite3_stmt* _handle;
-    std::function<void(std::string_view)> _debug;
 
   public:
     prepared_statement_result_t() = default;
     prepared_statement_result_t(prepared_statement_t& prepared_statement)
-        : _handle(prepared_statement.get()), _debug(prepared_statement.debug())
+        : _handle(prepared_statement.get())
     {
     }
     prepared_statement_result_t(const prepared_statement_result_t&) = delete;
@@ -81,11 +80,6 @@ namespace sqlpp::sqlite3
     [[nodiscard]] auto* get() const
     {
       return _handle;
-    }
-
-    [[nodiscard]] auto debug() const
-    {
-      return _debug;
     }
 
     auto reset() -> void
@@ -117,9 +111,6 @@ namespace sqlpp::sqlite3
   template <typename T>
   auto post_bind_field(prepared_statement_result_t& result, std::optional<T>& value, int index) -> void
   {
-    if (result.debug())
-      result.debug()("Binding optional result at index " + std::to_string(index));
-
     if (sqlite3_column_type(result.get(), index) == SQLITE_NULL)
     {
       value.reset();

@@ -58,9 +58,6 @@ namespace sqlpp::sqlite3::detail
 
   auto execute_prepared_statement(const prepared_statement_t& prepared_statement) -> void
   {
-    if (prepared_statement.debug())
-      prepared_statement.debug()("Executing prepared statement");
-
     sqlite3_reset(prepared_statement.get());
 
     switch (const auto rc = sqlite3_step(prepared_statement.get()); rc)
@@ -78,7 +75,7 @@ namespace sqlpp::sqlite3::detail
 
   auto prepare(const connection_t& connection, const std::string& statement) -> ::sqlpp::sqlite3::prepared_statement_t
   {
-    return {prepare_impl(connection, statement), connection.get(), connection.debug()};
+    return {prepare_impl(connection, statement), connection.get()};
   }
 
   auto prepared_select_t::run() -> prepared_statement_result_t

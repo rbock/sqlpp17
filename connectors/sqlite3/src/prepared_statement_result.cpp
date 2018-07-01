@@ -34,9 +34,6 @@ namespace sqlpp::sqlite3::detail
 {
   auto get_next_result_row(prepared_statement_result_t& result) -> bool
   {
-    if (result.debug())
-      result.debug()("Reading next row");
-
     auto rc = sqlite3_step(result.get());
 
     switch (rc)
@@ -56,50 +53,32 @@ namespace sqlpp::sqlite3
 {
   auto post_bind_field(prepared_statement_result_t& result, bool& value, int index) -> void
   {
-    if (result.debug())
-      result.debug()("Binding bool result at index " + std::to_string(index));
-
     value = sqlite3_column_int(result.get(), index);
   }
 
   auto post_bind_field(prepared_statement_result_t& result, std::int32_t& value, int index) -> void
   {
-    if (result.debug())
-      result.debug()("Binding int32_t result at index " + std::to_string(index));
-
     value = sqlite3_column_int(result.get(), index);
   }
 
   auto post_bind_field(prepared_statement_result_t& result, std::int64_t& value, int index) -> void
   {
-    if (result.debug())
-      result.debug()("Binding int64_t result at index " + std::to_string(index));
-
     value = sqlite3_column_int64(result.get(), index);
   }
 
   auto post_bind_field(prepared_statement_result_t& result, float& value, int index) -> void
   {
-    if (result.debug())
-      result.debug()("Binding float result at index " + std::to_string(index));
-
     // There is no column_float
     value = sqlite3_column_double(result.get(), index);
   }
 
   auto post_bind_field(prepared_statement_result_t& result, double& value, int index) -> void
   {
-    if (result.debug())
-      result.debug()("Binding double result at index " + std::to_string(index));
-
     value = sqlite3_column_double(result.get(), index);
   }
 
   auto post_bind_field(prepared_statement_result_t& result, std::string_view& value, int index) -> void
   {
-    if (result.debug())
-      result.debug()("Binding string_view result at index " + std::to_string(index));
-
     value = std::string_view{reinterpret_cast<const char*>(sqlite3_column_text(result.get(), index)),
                              static_cast<std::size_t>(sqlite3_column_bytes(result.get(), index))};
   }

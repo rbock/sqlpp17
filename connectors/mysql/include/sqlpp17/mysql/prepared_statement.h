@@ -69,20 +69,17 @@ namespace sqlpp::mysql
     std::size_t _number_of_columns;
     std::vector<detail::bind_meta_data_t> _bind_meta_data;
     std::vector<MYSQL_BIND> _bind_data;
-    std::function<void(std::string_view)> _debug;
 
   public:
     prepared_statement_t() = default;
     prepared_statement_t(detail::unique_prepared_statement_ptr handle,
                          std::size_t number_of_parameters,
-                         std::size_t number_of_columns,
-                         std::function<void(std::string_view)> debug)
+                         std::size_t number_of_columns)
         : _handle(std::move(handle)),
           _number_of_parameters(number_of_parameters),
           _number_of_columns(number_of_columns),
           _bind_meta_data(number_of_parameters),
-          _bind_data(number_of_parameters),
-          _debug(debug)
+          _bind_data(number_of_parameters)
     {
     }
     prepared_statement_t(const prepared_statement_t&) = delete;
@@ -115,18 +112,10 @@ namespace sqlpp::mysql
     {
       return _bind_data;
     }
-
-    auto debug() const
-    {
-      return _debug;
-    }
   };
 
   inline auto bind_parameter(prepared_statement_t& statement, const std::nullopt_t& value, int index) -> void
   {
-    if (statement.debug())
-      statement.debug()("binding parameter NULL at index: " + std::to_string(index));
-
     auto& meta_data = statement.get_bind_meta_data()[index];
     meta_data.bound_is_null = true;
 
@@ -144,9 +133,6 @@ namespace sqlpp::mysql
   // would lead to dangling pointers in the implementation
   inline auto bind_parameter(prepared_statement_t& statement, bool& value, int index) -> void
   {
-    if (statement.debug())
-      statement.debug()("binding bool parameter '" + std::to_string(value) + "' at index: " + std::to_string(index));
-
     auto& meta_data = statement.get_bind_meta_data()[index];
     meta_data.bound_is_null = false;
 
@@ -162,9 +148,6 @@ namespace sqlpp::mysql
 
   inline auto bind_parameter(prepared_statement_t& statement, std::int32_t& value, int index) -> void
   {
-    if (statement.debug())
-      statement.debug()("binding int32_t parameter " + std::to_string(value) + " at index: " + std::to_string(index));
-
     auto& meta_data = statement.get_bind_meta_data()[index];
     meta_data.bound_is_null = false;
 
@@ -180,9 +163,6 @@ namespace sqlpp::mysql
 
   inline auto bind_parameter(prepared_statement_t& statement, std::int64_t& value, int index) -> void
   {
-    if (statement.debug())
-      statement.debug()("binding int64_t parameter " + std::to_string(value) + " at index: " + std::to_string(index));
-
     auto& meta_data = statement.get_bind_meta_data()[index];
     meta_data.bound_is_null = false;
 
@@ -198,9 +178,6 @@ namespace sqlpp::mysql
 
   inline auto bind_parameter(prepared_statement_t& statement, float& value, int index) -> void
   {
-    if (statement.debug())
-      statement.debug()("binding float parameter " + std::to_string(value) + " at index: " + std::to_string(index));
-
     auto& meta_data = statement.get_bind_meta_data()[index];
     meta_data.bound_is_null = false;
 
@@ -216,9 +193,6 @@ namespace sqlpp::mysql
 
   inline auto bind_parameter(prepared_statement_t& statement, double& value, int index) -> void
   {
-    if (statement.debug())
-      statement.debug()("binding double parameter " + std::to_string(value) + " at index: " + std::to_string(index));
-
     auto& meta_data = statement.get_bind_meta_data()[index];
     meta_data.bound_is_null = false;
 
@@ -234,9 +208,6 @@ namespace sqlpp::mysql
 
   inline auto bind_parameter(prepared_statement_t& statement, std::string& value, int index) -> void
   {
-    if (statement.debug())
-      statement.debug()("binding string parameter '" + value + "' at index: " + std::to_string(index));
-
     auto& meta_data = statement.get_bind_meta_data()[index];
     meta_data.bound_is_null = false;
 
@@ -252,10 +223,6 @@ namespace sqlpp::mysql
 
   inline auto bind_parameter(prepared_statement_t& statement, std::string_view& value, int index) -> void
   {
-    if (statement.debug())
-      statement.debug()("binding string_view parameter '" + std::string(value) +
-                        "' at index: " + std::to_string(index));
-
     auto& meta_data = statement.get_bind_meta_data()[index];
     meta_data.bound_is_null = false;
 

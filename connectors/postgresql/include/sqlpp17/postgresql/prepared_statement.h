@@ -49,19 +49,16 @@ namespace sqlpp::postgresql
     std::string _name;
     std::vector<std::string> _parameter_data;
     std::vector<char*> _parameter_pointers;
-    std::function<void(std::string_view)> _debug;
 
   public:
     prepared_statement_t() = default;
     prepared_statement_t(PGconn* connection,
                          std::string name,
-                         std::size_t number_of_parameters,
-                         std::function<void(std::string_view)> debug)
+                         std::size_t number_of_parameters)
         : _connection(connection),
           _name(std::move(name)),
           _parameter_data(number_of_parameters),
-          _parameter_pointers(number_of_parameters),
-          _debug(debug)
+          _parameter_pointers(number_of_parameters)
     {
     }
     prepared_statement_t(const prepared_statement_t&) = delete;
@@ -98,11 +95,6 @@ namespace sqlpp::postgresql
     auto& get_parameter_pointers() const
     {
       return _parameter_pointers;
-    }
-
-    auto debug() const
-    {
-      return _debug;
     }
   };
 

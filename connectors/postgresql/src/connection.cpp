@@ -32,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp::postgresql::detail
 {
+#warning: dissolve cpp files? See mysql
   auto execute_query(const connection_t& connection, const std::string& query) -> detail::unique_result_ptr
   {
     if (connection.debug())
@@ -59,7 +60,7 @@ namespace sqlpp::postgresql::detail
 
   auto select(const connection_t& connection, const std::string& query) -> char_result_t
   {
-    return {execute_query(connection, query), connection.debug()};
+    return {execute_query(connection, query)};
   }
 
   auto insert(const connection_t& connection, const std::string& query) -> size_t
@@ -106,7 +107,7 @@ namespace sqlpp::postgresql::detail
       case PGRES_COMMAND_OK:
         [[fallthrough]];
       case PGRES_TUPLES_OK:
-        return {connection.get(), statement_name, no_of_parameters, connection.debug()};
+        return {connection.get(), statement_name, no_of_parameters};
       default:
         throw sqlpp::exception(std::string("Postgresql: Error during query preparation: ") +
                                PQresultErrorMessage(result.get()) + " (query was >>" + statement + "<<\n");
@@ -116,9 +117,6 @@ namespace sqlpp::postgresql::detail
   auto execute_prepared_statement(::sqlpp::postgresql::prepared_statement_t& prepared_statement)
       -> detail::unique_result_ptr
   {
-    if (prepared_statement.debug())
-      prepared_statement.debug()("Executing prepared_statement " + prepared_statement.get_name());
-
     auto result = detail::unique_result_ptr(
         PQexecPrepared(prepared_statement.get_connection(), prepared_statement.get_name().c_str(),
                        prepared_statement.get_number_of_parameters(),
@@ -145,7 +143,7 @@ namespace sqlpp::postgresql::detail
 
   auto prepared_select_t::run() -> char_result_t
   {
-    return {execute_prepared_statement(*this), this->debug()};
+    return {execute_prepared_statement(*this)};
   }
 
   auto prepared_insert_t::run() -> size_t

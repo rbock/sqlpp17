@@ -60,7 +60,6 @@ namespace sqlpp ::mysql
   class direct_execution_result_t
   {
     detail::unique_result_ptr _handle;
-    std::function<void(std::string_view)> _debug;
     MYSQL_ROW _data = nullptr;
     unsigned long* _lengths = nullptr;
 
@@ -68,8 +67,8 @@ namespace sqlpp ::mysql
 
   public:
     direct_execution_result_t() = default;
-    direct_execution_result_t(detail::unique_result_ptr handle, std::function<void(std::string_view)> debug)
-        : _handle(std::move(handle)), _debug(debug)
+    direct_execution_result_t(detail::unique_result_ptr handle)
+        : _handle(std::move(handle))
     {
     }
     direct_execution_result_t(const direct_execution_result_t&) = delete;
@@ -98,11 +97,6 @@ namespace sqlpp ::mysql
       return _lengths;
     }
 
-    auto debug() const
-    {
-      return _debug;
-    }
-
     auto reset()
     {
       *this = direct_execution_result_t{};
@@ -122,9 +116,6 @@ namespace sqlpp::mysql::detail
 
   inline auto get_next_result_row(direct_execution_result_t& result) -> bool
   {
-    if (result.debug())
-      result.debug()("Reading char row");
-
     result._data = mysql_fetch_row(result.get());
     result._lengths = mysql_fetch_lengths(result.get());
 
@@ -145,50 +136,34 @@ namespace sqlpp::mysql
     {
       result.reset();
     }
-  }  // namespace
-     // sqlpp::mysqltemplate<typenameRow>autoget_next_result_row(direct_execution_result_t&result,Row&row)->void
+  }
 
   inline auto bind_field(direct_execution_result_t& result, std::int64_t& value, int index) -> void
   {
-    if (result.debug())
-      result.debug()("Binding int64_t result at index " + std::to_string(index));
-
     detail::assert_field(result, index);
     value = std::strtoll(result.get_data()[index], nullptr, 10);
   }
 
   inline auto bind_field(direct_execution_result_t& result, std::int32_t& value, int index) -> void
   {
-    if (result.debug())
-      result.debug()("Binding int32_t result at index " + std::to_string(index));
-
     detail::assert_field(result, index);
     value = std::strtol(result.get_data()[index], nullptr, 10);
   }
 
   inline auto bind_field(direct_execution_result_t& result, float& value, int index) -> void
   {
-    if (result.debug())
-      result.debug()("Binding float result at index " + std::to_string(index));
-
     detail::assert_field(result, index);
     value = std::strtof(result.get_data()[index], nullptr);
   }
 
   inline auto bind_field(direct_execution_result_t& result, double& value, int index) -> void
   {
-    if (result.debug())
-      result.debug()("Binding double result at index " + std::to_string(index));
-
     detail::assert_field(result, index);
     value = std::strtod(result.get_data()[index], nullptr);
   }
 
   inline auto bind_field(direct_execution_result_t& result, std::string_view& value, int index) -> void
   {
-    if (result.debug())
-      result.debug()("Binding string_view result at index " + std::to_string(index));
-
     detail::assert_field(result, index);
     value = std::string_view(result.get_data()[index], result.get_lengths()[index]);
   }
@@ -196,9 +171,6 @@ namespace sqlpp::mysql
   template <typename T>
   auto bind_field(direct_execution_result_t& result, std::optional<T>& value, int index) -> void
   {
-    if (result.debug())
-      result.debug()("Binding optional result at index " + std::to_string(index));
-
     if (!result.get_data()[index])
     {
       value.reset();
