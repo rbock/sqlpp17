@@ -101,12 +101,37 @@ namespace sqlpp::sqlite3
     }
   }
 
-  auto post_bind_field(prepared_statement_result_t& result, bool& value, int index) -> void;
-  auto post_bind_field(prepared_statement_result_t& result, std::int32_t& value, int index) -> void;
-  auto post_bind_field(prepared_statement_result_t& result, std::int64_t& value, int index) -> void;
-  auto post_bind_field(prepared_statement_result_t& result, float& value, int index) -> void;
-  auto post_bind_field(prepared_statement_result_t& result, double& value, int index) -> void;
-  auto post_bind_field(prepared_statement_result_t& result, std::string_view& value, int index) -> void;
+  inline auto post_bind_field(prepared_statement_result_t& result, bool& value, int index) -> void
+  {
+    value = sqlite3_column_int(result.get(), index);
+  }
+
+  inline auto post_bind_field(prepared_statement_result_t& result, std::int32_t& value, int index) -> void
+  {
+    value = sqlite3_column_int(result.get(), index);
+  }
+
+  inline auto post_bind_field(prepared_statement_result_t& result, std::int64_t& value, int index) -> void
+  {
+    value = sqlite3_column_int64(result.get(), index);
+  }
+
+  inline auto post_bind_field(prepared_statement_result_t& result, float& value, int index) -> void
+  {
+    // There is no column_float
+    value = sqlite3_column_double(result.get(), index);
+  }
+
+  inline auto post_bind_field(prepared_statement_result_t& result, double& value, int index) -> void
+  {
+    value = sqlite3_column_double(result.get(), index);
+  }
+
+  inline auto post_bind_field(prepared_statement_result_t& result, std::string_view& value, int index) -> void
+  {
+    value = std::string_view{reinterpret_cast<const char*>(sqlite3_column_text(result.get(), index)),
+                             static_cast<std::size_t>(sqlite3_column_bytes(result.get(), index))};
+  }
 
   template <typename T>
   auto post_bind_field(prepared_statement_result_t& result, std::optional<T>& value, int index) -> void
@@ -122,3 +147,24 @@ namespace sqlpp::sqlite3
     }
   }
 }  // namespace sqlpp::sqlite3
+
+namespace sqlpp::sqlite3::detail
+{
+  inline auto get_next_result_row(prepared_statement_result_t& result) -> bool
+  {
+    auto rc = sqlite3_step(result.get());
+
+    switch (rc)
+    {
+      case SQLITE_ROW:
+        return true;
+      case SQLITE_DONE:
+        return false;
+      default:
+        throw sqlpp::exception("Sqlite3 error: Unexpected return value for sqlite3_step(): " +
+                               std::string(sqlite3_errstr(rc)));
+    }
+  }
+}  // namespace sqlpp::sqlite3::detail
+
+

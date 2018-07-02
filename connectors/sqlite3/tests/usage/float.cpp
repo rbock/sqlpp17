@@ -54,7 +54,7 @@ int main()
 
   try
   {
-    auto db = ::sqlpp::sqlite3::connection_t{config};
+    auto db = ::sqlpp::sqlite3::connection_t<::sqlpp::debug::allowed>{config};
     db(drop_table(tabFloat));
     db(create_table(tabFloat));
 

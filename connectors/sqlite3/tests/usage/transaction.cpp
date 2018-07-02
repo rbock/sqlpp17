@@ -44,7 +44,7 @@ int main()
 
   try
   {
-    auto db = ::sqlpp::sqlite3::connection_t{config};
+    auto db = ::sqlpp::sqlite3::connection_t<::sqlpp::debug::allowed>{config};
 
     // good case
     {

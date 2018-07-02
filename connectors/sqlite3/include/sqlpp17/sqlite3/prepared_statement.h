@@ -50,6 +50,21 @@ namespace sqlpp::sqlite3::detail
   };
   using unique_prepared_statement_ptr = std::unique_ptr<::sqlite3_stmt, detail::prepared_statement_cleanup_t>;
 
+  inline void check_bind_result(int result, const char* const type)
+  {
+    switch (result)
+    {
+      case SQLITE_OK:
+        return;
+      case SQLITE_RANGE:
+        throw sqlpp::exception("Sqlite3 error: " + std::string(type) + " bind value out of range");
+      case SQLITE_NOMEM:
+        throw sqlpp::exception("Sqlite3 error: " + std::string(type) + " bind out of memory");
+      default:
+        throw sqlpp::exception("Sqlite3 error: " + std::string(type) +
+                               " bind returned unexpected value: " + std::to_string(result));
+    }
+  }
 }  // namespace sqlpp::sqlite3::detail
 
 namespace sqlpp::sqlite3
@@ -83,15 +98,56 @@ namespace sqlpp::sqlite3
     }
   };
 
-  auto bind_parameter(prepared_statement_t& statement, const std::nullopt_t& value, int index) -> void;
+  inline auto bind_parameter(prepared_statement_t& statement, [[maybe_unused]] const std::nullopt_t&, int index) -> void
+  {
+    const auto result = sqlite3_bind_null(statement.get(), index + 1);
+    detail::check_bind_result(result, "NULL");
+  }
 
-  auto bind_parameter(prepared_statement_t& statement, bool& value, int index) -> void;
-  auto bind_parameter(prepared_statement_t& statement, std::int32_t& value, int index) -> void;
-  auto bind_parameter(prepared_statement_t& statement, std::int64_t& value, int index) -> void;
-  auto bind_parameter(prepared_statement_t& statement, float& value, int index) -> void;
-  auto bind_parameter(prepared_statement_t& statement, double& value, int index) -> void;
-  auto bind_parameter(prepared_statement_t& statement, std::string& value, int index) -> void;
-  auto bind_parameter(prepared_statement_t& statement, std::string_view& value, int index) -> void;
+  inline auto bind_parameter(prepared_statement_t& statement, bool& value, int index) -> void
+  {
+    const auto result = sqlite3_bind_int(statement.get(), index + 1, value);
+    detail::check_bind_result(result, "bool");
+  }
+
+  inline auto bind_parameter(prepared_statement_t& statement, std::int32_t& value, int index) -> void
+  {
+    const auto result = sqlite3_bind_int(statement.get(), index + 1, value);
+    detail::check_bind_result(result, "int32_t");
+  }
+
+  inline auto bind_parameter(prepared_statement_t& statement, std::int64_t& value, int index) -> void
+  {
+    const auto result = sqlite3_bind_int64(statement.get(), index + 1, value);
+    detail::check_bind_result(result, "int64_t");
+  }
+
+  inline auto bind_parameter(prepared_statement_t& statement, float& value, int index) -> void
+  {
+    // There is no bind_float
+    const auto result = sqlite3_bind_double(statement.get(), index + 1, value);
+    detail::check_bind_result(result, "float");
+  }
+
+  inline auto bind_parameter(prepared_statement_t& statement, double& value, int index) -> void
+  {
+    const auto result = sqlite3_bind_double(statement.get(), index + 1, value);
+    detail::check_bind_result(result, "double");
+  }
+
+  inline auto bind_parameter(prepared_statement_t& statement, std::string& value, int index) -> void
+  {
+    const auto result =
+        sqlite3_bind_text(statement.get(), index + 1, value.data(), static_cast<int>(value.size()), SQLITE_STATIC);
+    detail::check_bind_result(result, "string");
+  }
+
+  inline auto bind_parameter(prepared_statement_t& statement, std::string_view& value, int index) -> void
+  {
+    const auto result =
+        sqlite3_bind_text(statement.get(), index + 1, value.data(), static_cast<int>(value.size()), SQLITE_STATIC);
+    detail::check_bind_result(result, "string_view");
+  }
 
   template <typename T>
   auto bind_parameter(prepared_statement_t& statement, std::optional<T>& value, int index) -> void

@@ -49,7 +49,7 @@ int main()
 
   try
   {
-    auto db = ::sqlpp::sqlite3::connection_t{config};
+    auto db = ::sqlpp::sqlite3::connection_t<::sqlpp::debug::allowed>{config};
     db(drop_table(test::tabDepartment));
     db(drop_table(test::tabPerson));
     db(create_table(test::tabDepartment));

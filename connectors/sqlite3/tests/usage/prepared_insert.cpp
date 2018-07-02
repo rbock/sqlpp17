@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2017 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -56,7 +56,7 @@ int main()
 
   try
   {
-    auto db = ::sqlpp::sqlite3::connection_t{config};
+    auto db = ::sqlpp::sqlite3::connection_t<::sqlpp::debug::allowed>{config};
     db(drop_table(tabDepartment));
     db(drop_table(tabPerson));
     db(create_table(tabDepartment));
