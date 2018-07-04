@@ -480,6 +480,4 @@ namespace sqlpp::sqlite3
     }
   };
 
-#warning: dissolve cpp files
-
 }  // namespace sqlpp::sqlite3
