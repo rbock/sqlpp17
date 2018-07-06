@@ -45,7 +45,14 @@ namespace sqlpp
     }
 
     transaction_t(const transaction_t&) = delete;
-    transaction_t(transaction_t&&) = default;
+
+    transaction_t(transaction_t&& source):
+      _connection(source._connection),
+      _committed(source._committed)
+    {
+      source._committed = true;
+    }
+
     transaction_t& operator=(const transaction_t&) = delete;
     transaction_t& operator=(transaction_t&&) = delete;  // See destructor
 
