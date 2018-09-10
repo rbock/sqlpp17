@@ -4,6 +4,10 @@ add_library(sqlpp17-connector-sqlite3
 		prepared_statement.cpp
 		prepared_statement_result.cpp
 )
+set_target_properties(sqlpp17-connector-sqlite3 PROPERTIES
+    CXX_STANDARD 17
+    CXX_EXTENSIONS OFF
+)
 
 target_include_directories(sqlpp17-connector-sqlite3 PUBLIC ${SQLITE3_INCLUDE_DIRS})
 target_link_libraries(sqlpp17-connector-sqlite3 PUBLIC sqlpp17)

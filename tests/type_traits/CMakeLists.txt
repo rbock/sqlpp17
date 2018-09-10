@@ -22,13 +22,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-function(test_compile name)
-  set(target sqlpp17_type_traits_${name})
-  add_executable(${target} ${name}.cpp)
-  target_link_libraries(${target} PRIVATE sqlpp17 sqlpp17_testing)
-endfunction()
-
-test_compile(char_sequence_of)
-test_compile(is_table)
-test_compile(columns_of)
-test_compile(type_hash)
+test_target(char_sequence_of "traits")
+test_target(is_table "traits")
+test_target(columns_of "traits")
+test_target(type_hash "traits")

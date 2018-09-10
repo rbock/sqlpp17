@@ -22,20 +22,11 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-function(test_usage name)
-  set(target sqlpp17_usage_${name})
-  add_executable(${target} ${name}.cpp)
-  target_link_libraries(${target} PRIVATE sqlpp17 sqlpp17_testing)
-	add_test(${target} ${target})
-endfunction()
-
-test_usage(insert)
-test_usage(update)
-test_usage(delete_from)
-test_usage(truncate)
-test_usage(select)
-
-test_usage(prepared_insert)
-
-test_usage(transaction)
+test_target(insert "usage")
+test_target(update "usage")
+test_target(delete_from "usage")
+test_target(truncate "usage")
+test_target(select "usage")
+test_target(prepared_insert "usage")
+test_target(transaction "usage")
 

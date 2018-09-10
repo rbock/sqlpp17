@@ -22,9 +22,17 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -Wpedantic")
-
 add_library(sqlpp17_testing INTERFACE)
+
+function(test_target name type)
+  set(target sqlpp17_test_${type}_${name})
+  add_executable(${target} ${name}.cpp)
+    set_target_properties(${target} PROPERTIES
+    CXX_STANDARD 17
+    CXX_EXTENSIONS OFF
+  )
+  target_link_libraries(${target} PRIVATE sqlpp17 sqlpp17_testing)
+endfunction()
 
 target_include_directories(sqlpp17_testing INTERFACE
   $<BUILD_INTERFACE:${sqlpp17_SOURCE_DIR}/tests/include>
