@@ -6,7 +6,7 @@ add_library(sqlpp17-connector-sqlite3
 )
 set_target_properties(sqlpp17-connector-sqlite3 PROPERTIES
     CXX_STANDARD 17
-    CXX_EXTENSIONS OFF
+    CXX_EXTENSIONS ON
 )
 
 target_include_directories(sqlpp17-connector-sqlite3 PUBLIC ${SQLITE3_INCLUDE_DIRS})

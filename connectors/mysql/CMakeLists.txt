@@ -40,7 +40,7 @@ if (MySql_FOUND)
 
     set_target_properties(sqlpp17-connector-postgresql PROPERTIES
         CXX_STANDARD 17
-        CXX_EXTENSIONS OFF
+        CXX_EXTENSIONS ON
     )
 
     target_include_directories(sqlpp17-connector-mysql INTERFACE
