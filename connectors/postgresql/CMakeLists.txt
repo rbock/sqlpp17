@@ -24,13 +24,15 @@
 
 find_package(Threads REQUIRED)
 
-find_package(PostgreSQL REQUIRED)
+find_package(PostgreSQL)
+set_package_properties(PostgreSQL PROPERTIES URL "https://www.postgresql.org/" DESCRIPTION "PostgresSQL support" TYPE OPTIONAL)
 
-include_directories("${PostgreSQL_INCLUDE_DIRS}")
-include_directories("${PROJECT_SOURCE_DIR}/connectors/postgresql/include")
+if (PostgresSQL_FOUND)
+    include_directories("${PostgreSQL_INCLUDE_DIRS}")
+    include_directories("${PROJECT_SOURCE_DIR}/connectors/postgresql/include")
 
-add_subdirectory(src)
-add_subdirectory(tests)
+    add_subdirectory(src)
+    add_subdirectory(tests)
 
-install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/sqlpp17" DESTINATION include)
-
+    install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/sqlpp17" DESTINATION include)
+endif()

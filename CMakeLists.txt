@@ -22,8 +22,10 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 project(sqlpp17 VERSION 0.1 LANGUAGES CXX)
+
+include(FeatureSummary)
 
 enable_testing()
 
@@ -40,3 +42,5 @@ install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/sqlpp17"
 
 add_subdirectory(tests)
 add_subdirectory(connectors)
+
+feature_summary(WHAT ALL INCLUDE_QUIET_PACKAGES FATAL_ON_MISSING_REQUIRED_PACKAGES)

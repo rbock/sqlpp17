@@ -32,23 +32,25 @@ if (APPLE)
 endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-find_package(MySql REQUIRED)
+find_package(MySql)
+set_package_properties(MySql PROPERTIES URL "https://mariadb.org/" DESCRIPTION "MySql / MariaDb connector" TYPE OPTIONAL)
 
-add_library(sqlpp17-connector-mysql INTERFACE)
+if (MySql_FOUND)
+    add_library(sqlpp17-connector-mysql INTERFACE)
 
-target_include_directories(sqlpp17-connector-mysql INTERFACE
-  ${MYSQL_INCLUDE_DIRS}
-  $<BUILD_INTERFACE:${sqlpp17_SOURCE_DIR}/connectors/mysql/include>
-  $<INSTALL_INTERFACE:include>
-  )
+    target_include_directories(sqlpp17-connector-mysql INTERFACE
+        ${MYSQL_INCLUDE_DIRS}
+        $<BUILD_INTERFACE:${sqlpp17_SOURCE_DIR}/connectors/mysql/include>
+        $<INSTALL_INTERFACE:include>
+    )
 
-target_link_libraries(sqlpp17-connector-mysql INTERFACE sqlpp17)
-target_link_libraries(sqlpp17-connector-mysql INTERFACE "${MYSQL_LIBRARIES}")
-if (APPLE)
-	target_link_libraries(sqlpp17-connector-mysql INTERFACE "${Boost_THREAD_LIBRARY}")
+    target_link_libraries(sqlpp17-connector-mysql INTERFACE sqlpp17)
+    target_link_libraries(sqlpp17-connector-mysql INTERFACE "${MYSQL_LIBRARIES}")
+    if (APPLE)
+	    target_link_libraries(sqlpp17-connector-mysql INTERFACE "${Boost_THREAD_LIBRARY}")
+    endif()
+
+    add_subdirectory(tests)
+
+    install(DIRECTORY "${sqlpp17_SOURCE_DIR}/connectors/mysql/include" DESTINATION include)
 endif()
-
-add_subdirectory(tests)
-
-install(DIRECTORY "${sqlpp17_SOURCE_DIR}/connectors/mysql/include" DESTINATION include)
-
