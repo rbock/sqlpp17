@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <string_view>
 #include <utility>
+#include <type_traits>
 
 namespace sqlpp
 {
