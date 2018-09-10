@@ -38,6 +38,11 @@ set_package_properties(MySql PROPERTIES URL "https://mariadb.org/" DESCRIPTION "
 if (MySql_FOUND)
     add_library(sqlpp17-connector-mysql INTERFACE)
 
+    set_target_properties(sqlpp17-connector-postgresql PROPERTIES
+        CXX_STANDARD 17
+        CXX_EXTENSIONS OFF
+    )
+
     target_include_directories(sqlpp17-connector-mysql INTERFACE
         ${MYSQL_INCLUDE_DIRS}
         $<BUILD_INTERFACE:${sqlpp17_SOURCE_DIR}/connectors/mysql/include>
