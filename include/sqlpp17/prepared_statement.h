@@ -88,7 +88,7 @@ namespace sqlpp
     }
 
   public:
-    prepared_statement_t([[maybe_unused]] const ResultBase& result_base, Handle handle) : _handle(std::move(handle))
+    prepared_statement_t(const ResultBase& result_base, Handle handle) : _handle(std::move(handle))
     {
     }
   };
@@ -112,7 +112,7 @@ namespace sqlpp
     }
 
   public:
-    prepared_statement_t([[maybe_unused]] const ResultBase& result_base, Handle handle)
+    prepared_statement_t(const ResultBase& result_base, Handle handle)
         : _handle(std::move(handle)){}
 
               [[nodiscard]] decltype(auto) begin()
