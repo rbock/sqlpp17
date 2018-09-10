@@ -22,11 +22,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-test_target(insert "usage")
-test_target(update "usage")
-test_target(delete_from "usage")
-test_target(truncate "usage")
-test_target(select "usage")
-test_target(prepared_insert "usage")
-test_target(transaction "usage")
-
+foreach(TEST insert update delete_from truncate select prepared_insert transaction)
+    test_target(${TEST} "usage")
+endforeach()

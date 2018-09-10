@@ -22,7 +22,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-test_target(char_sequence_of "traits")
-test_target(is_table "traits")
-test_target(columns_of "traits")
-test_target(type_hash "traits")
+foreach(TEST char_sequence_of is_table columns_of type_hash)
+    test_target(${TEST} "traits")
+endforeach()

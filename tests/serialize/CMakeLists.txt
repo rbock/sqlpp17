@@ -22,18 +22,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-test_target(float "serialize")
-test_target(function "serialize")
-test_target(aggregate_function "serialize")
-test_target(values "serialize")
-test_target(case "serialize")
-test_target(operator "serialize")
-test_target(parameter "serialize")
-test_target(insert "serialize")
-test_target(join "serialize")
-test_target(select "serialize")
-test_target(delete_from "serialize")
-test_target(truncate "serialize")
-test_target(union "serialize")
-test_target(update "serialize")
-test_target(with "serialize")
+foreach(TEST float function aggregate_function values case operator parameter
+             insert join select delete_from truncate union update with)
+    test_target(${TEST} "serialize")
+endforeach()

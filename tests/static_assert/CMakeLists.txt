@@ -22,24 +22,9 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-test_target(insert_into "assert")
-test_target(insert_columns "assert")
-test_target(insert_column_values "assert")
-test_target(insert_default_values "assert")
-test_target(insert_values "assert")
-test_target(values "assert")
-test_target(from "assert")
-test_target(operator "assert")
-test_target(having "assert")
-test_target(select_columns "assert")
-test_target(where "assert")
-test_target(order_by "assert")
-test_target(group_by "assert")
-test_target(limit "assert")
-test_target(offset "assert")
-test_target(update "assert")
-test_target(update_set "assert")
-test_target(with "assert")
-test_target(parameter "assert")
-test_target(prepared_statement "assert")
-test_target(statement "assert")
+foreach(TEST insert_into insert_columns insert_column_values insert_default_values
+             insert_values values from operator having select_columns where
+             order_by group_by limit offset update update_set with parameter
+             prepared_statement statement)
+    test_target(${TEST} "assert")
+endforeach()
