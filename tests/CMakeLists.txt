@@ -29,7 +29,7 @@ function(test_target name type)
   add_executable(${target} ${name}.cpp)
     set_target_properties(${target} PROPERTIES
     CXX_STANDARD 17
-    CXX_EXTENSIONS OFF
+    CXX_EXTENSIONS ON
   )
   target_link_libraries(${target} PRIVATE sqlpp17 sqlpp17_testing)
 endfunction()
