@@ -32,5 +32,5 @@ include_directories("${PROJECT_SOURCE_DIR}/connectors/postgresql/include")
 add_subdirectory(src)
 add_subdirectory(tests)
 
-install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/sqlpp11" DESTINATION include)
+install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/sqlpp17" DESTINATION include)
 
