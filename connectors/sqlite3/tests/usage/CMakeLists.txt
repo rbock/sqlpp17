@@ -25,6 +25,10 @@
 function(test_usage name)
   set(target sqlpp17_connector_sqlite3_usage_${name})
   add_executable(${target} ${name}.cpp)
+    set_target_properties(${target} PROPERTIES
+    CXX_STANDARD 17
+    CXX_EXTENSIONS ON
+  )
   target_link_libraries(${target} PRIVATE sqlpp17-connector-sqlite3 sqlpp17-connector-sqlite3-testing ${additional_libraries} ${ARGV1})
 	add_test(${target} ${target})
 endfunction()
