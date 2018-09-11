@@ -88,6 +88,8 @@ namespace sqlpp
     }
 
   public:
+    //TODO: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=81429
+    // re-add [[maybe_unused]] when gcc bug is fixed.
     prepared_statement_t(const ResultBase& result_base, Handle handle) : _handle(std::move(handle))
     {
     }
@@ -112,6 +114,8 @@ namespace sqlpp
     }
 
   public:
+    //TODO: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=81429
+    // re-add [[maybe_unused]] when gcc bug is fixed.
     prepared_statement_t(const ResultBase& result_base, Handle handle)
         : _handle(std::move(handle)){}
 
