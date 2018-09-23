@@ -28,8 +28,21 @@ find_package(PostgreSQL)
 set_package_properties(PostgreSQL PROPERTIES URL "https://www.postgresql.org/" DESCRIPTION "PostgresSQL support" TYPE OPTIONAL)
 
 if (PostgresSQL_FOUND)
-    include_directories("${PostgreSQL_INCLUDE_DIRS}")
-    include_directories("${PROJECT_SOURCE_DIR}/connectors/postgresql/include")
+    add_library(sqlpp17-connector-postgresql INTERFACE)
+
+    set_target_properties(sqlpp17-connector-postgresql PROPERTIES
+        CXX_STANDARD 17
+        CXX_EXTENSIONS ON
+    )
+
+    target_include_directories(sqlpp17-connector-postgresql INTERFACE
+        ${PostgreSQL_INCLUDE_DIRS}
+        $<BUILD_INTERFACE:${sqlpp17_SOURCE_DIR}/connectors/postgresql/include>
+        $<INSTALL_INTERFACE:include>
+    )
+
+    target_link_libraries(sqlpp17-connector-postgresql INTERFACE sqlpp17)
+    target_link_libraries(sqlpp17-connector-postgresql INTERFACE "${PostgreSQL_LIBRARIES}")
 
     add_subdirectory(tests)
 

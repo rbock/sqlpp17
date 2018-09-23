@@ -40,8 +40,16 @@ else()
 endif()
 
 if (SQLITE3_FOUND)
-    include_directories("${SQLITE3_INCLUDE_DIRS}")
-    include_directories("${PROJECT_SOURCE_DIR}/connectors/sqlite3/include")
+    add_library(sqlpp17-connector-sqlite3 INTERFACE)
+
+    target_include_directories(sqlpp17-connector-sqlite3 INTERFACE
+        ${SQLITE3_INCLUDE_DIRS}
+        $<BUILD_INTERFACE:${sqlpp17_SOURCE_DIR}/connectors/sqlite3/include>
+        $<INSTALL_INTERFACE:include>
+    )
+
+    target_link_libraries(sqlpp17-connector-sqlite3 INTERFACE sqlpp17)
+    target_link_libraries(sqlpp17-connector-sqlite3 INTERFACE "${SQLITE3_LIBRARIES}")
 
     add_subdirectory(tests)
 

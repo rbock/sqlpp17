@@ -26,7 +26,7 @@ function(test_usage name)
   set(target sqlpp17_connector_postgresql_serialize_${name})
   add_executable(${target} ${name}.cpp)
   target_link_libraries(${target} PRIVATE sqlpp17-connector-postgresql sqlpp17-connector-postgresql-testing ${additional_libraries} ${ARGV1})
-	add_test(${target} ${target})
+  add_test(${target} ${target})
 endfunction()
 
 test_usage(parameter)
