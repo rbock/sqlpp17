@@ -119,8 +119,7 @@ namespace sqlpp::mysql::detail
   {
     detail::thread_init();
 
-    if (connection.is_debug_allowed())
-      connection.debug("Executing: '" + query + "'");
+    connection.debug("Executing: '" + query + "'");
 
     if (mysql_real_query(connection.get(), query.c_str(), query.size()))
     {
@@ -137,8 +136,7 @@ namespace sqlpp::mysql::detail
   {
     thread_init();
 
-    if (connection.is_debug_allowed())
-      connection.debug("Preparing: '" + statement + "'");
+    connection.debug("Preparing: '" + statement + "'");
 
     auto statement_handle = detail::unique_prepared_statement_ptr(mysql_stmt_init(connection.get()), {});
     if (not statement_handle)
@@ -241,7 +239,8 @@ namespace sqlpp::mysql
   public:
     base_connection() = delete;
     base_connection(const connection_config_t& config):
-      _handle(mysql_init(nullptr))
+      _handle(mysql_init(nullptr)),
+      _debug(config.debug)
     {
       if (not _handle)
       {
@@ -410,8 +409,7 @@ namespace sqlpp::mysql
     {
       try
       {
-        if (is_debug_allowed())
-          debug("Auto rollback!");
+        debug("Auto rollback!");
 
         rollback();
       }
@@ -429,7 +427,7 @@ namespace sqlpp::mysql
 
     auto debug([[maybe_unused]] std::string_view message) const
     {
-      if (is_debug_allowed())
+      if (is_debug_allowed() and _debug)
         _debug(message);
     }
 

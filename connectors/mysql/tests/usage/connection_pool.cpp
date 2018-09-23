@@ -45,7 +45,7 @@ namespace
     auto config = mysql::connection_config_t{};
     config.user = "root";
 #warning : This needs to be configurable
-    config.password = "test";
+    config.password = "";
     config.database = "sqlpp_mysql";
     // config.debug = print_debug;
     return config;

@@ -53,7 +53,7 @@ int main()
   auto config = mysql::connection_config_t{};
   config.user = "root";
 #warning : This needs to be configurable
-  config.password = "test";
+  config.password = "";
   config.database = "sqlpp_mysql";
   config.debug = print_debug;
   try
@@ -93,13 +93,25 @@ int main()
           tabFloat.valueDouble = ::sqlpp::parameter<double>(tabFloat.valueDouble), tabFloat.valueInt = 1234567890));
       preparedInsert.valueFloat = 1.2345678901234567890;
       preparedInsert.valueDouble = 1.2345678901234567890;
+      std::cerr << "before" << std::endl;
       execute(preparedInsert);
+      std::cerr << "after" << std::endl;
+#warning: mysql is not accepting infinity
+      /*
       preparedInsert.valueFloat = DBL_MIN / 2.0;
       preparedInsert.valueDouble = INFINITY;
+      std::cerr << "before" << std::endl;
       execute(preparedInsert);
+      std::cerr << "after" << std::endl;
+      */
+#warning: mysql is not accepting NaN
+      /*
       preparedInsert.valueFloat = std::nanf("");
       preparedInsert.valueDouble = std::nan("");
+      std::cerr << "before" << std::endl;
       execute(preparedInsert);
+      std::cerr << "after" << std::endl;
+      */
       for (const auto& row : db(select(all_of(tabFloat)).from(tabFloat).unconditionally()))
       {
         std::cout << "char result: " << row.valueFloat << "\n" << row.valueDouble << "\n" << row.valueInt << "\n";
