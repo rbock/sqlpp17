@@ -240,7 +240,8 @@ namespace sqlpp::mysql
 
   public:
     base_connection() = delete;
-    base_connection(const connection_config_t& config)
+    base_connection(const connection_config_t& config):
+      _handle(mysql_init(nullptr))
     {
       if (not _handle)
       {
