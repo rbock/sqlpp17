@@ -74,7 +74,7 @@ int main()
   }
 
   for (const auto& row : db(select(::sqlpp::count(1).as(rowCount), max(tabPerson.name).as(maxName),
-                                   avg(tabPerson.id).as<float>(avgId), tabPerson.isManager)
+                                   avg(tabPerson.id).as(avgId), tabPerson.isManager)
                                 .from(tabPerson)
                                 .where(tabPerson.isManager and tabPerson.name != "")
                                 .group_by(tabPerson.isManager)

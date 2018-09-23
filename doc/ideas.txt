@@ -6,6 +6,8 @@ The connection doe not hold on to the config. Thus, it cannot call a callback in
 
 Get rid of the string-execute. Add some string-to-statement-function
 
+sqlite3 cannot bind NaN to double.
+
 
 multi-line inserts require at least one line. That is part of the contract. The library is not required to do the check.
 If the user provides zero lines, it is a usage error.

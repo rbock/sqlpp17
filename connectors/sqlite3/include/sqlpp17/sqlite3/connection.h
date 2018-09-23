@@ -99,7 +99,6 @@ namespace sqlpp::sqlite3::detail
 
     auto run() -> prepared_statement_result_t
     {
-      sqlite3_reset(this->get());
       return {*this};
     }
   };

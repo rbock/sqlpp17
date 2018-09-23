@@ -23,10 +23,14 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 function(test_usage name)
-  set(target sqlpp17_connector_postgresql_usage_${name})
-  add_executable(${target} ${name}.cpp)
-  target_link_libraries(${target} PRIVATE sqlpp17-connector-postgresql sqlpp17-connector-postgresql-testing ${additional_libraries} ${ARGV1})
-	add_test(${target} ${target})
+    set(target sqlpp17_connector_postgresql_usage_${name})
+    add_executable(${target} ${name}.cpp)
+    set_target_properties(${target} PROPERTIES
+        CXX_STANDARD 17
+        CXX_EXTENSIONS ON
+        )
+    target_link_libraries(${target} PRIVATE sqlpp17-connector-postgresql sqlpp17-connector-postgresql-testing ${additional_libraries} ${ARGV1})
+    add_test(${target} ${target})
 endfunction()
 
 test_usage(insert)

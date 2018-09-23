@@ -114,6 +114,10 @@ namespace sqlpp::mysql
     }
   };
 
+  inline auto pre_bind(prepared_statement_t&) -> void
+  {
+  }
+
   inline auto bind_parameter(prepared_statement_t& statement, const std::nullopt_t& value, int index) -> void
   {
     auto& meta_data = statement.get_bind_meta_data()[index];
@@ -240,6 +244,10 @@ namespace sqlpp::mysql
   auto bind_parameter(prepared_statement_t& statement, std::optional<T>& value, int index) -> void
   {
     value ? bind_parameter(statement, *value, index) : bind_parameter(statement, std::nullopt, index);
+  }
+
+  inline auto post_bind(prepared_statement_t&) -> void
+  {
   }
 
 }  // namespace sqlpp::mysql

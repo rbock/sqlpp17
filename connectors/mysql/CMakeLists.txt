@@ -35,13 +35,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 find_package(MySql)
 set_package_properties(MySql PROPERTIES URL "https://mariadb.org/" DESCRIPTION "MySql / MariaDb connector" TYPE OPTIONAL)
 
-if (MySql_FOUND)
+if (MYSQL_FOUND)
     add_library(sqlpp17-connector-mysql INTERFACE)
-
-    set_target_properties(sqlpp17-connector-mysql PROPERTIES
-        CXX_STANDARD 17
-        CXX_EXTENSIONS ON
-    )
 
     target_include_directories(sqlpp17-connector-mysql INTERFACE
         ${MYSQL_INCLUDE_DIRS}

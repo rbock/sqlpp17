@@ -67,10 +67,14 @@ namespace sqlpp
     template <typename Handle>
     auto _bind(Handle& handle)
     {
+      pre_bind(handle);
+
       int index = -1;
       // Allow connectors to receive non-const references to prevent implicit conversions with temporaries.
       // (Some connectors store the address of the parameter, so temporaries would be pretty bad)
       (..., bind_parameter(handle, static_cast<parameter_base_t<ParameterSpecs>&>(*this)(), ++index));
+
+      pre_bind(handle);
     }
   };
 

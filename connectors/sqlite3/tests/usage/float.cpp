@@ -83,9 +83,13 @@ int main()
       preparedInsert.valueFloat = DBL_MIN / 2.0;
       preparedInsert.valueDouble = INFINITY;
       execute(preparedInsert);
+      /*
+#warning: sqlite3 does not support NaN in bind_double
       preparedInsert.valueFloat = std::nanf("");
       preparedInsert.valueDouble = std::nan("");
       execute(preparedInsert);
+      */
+#warning: Need to actually check the results
       for (const auto& row : db(select(all_of(tabFloat)).from(tabFloat).unconditionally()))
       {
         std::cout << "char result: " << row.valueFloat << "\n" << row.valueDouble << "\n" << row.valueInt << "\n";

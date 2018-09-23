@@ -50,8 +50,16 @@ namespace sqlpp::test
   {
   };
 
+  inline auto pre_bind(prepared_statement&)
+  {
+  }
+
   template <typename Parameter>
   auto bind_parameter(prepared_statement&, [[maybe_unused]] const Parameter& parameter, [[maybe_unused]] int index)
+  {
+  }
+
+  inline auto post_bind(prepared_statement&)
   {
   }
 
