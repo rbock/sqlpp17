@@ -63,7 +63,7 @@ namespace sqlpp
   {
     static constexpr auto name = std::string_view{"AVG"};
     using flag_type = Flag;
-    using value_type = numeric_t;
+    using value_type = double;
   };
 
   template <typename Expression>

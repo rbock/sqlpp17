@@ -61,6 +61,7 @@ namespace sqlpp
   template <typename ValueType, typename Column>
   [[nodiscard]] auto result_cast(Column column)
   {
+#warning: result_cast must check compatibility of ValueType and Column-ValueType
     return result_cast_t<ValueType, Column>{column};
   }
 
