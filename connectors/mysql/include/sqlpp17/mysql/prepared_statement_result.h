@@ -71,11 +71,17 @@ namespace sqlpp::mysql
           _bind_data(statement.get_number_of_columns())
     {
     }
+
     prepared_statement_result_t(const prepared_statement_result_t&) = delete;
     prepared_statement_result_t(prepared_statement_result_t&& rhs) = default;
     prepared_statement_result_t& operator=(const prepared_statement_result_t&) = delete;
     prepared_statement_result_t& operator=(prepared_statement_result_t&&) = default;
-    ~prepared_statement_result_t(){}
+
+    ~prepared_statement_result_t()
+    {
+      if (_handle)
+        mysql_stmt_free_result(_handle);
+    }
 
     [[nodiscard]] operator bool() const
     {

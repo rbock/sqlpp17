@@ -129,12 +129,12 @@ namespace sqlpp
       return {};
     }
 
-    [[nodiscard]] auto empty() const -> bool
+    [[nodiscard]] auto empty() -> bool
     {
       return begin() == end();
     }
 
-    [[nodiscard]] auto front() const -> const _row_t&
+    [[nodiscard]] auto front() -> const _row_t&
     {
       return *begin();
     }

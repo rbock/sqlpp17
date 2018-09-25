@@ -38,6 +38,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp::mysql::detail
 {
+#if LIBMYSQL_VERSION_ID >= 80000
+  using my_bool = bool;
+#endif
+
   struct bind_meta_data_t
   {
     unsigned long bound_len;

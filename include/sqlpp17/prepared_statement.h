@@ -120,10 +120,11 @@ namespace sqlpp
   public:
     //TODO: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=81429
     // re-add [[maybe_unused]] when gcc bug is fixed.
-    prepared_statement_t(const ResultBase& result_base, Handle handle)
-        : _handle(std::move(handle)){}
+    prepared_statement_t(const ResultBase& result_base, Handle handle) : _handle(std::move(handle))
+    {
+    }
 
-              [[nodiscard]] decltype(auto) begin()
+    [[nodiscard]] decltype(auto) begin()
     {
       return _result.begin();
     }
@@ -135,7 +136,7 @@ namespace sqlpp
 
     [[nodiscard]] decltype(auto) empty() const { return _result.empty(); }
 
-        [[nodiscard]] decltype(auto) front() const
+    [[nodiscard]] decltype(auto) front()
     {
       return _result.front();
     }

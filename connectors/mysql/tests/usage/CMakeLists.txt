@@ -38,6 +38,7 @@ test_usage(select)
 
 test_usage(prepared_insert)
 test_usage(prepared_select)
+test_usage(prepared_mix)
 
 test_usage(transaction)
 
