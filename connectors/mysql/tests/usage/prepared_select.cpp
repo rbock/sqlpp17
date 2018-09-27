@@ -73,7 +73,7 @@ int main()
     auto prepared_select = db.prepare(
         sqlpp::select(test::tabDepartment.id, test::tabDepartment.name).from(test::tabDepartment).unconditionally());
 
-    // Show that we can run prepared select multiple times
+    // Show that we can execute prepared select multiple times
     for (auto i = 0; i < 10; ++i)
     {
       for (const auto& row : execute(prepared_select))

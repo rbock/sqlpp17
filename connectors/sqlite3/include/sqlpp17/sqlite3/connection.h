@@ -97,7 +97,7 @@ namespace sqlpp::sqlite3::detail
     {
     }
 
-    auto run() -> prepared_statement_result_t
+    auto execute() -> prepared_statement_result_t
     {
       return {*this};
     }
@@ -111,7 +111,7 @@ namespace sqlpp::sqlite3::detail
     {
     }
 
-    auto run() -> void
+    auto execute() -> void
     {
       execute_prepared_statement(*this);
     }
@@ -125,7 +125,7 @@ namespace sqlpp::sqlite3::detail
     {
     }
 
-    auto run() -> size_t
+    auto execute() -> size_t
     {
       execute_prepared_statement(*this);
       return sqlite3_last_insert_rowid(this->connection());
@@ -140,7 +140,7 @@ namespace sqlpp::sqlite3::detail
     {
     }
 
-    auto run() -> size_t
+    auto execute() -> size_t
     {
       execute_prepared_statement(*this);
       return sqlite3_changes(this->connection());
@@ -155,7 +155,7 @@ namespace sqlpp::sqlite3::detail
     {
     }
 
-  auto run() -> size_t
+  auto execute() -> size_t
   {
     execute_prepared_statement(*this);
     return sqlite3_changes(this->connection());

@@ -36,19 +36,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
 
-namespace sqlpp::detail
-{
-  struct runner
-  {
-    template <typename T>
-    decltype(auto) operator()(T& t) const
-    {
-      return t.run();
-    }
-  };
-  constexpr auto run = runner{};
-}  // namespace sqlpp::detail
-
 namespace sqlpp
 {
   template <typename ParameterSpec>
@@ -83,19 +70,17 @@ namespace sqlpp
   {
     Handle _handle;
 
-    friend detail::runner;
-
-    auto run()
-    {
-      this->_bind(_handle);
-      return _handle.run();
-    }
-
   public:
     // TODO: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=81429
     // re-add [[maybe_unused]] when gcc bug is fixed.
     prepared_statement_t(const ResultBase& result_base, Handle handle) : _handle(std::move(handle))
     {
+    }
+
+    auto execute()
+    {
+      this->_bind(_handle);
+      return _handle.execute();
     }
   };
 
@@ -104,24 +89,22 @@ namespace sqlpp
       : public prepared_statement_parameters<parameters_of_t<ResultBase>>
   {
     Handle _handle;
-    using result_type = ::sqlpp::result_t<result_row_of_t<ResultBase>, decltype(_handle.run())>;
+    using result_type = ::sqlpp::result_t<result_row_of_t<ResultBase>, decltype(_handle.execute())>;
 
     result_type _result;
-
-    friend detail::runner;
-
-    auto run() -> prepared_statement_t&
-    {
-      this->_bind(_handle);
-      _result = _handle.run();
-      return *this;
-    }
 
   public:
     //TODO: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=81429
     // re-add [[maybe_unused]] when gcc bug is fixed.
     prepared_statement_t(const ResultBase& result_base, Handle handle) : _handle(std::move(handle))
     {
+    }
+
+    auto execute() -> prepared_statement_t&
+    {
+      this->_bind(_handle);
+      _result = _handle.execute();
+      return *this;
     }
 
     [[nodiscard]] decltype(auto) begin()
@@ -161,7 +144,7 @@ namespace sqlpp
   template <typename ResultBase, typename Handle>
   decltype(auto) execute(prepared_statement_t<ResultBase, Handle>& prepared_statement)
   {
-    return detail::run(prepared_statement);
+    return prepared_statement.execute();
   }
 
 }  // namespace sqlpp

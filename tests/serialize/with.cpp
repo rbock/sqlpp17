@@ -62,7 +62,7 @@ int main()
   std::cout << to_sql_string_c(context, s);
   /*
   auto conn = connection{};
-  auto row = s.run(conn);
+  auto row = s.execute(conn);
 
   // using data_members_of_meta = std::meta::get_public_data_members_m<reflexpr(reflexpr(row))>;
   // std::cout << std::meta::get_size_v<data_members_of_meta> << std::endl;

@@ -177,7 +177,7 @@ namespace sqlpp::mysql::detail
     {
     }
 
-    auto run() -> prepared_statement_result_t;
+    auto execute() -> prepared_statement_result_t;
   };
 
   class prepared_insert_t : public ::sqlpp::mysql::prepared_statement_t
@@ -188,7 +188,7 @@ namespace sqlpp::mysql::detail
     {
     }
 
-    auto run() -> std::size_t;
+    auto execute() -> std::size_t;
   };
 
   class prepared_update_t : public ::sqlpp::mysql::prepared_statement_t
@@ -199,7 +199,7 @@ namespace sqlpp::mysql::detail
     {
     }
 
-    auto run() -> std::size_t;
+    auto execute() -> std::size_t;
   };
 
   class prepared_delete_from_t : public ::sqlpp::mysql::prepared_statement_t
@@ -210,7 +210,7 @@ namespace sqlpp::mysql::detail
     {
     }
 
-    auto run() -> std::size_t;
+    auto execute() -> std::size_t;
   };
 
 }  // namespace sqlpp::mysql::detail
@@ -522,26 +522,26 @@ namespace sqlpp::mysql
 
 namespace sqlpp::mysql::detail
 {
-  inline auto prepared_select_t::run() -> prepared_statement_result_t
+  inline auto prepared_select_t::execute() -> prepared_statement_result_t
   {
     execute_prepared_statement(*this);
     mysql_stmt_store_result(this->get());
     return {*this};
   }
 
-  inline auto prepared_insert_t::run() -> size_t
+  inline auto prepared_insert_t::execute() -> size_t
   {
     execute_prepared_statement(*this);
     return mysql_stmt_insert_id(this->get());
   }
 
-  inline auto prepared_update_t::run() -> size_t
+  inline auto prepared_update_t::execute() -> size_t
   {
     execute_prepared_statement(*this);
     return mysql_stmt_affected_rows(this->get());
   }
 
-  inline auto prepared_delete_from_t::run() -> size_t
+  inline auto prepared_delete_from_t::execute() -> size_t
   {
     execute_prepared_statement(*this);
     return mysql_stmt_affected_rows(this->get());

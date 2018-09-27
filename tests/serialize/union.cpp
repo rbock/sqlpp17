@@ -58,7 +58,7 @@ int main()
   #warning : need to test results
     std::cout << to_sql_string_c(context, s);
     auto conn = connection{};
-    auto row = s.run(conn);
+    auto row = s.execute(conn);
     */
   /*
 

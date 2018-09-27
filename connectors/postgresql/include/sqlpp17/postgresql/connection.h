@@ -90,7 +90,7 @@ namespace sqlpp::postgresql::detail
     {
     }
 
-    auto run() -> char_result_t;
+    auto execute() -> char_result_t;
   };
 
   class prepared_insert_t : public ::sqlpp::postgresql::prepared_statement_t
@@ -101,7 +101,7 @@ namespace sqlpp::postgresql::detail
     {
     }
 
-    auto run() -> std::size_t;
+    auto execute() -> std::size_t;
   };
 
   class prepared_update_t : public ::sqlpp::postgresql::prepared_statement_t
@@ -112,7 +112,7 @@ namespace sqlpp::postgresql::detail
     {
     }
 
-    auto run() -> std::size_t;
+    auto execute() -> std::size_t;
   };
 
   class prepared_delete_from_t : public ::sqlpp::postgresql::prepared_statement_t
@@ -123,7 +123,7 @@ namespace sqlpp::postgresql::detail
     {
     }
 
-    auto run() -> std::size_t;
+    auto execute() -> std::size_t;
   };
 
   inline auto config_field_to_string(std::string_view name, const std::optional<std::string>& value) -> std::string
@@ -575,22 +575,22 @@ namespace sqlpp::postgresql::detail
     }
   }
 
-  inline auto prepared_select_t::run() -> char_result_t
+  inline auto prepared_select_t::execute() -> char_result_t
   {
     return {execute_prepared_statement(*this)};
   }
 
-  inline auto prepared_insert_t::run() -> size_t
+  inline auto prepared_insert_t::execute() -> size_t
   {
     return PQoidValue(execute_prepared_statement(*this).get());
   }
 
-  inline auto prepared_update_t::run() -> size_t
+  inline auto prepared_update_t::execute() -> size_t
   {
     return std::strtoll(PQcmdTuples(execute_prepared_statement(*this).get()), nullptr, 10);
   }
 
-  inline auto prepared_delete_from_t::run() -> size_t
+  inline auto prepared_delete_from_t::execute() -> size_t
   {
     return std::strtoll(PQcmdTuples(execute_prepared_statement(*this).get()), nullptr, 10);
   }

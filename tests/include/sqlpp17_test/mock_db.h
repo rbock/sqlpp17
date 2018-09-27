@@ -65,7 +65,7 @@ namespace sqlpp::test
 
   struct mock_prepared_insert : public prepared_statement
   {
-    [[nodiscard]] auto run()
+    [[nodiscard]] auto execute()
     {
       return std::size_t{};
     }
@@ -73,7 +73,7 @@ namespace sqlpp::test
 
   struct mock_prepared_select : public prepared_statement
   {
-    [[nodiscard]] auto run()
+    [[nodiscard]] auto execute()
     {
       return mock_result{};
     }
