@@ -74,7 +74,7 @@ namespace sqlpp
       // (Some connectors store the address of the parameter, so temporaries would be pretty bad)
       (..., bind_parameter(handle, static_cast<parameter_base_t<ParameterSpecs>&>(*this)(), ++index));
 
-      pre_bind(handle);
+      post_bind(handle);
     }
   };
 
@@ -92,7 +92,7 @@ namespace sqlpp
     }
 
   public:
-    //TODO: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=81429
+    // TODO: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=81429
     // re-add [[maybe_unused]] when gcc bug is fixed.
     prepared_statement_t(const ResultBase& result_base, Handle handle) : _handle(std::move(handle))
     {
@@ -110,10 +110,10 @@ namespace sqlpp
 
     friend detail::runner;
 
-    decltype(auto) run()
+    auto run() -> prepared_statement_t&
     {
       this->_bind(_handle);
-      _result = result_type{_handle.run()};
+      _result = _handle.run();
       return *this;
     }
 
@@ -144,6 +144,11 @@ namespace sqlpp
     auto pop_front() -> void
     {
       _result.pop_front();
+    }
+
+    auto clear_result() -> void
+    {
+      _result = {};
     }
   };
 

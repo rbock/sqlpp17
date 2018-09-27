@@ -73,14 +73,27 @@ namespace sqlpp::mysql
     }
 
     prepared_statement_result_t(const prepared_statement_result_t&) = delete;
-    prepared_statement_result_t(prepared_statement_result_t&& rhs) = default;
+    prepared_statement_result_t(prepared_statement_result_t&& rhs)
+    {
+      std::swap(_handle, rhs._handle);
+      std::swap(_bind_meta_data, rhs._bind_meta_data);
+      std::swap(_bind_data, rhs._bind_data);
+    }
     prepared_statement_result_t& operator=(const prepared_statement_result_t&) = delete;
-    prepared_statement_result_t& operator=(prepared_statement_result_t&&) = default;
+    prepared_statement_result_t& operator=(prepared_statement_result_t&& rhs)
+    {
+      std::swap(_handle, rhs._handle);
+      std::swap(_bind_meta_data, rhs._bind_meta_data);
+      std::swap(_bind_data, rhs._bind_data);
+      return *this;
+    }
 
     ~prepared_statement_result_t()
     {
       if (_handle)
+      {
         mysql_stmt_free_result(_handle);
+      }
     }
 
     [[nodiscard]] operator bool() const
@@ -226,9 +239,10 @@ namespace sqlpp::mysql
   inline auto bind_field(prepared_statement_result_t& result, std::optional<T>& value, std::size_t index) -> void
   {
     if (not value)
+    {
       value = {};
-
-    bind_field(result, *value, index);
+      pre_bind_field(result, value, index);
+    }
   }
 
   inline auto post_bind_field(prepared_statement_result_t& result, ...) -> void
@@ -242,8 +256,9 @@ namespace sqlpp::mysql
     value = std::string_view{meta_data.bound_buffer.data(), meta_data.bound_len};
   }
 
+  template<typename T>
   inline auto post_bind_field(prepared_statement_result_t& result,
-                              std::optional<std::string_view>& value,
+                              std::optional<T>& value,
                               std::size_t index) -> void
   {
     const auto& meta_data = result.get_bind_meta_data()[index];
@@ -254,7 +269,7 @@ namespace sqlpp::mysql
     }
     else
     {
-      value = std::string_view{meta_data.bound_buffer.data(), meta_data.bound_len};
+      post_bind_field(result, *value, index);
     }
   }
 

@@ -525,6 +525,7 @@ namespace sqlpp::mysql::detail
   inline auto prepared_select_t::run() -> prepared_statement_result_t
   {
     execute_prepared_statement(*this);
+    mysql_stmt_store_result(this->get());
     return {*this};
   }
 
