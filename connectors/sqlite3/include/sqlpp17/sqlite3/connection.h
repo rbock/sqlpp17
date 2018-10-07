@@ -31,9 +31,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/connection_base.h>
 #include <sqlpp17/exception.h>
-#include <sqlpp17/prepared_statement.h>
 #include <sqlpp17/result.h>
 #include <sqlpp17/statement.h>
+#include <sqlpp17/clause/command.h>
 
 #include <sqlpp17/sqlite3/clause.h>
 #include <sqlpp17/sqlite3/connection_config.h>
@@ -67,130 +67,6 @@ namespace sqlpp::sqlite3::detail
     }
   };
   using unique_connection_ptr = std::unique_ptr<::sqlite3, detail::connection_cleanup_t>;
-
-  // prepared execution
-  template<typename Pool, ::sqlpp::debug Debug>
-  auto prepare(const base_connection<Pool, Debug>&, const std::string& statement) -> ::sqlpp::sqlite3::prepared_statement_t;
-
-  auto execute_prepared_statement(const prepared_statement_t& prepared_statement) -> void
-  {
-    sqlite3_reset(prepared_statement.get());
-
-    switch (const auto rc = sqlite3_step(prepared_statement.get()); rc)
-    {
-      case SQLITE_OK:
-        [[fallthrough]];
-      case SQLITE_ROW:
-        [[fallthrough]];  // might occur if execute is called with a select
-      case SQLITE_DONE:
-        return;
-      default:
-        throw sqlpp::exception("Sqlite3: Could not execute statement: " + std::string(sqlite3_errstr(rc)));
-    }
-  }
-
-  class prepared_select_t : public ::sqlpp::sqlite3::prepared_statement_t
-  {
-  public:
-    prepared_select_t(::sqlpp::sqlite3::prepared_statement_t&& statement, std::function<void(std::string_view)> debug)
-        : ::sqlpp::sqlite3::prepared_statement_t(std::move(statement))
-    {
-    }
-
-    auto execute() -> prepared_statement_result_t
-    {
-      return {*this};
-    }
-  };
-
-  class prepared_execute_t : public ::sqlpp::sqlite3::prepared_statement_t
-  {
-  public:
-    prepared_execute_t(::sqlpp::sqlite3::prepared_statement_t&& statement)
-        : ::sqlpp::sqlite3::prepared_statement_t(std::move(statement))
-    {
-    }
-
-    auto execute() -> void
-    {
-      execute_prepared_statement(*this);
-    }
-  };
-
-  class prepared_insert_t : public ::sqlpp::sqlite3::prepared_statement_t
-  {
-  public:
-    prepared_insert_t(::sqlpp::sqlite3::prepared_statement_t&& statement)
-        : ::sqlpp::sqlite3::prepared_statement_t(std::move(statement))
-    {
-    }
-
-    auto execute() -> size_t
-    {
-      execute_prepared_statement(*this);
-      return sqlite3_last_insert_rowid(this->connection());
-    }
-  };
-
-  class prepared_update_t : public ::sqlpp::sqlite3::prepared_statement_t
-  {
-  public:
-    prepared_update_t(::sqlpp::sqlite3::prepared_statement_t&& statement)
-        : ::sqlpp::sqlite3::prepared_statement_t(std::move(statement))
-    {
-    }
-
-    auto execute() -> size_t
-    {
-      execute_prepared_statement(*this);
-      return sqlite3_changes(this->connection());
-    }
-  };
-
-  class prepared_delete_from_t : public ::sqlpp::sqlite3::prepared_statement_t
-  {
-  public:
-    prepared_delete_from_t(::sqlpp::sqlite3::prepared_statement_t&& statement)
-        : ::sqlpp::sqlite3::prepared_statement_t(std::move(statement))
-    {
-    }
-
-  auto execute() -> size_t
-  {
-    execute_prepared_statement(*this);
-    return sqlite3_changes(this->connection());
-  }
-
-  };
-
-  template<typename Pool, ::sqlpp::debug Debug>
-  inline auto prepare_impl(const base_connection<Pool, Debug>& connection, const std::string& statement)
-      -> unique_prepared_statement_ptr
-  {
-    if (connection.debug())
-      connection.debug()("Preparing: '" + statement + "'");
-
-    ::sqlite3_stmt* statement_ptr = nullptr;
-
-    const auto rc = sqlite3_prepare_v2(connection.get(), statement.c_str(), static_cast<int>(statement.size()),
-                                       &statement_ptr, nullptr);
-
-    auto statement_handle = unique_prepared_statement_ptr(statement_ptr, {});
-
-    if (rc != SQLITE_OK)
-    {
-      throw sqlpp::exception("Sqlite3: Could not prepare statement: " + std::string(sqlite3_errmsg(connection.get())) +
-                             " (statement was >>" + statement + "<<)\n");
-    }
-
-    return statement_handle;
-  }
-
-  template<typename Pool, ::sqlpp::debug Debug>
-  auto prepare(const base_connection<Pool, Debug>& connection, const std::string& statement) -> ::sqlpp::sqlite3::prepared_statement_t
-  {
-    return {prepare_impl(connection, statement), connection.get()};
-  }
 
 }  // namespace sqlpp::sqlite3::detail
 
@@ -310,31 +186,8 @@ namespace sqlpp::sqlite3
       using Statement = ::sqlpp::statement<Clauses...>;
       if constexpr (constexpr auto _check = check_statement_preparable<base_connection>(type_v<Statement>); _check)
       {
-        using ResultType = result_type_of_t<Statement>;
-        if constexpr (std::is_same_v<ResultType, insert_result>)
-        {
-          return prepare_insert(statement);
-        }
-        else if constexpr (std::is_same_v<ResultType, delete_result>)
-        {
-          return prepare_delete_from(statement);
-        }
-        else if constexpr (std::is_same_v<ResultType, update_result>)
-        {
-          return prepare_update(statement);
-        }
-        else if constexpr (std::is_same_v<ResultType, select_result>)
-        {
-          return prepare_select(statement);
-        }
-        else if constexpr (std::is_same_v<ResultType, execute_result>)
-        {
-          return prepare_execute(statement);
-        }
-        else
-        {
-          static_assert(wrong<Statement>, "Unknown statement type");
-        }
+#warning: Need to have an enum for result owns statement
+        return ::sqlpp::sqlite3::prepared_statement_t{*this, statement, false};
       }
       else
       {
@@ -349,8 +202,8 @@ namespace sqlpp::sqlite3
         throw sqlpp::exception("Sqlite3: Cannot have more than one open transaction per connection");
       }
 
-      auto prepared_statement = detail::prepare(*this, "BEGIN TRANSACTION");
-      detail::execute_prepared_statement(prepared_statement);
+      auto prepared_statement = prepared_statement_t{*this, ::sqlpp::command("BEGIN TRANSACTION"), true};
+      prepared_statement.execute();
       _transaction_active = true;
     }
 
@@ -361,9 +214,10 @@ namespace sqlpp::sqlite3
         throw sqlpp::exception("Sqlite3: Cannot commit without active transaction");
       }
 
+      auto prepared_statement = prepared_statement_t{*this, ::sqlpp::command("COMMIT"), true};
+      prepared_statement.execute();
+#warning: Need to check other connectors, if they have the order of things correct, here.
       _transaction_active = false;
-      auto prepared_statement = detail::prepare(*this, "COMMIT");
-      detail::execute_prepared_statement(prepared_statement);
     }
 
     auto rollback() -> void
@@ -373,9 +227,9 @@ namespace sqlpp::sqlite3
         throw sqlpp::exception("Sqlite3: Cannot rollback without active transaction");
       }
 
+      auto prepared_statement = prepared_statement_t{*this, ::sqlpp::command("ROLLBACK"), true};
+      prepared_statement.execute();
       _transaction_active = false;
-      auto prepared_statement = detail::prepare(*this, "ROLLBACK");
-      detail::execute_prepared_statement(prepared_statement);
     }
 
     auto destroy_transaction() noexcept -> void
@@ -411,72 +265,37 @@ namespace sqlpp::sqlite3
     auto execute(const ::sqlpp::statement<Clauses...>& statement)
     {
       auto prepared_statement = prepare(statement);
-      ::sqlpp::execute(prepared_statement);
-    }
-
-    template <typename Statement>
-    [[nodiscard]] auto prepare_execute(const Statement& statement)
-    {
-      return ::sqlpp::prepared_statement_t{
-                  statement, detail::prepared_execute_t{detail::prepare(*this, to_sql_string_c(context_t{}, statement))}};
+      prepared_statement.execute();
     }
 
     template <typename Statement>
     auto insert(const Statement& statement)
     {
       auto prepared_statement = prepare(statement);
-      return ::sqlpp::execute(prepared_statement);
-    }
-
-    template <typename Statement>
-    [[nodiscard]] auto prepare_insert(const Statement& statement)
-    {
-      return ::sqlpp::prepared_statement_t{
-                  statement, detail::prepared_insert_t{detail::prepare(*this, to_sql_string_c(context_t{}, statement))}};
+      return prepared_statement.execute();
     }
 
     template <typename Statement>
     auto update(const Statement& statement)
     {
       auto prepared_statement = prepare(statement);
-      return ::sqlpp::execute(prepared_statement);
-    }
-
-    template <typename Statement>
-    [[nodiscard]] auto prepare_update(const Statement& statement)
-    {
-      return ::sqlpp::prepared_statement_t{
-                  statement, detail::prepared_update_t{detail::prepare(*this, to_sql_string_c(context_t{}, statement))}};
+      return prepared_statement.execute();
     }
 
     template <typename Statement>
     auto delete_from(const Statement& statement)
     {
       auto prepared_statement = prepare(statement);
-      return ::sqlpp::execute(prepared_statement);
-    }
-
-    template <typename Statement>
-    [[nodiscard]] auto prepare_delete_from(const Statement& statement)
-    {
-      return ::sqlpp::prepared_statement_t{
-                  statement, detail::prepared_delete_from_t{detail::prepare(*this, to_sql_string_c(context_t{}, statement))}};
+      return prepared_statement.execute();
     }
 
     template <typename Statement>
     [[nodiscard]] auto select(const Statement& statement)
     {
       auto prepared_statement = prepare(statement);
-      ::sqlpp::execute(prepared_statement);
-      return prepared_statement;
+      return prepared_statement.execute();
     }
 
-    template <typename Statement>
-    [[nodiscard]] auto prepare_select(const Statement& statement)
-    {
-      return ::sqlpp::prepared_statement_t{
-                          statement, detail::prepared_select_t{detail::prepare(*this, to_sql_string_c(context_t{}, statement)), _debug}};
-    }
   };
 
 }  // namespace sqlpp::sqlite3

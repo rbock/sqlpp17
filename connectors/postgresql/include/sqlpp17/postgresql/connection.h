@@ -77,55 +77,6 @@ namespace sqlpp::postgresql::detail
   template<typename Pool, ::sqlpp::debug Debug>
   auto execute(const base_connection<Pool, Debug>&, const std::string& statement) -> void;
 
-  // prepared execution
-  template<typename Pool, ::sqlpp::debug Debug>
-  auto prepare(const base_connection<Pool, Debug>&, const std::string& statement, size_t no_of_parameters, size_t no_of_columns)
-      -> ::sqlpp::postgresql::prepared_statement_t;
-
-  class prepared_select_t : public ::sqlpp::postgresql::prepared_statement_t
-  {
-  public:
-    prepared_select_t(::sqlpp::postgresql::prepared_statement_t&& statement)
-        : ::sqlpp::postgresql::prepared_statement_t(std::move(statement))
-    {
-    }
-
-    auto execute() -> char_result_t;
-  };
-
-  class prepared_insert_t : public ::sqlpp::postgresql::prepared_statement_t
-  {
-  public:
-    prepared_insert_t(::sqlpp::postgresql::prepared_statement_t&& statement)
-        : ::sqlpp::postgresql::prepared_statement_t(std::move(statement))
-    {
-    }
-
-    auto execute() -> std::size_t;
-  };
-
-  class prepared_update_t : public ::sqlpp::postgresql::prepared_statement_t
-  {
-  public:
-    prepared_update_t(::sqlpp::postgresql::prepared_statement_t&& statement)
-        : ::sqlpp::postgresql::prepared_statement_t(std::move(statement))
-    {
-    }
-
-    auto execute() -> std::size_t;
-  };
-
-  class prepared_delete_from_t : public ::sqlpp::postgresql::prepared_statement_t
-  {
-  public:
-    prepared_delete_from_t(::sqlpp::postgresql::prepared_statement_t&& statement)
-        : ::sqlpp::postgresql::prepared_statement_t(std::move(statement))
-    {
-    }
-
-    auto execute() -> std::size_t;
-  };
-
   inline auto config_field_to_string(std::string_view name, const std::optional<std::string>& value) -> std::string
   {
     return value ? std::string(name) + "=" + *value + " " : "";
@@ -283,31 +234,7 @@ namespace sqlpp::postgresql
       using Statement = ::sqlpp::statement<Clauses...>;
       if constexpr (constexpr auto _check = check_statement_preparable<base_connection>(type_v<Statement>); _check)
       {
-        using ResultType = result_type_of_t<Statement>;
-        if constexpr (std::is_same_v<ResultType, insert_result>)
-        {
-          return prepare_insert(statement);
-        }
-        else if constexpr (std::is_same_v<ResultType, delete_result>)
-        {
-          return prepare_delete_from(statement);
-        }
-        else if constexpr (std::is_same_v<ResultType, update_result>)
-        {
-          return prepare_update(statement);
-        }
-        else if constexpr (std::is_same_v<ResultType, select_result>)
-        {
-          return prepare_select(statement);
-        }
-        else if constexpr (std::is_same_v<ResultType, execute_result>)
-        {
-          return prepare_execute(statement);
-        }
-        else
-        {
-          static_assert(wrong<Statement>, "Unknown statement type");
-        }
+        return ::sqlpp::postgresql::prepared_statement_t{*this, statement};
       }
       else
       {
@@ -404,25 +331,9 @@ namespace sqlpp::postgresql
     }
 
     template <typename Statement>
-    [[nodiscard]] auto prepare_insert(const Statement& statement)
-    {
-      return ::sqlpp::prepared_statement_t{
-          statement, detail::prepared_insert_t{detail::prepare(*this, to_sql_string_c(context_t{}, statement),
-                                                               parameters_of_t<Statement>::size(), 0)}};
-    }
-
-    template <typename Statement>
     auto update(const Statement& statement)
     {
       return detail::update(*this, to_sql_string_c(context_t{}, statement));
-    }
-
-    template <typename Statement>
-    [[nodiscard]] auto prepare_update(const Statement& statement)
-    {
-      return ::sqlpp::prepared_statement_t{
-          statement, detail::prepared_update_t{detail::prepare(*this, to_sql_string_c(context_t{}, statement),
-                                                               parameters_of_t<Statement>::size(), 0)}};
     }
 
     template <typename Statement>
@@ -432,27 +343,10 @@ namespace sqlpp::postgresql
     }
 
     template <typename Statement>
-    [[nodiscard]] auto prepare_delete_from(const Statement& statement)
-    {
-      return ::sqlpp::prepared_statement_t{
-          statement, detail::prepared_delete_from_t{detail::prepare(*this, to_sql_string_c(context_t{}, statement),
-                                                                    parameters_of_t<Statement>::size(), 0)}};
-    }
-
-    template <typename Statement>
     [[nodiscard]] auto select(const Statement& statement)
     {
       return ::sqlpp::result_t<result_row_of_t<Statement>, char_result_t>{
           detail::select(*this, to_sql_string_c(context_t{}, statement))};
-    }
-
-    template <typename Statement>
-    [[nodiscard]] auto prepare_select(const Statement& statement)
-    {
-      return ::sqlpp::prepared_statement_t{
-          statement, detail::prepared_select_t{detail::prepare(*this, to_sql_string_c(context_t{}, statement),
-                                                               parameters_of_t<Statement>::size(),
-                                                               get_no_of_result_columns(statement))}};
     }
   };
 
@@ -516,84 +410,6 @@ namespace sqlpp::postgresql::detail
     execute_query(connection, statement);
   }
 
-  template<typename Pool, ::sqlpp::debug Debug>
-  inline auto prepare(const base_connection<Pool, Debug>& connection,
-               const std::string& statement,
-               size_t no_of_parameters,
-               size_t no_of_columns) -> ::sqlpp::postgresql::prepared_statement_t
-  {
-    const auto statement_name =
-        std::to_string(connection.get_statement_index()) + "at" + std::to_string(::time(nullptr));
-
-    if (connection.is_debug_allowed())
-      connection.debug("Preparing " + statement_name + ": '" + statement + "'");
-
-    auto result = detail::unique_result_ptr(
-        PQprepare(connection.get(), statement_name.c_str(), statement.c_str(), no_of_parameters, nullptr), {});
-
-    if (not result)
-    {
-      throw sqlpp::exception("Postgresql: out of memory (query was >>" + statement + "<<\n");
-    }
-
-    switch (PQresultStatus(result.get()))
-    {
-      case PGRES_COMMAND_OK:
-        [[fallthrough]];
-      case PGRES_TUPLES_OK:
-        return {connection.get(), statement_name, no_of_parameters};
-      default:
-        throw sqlpp::exception(std::string("Postgresql: Error during query preparation: ") +
-                               PQresultErrorMessage(result.get()) + " (query was >>" + statement + "<<\n");
-    }
-  }
-
-  inline auto execute_prepared_statement(::sqlpp::postgresql::prepared_statement_t& prepared_statement)
-      -> detail::unique_result_ptr
-  {
-    auto result = detail::unique_result_ptr(
-        PQexecPrepared(prepared_statement.get_connection(), prepared_statement.get_name().c_str(),
-                       prepared_statement.get_number_of_parameters(),
-                       prepared_statement.get_parameter_pointers().data(), nullptr, nullptr, 0),
-        {});
-
-    if (not result)
-    {
-      throw sqlpp::exception("Postgresql: out of memory (prepared statement " + prepared_statement.get_name() + "\n");
-    }
-
-    switch (PQresultStatus(result.get()))
-    {
-      case PGRES_COMMAND_OK:
-        [[fallthrough]];
-      case PGRES_TUPLES_OK:
-        return result;
-      default:
-        throw sqlpp::exception(std::string("Postgresql: Error during prepared statement execution: ") +
-                               PQresultErrorMessage(result.get()) + " (statement name " +
-                               prepared_statement.get_name() + ")\n");
-    }
-  }
-
-  inline auto prepared_select_t::execute() -> char_result_t
-  {
-    return {execute_prepared_statement(*this)};
-  }
-
-  inline auto prepared_insert_t::execute() -> size_t
-  {
-    return PQoidValue(execute_prepared_statement(*this).get());
-  }
-
-  inline auto prepared_update_t::execute() -> size_t
-  {
-    return std::strtoll(PQcmdTuples(execute_prepared_statement(*this).get()), nullptr, 10);
-  }
-
-  inline auto prepared_delete_from_t::execute() -> size_t
-  {
-    return std::strtoll(PQcmdTuples(execute_prepared_statement(*this).get()), nullptr, 10);
-  }
 }  // namespace sqlpp::postgresql::detail
 
 

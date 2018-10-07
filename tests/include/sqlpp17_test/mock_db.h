@@ -30,6 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/context_base.h>
 #include <sqlpp17/result.h>
 #include <sqlpp17/statement.h>
+#include <sqlpp17/prepared_statement_parameters.h>
 #include <sqlpp17/transaction.h>
 
 namespace sqlpp::test
@@ -46,38 +47,55 @@ namespace sqlpp::test
     }
   };
 
-  struct prepared_statement
+  template<typename ResultType, typename ParameterVector, typename ResultRow>
+  struct prepared_statement_t
   {
-  };
+    ::sqlpp::prepared_statement_parameters<ParameterVector> parameters = {};
 
-  inline auto pre_bind(prepared_statement&)
-  {
-  }
-
-  template <typename Parameter>
-  auto bind_parameter(prepared_statement&, [[maybe_unused]] const Parameter& parameter, [[maybe_unused]] int index)
-  {
-  }
-
-  inline auto post_bind(prepared_statement&)
-  {
-  }
-
-  struct mock_prepared_insert : public prepared_statement
-  {
-    [[nodiscard]] auto execute()
+    prepared_statement_t() = default;
+    template<typename Connection, typename Statement>
+    prepared_statement_t(const Connection&, const Statement&)
     {
-      return std::size_t{};
+    }
+    prepared_statement_t(const prepared_statement_t&) = delete;
+    prepared_statement_t(prepared_statement_t&& rhs) = default;
+    prepared_statement_t& operator=(const prepared_statement_t&) = delete;
+    prepared_statement_t& operator=(prepared_statement_t&&) = default;
+    ~prepared_statement_t() = default;
+
+    auto execute()
+    {
+      if constexpr (std::is_same_v<ResultType, insert_result>)
+      {
+        return std::size_t{};
+      }
+      else if constexpr (std::is_same_v<ResultType, delete_result>)
+      {
+        return std::size_t{};
+      }
+      else if constexpr (std::is_same_v<ResultType, update_result>)
+      {
+        return std::size_t{};
+      }
+      else if constexpr (std::is_same_v<ResultType, select_result>)
+      {
+        return mock_result{};
+      }
+      else
+      {
+        static_assert(wrong<ResultType>, "Unknown statement result type");
+      }
     }
   };
 
-  struct mock_prepared_select : public prepared_statement
+  template <typename Connection, typename Statement>
+  prepared_statement_t(const Connection&, const Statement&)->prepared_statement_t<result_type_of_t<Statement>, parameters_of_t<Statement>, result_row_of_t<Statement>>;
+
+  template<typename ResultType, typename ParameterVector, typename ResultRow>
+  auto execute(prepared_statement_t<ResultType, ParameterVector, ResultRow>& statement)
   {
-    [[nodiscard]] auto execute()
-    {
-      return mock_result{};
-    }
-  };
+    return statement.execute();
+  }
 
   template <typename Row>
   auto get_next_result_row(mock_result& result, Row& row)
@@ -139,31 +157,7 @@ namespace sqlpp::test
       using Statement = ::sqlpp::statement<Clauses...>;
       if constexpr (constexpr auto _check = check_statement_preparable<mock_db>(type_v<Statement>); _check)
       {
-        using ResultType = result_type_of_t<Statement>;
-        if constexpr (std::is_same_v<ResultType, insert_result>)
-        {
-          return prepare_insert(statement);
-        }
-        else if constexpr (std::is_same_v<ResultType, delete_result>)
-        {
-          return prepare_delete_from(statement);
-        }
-        else if constexpr (std::is_same_v<ResultType, update_result>)
-        {
-          return prepare_update(statement);
-        }
-        else if constexpr (std::is_same_v<ResultType, select_result>)
-        {
-          return prepare_select(statement);
-        }
-        else if constexpr (std::is_same_v<ResultType, execute_result>)
-        {
-          return prepare_execute(statement);
-        }
-        else
-        {
-          static_assert(wrong<Statement>, "Unknown statement type");
-        }
+          return ::sqlpp::test::prepared_statement_t{*this, statement};
       }
       else
       {
@@ -202,13 +196,6 @@ namespace sqlpp::test
     }
 
     template <typename Statement>
-    [[nodiscard]] auto prepare_insert(const Statement& statement)
-    {
-      [[maybe_unused]] auto x = to_sql_string_c(mock_context_t{}, statement);
-      return prepared_statement_t{statement, mock_prepared_insert{}};
-    }
-
-    template <typename Statement>
     auto update(const Statement& statement)
     {
       [[maybe_unused]] auto x = to_sql_string_c(mock_context_t{}, statement);
@@ -229,12 +216,6 @@ namespace sqlpp::test
       return ::sqlpp::result_t<result_row_of_t<Statement>, mock_result>{mock_result{}};
     }
 
-    template <typename Statement>
-    [[nodiscard]] auto prepare_select(const Statement& statement)
-    {
-      [[maybe_unused]] auto x = to_sql_string_c(mock_context_t{}, statement);
-      return prepared_statement_t{statement, mock_prepared_select{}};
-    }
   };
 
 }  // namespace sqlpp::test

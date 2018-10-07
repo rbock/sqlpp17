@@ -31,29 +31,38 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <optional>
 #include <string_view>
 
-#include <mysql.h>
-
 #include <sqlpp17/exception.h>
 
-#include <sqlpp17/mysql/prepared_statement.h>
+#include <sqlpp17/mysql/bind_meta_data.h>
 
 namespace sqlpp::mysql
 {
   class prepared_statement_result_t;
-  class prepared_statement_t;
 }  // namespace sqlpp::mysql
 
 namespace sqlpp::mysql::detail
 {
   auto bind_impl(prepared_statement_result_t& result) -> void;
   auto get_next_result_row(prepared_statement_result_t& result) -> bool;
+
+  struct prepared_result_cleanup_t
+  {
+  public:
+    auto operator()(MYSQL_STMT* handle) -> void
+    {
+      if (handle)
+        mysql_stmt_free_result(handle);
+    }
+  };
+  using unique_prepared_result_ptr = std::unique_ptr<MYSQL_STMT, detail::prepared_result_cleanup_t>;
+
 }  // namespace sqlpp::mysql::detail
 
 namespace sqlpp::mysql
 {
   class prepared_statement_result_t
   {
-    MYSQL_STMT* _handle = nullptr;
+    detail::unique_prepared_result_ptr _handle;
     std::vector<detail::bind_meta_data_t> _bind_meta_data;
     std::vector<MYSQL_BIND> _bind_data;
     void* _result_row_address = nullptr;
@@ -65,35 +74,20 @@ namespace sqlpp::mysql
 
   public:
     prepared_statement_result_t() = default;
-    prepared_statement_result_t(::sqlpp::mysql::prepared_statement_t& statement)
-        : _handle(statement.get()),
-          _bind_meta_data(statement.get_number_of_columns()),
-          _bind_data(statement.get_number_of_columns())
+    prepared_statement_result_t(detail::unique_prepared_result_ptr&& handle, size_t number_of_columns)
+        : _handle(std::move(handle)),
+          _bind_meta_data(number_of_columns),
+          _bind_data(number_of_columns)
     {
     }
 
     prepared_statement_result_t(const prepared_statement_result_t&) = delete;
-    prepared_statement_result_t(prepared_statement_result_t&& rhs)
-    {
-      std::swap(_handle, rhs._handle);
-      std::swap(_bind_meta_data, rhs._bind_meta_data);
-      std::swap(_bind_data, rhs._bind_data);
-    }
+    prepared_statement_result_t(prepared_statement_result_t&& rhs) = default;
     prepared_statement_result_t& operator=(const prepared_statement_result_t&) = delete;
-    prepared_statement_result_t& operator=(prepared_statement_result_t&& rhs)
-    {
-      std::swap(_handle, rhs._handle);
-      std::swap(_bind_meta_data, rhs._bind_meta_data);
-      std::swap(_bind_data, rhs._bind_data);
-      return *this;
-    }
+    prepared_statement_result_t& operator=(prepared_statement_result_t&& rhs) = default;
 
     ~prepared_statement_result_t()
     {
-      if (_handle)
-      {
-        mysql_stmt_free_result(_handle);
-      }
     }
 
     [[nodiscard]] operator bool() const
@@ -103,7 +97,7 @@ namespace sqlpp::mysql
 
     [[nodiscard]] auto* get() const
     {
-      return _handle;
+      return _handle.get();
     }
 
     [[nodiscard]] auto& get_bind_meta_data()

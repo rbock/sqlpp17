@@ -26,42 +26,24 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <optional>
+#include <sqlpp17/algorithm.h>
+#include <sqlpp17/member.h>
+#include <sqlpp17/type_traits.h>
 
-#include <sqlpp17/mysql/mysql.h>
-
-namespace sqlpp::mysql
+namespace sqlpp
 {
-  struct ssl_config_t
+  template <typename ParameterSpec>
+  using parameter_base_t = member_t<name_tag_of_t<ParameterSpec>, value_type_of_t<ParameterSpec>>;
+
+  template <typename ParameterSpecVector>
+  struct prepared_statement_parameters
   {
-    std::string key;
-    std::string cert;
-    std::string ca;
-    std::string caPath;
-    std::string cipher;
+    static_assert(wrong<ParameterSpecVector>, "wrong template argument for prepared_statement_parameters");
   };
 
-  struct connection_config_t
+  template <typename... ParameterSpecs>
+  class prepared_statement_parameters<type_vector<ParameterSpecs...>> : public parameter_base_t<ParameterSpecs>...
   {
-    std::function<void(MYSQL*)> pre_connect;
-    std::function<void(MYSQL*)> post_connect;
-    std::string host;
-    std::string user;
-    std::string password;
-    int port = 0;
-    std::string unix_socket;
-    std::optional<ssl_config_t> ssl;
-    unsigned long client_flag = 0;
-    std::string database;
-    std::string charset = "utf8";
-    std::function<void(std::string_view)> debug;
-
-    connection_config_t() = default;
-    connection_config_t(const connection_config_t&) = default;
-    connection_config_t(connection_config_t&& rhs) = default;
-    connection_config_t& operator=(const connection_config_t&) = default;
-    connection_config_t& operator=(connection_config_t&&) = default;
-    ~connection_config_t() = default;
   };
 
-}  // namespace sqlpp::mysql
+}  // namespace sqlpp

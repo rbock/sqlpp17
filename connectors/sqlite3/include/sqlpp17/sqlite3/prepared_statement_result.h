@@ -37,8 +37,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlite3.h>
 #endif
 
-#include <sqlpp17/sqlite3/prepared_statement.h>
-
 namespace sqlpp::sqlite3
 {
   class prepared_statement_result_t;
@@ -46,6 +44,18 @@ namespace sqlpp::sqlite3
 
 namespace sqlpp::sqlite3::detail
 {
+  struct prepared_statement_cleanup_t
+  {
+    bool _owning;
+
+    auto operator()(::sqlite3_stmt* handle) -> void
+    {
+      if (_owning and handle)
+        sqlite3_finalize(handle);
+    }
+  };
+  using unique_prepared_statement_ptr = std::unique_ptr<::sqlite3_stmt, detail::prepared_statement_cleanup_t>;
+
   auto get_next_result_row(prepared_statement_result_t& result) -> bool;
 }  // namespace sqlpp::sqlite3::detail
 
@@ -55,12 +65,12 @@ namespace sqlpp::sqlite3
 
   class prepared_statement_result_t
   {
-    ::sqlite3_stmt* _handle;
+    detail::unique_prepared_statement_ptr _handle;
 
   public:
     prepared_statement_result_t() = default;
-    prepared_statement_result_t(prepared_statement_t& prepared_statement)
-        : _handle(prepared_statement.get())
+    prepared_statement_result_t(detail::unique_prepared_statement_ptr&& handle)
+        : _handle(std::move(handle))
     {
     }
     prepared_statement_result_t(const prepared_statement_result_t&) = delete;
@@ -71,15 +81,14 @@ namespace sqlpp::sqlite3
     prepared_statement_result_t& operator=(direct_execution_result_t&&) = delete;
     ~prepared_statement_result_t(){}
 
-        [[nodiscard]]
-        operator bool() const
+    [[nodiscard]] operator bool() const
     {
       return !!_handle;
     }
 
     [[nodiscard]] auto* get() const
     {
-      return _handle;
+      return _handle.get();
     }
 
     auto reset() -> void

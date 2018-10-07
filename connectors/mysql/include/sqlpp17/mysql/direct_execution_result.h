@@ -32,7 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string>
 #include <string_view>
 
-#include <mysql.h>
+#include <sqlpp17/mysql/mysql.h>
 
 namespace sqlpp ::mysql
 {

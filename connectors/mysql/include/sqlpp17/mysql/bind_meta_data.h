@@ -26,42 +26,18 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <optional>
-
 #include <sqlpp17/mysql/mysql.h>
 
-namespace sqlpp::mysql
+namespace sqlpp::mysql::detail
 {
-  struct ssl_config_t
+  struct bind_meta_data_t
   {
-    std::string key;
-    std::string cert;
-    std::string ca;
-    std::string caPath;
-    std::string cipher;
+    unsigned long bound_len;
+    my_bool bound_is_null;
+    my_bool bound_error;
+    bool use_buffer = false;
+    std::string bound_buffer;
   };
+}
 
-  struct connection_config_t
-  {
-    std::function<void(MYSQL*)> pre_connect;
-    std::function<void(MYSQL*)> post_connect;
-    std::string host;
-    std::string user;
-    std::string password;
-    int port = 0;
-    std::string unix_socket;
-    std::optional<ssl_config_t> ssl;
-    unsigned long client_flag = 0;
-    std::string database;
-    std::string charset = "utf8";
-    std::function<void(std::string_view)> debug;
 
-    connection_config_t() = default;
-    connection_config_t(const connection_config_t&) = default;
-    connection_config_t(connection_config_t&& rhs) = default;
-    connection_config_t& operator=(const connection_config_t&) = default;
-    connection_config_t& operator=(connection_config_t&&) = default;
-    ~connection_config_t() = default;
-  };
-
-}  // namespace sqlpp::mysql

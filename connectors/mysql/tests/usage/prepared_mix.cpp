@@ -74,8 +74,9 @@ int main()
     auto prepared_select = db.prepare(
         sqlpp::select(test::tabDepartment.id).from(test::tabDepartment).unconditionally());
 
-    std::ignore = execute(prepared_select).front().id; // This does not read to the end
-    prepared_select.clear_result();
+    {
+      std::ignore = execute(prepared_select).front().id; // This does not read to the end
+    }
 
     // This fails if the result does not call mysql_stmt_free_result in the destructor
     auto prepared_update = db.prepare(update(test::tabDepartment).set(test::tabDepartment.name = "hansi").unconditionally());

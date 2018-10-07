@@ -1,3 +1,28 @@
+Results of prepared statements:
+===============================
+There are two types:
+  - mysql and sqlite3 allow just one result per statement.
+  - postgresql allows any number of results per statement (results can outlive the prepared statement or even the connection)
+
+sqlite3 requires the prepare-step.
+
+Plan:
+=====
+               Direct                                             Prepared
+    mysql      result object                                      result object that refers to the prepared statement
+               (there can be multiple per connection)             (there can be only one at a time and it cannot outlive the
+                                                                   prepared statement, which cannot outlive the connection)
+    sqlite3    result object that stores                          result object that just refers to the prepared statement
+               the prepared statement                             (there can be only one at a time and it cannot outlive the
+               (there can be only one live result per connection   prepared statement, which cannot outlive the connection)
+    postgresql result object                                      result object
+               (can outlive the connection)                       (can outlive the connection)
+
+Actually, the more I think about this:
+prepared_statement should not be a real thing in sqlpp17. It should be more of a concept (or maybe a metaclass in C++23).
+Results generally should not be things in sqlpp17. The required ping-pong between sqlpp and the connector is pretty hard to trace.
+
+
 debugging every bound value is nonsense
 
 The connection doe not hold on to the config. Thus, it cannot call a callback in the destructor

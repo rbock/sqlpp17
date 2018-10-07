@@ -26,16 +26,82 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <array>
 #include <functional>
 #include <memory>
 #include <optional>
 #include <string>
-#include <vector>
 
 #include <libpq-fe.h>
 
+#include <sqlpp17/prepared_statement_parameters.h>
+
 namespace sqlpp::postgresql
 {
+  inline auto bind_parameter([[maybe_unused]] std::string& parameter_string, char* parameter_pointer, const std::nullopt_t& value) -> void
+  {
+    parameter_pointer = nullptr;
+  }
+
+  inline auto bind_parameter(std::string& parameter_string, char* parameter_pointer, bool& value) -> void
+  {
+    parameter_string = value ? "TRUE" : "FALSE";
+    parameter_pointer = parameter_string.data();
+  }
+
+  inline auto bind_parameter(std::string& parameter_string, char* parameter_pointer, std::int32_t& value) -> void
+  {
+    parameter_string = std::to_string(value);
+    parameter_pointer = parameter_string.data();
+  }
+
+  inline auto bind_parameter(std::string& parameter_string, char* parameter_pointer, std::int64_t& value) -> void
+  {
+    parameter_string = std::to_string(value);
+    parameter_pointer = parameter_string.data();
+  }
+
+  inline auto bind_parameter(std::string& parameter_string, char* parameter_pointer, float& value) -> void
+  {
+    parameter_string = to_sql_string_c(::sqlpp::postgresql::context_t{}, value);
+    parameter_pointer = parameter_string.data();
+  }
+
+  inline auto bind_parameter(std::string& parameter_string, char* parameter_pointer, double& value) -> void
+  {
+    parameter_string = to_sql_string_c(::sqlpp::postgresql::context_t{}, value);
+    parameter_pointer = parameter_string.data();
+  }
+
+  inline auto bind_parameter(std::string& parameter_string, char* parameter_pointer, std::string& value) -> void
+  {
+    parameter_string = value;
+    parameter_pointer = parameter_string.data();
+  }
+
+  inline auto bind_parameter(std::string& parameter_string, char* parameter_pointer, std::string_view& value) -> void
+  {
+    parameter_string = value;
+    parameter_pointer = parameter_string.data();
+  }
+
+  template <typename T>
+  auto bind_parameter(std::string& parameter_string, char* parameter_pointer, std::optional<T>& value) -> void
+  {
+    value ? bind_parameter(parameter_string, parameter_pointer, *value) : bind_parameter(parameter_string, parameter_pointer, std::nullopt);
+  }
+
+  template <typename... ParameterSpecs>
+  auto bind_parameters(std::array<std::string, sizeof...(ParameterSpecs)>& parameter_strings,
+                       std::array<char*, sizeof...(ParameterSpecs)>& parameter_pointers,
+                       ::sqlpp::prepared_statement_parameters<type_vector<ParameterSpecs...>>& parameters) -> void
+  {
+    int index = 0;
+    (..., (bind_parameter(parameter_strings[index], parameter_pointers[index],
+                          static_cast<parameter_base_t<ParameterSpecs>&>(parameters)()),
+           ++index));
+  }
+
   /* PGprepare CAN be informed about the nature of parameters using OIDs from pg_type.h
      e.g. TEXTOID or INT4OID
      However, it seems easier to pass type information in the query via $1:bigint for
@@ -43,29 +109,104 @@ namespace sqlpp::postgresql
      Caveat: We need to store all parameters as strings. And postgresql then has to
              parse those strings.
   */
+  template<typename ResultType, typename ParameterVector, typename ResultRow>
   class prepared_statement_t
   {
     PGconn* _connection;
     std::string _name;
-    std::vector<std::string> _parameter_data;
-    std::vector<char*> _parameter_pointers;
+    std::array<std::string, ParameterVector::size()> _parameter_strings;
+    std::array<char*, ParameterVector::size()> _parameter_pointers;
 
   public:
+    ::sqlpp::prepared_statement_parameters<ParameterVector> parameters = {};
+
     prepared_statement_t() = default;
-    prepared_statement_t(PGconn* connection,
-                         std::string name,
-                         std::size_t number_of_parameters)
-        : _connection(connection),
-          _name(std::move(name)),
-          _parameter_data(number_of_parameters),
-          _parameter_pointers(number_of_parameters)
+       template<typename Connection, typename Statement>
+    prepared_statement_t(const Connection& connection, const Statement& statement)
+        : _connection(connection.get()),
+          _name(std::to_string(connection.get_statement_index()) + "at" + std::to_string(::time(nullptr)))
     {
+      const auto sql_string = to_sql_string_c(context_t{}, statement);
+#warning: connection needs to decide whether or not to print
+      connection.debug("Preparing " + _name + ": '" + sql_string + "'");
+
+      auto result = detail::unique_result_ptr(
+          PQprepare(connection.get(), _name.c_str(), sql_string.c_str(), ParameterVector::size(), nullptr), {});
+
+      if (not result)
+      {
+        throw sqlpp::exception("Postgresql: out of memory (query was >>" + sql_string + "<<\n");
+      }
+
+      switch (PQresultStatus(result.get()))
+      {
+        case PGRES_COMMAND_OK:
+          [[fallthrough]];
+        case PGRES_TUPLES_OK:
+          break;
+        default:
+          throw sqlpp::exception(std::string("Postgresql: Error during query preparation: ") +
+                                 PQresultErrorMessage(result.get()) + " (query was >>" + sql_string + "<<\n");
+      }
     }
     prepared_statement_t(const prepared_statement_t&) = delete;
     prepared_statement_t(prepared_statement_t&& rhs) = default;
     prepared_statement_t& operator=(const prepared_statement_t&) = delete;
     prepared_statement_t& operator=(prepared_statement_t&&) = default;
     ~prepared_statement_t() = default;
+#warning: When does the prepared statement get freed?
+
+    auto execute()
+    {
+      ::sqlpp::postgresql::bind_parameters(_parameter_strings, _parameter_pointers, parameters);
+      auto result = detail::unique_result_ptr(
+          PQexecPrepared(_connection, _name.c_str(),
+                         _parameter_pointers.size(),
+                         _parameter_pointers.data(), nullptr, nullptr, 0),
+          {});
+
+      if (not result)
+      {
+        throw sqlpp::exception("Postgresql: out of memory (prepared statement " + _name + "\n");
+      }
+
+      switch (PQresultStatus(result.get()))
+      {
+        case PGRES_COMMAND_OK:
+          [[fallthrough]];
+        case PGRES_TUPLES_OK:
+          break;
+        default:
+          throw sqlpp::exception(std::string("Postgresql: Error during prepared statement execution: ") +
+                                 PQresultErrorMessage(result.get()) + " (statement name " +
+                                 _name + ")\n");
+      }
+
+      if constexpr (std::is_same_v<ResultType, insert_result>)
+      {
+        return PQoidValue(result.get());
+      }
+      else if constexpr (std::is_same_v<ResultType, delete_result>)
+      {
+        return std::strtoll(PQcmdTuples(result.get()), nullptr, 10);
+      }
+      else if constexpr (std::is_same_v<ResultType, update_result>)
+      {
+        return std::strtoll(PQcmdTuples(result.get()), nullptr, 10);
+      }
+      else if constexpr (std::is_same_v<ResultType, select_result>)
+      {
+        return ::sqlpp::result_t<ResultRow, char_result_t>{char_result_t{std::move(result)}};
+      }
+      else if constexpr (std::is_same_v<ResultType, execute_result>)
+      {
+        return std::strtoll(PQcmdTuples(result.get()), nullptr, 10);
+      }
+      else
+      {
+        static_assert(wrong<ResultType>, "Unknown statement result type");
+      }
+    }
 
     auto* get_connection() const
     {
@@ -82,9 +223,9 @@ namespace sqlpp::postgresql
       return _parameter_pointers.size();
     }
 
-    auto& get_parameter_data()
+    auto& get_parameter_strings()
     {
-      return _parameter_data;
+      return _parameter_strings;
     }
 
     auto& get_parameter_pointers()
@@ -98,65 +239,14 @@ namespace sqlpp::postgresql
     }
   };
 
-  inline auto pre_bind(prepared_statement_t& statement) -> void
-  {
-  }
+  template <typename Connection, typename Statement>
+  prepared_statement_t(const Connection&, const Statement&)
+      ->prepared_statement_t<result_type_of_t<Statement>, parameters_of_t<Statement>, result_row_of_t<Statement>>;
 
-  inline auto bind_parameter(prepared_statement_t& statement, const std::nullopt_t& value, int index) -> void
+  template <typename ResultType, typename ParameterVector, typename ResultRow>
+  auto execute(prepared_statement_t<ResultType, ParameterVector, ResultRow>& statement)
   {
-    statement.get_parameter_pointers()[index] = nullptr;
-  }
-
-  inline auto bind_parameter(prepared_statement_t& statement, bool& value, int index) -> void
-  {
-    statement.get_parameter_data()[index] = value ? "TRUE" : "FALSE";
-    statement.get_parameter_pointers()[index] = statement.get_parameter_data()[index].data();
-  }
-
-  inline auto bind_parameter(prepared_statement_t& statement, std::int32_t& value, int index) -> void
-  {
-    statement.get_parameter_data()[index] = std::to_string(value);
-    statement.get_parameter_pointers()[index] = statement.get_parameter_data()[index].data();
-  }
-
-  inline auto bind_parameter(prepared_statement_t& statement, std::int64_t& value, int index) -> void
-  {
-    statement.get_parameter_data()[index] = std::to_string(value);
-    statement.get_parameter_pointers()[index] = statement.get_parameter_data()[index].data();
-  }
-
-  inline auto bind_parameter(prepared_statement_t& statement, float& value, int index) -> void
-  {
-    statement.get_parameter_data()[index] = to_sql_string_c(::sqlpp::postgresql::context_t{}, value);
-    statement.get_parameter_pointers()[index] = statement.get_parameter_data()[index].data();
-  }
-
-  inline auto bind_parameter(prepared_statement_t& statement, double& value, int index) -> void
-  {
-    statement.get_parameter_data()[index] = to_sql_string_c(::sqlpp::postgresql::context_t{}, value);
-    statement.get_parameter_pointers()[index] = statement.get_parameter_data()[index].data();
-  }
-
-  inline auto bind_parameter(prepared_statement_t& statement, std::string& value, int index) -> void
-  {
-    statement.get_parameter_data()[index] = value;
-    statement.get_parameter_pointers()[index] = statement.get_parameter_data()[index].data();
-  }
-
-  inline auto bind_parameter(prepared_statement_t& statement, std::string_view& value, int index) -> void
-  {
-    statement.get_parameter_data()[index] = value;
-    statement.get_parameter_pointers()[index] = statement.get_parameter_data()[index].data();
-  }
-
-  template <typename T>
-  auto bind_parameter(prepared_statement_t& statement, std::optional<T>& value, int index) -> void
-  {
-    value ? bind_parameter(statement, *value, index) : bind_parameter(statement, std::nullopt, index);
-  }
-
-  inline auto post_bind(prepared_statement_t& statement) -> void
-  {
+    return statement.execute();
   }
 
 }  // namespace sqlpp::postgresql

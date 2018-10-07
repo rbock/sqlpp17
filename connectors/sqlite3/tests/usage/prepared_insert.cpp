@@ -70,7 +70,7 @@ int main()
     {
       auto s = db.prepare(insert_into(tabPerson).set(tabPerson.isManager = true,
                                                      tabPerson.name = ::sqlpp::parameter<std::string>(pName)));
-      s.pName = "Herb";
+      s.parameters.pName = "Herb";
       [[maybe_unused]] const auto id = execute(s);
     }
 
@@ -79,11 +79,11 @@ int main()
           tabPerson.isManager = ::sqlpp::parameter<bool>(pIsManager),
           tabPerson.name = ::sqlpp::parameter<std::string>(pName),
           tabPerson.address = ::sqlpp::parameter<::std::optional<std::string>>(pAddress), tabPerson.language = "C++"));
-      s.pIsManager = true;
-      s.pName = "Herb";
-      s.pAddress = "Somewhere";
-      s.pAddress = std::nullopt;
-      s.pAddress.reset();
+      s.parameters.pIsManager = true;
+      s.parameters.pName = "Herb";
+      s.parameters.pAddress = "Somewhere";
+      s.parameters.pAddress = std::nullopt;
+      s.parameters.pAddress.reset();
 
       [[maybe_unused]] const auto id = execute(s);
     }

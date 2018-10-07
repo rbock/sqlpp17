@@ -37,19 +37,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlite3.h>
 #endif
 
+#include <sqlpp17/prepared_statement_parameters.h>
+
+#include <sqlpp17/sqlite3/prepared_statement_result.h>
+
 namespace sqlpp::sqlite3::detail
 {
-  struct prepared_statement_cleanup_t
-  {
-  public:
-    auto operator()(::sqlite3_stmt* handle) -> void
-    {
-      if (handle)
-        sqlite3_finalize(handle);
-    }
-  };
-  using unique_prepared_statement_ptr = std::unique_ptr<::sqlite3_stmt, detail::prepared_statement_cleanup_t>;
-
   inline void check_bind_result(int result, const char* const type)
   {
     switch (result)
@@ -69,23 +62,155 @@ namespace sqlpp::sqlite3::detail
 
 namespace sqlpp::sqlite3
 {
+  inline auto bind_parameter(::sqlite3_stmt* statement, [[maybe_unused]] const std::nullopt_t&, int index) -> void
+  {
+    const auto result = sqlite3_bind_null(statement, index);
+    detail::check_bind_result(result, "NULL");
+  }
+
+  inline auto bind_parameter(::sqlite3_stmt* statement, bool& value, int index) -> void
+  {
+    const auto result = sqlite3_bind_int(statement, index, value);
+    detail::check_bind_result(result, "bool");
+  }
+
+  inline auto bind_parameter(::sqlite3_stmt* statement, std::int32_t& value, int index) -> void
+  {
+    const auto result = sqlite3_bind_int(statement, index, value);
+    detail::check_bind_result(result, "int32_t");
+  }
+
+  inline auto bind_parameter(::sqlite3_stmt* statement, std::int64_t& value, int index) -> void
+  {
+    const auto result = sqlite3_bind_int64(statement, index, value);
+    detail::check_bind_result(result, "int64_t");
+  }
+
+  inline auto bind_parameter(::sqlite3_stmt* statement, float& value, int index) -> void
+  {
+    // There is no bind_float
+    const auto result = sqlite3_bind_double(statement, index, value);
+    detail::check_bind_result(result, "float");
+  }
+
+  inline auto bind_parameter(::sqlite3_stmt* statement, double& value, int index) -> void
+  {
+    const auto result = sqlite3_bind_double(statement, index, value);
+    detail::check_bind_result(result, "double");
+  }
+
+  inline auto bind_parameter(::sqlite3_stmt* statement, std::string& value, int index) -> void
+  {
+    const auto result =
+        sqlite3_bind_text(statement, index, value.data(), static_cast<int>(value.size()), SQLITE_STATIC);
+    detail::check_bind_result(result, "string");
+  }
+
+  inline auto bind_parameter(::sqlite3_stmt* statement, std::string_view& value, int index) -> void
+  {
+    const auto result =
+        sqlite3_bind_text(statement, index, value.data(), static_cast<int>(value.size()), SQLITE_STATIC);
+    detail::check_bind_result(result, "string_view");
+  }
+
+  template <typename T>
+  auto bind_parameter(::sqlite3_stmt* statement, std::optional<T>& value, int index) -> void
+  {
+    value ? bind_parameter(statement, *value, index) : bind_parameter(statement, std::nullopt, index);
+  }
+
+  template <typename... ParameterSpecs>
+  auto bind_parameters(::sqlite3_stmt* statement, ::sqlpp::prepared_statement_parameters<type_vector<ParameterSpecs...>>& parameters) -> void
+  {
+      int index = 0;
+      (..., bind_parameter(statement, static_cast<parameter_base_t<ParameterSpecs>&>(parameters)(), ++index));
+  }
+
+  template<typename ResultType, typename ParameterVector, typename ResultRow>
   class prepared_statement_t
   {
     detail::unique_prepared_statement_ptr _handle;
+    bool _result_gets_ownership;
     ::sqlite3* _connection;
 
   public:
+    ::sqlpp::prepared_statement_parameters<ParameterVector> parameters = {};
+
     prepared_statement_t() = default;
-    prepared_statement_t(detail::unique_prepared_statement_ptr handle,
-                         ::sqlite3* connection)
-        : _handle(std::move(handle)), _connection(connection)
+    template <typename Connection, typename Statement>
+    prepared_statement_t(const Connection& connection, const Statement& statement, bool result_gets_ownership)
+        : _result_gets_ownership(result_gets_ownership), _connection(connection.get())
     {
+      const auto sql_string = to_sql_string_c(context_t{}, statement);
+#warning: debug should act like in mysql
+      connection.debug()("Preparing: '" + sql_string + "'");
+
+      ::sqlite3_stmt* statement_ptr = nullptr;
+
+      const auto rc = sqlite3_prepare_v2(connection.get(), sql_string.c_str(), static_cast<int>(sql_string.size()),
+                                         &statement_ptr, nullptr);
+
+      _handle = detail::unique_prepared_statement_ptr(statement_ptr, {true});
+
+      if (rc != SQLITE_OK)
+      {
+        throw sqlpp::exception("Sqlite3: Could not prepare statement: " + std::string(sqlite3_errmsg(connection.get())) +
+                               " (statement was >>" + sql_string + "<<)\n");
+      }
     }
+
     prepared_statement_t(const prepared_statement_t&) = delete;
     prepared_statement_t(prepared_statement_t&& rhs) = default;
     prepared_statement_t& operator=(const prepared_statement_t&) = delete;
     prepared_statement_t& operator=(prepared_statement_t&&) = default;
     ~prepared_statement_t() = default;
+
+    auto execute()
+    {
+      sqlite3_reset(_handle.get());
+
+      ::sqlpp::sqlite3::bind_parameters(_handle.get(), parameters);
+
+      switch (const auto rc = sqlite3_step(_handle.get()); rc)
+      {
+        case SQLITE_OK:
+          [[fallthrough]];
+        case SQLITE_ROW:
+          [[fallthrough]];  // might occur if execute is called with a select
+        case SQLITE_DONE:
+          break;
+        default:
+          throw sqlpp::exception("Sqlite3: Could not execute statement: " + std::string(sqlite3_errstr(rc)));
+      }
+
+      if constexpr (std::is_same_v<ResultType, insert_result>)
+      {
+        return sqlite3_last_insert_rowid(_connection);
+      }
+      else if constexpr (std::is_same_v<ResultType, delete_result>)
+      {
+        return sqlite3_changes(_connection);
+      }
+      else if constexpr (std::is_same_v<ResultType, update_result>)
+      {
+        return sqlite3_changes(_connection);
+      }
+      else if constexpr (std::is_same_v<ResultType, select_result>)
+      {
+        return ::sqlpp::result_t<ResultRow, prepared_statement_result_t>{
+          prepared_statement_result_t{_result_gets_ownership
+                                          ? detail::unique_prepared_statement_ptr{_handle.release(), {true}}
+                                          : detail::unique_prepared_statement_ptr{_handle.get(), {false}}}};
+      }
+      else if constexpr (std::is_same_v<ResultType, execute_result>)
+      {
+        return sqlite3_changes(_connection);
+      }
+      else
+      {
+        static_assert(wrong<ResultType>, "Unknown statement result type");
+      }
+    }
 
     auto* get() const
     {
@@ -98,70 +223,14 @@ namespace sqlpp::sqlite3
     }
   };
 
-  inline auto pre_bind(prepared_statement_t& statement) -> void
-  {
-    sqlite3_reset(statement.get());
-  }
+  template <typename Connection, typename Statement>
+  prepared_statement_t(const Connection&, const Statement&, bool)
+      ->prepared_statement_t<result_type_of_t<Statement>, parameters_of_t<Statement>, result_row_of_t<Statement>>;
 
-  inline auto bind_parameter(prepared_statement_t& statement, [[maybe_unused]] const std::nullopt_t&, int index) -> void
+  template <typename ResultType, typename ParameterVector, typename ResultRow>
+  auto execute(prepared_statement_t<ResultType, ParameterVector, ResultRow>& statement)
   {
-    const auto result = sqlite3_bind_null(statement.get(), index + 1);
-    detail::check_bind_result(result, "NULL");
-  }
-
-  inline auto bind_parameter(prepared_statement_t& statement, bool& value, int index) -> void
-  {
-    const auto result = sqlite3_bind_int(statement.get(), index + 1, value);
-    detail::check_bind_result(result, "bool");
-  }
-
-  inline auto bind_parameter(prepared_statement_t& statement, std::int32_t& value, int index) -> void
-  {
-    const auto result = sqlite3_bind_int(statement.get(), index + 1, value);
-    detail::check_bind_result(result, "int32_t");
-  }
-
-  inline auto bind_parameter(prepared_statement_t& statement, std::int64_t& value, int index) -> void
-  {
-    const auto result = sqlite3_bind_int64(statement.get(), index + 1, value);
-    detail::check_bind_result(result, "int64_t");
-  }
-
-  inline auto bind_parameter(prepared_statement_t& statement, float& value, int index) -> void
-  {
-    // There is no bind_float
-    const auto result = sqlite3_bind_double(statement.get(), index + 1, value);
-    detail::check_bind_result(result, "float");
-  }
-
-  inline auto bind_parameter(prepared_statement_t& statement, double& value, int index) -> void
-  {
-    const auto result = sqlite3_bind_double(statement.get(), index + 1, value);
-    detail::check_bind_result(result, "double");
-  }
-
-  inline auto bind_parameter(prepared_statement_t& statement, std::string& value, int index) -> void
-  {
-    const auto result =
-        sqlite3_bind_text(statement.get(), index + 1, value.data(), static_cast<int>(value.size()), SQLITE_STATIC);
-    detail::check_bind_result(result, "string");
-  }
-
-  inline auto bind_parameter(prepared_statement_t& statement, std::string_view& value, int index) -> void
-  {
-    const auto result =
-        sqlite3_bind_text(statement.get(), index + 1, value.data(), static_cast<int>(value.size()), SQLITE_STATIC);
-    detail::check_bind_result(result, "string_view");
-  }
-
-  template <typename T>
-  auto bind_parameter(prepared_statement_t& statement, std::optional<T>& value, int index) -> void
-  {
-    value ? bind_parameter(statement, *value, index) : bind_parameter(statement, std::nullopt, index);
-  }
-
-  inline auto post_bind(prepared_statement_t& statement) -> void
-  {
+    return statement.execute();
   }
 
 }  // namespace sqlpp::sqlite3

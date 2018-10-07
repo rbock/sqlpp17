@@ -77,11 +77,11 @@ int main()
       auto preparedInsert = db.prepare(insert_into(tabFloat).set(
           tabFloat.valueFloat = ::sqlpp::parameter<float>(tabFloat.valueFloat),
           tabFloat.valueDouble = ::sqlpp::parameter<double>(tabFloat.valueDouble), tabFloat.valueInt = 1234567890));
-      preparedInsert.valueFloat = 1.2345678901234567890;
-      preparedInsert.valueDouble = 1.2345678901234567890;
+      preparedInsert.parameters.valueFloat = 1.2345678901234567890;
+      preparedInsert.parameters.valueDouble = 1.2345678901234567890;
       execute(preparedInsert);
-      preparedInsert.valueFloat = DBL_MIN / 2.0;
-      preparedInsert.valueDouble = INFINITY;
+      preparedInsert.parameters.valueFloat = DBL_MIN / 2.0;
+      preparedInsert.parameters.valueDouble = INFINITY;
       execute(preparedInsert);
       /*
 #warning: sqlite3 does not support NaN in bind_double

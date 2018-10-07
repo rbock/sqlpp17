@@ -30,51 +30,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <type_traits>
 
 #include <sqlpp17/connection_base.h>
-#include <sqlpp17/exception.h>
 #include <sqlpp17/result.h>
 #include <sqlpp17/statement.h>
 
+#include <sqlpp17/mysql/mysql.h>
 #include <sqlpp17/mysql/clause.h>
 #include <sqlpp17/mysql/connection_config.h>
 #include <sqlpp17/mysql/context.h>
 #include <sqlpp17/mysql/direct_execution_result.h>
 #include <sqlpp17/mysql/prepared_statement.h>
 #include <sqlpp17/mysql/prepared_statement_result.h>
-
-namespace sqlpp::mysql::detail
-{
-  class scoped_library_initializer_t
-  {
-  public:
-    scoped_library_initializer_t(int argc, char** argv, char** groups)
-    {
-      mysql_library_init(argc, argv, groups);
-    }
-
-    ~scoped_library_initializer_t()
-    {
-      mysql_library_end();
-    }
-  };
-
-  struct MySqlThreadInitializer
-  {
-    MySqlThreadInitializer()
-    {
-      if (!mysql_thread_safe())
-      {
-        throw sqlpp::exception("MySQL: Operating on a non-threadsafe client");
-      }
-      mysql_thread_init();
-    }
-
-    ~MySqlThreadInitializer()
-    {
-      mysql_thread_end();
-    }
-  };
-
-}  // namespace sqlpp::mysql::detail
 
 namespace sqlpp::mysql
 {
@@ -98,22 +63,6 @@ namespace sqlpp::mysql::detail
   };
   using unique_connection_ptr = std::unique_ptr<MYSQL, detail::connection_cleanup_t>;
 
-#ifdef __APPLE__
-  boost::thread_specific_ptr<MySqlThreadInitializer> mysqlThreadInit;
-  inline auto thread_init() -> void
-  {
-    if (!mysqlThreadInit.get())
-    {
-      mysqlThreadInit.reset(new MySqlThreadInitializer);
-    }
-  }
-#else
-  inline auto thread_init() -> void
-  {
-    thread_local MySqlThreadInitializer threadInitializer;
-  }
-#endif
-
   template <typename Pool, ::sqlpp::debug Debug>
   inline auto execute_query(const base_connection<Pool, Debug>& connection, const std::string& query) -> void
   {
@@ -128,90 +77,27 @@ namespace sqlpp::mysql::detail
     }
   }
 
-  template <typename Pool, ::sqlpp::debug Debug>
-  inline auto prepare(const base_connection<Pool, Debug>& connection,
-                      const std::string& statement,
-                      size_t no_of_parameters,
-                      size_t no_of_columns) -> ::sqlpp::mysql::prepared_statement_t
+  template <typename Connection, typename Statement>
+  auto prepare(const Connection& connection, const Statement& statement) -> ::sqlpp::mysql::detail::unique_prepared_statement_ptr
   {
     thread_init();
+    const auto sql_string = to_sql_string_c(context_t{}, statement);
 
-    connection.debug("Preparing: '" + statement + "'");
+    connection.debug("Preparing: '" + sql_string + "'");
 
-    auto statement_handle = detail::unique_prepared_statement_ptr(mysql_stmt_init(connection.get()), {});
-    if (not statement_handle)
+    auto prepared_statement = detail::unique_prepared_statement_ptr(mysql_stmt_init(connection.get()), {});
+    if (not prepared_statement)
     {
       throw sqlpp::exception("MySQL: Could not allocate prepared statement\n");
     }
-    if (mysql_stmt_prepare(statement_handle.get(), statement.data(), statement.size()))
+    if (mysql_stmt_prepare(prepared_statement.get(), sql_string.data(), sql_string.size()))
     {
       throw sqlpp::exception("MySQL: Could not prepare statement: " + std::string(mysql_error(connection.get())) +
-                             " (statement was >>" + statement + "<<\n");
+                             " (statement was >>" + sql_string + "<<\n");
     }
 
-    return {std::move(statement_handle), no_of_parameters, no_of_columns};
+    return prepared_statement;
   }
-
-  inline auto execute_prepared_statement(::sqlpp::mysql::prepared_statement_t& prepared_statement) -> void
-  {
-    thread_init();
-
-    if (mysql_stmt_bind_param(prepared_statement.get(), prepared_statement.get_bind_data().data()))
-    {
-      throw sqlpp::exception(std::string("MySQL: Could not bind parameters to statement") +
-                             mysql_stmt_error(prepared_statement.get()));
-    }
-
-    if (mysql_stmt_execute(prepared_statement.get()))
-    {
-      throw sqlpp::exception(std::string("MySQL: Could not execute prepared statement: ") +
-                             mysql_stmt_error(prepared_statement.get()));
-    }
-  }
-
-  class prepared_select_t : public ::sqlpp::mysql::prepared_statement_t
-  {
-  public:
-    prepared_select_t(::sqlpp::mysql::prepared_statement_t&& statement)
-        : ::sqlpp::mysql::prepared_statement_t(std::move(statement))
-    {
-    }
-
-    auto execute() -> prepared_statement_result_t;
-  };
-
-  class prepared_insert_t : public ::sqlpp::mysql::prepared_statement_t
-  {
-  public:
-    prepared_insert_t(::sqlpp::mysql::prepared_statement_t&& statement)
-        : ::sqlpp::mysql::prepared_statement_t(std::move(statement))
-    {
-    }
-
-    auto execute() -> std::size_t;
-  };
-
-  class prepared_update_t : public ::sqlpp::mysql::prepared_statement_t
-  {
-  public:
-    prepared_update_t(::sqlpp::mysql::prepared_statement_t&& statement)
-        : ::sqlpp::mysql::prepared_statement_t(std::move(statement))
-    {
-    }
-
-    auto execute() -> std::size_t;
-  };
-
-  class prepared_delete_from_t : public ::sqlpp::mysql::prepared_statement_t
-  {
-  public:
-    prepared_delete_from_t(::sqlpp::mysql::prepared_statement_t&& statement)
-        : ::sqlpp::mysql::prepared_statement_t(std::move(statement))
-    {
-    }
-
-    auto execute() -> std::size_t;
-  };
 
 }  // namespace sqlpp::mysql::detail
 
@@ -341,31 +227,7 @@ namespace sqlpp::mysql
       using Statement = ::sqlpp::statement<Clauses...>;
       if constexpr (constexpr auto _check = check_statement_preparable<base_connection>(type_v<Statement>); _check)
       {
-        using ResultType = result_type_of_t<Statement>;
-        if constexpr (std::is_same_v<ResultType, insert_result>)
-        {
-          return prepare_insert(statement);
-        }
-        else if constexpr (std::is_same_v<ResultType, delete_result>)
-        {
-          return prepare_delete_from(statement);
-        }
-        else if constexpr (std::is_same_v<ResultType, update_result>)
-        {
-          return prepare_update(statement);
-        }
-        else if constexpr (std::is_same_v<ResultType, select_result>)
-        {
-          return prepare_select(statement);
-        }
-        else if constexpr (std::is_same_v<ResultType, execute_result>)
-        {
-          return prepare_execute(statement);
-        }
-        else
-        {
-          static_assert(wrong<Statement>, "Unknown statement type");
-        }
+        return ::sqlpp::mysql::prepared_statement_t{*this, statement};
       }
       else
       {
@@ -457,14 +319,6 @@ namespace sqlpp::mysql
     }
 
     template <typename Statement>
-    [[nodiscard]] auto prepare_insert(const Statement& statement)
-    {
-      return ::sqlpp::prepared_statement_t{
-          statement, detail::prepared_insert_t{detail::prepare(*this, to_sql_string_c(context_t{}, statement),
-                                                               parameters_of_t<Statement>::size(), 0)}};
-    }
-
-    template <typename Statement>
     auto update(const Statement& statement)
     {
       this->execute(statement);
@@ -472,26 +326,10 @@ namespace sqlpp::mysql
     }
 
     template <typename Statement>
-    [[nodiscard]] auto prepare_update(const Statement& statement)
-    {
-      return ::sqlpp::prepared_statement_t{
-          statement, detail::prepared_update_t{detail::prepare(*this, to_sql_string_c(context_t{}, statement),
-                                                               parameters_of_t<Statement>::size(), 0)}};
-    }
-
-    template <typename Statement>
     auto delete_from(const Statement& statement)
     {
       this->execute(statement);
       return mysql_affected_rows(this->get());
-    }
-
-    template <typename Statement>
-    [[nodiscard]] auto prepare_delete_from(const Statement& statement)
-    {
-      return ::sqlpp::prepared_statement_t{
-          statement, detail::prepared_delete_from_t{detail::prepare(*this, to_sql_string_c(context_t{}, statement),
-                                                                    parameters_of_t<Statement>::size(), 0)}};
     }
 
     template <typename Statement>
@@ -508,44 +346,8 @@ namespace sqlpp::mysql
           direct_execution_result_t{std::move(result_handle)}};
     }
 
-    template <typename Statement>
-    [[nodiscard]] auto prepare_select(const Statement& statement)
-    {
-      return ::sqlpp::prepared_statement_t{
-          statement, detail::prepared_select_t{detail::prepare(*this, to_sql_string_c(context_t{}, statement),
-                                                               parameters_of_t<Statement>::size(),
-                                                               get_no_of_result_columns(statement))}};
-    }
   };
 
 }  // namespace sqlpp::mysql
 
-namespace sqlpp::mysql::detail
-{
-  inline auto prepared_select_t::execute() -> prepared_statement_result_t
-  {
-    execute_prepared_statement(*this);
-    mysql_stmt_store_result(this->get());
-    return {*this};
-  }
-
-  inline auto prepared_insert_t::execute() -> size_t
-  {
-    execute_prepared_statement(*this);
-    return mysql_stmt_insert_id(this->get());
-  }
-
-  inline auto prepared_update_t::execute() -> size_t
-  {
-    execute_prepared_statement(*this);
-    return mysql_stmt_affected_rows(this->get());
-  }
-
-  inline auto prepared_delete_from_t::execute() -> size_t
-  {
-    execute_prepared_statement(*this);
-    return mysql_stmt_affected_rows(this->get());
-  }
-
-}  // namespace sqlpp::mysql::detail
 

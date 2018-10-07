@@ -91,8 +91,8 @@ int main()
       auto preparedInsert = db.prepare(insert_into(tabFloat).set(
           tabFloat.valueFloat = ::sqlpp::parameter<float>(tabFloat.valueFloat),
           tabFloat.valueDouble = ::sqlpp::parameter<double>(tabFloat.valueDouble), tabFloat.valueInt = 1234567890));
-      preparedInsert.valueFloat = 1.2345678901234567890;
-      preparedInsert.valueDouble = 1.2345678901234567890;
+      preparedInsert.parameters.valueFloat = 1.2345678901234567890;
+      preparedInsert.parameters.valueDouble = 1.2345678901234567890;
       std::cerr << "before" << std::endl;
       execute(preparedInsert);
       std::cerr << "after" << std::endl;

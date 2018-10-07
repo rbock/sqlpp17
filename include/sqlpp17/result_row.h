@@ -56,6 +56,14 @@ namespace sqlpp
     }
   };
 
+  template<typename T>
+  inline constexpr auto column_count = 1;
+
+  template <typename... ColumnSpecs>
+  inline constexpr auto column_count<result_row_t<ColumnSpecs...>> = sizeof...(ColumnSpecs);
+
+#warning: This is not accurate if one or more columns are actually multicolumns
+
   template <typename... LeftColumnSpecs, typename... RightColumnSpecs>
   struct result_rows_are_compatible<result_row_t<LeftColumnSpecs...>, result_row_t<RightColumnSpecs...>>
   {

@@ -26,42 +26,64 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <optional>
+#include <mysql.h>
 
-#include <sqlpp17/mysql/mysql.h>
+#include <sqlpp17/exception.h>
 
-namespace sqlpp::mysql
+namespace sqlpp::mysql::detail
 {
-  struct ssl_config_t
+#warning: This should go into a separate file
+#if LIBMYSQL_VERSION_ID >= 80000
+  using my_bool = bool;
+#endif
+
+  class scoped_library_initializer_t
   {
-    std::string key;
-    std::string cert;
-    std::string ca;
-    std::string caPath;
-    std::string cipher;
+  public:
+    scoped_library_initializer_t(int argc, char** argv, char** groups)
+    {
+      mysql_library_init(argc, argv, groups);
+    }
+
+    ~scoped_library_initializer_t()
+    {
+      mysql_library_end();
+    }
   };
 
-  struct connection_config_t
+  struct MySqlThreadInitializer
   {
-    std::function<void(MYSQL*)> pre_connect;
-    std::function<void(MYSQL*)> post_connect;
-    std::string host;
-    std::string user;
-    std::string password;
-    int port = 0;
-    std::string unix_socket;
-    std::optional<ssl_config_t> ssl;
-    unsigned long client_flag = 0;
-    std::string database;
-    std::string charset = "utf8";
-    std::function<void(std::string_view)> debug;
+    MySqlThreadInitializer()
+    {
+      if (!mysql_thread_safe())
+      {
+        throw sqlpp::exception("MySQL: Operating on a non-threadsafe client");
+      }
+      mysql_thread_init();
+    }
 
-    connection_config_t() = default;
-    connection_config_t(const connection_config_t&) = default;
-    connection_config_t(connection_config_t&& rhs) = default;
-    connection_config_t& operator=(const connection_config_t&) = default;
-    connection_config_t& operator=(connection_config_t&&) = default;
-    ~connection_config_t() = default;
+    ~MySqlThreadInitializer()
+    {
+      mysql_thread_end();
+    }
   };
 
-}  // namespace sqlpp::mysql
+#ifdef __APPLE__
+  boost::thread_specific_ptr<MySqlThreadInitializer> mysqlThreadInit;
+  inline auto thread_init() -> void
+  {
+    if (!mysqlThreadInit.get())
+    {
+      mysqlThreadInit.reset(new MySqlThreadInitializer);
+    }
+  }
+#else
+  inline auto thread_init() -> void
+  {
+    thread_local MySqlThreadInitializer threadInitializer;
+  }
+#endif
+
+}  // namespace sqlpp::mysql::detail
+
+

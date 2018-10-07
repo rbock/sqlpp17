@@ -103,13 +103,7 @@ namespace sqlpp
     std::tuple<select_column_t<Columns>...> _columns;
   };
 
-  template <typename... Columns, typename Statement>
-  [[nodiscard]] constexpr auto get_no_of_result_columns(const clause_base<select_columns_t<Columns...>, Statement>&)
-  {
-    return sizeof...(Columns);
-  }
-
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_selected_columns_all_aggregates_or_none,
+ SQLPP_WRAPPED_STATIC_ASSERT(assert_selected_columns_all_aggregates_or_none,
                               "selected columns need to be either all aggregates or all non-aggregates");
 
   template <typename Db, typename... Columns, typename... Clauses>

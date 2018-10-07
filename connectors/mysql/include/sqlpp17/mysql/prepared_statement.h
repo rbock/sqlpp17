@@ -30,27 +30,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <memory>
 #include <optional>
 #include <string>
-#include <vector>
+#include <array>
 
 #include <sqlpp17/exception.h>
+#include <sqlpp17/prepared_statement_parameters.h>
+#include <sqlpp17/result.h>
+#include <sqlpp17/result_row.h>
 
-#include <mysql.h>
+#include <sqlpp17/mysql/mysql.h>
+#include <sqlpp17/mysql/prepared_statement_result.h>
 
 namespace sqlpp::mysql::detail
 {
-#if LIBMYSQL_VERSION_ID >= 80000
-  using my_bool = bool;
-#endif
-
-  struct bind_meta_data_t
-  {
-    unsigned long bound_len;
-    my_bool bound_is_null;
-    my_bool bound_error;
-    bool use_buffer = false;
-    std::string bound_buffer;
-  };
-
   struct prepared_statement_cleanup_t
   {
   public:
@@ -62,72 +53,17 @@ namespace sqlpp::mysql::detail
   };
   using unique_prepared_statement_ptr = std::unique_ptr<MYSQL_STMT, detail::prepared_statement_cleanup_t>;
 
+  template <typename Connection, typename Statement>
+  auto prepare(const Connection& connection, const Statement& statement) -> ::sqlpp::mysql::detail::unique_prepared_statement_ptr;
+
 }  // namespace sqlpp::mysql::detail
 
 namespace sqlpp::mysql
 {
-  class prepared_statement_t
+  inline auto bind_parameter(detail::bind_meta_data_t& meta_data, MYSQL_BIND& parameter, const std::nullopt_t& value) -> void
   {
-    detail::unique_prepared_statement_ptr _handle;
-    std::size_t _number_of_parameters;
-    std::size_t _number_of_columns;
-    std::vector<detail::bind_meta_data_t> _bind_meta_data;
-    std::vector<MYSQL_BIND> _bind_data;
-
-  public:
-    prepared_statement_t() = default;
-    prepared_statement_t(detail::unique_prepared_statement_ptr handle,
-                         std::size_t number_of_parameters,
-                         std::size_t number_of_columns)
-        : _handle(std::move(handle)),
-          _number_of_parameters(number_of_parameters),
-          _number_of_columns(number_of_columns),
-          _bind_meta_data(number_of_parameters),
-          _bind_data(number_of_parameters)
-    {
-    }
-    prepared_statement_t(const prepared_statement_t&) = delete;
-    prepared_statement_t(prepared_statement_t&& rhs) = default;
-    prepared_statement_t& operator=(const prepared_statement_t&) = delete;
-    prepared_statement_t& operator=(prepared_statement_t&&) = default;
-    ~prepared_statement_t() = default;
-
-    auto* get() const
-    {
-      return _handle.get();
-    }
-
-    auto get_number_of_parameters() const
-    {
-      return _number_of_parameters;
-    }
-
-    auto get_number_of_columns() const
-    {
-      return _number_of_columns;
-    }
-
-    auto& get_bind_meta_data()
-    {
-      return _bind_meta_data;
-    }
-
-    auto& get_bind_data()
-    {
-      return _bind_data;
-    }
-  };
-
-  inline auto pre_bind(prepared_statement_t&) -> void
-  {
-  }
-
-  inline auto bind_parameter(prepared_statement_t& statement, const std::nullopt_t& value, int index) -> void
-  {
-    auto& meta_data = statement.get_bind_meta_data()[index];
     meta_data.bound_is_null = true;
 
-    auto& parameter = statement.get_bind_data()[index];
     parameter.is_null = &meta_data.bound_is_null;
     parameter.buffer_type = MYSQL_TYPE_NULL;
     parameter.buffer = nullptr;
@@ -139,12 +75,10 @@ namespace sqlpp::mysql
 
   // Taking parameters by non-const reference to prevent temporaries being created which
   // would lead to dangling pointers in the implementation
-  inline auto bind_parameter(prepared_statement_t& statement, bool& value, int index) -> void
+  inline auto bind_parameter(detail::bind_meta_data_t& meta_data, MYSQL_BIND& parameter, bool& value) -> void
   {
-    auto& meta_data = statement.get_bind_meta_data()[index];
     meta_data.bound_is_null = false;
 
-    auto& parameter = statement.get_bind_data()[index];
     parameter.is_null = &meta_data.bound_is_null;
     parameter.buffer_type = MYSQL_TYPE_TINY;
     parameter.buffer = &value;
@@ -154,12 +88,10 @@ namespace sqlpp::mysql
     parameter.error = nullptr;
   }
 
-  inline auto bind_parameter(prepared_statement_t& statement, std::int32_t& value, int index) -> void
+  inline auto bind_parameter(detail::bind_meta_data_t& meta_data, MYSQL_BIND& parameter, std::int32_t& value) -> void
   {
-    auto& meta_data = statement.get_bind_meta_data()[index];
     meta_data.bound_is_null = false;
 
-    auto& parameter = statement.get_bind_data()[index];
     parameter.is_null = &meta_data.bound_is_null;
     parameter.buffer_type = MYSQL_TYPE_LONG;
     parameter.buffer = &value;
@@ -169,12 +101,10 @@ namespace sqlpp::mysql
     parameter.error = nullptr;
   }
 
-  inline auto bind_parameter(prepared_statement_t& statement, std::int64_t& value, int index) -> void
+  inline auto bind_parameter(detail::bind_meta_data_t& meta_data, MYSQL_BIND& parameter, std::int64_t& value) -> void
   {
-    auto& meta_data = statement.get_bind_meta_data()[index];
     meta_data.bound_is_null = false;
 
-    auto& parameter = statement.get_bind_data()[index];
     parameter.is_null = &meta_data.bound_is_null;
     parameter.buffer_type = MYSQL_TYPE_LONGLONG;
     parameter.buffer = &value;
@@ -184,12 +114,10 @@ namespace sqlpp::mysql
     parameter.error = nullptr;
   }
 
-  inline auto bind_parameter(prepared_statement_t& statement, float& value, int index) -> void
+  inline auto bind_parameter(detail::bind_meta_data_t& meta_data, MYSQL_BIND& parameter, float& value) -> void
   {
-    auto& meta_data = statement.get_bind_meta_data()[index];
     meta_data.bound_is_null = false;
 
-    auto& parameter = statement.get_bind_data()[index];
     parameter.is_null = &meta_data.bound_is_null;
     parameter.buffer_type = MYSQL_TYPE_FLOAT;
     parameter.buffer = &value;
@@ -199,12 +127,10 @@ namespace sqlpp::mysql
     parameter.error = nullptr;
   }
 
-  inline auto bind_parameter(prepared_statement_t& statement, double& value, int index) -> void
+  inline auto bind_parameter(detail::bind_meta_data_t& meta_data, MYSQL_BIND& parameter, double& value) -> void
   {
-    auto& meta_data = statement.get_bind_meta_data()[index];
     meta_data.bound_is_null = false;
 
-    auto& parameter = statement.get_bind_data()[index];
     parameter.is_null = &meta_data.bound_is_null;
     parameter.buffer_type = MYSQL_TYPE_DOUBLE;
     parameter.buffer = &value;
@@ -214,12 +140,10 @@ namespace sqlpp::mysql
     parameter.error = nullptr;
   }
 
-  inline auto bind_parameter(prepared_statement_t& statement, std::string& value, int index) -> void
+  inline auto bind_parameter(detail::bind_meta_data_t& meta_data, MYSQL_BIND& parameter, std::string& value) -> void
   {
-    auto& meta_data = statement.get_bind_meta_data()[index];
     meta_data.bound_is_null = false;
 
-    auto& parameter = statement.get_bind_data()[index];
     parameter.is_null = &meta_data.bound_is_null;
     parameter.buffer_type = MYSQL_TYPE_STRING;
     parameter.buffer = value.data();
@@ -229,12 +153,10 @@ namespace sqlpp::mysql
     parameter.error = nullptr;
   }
 
-  inline auto bind_parameter(prepared_statement_t& statement, std::string_view& value, int index) -> void
+  inline auto bind_parameter(detail::bind_meta_data_t& meta_data, MYSQL_BIND& parameter, std::string_view& value) -> void
   {
-    auto& meta_data = statement.get_bind_meta_data()[index];
     meta_data.bound_is_null = false;
 
-    auto& parameter = statement.get_bind_data()[index];
     parameter.is_null = &meta_data.bound_is_null;
     parameter.buffer_type = MYSQL_TYPE_STRING;
     parameter.buffer = const_cast<char*>(value.data());  // Sigh...
@@ -245,13 +167,103 @@ namespace sqlpp::mysql
   }
 
   template <typename T>
-  auto bind_parameter(prepared_statement_t& statement, std::optional<T>& value, int index) -> void
+  auto bind_parameter(detail::bind_meta_data_t& meta_data, MYSQL_BIND& parameter, std::optional<T>& value) -> void
   {
-    value ? bind_parameter(statement, *value, index) : bind_parameter(statement, std::nullopt, index);
+    value ? bind_parameter(meta_data, parameter, *value) : bind_parameter(meta_data, parameter, std::nullopt);
   }
 
-  inline auto post_bind(prepared_statement_t&) -> void
+  template <typename... ParameterSpecs>
+  auto bind_parameters(std::array<detail::bind_meta_data_t, sizeof...(ParameterSpecs)>& meta_data,
+                       std::array<MYSQL_BIND, sizeof...(ParameterSpecs)>& bind_data,
+                       ::sqlpp::prepared_statement_parameters<type_vector<ParameterSpecs...>>& parameters) -> void
   {
+      int index = 0;
+      (..., (bind_parameter(meta_data[index], bind_data[index],
+                            static_cast<parameter_base_t<ParameterSpecs>&>(parameters)()),
+             ++index));
+  }
+
+  template<typename ResultType, typename ParameterVector, typename ResultRow>
+  class prepared_statement_t
+  {
+    detail::unique_prepared_statement_ptr _handle;
+    std::array<detail::bind_meta_data_t, ParameterVector::size()> _parameter_bind_meta_data = {};
+    std::array<MYSQL_BIND, ParameterVector::size()> _parameter_bind_data = {};
+
+  public:
+    ::sqlpp::prepared_statement_parameters<ParameterVector> parameters = {};
+
+    prepared_statement_t() = default;
+    template<typename Connection, typename Statement>
+    prepared_statement_t(const Connection& connection, const Statement& statement)
+        : _handle(::sqlpp::mysql::detail::prepare(connection, statement))
+    {
+    }
+    prepared_statement_t(const prepared_statement_t&) = delete;
+    prepared_statement_t(prepared_statement_t&& rhs) = default;
+    prepared_statement_t& operator=(const prepared_statement_t&) = delete;
+    prepared_statement_t& operator=(prepared_statement_t&&) = default;
+    ~prepared_statement_t() = default;
+
+    auto execute()
+    {
+      detail::thread_init();
+
+      ::sqlpp::mysql::bind_parameters(_parameter_bind_meta_data, _parameter_bind_data, parameters);
+
+      if (mysql_stmt_bind_param(_handle.get(), _parameter_bind_data.data()))
+      {
+        throw sqlpp::exception(std::string("MySQL: Could not bind parameters to statement") +
+                               mysql_stmt_error(_handle.get()));
+      }
+
+      if (mysql_stmt_execute(_handle.get()))
+      {
+        throw sqlpp::exception(std::string("MySQL: Could not execute prepared statement: ") +
+                               mysql_stmt_error(_handle.get()));
+      }
+
+      if constexpr (std::is_same_v<ResultType, insert_result>)
+      {
+        return mysql_stmt_insert_id(this->get());
+      }
+      else if constexpr (std::is_same_v<ResultType, delete_result>)
+      {
+        return mysql_stmt_affected_rows(this->get());
+      }
+      else if constexpr (std::is_same_v<ResultType, update_result>)
+      {
+        return mysql_stmt_affected_rows(this->get());
+      }
+      else if constexpr (std::is_same_v<ResultType, select_result>)
+      {
+        mysql_stmt_store_result(this->get());
+
+        return ::sqlpp::result_t<ResultRow, prepared_statement_result_t>{prepared_statement_result_t{detail::unique_prepared_result_ptr{_handle.get(), {}}, column_count<ResultRow>}};
+      }
+      else if constexpr (std::is_same_v<ResultType, execute_result>)
+      {
+        return mysql_stmt_affected_rows(this->get());
+      }
+      else
+      {
+        static_assert(wrong<ResultType>, "Unknown statement result type");
+      }
+    }
+
+    auto get() const -> MYSQL_STMT*
+    {
+      return _handle.get();
+    }
+  };
+
+  template <typename Connection, typename Statement>
+  prepared_statement_t(const Connection&, const Statement&)->prepared_statement_t<result_type_of_t<Statement>, parameters_of_t<Statement>, result_row_of_t<Statement>>;
+
+  template<typename ResultType, typename ParameterVector, typename ResultRow>
+  auto execute(prepared_statement_t<ResultType, ParameterVector, ResultRow>& statement)
+  {
+    return statement.execute();
   }
 
 }  // namespace sqlpp::mysql
