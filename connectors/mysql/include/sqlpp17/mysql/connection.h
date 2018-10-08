@@ -77,28 +77,6 @@ namespace sqlpp::mysql::detail
     }
   }
 
-  template <typename Connection, typename Statement>
-  auto prepare(const Connection& connection, const Statement& statement) -> ::sqlpp::mysql::detail::unique_prepared_statement_ptr
-  {
-    thread_init();
-    const auto sql_string = to_sql_string_c(context_t{}, statement);
-
-    connection.debug("Preparing: '" + sql_string + "'");
-
-    auto prepared_statement = detail::unique_prepared_statement_ptr(mysql_stmt_init(connection.get()), {});
-    if (not prepared_statement)
-    {
-      throw sqlpp::exception("MySQL: Could not allocate prepared statement\n");
-    }
-    if (mysql_stmt_prepare(prepared_statement.get(), sql_string.data(), sql_string.size()))
-    {
-      throw sqlpp::exception("MySQL: Could not prepare statement: " + std::string(mysql_error(connection.get())) +
-                             " (statement was >>" + sql_string + "<<\n");
-    }
-
-    return prepared_statement;
-  }
-
 }  // namespace sqlpp::mysql::detail
 
 namespace sqlpp::mysql

@@ -53,9 +53,6 @@ namespace sqlpp::mysql::detail
   };
   using unique_prepared_statement_ptr = std::unique_ptr<MYSQL_STMT, detail::prepared_statement_cleanup_t>;
 
-  template <typename Connection, typename Statement>
-  auto prepare(const Connection& connection, const Statement& statement) -> ::sqlpp::mysql::detail::unique_prepared_statement_ptr;
-
 }  // namespace sqlpp::mysql::detail
 
 namespace sqlpp::mysql
@@ -196,8 +193,22 @@ namespace sqlpp::mysql
     prepared_statement_t() = default;
     template<typename Connection, typename Statement>
     prepared_statement_t(const Connection& connection, const Statement& statement)
-        : _handle(::sqlpp::mysql::detail::prepare(connection, statement))
     {
+      detail::thread_init();
+      const auto sql_string = to_sql_string_c(context_t{}, statement);
+
+      connection.debug("Preparing: '" + sql_string + "'");
+
+      _handle = detail::unique_prepared_statement_ptr(mysql_stmt_init(connection.get()), {});
+      if (not _handle)
+      {
+        throw sqlpp::exception("MySQL: Could not allocate prepared statement\n");
+      }
+      if (mysql_stmt_prepare(_handle.get(), sql_string.data(), sql_string.size()))
+      {
+        throw sqlpp::exception("MySQL: Could not prepare statement: " + std::string(mysql_error(connection.get())) +
+                               " (statement was >>" + sql_string + "<<\n");
+      }
     }
     prepared_statement_t(const prepared_statement_t&) = delete;
     prepared_statement_t(prepared_statement_t&& rhs) = default;
