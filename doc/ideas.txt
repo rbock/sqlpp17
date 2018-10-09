@@ -1,3 +1,5 @@
+Drop multi_column. It makes a lot of things horribly complex (like result binding, or how to treat a result row as a tuple (e.g. is it a flat tuple or a nested one))? It probably never worked for prepared statements in sqlpp11, and it is for a super duper edge case only.
+
 Results of prepared statements:
 ===============================
 There are two types:
@@ -19,8 +21,8 @@ Plan:
                (can outlive the connection)                       (can outlive the connection)
 
 Actually, the more I think about this:
-prepared_statement should not be a real thing in sqlpp17. It should be more of a concept (or maybe a metaclass in C++23).
-Results generally should not be things in sqlpp17. The required ping-pong between sqlpp and the connector is pretty hard to trace.
+Maybe `prepared_statement` should not be a real thing in sqlpp17. It could be more of a concept (or maybe a metaclass in C++23).
+Results generally could not be things in sqlpp17. The current required ping-pong between sqlpp and the connector is pretty hard to trace.
 
 
 debugging every bound value is nonsense

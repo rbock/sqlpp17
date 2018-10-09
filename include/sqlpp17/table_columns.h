@@ -28,7 +28,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/column.h>
 #include <sqlpp17/member.h>
-#include <sqlpp17/multi_column.h>
 #include <sqlpp17/type_traits.h>
 
 namespace sqlpp
@@ -54,7 +53,7 @@ namespace sqlpp
   template <typename TableSpec, typename... ColumnSpecs>
   [[nodiscard]] constexpr auto all_of(const table_columns<TableSpec, type_vector<ColumnSpecs...>>& t)
   {
-    return multi_column_t{column_t<TableSpec, ColumnSpecs>{}...};
+    return std::tuple{column_t<TableSpec, ColumnSpecs>{}...};
   }
 
   template <typename TableSpec, typename... ColumnSpecs>

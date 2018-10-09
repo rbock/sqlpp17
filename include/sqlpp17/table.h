@@ -29,7 +29,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/char_sequence.h>
 #include <sqlpp17/join.h>
 #include <sqlpp17/member.h>
-#include <sqlpp17/multi_column.h>
 #include <sqlpp17/table_alias.h>
 #include <sqlpp17/table_columns.h>
 #include <sqlpp17/to_sql_name.h>
@@ -100,7 +99,7 @@ namespace sqlpp
   template <typename TableSpec>
   [[nodiscard]] constexpr auto all_of(const table_t<TableSpec>& t)
   {
-    return multi_column_t{column_tuple_of(t)};
+    return column_tuple_of(t);
   }
 
   template <typename TableSpec>

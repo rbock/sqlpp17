@@ -77,7 +77,7 @@ namespace sqlpp
   template <typename Table, typename AliasTableSpec, typename TableSpec>
   [[nodiscard]] constexpr auto all_of(const table_alias_t<Table, AliasTableSpec, TableSpec>& t)
   {
-    return multi_column_t{column_tuple_of(t)};
+    return column_tuple_of(t);
   }
 
   template <typename Table, typename AliasTableSpec, typename TableSpec>

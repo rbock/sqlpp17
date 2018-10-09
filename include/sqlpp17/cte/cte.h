@@ -58,7 +58,7 @@ namespace sqlpp
     template <typename TableSpec, typename... ResultColumnSpecs>
     [[nodiscard]] constexpr auto all_of(const cte_columns_t<TableSpec, ResultColumnSpecs...>& t)
     {
-      return multi_column_t{column_t<TableSpec, ResultColumnSpecs>{}...};
+      return std::tuple{column_t<TableSpec, ResultColumnSpecs>{}...};
     }
   }  // namespace detail
 
