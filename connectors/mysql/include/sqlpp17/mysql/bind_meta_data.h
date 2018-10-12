@@ -28,15 +28,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/mysql/mysql.h>
 
-namespace sqlpp::mysql::detail
+namespace sqlpp::mysql
 {
   struct bind_meta_data_t
   {
-    unsigned long bound_len;
-    my_bool bound_is_null;
-    my_bool bound_error;
-    bool use_buffer = false;
-    std::string bound_buffer;
+    unsigned long length;
+    my_bool is_null;
+    my_bool error;
   };
 }
 

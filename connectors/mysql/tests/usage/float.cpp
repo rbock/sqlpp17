@@ -75,7 +75,7 @@ int main()
     std::cout << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
     {
       db(truncate(tabFloat));
-      [[mayb_unused]] auto id =
+      [[maybe_unused]] auto id =
           db(insert_into(tabFloat).set(tabFloat.valueFloat = 1.2345678901234567890,
                                        tabFloat.valueDouble = 1.2345678901234567890, tabFloat.valueInt = 1234567890));
       for (const auto& row : db(select(all_of(tabFloat)).from(tabFloat).unconditionally()))

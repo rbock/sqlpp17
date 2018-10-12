@@ -320,8 +320,8 @@ namespace sqlpp::mysql
         throw sqlpp::exception("MySQL: Could not store result set: " + std::string(mysql_error(this->get())));
       }
 
-      return ::sqlpp::result_t<result_row_of_t<Statement>, direct_execution_result_t>{
-          direct_execution_result_t{std::move(result_handle)}};
+      using _result_type = direct_execution_result_t<result_row_of_t<Statement>>;
+      return ::sqlpp::result_t<_result_type>{_result_type{std::move(result_handle)}};
     }
 
   };

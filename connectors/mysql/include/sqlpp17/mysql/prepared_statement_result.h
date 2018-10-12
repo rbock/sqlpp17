@@ -32,19 +32,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string_view>
 
 #include <sqlpp17/exception.h>
+#include <sqlpp17/result_row.h>
 
 #include <sqlpp17/mysql/bind_meta_data.h>
 
-namespace sqlpp::mysql
-{
-  class prepared_statement_result_t;
-}  // namespace sqlpp::mysql
-
 namespace sqlpp::mysql::detail
 {
-  auto bind_impl(prepared_statement_result_t& result) -> void;
-  auto get_next_result_row(prepared_statement_result_t& result) -> bool;
-
   struct prepared_result_cleanup_t
   {
   public:
@@ -54,40 +47,318 @@ namespace sqlpp::mysql::detail
         mysql_stmt_free_result(handle);
     }
   };
-  using unique_prepared_result_ptr = std::unique_ptr<MYSQL_STMT, detail::prepared_result_cleanup_t>;
+  using unique_prepared_result_ptr = std::unique_ptr<MYSQL_STMT, prepared_result_cleanup_t>;
 
+  template <typename BindParameters>
+  auto bind(MYSQL_STMT* stmt, BindParameters& bind_parameters) -> void
+  {
+    if (mysql_stmt_bind_result(stmt, bind_parameters.data()))
+    {
+      throw sqlpp::exception(std::string("MySQL: mysql_stmt_bind_result: ") +
+                             mysql_stmt_error(stmt));
+    }
+  }
 }  // namespace sqlpp::mysql::detail
 
 namespace sqlpp::mysql
 {
+  template <typename ValueType>
+  struct value_type_buffer
+  {
+    using type = ValueType;
+  };
+
+  template <>
+  struct value_type_buffer<std::string_view>
+  {
+    using type = std::string;
+  };
+
+  template <typename ValueType>
+  struct value_type_buffer<std::optional<ValueType>>
+  {
+    using type = typename value_type_buffer<ValueType>::type;
+  };
+
+  template <typename ColumnSpec>
+  using buffer_type_of_t = typename value_type_buffer<value_type_of_t<ColumnSpec>>::type;
+
+  auto refetch_truncated_field(MYSQL_STMT* stmt,
+                               [[maybe_unused]] std::string_view& field,
+                               std::string& buffer,
+                               bind_meta_data_t& meta_data,
+                               MYSQL_BIND& param,
+                               unsigned index) -> void
+  {
+    if (meta_data.length > buffer.size())
+    {
+      buffer.resize(meta_data.length);
+      param.buffer = buffer.data();
+      param.buffer_length = buffer.size();
+
+      auto err = mysql_stmt_fetch_column(stmt, &param, index, 0);
+      if (err)
+        throw sqlpp::exception(std::string("MySQL: Fetch column after reallocate failed: ") + "error-code: " +
+                               std::to_string(err) + ", stmt-error: " + mysql_stmt_error(stmt) +
+                               ", stmt-errno: " + std::to_string(mysql_stmt_errno(stmt)) +
+                               ", field index: " + std::to_string(index));
+    }
+  }
+
+  template<typename Field>
+  auto refetch_truncated_field(MYSQL_STMT* stmt,
+                               [[maybe_unused]] Field& field,
+                               [[maybe_unused]] Field& buffer,
+                               bind_meta_data_t& meta_data,
+                               MYSQL_BIND& param,
+                               unsigned index) -> void
+  {
+  }
+
+  template<typename Field, typename Buffer>
+  auto refetch_truncated_field(MYSQL_STMT* stmt,
+                               [[maybe_unused]] std::optional<Field>& field,
+                               Buffer& buffer,
+                               bind_meta_data_t& meta_data,
+                               MYSQL_BIND& param,
+                               unsigned index) -> void
+  {
+    refetch_truncated_field(stmt, buffer, buffer, meta_data, param, index);
+  }
+
+  template <typename... ColumnSpecs, unsigned... Is>
+  auto refetch_truncated_fields(MYSQL_STMT* stmt,
+                                result_row_t<ColumnSpecs...>& row,
+                                std::tuple<buffer_type_of_t<ColumnSpecs>...>& buffers,
+                                std::array<bind_meta_data_t, sizeof...(ColumnSpecs)>& meta_data,
+                                std::array<MYSQL_BIND, sizeof...(ColumnSpecs)>& bind_parameters,
+                                std::integer_sequence<unsigned, Is...>) -> void
+  {
+    (..., refetch_truncated_field(stmt, static_cast<result_column_base<ColumnSpecs>&>(row)(), std::get<Is>(buffers),
+                                  meta_data[Is], bind_parameters[Is], Is));
+  }
+
+  template <typename... ColumnSpecs>
+  auto get_next_result_row(MYSQL_STMT* stmt,
+                           result_row_t<ColumnSpecs...>& row,
+                           std::tuple<buffer_type_of_t<ColumnSpecs>...>& buffers,
+                           std::array<bind_meta_data_t, sizeof...(ColumnSpecs)>& meta_data,
+                           std::array<MYSQL_BIND, sizeof...(ColumnSpecs)>& bind_parameters) -> bool
+  {
+    auto flag = mysql_stmt_fetch(stmt);
+
+    switch (flag)
+    {
+      case 0:
+      case MYSQL_DATA_TRUNCATED:
+        refetch_truncated_fields(stmt, row, buffers, meta_data, bind_parameters,
+                                 std::make_integer_sequence<unsigned, sizeof...(ColumnSpecs)>{});
+        bind(stmt, bind_parameters);
+        return true;
+      case 1:
+        throw sqlpp::exception(std::string("MySQL: Could not fetch next result: ") + mysql_stmt_error(stmt));
+      case MYSQL_NO_DATA:
+        return false;
+      default:
+        throw sqlpp::exception("MySQL: Unexpected return value for mysql_stmt_fetch()");
+    }
+  }
+}  // namespace sqlpp::mysql
+
+namespace sqlpp::mysql
+{
+  inline auto prepare_field_meta_parameter(bind_meta_data_t& meta_data, MYSQL_BIND& bind_parameter) -> void
+  {
+    bind_parameter.length = &meta_data.length;
+    bind_parameter.is_null = &meta_data.is_null;
+    bind_parameter.error = &meta_data.error;
+  }
+
+  inline auto prepare_field_parameter(int32_t& field,
+                                      [[maybe_unused]] int32_t& buffer,
+                                      bind_meta_data_t& meta_data,
+                                      MYSQL_BIND& bind_parameter) -> void
+  {
+    bind_parameter.buffer_type = MYSQL_TYPE_LONG;
+    bind_parameter.buffer = &field;
+    bind_parameter.buffer_length = sizeof(field);
+    bind_parameter.is_unsigned = false;
+    prepare_field_meta_parameter(meta_data, bind_parameter);
+  }
+
+  inline auto prepare_field_parameter(int64_t& field,
+                                      [[maybe_unused]] int64_t& buffer,
+                                      bind_meta_data_t& meta_data,
+                                      MYSQL_BIND& bind_parameter) -> void
+  {
+    bind_parameter.buffer_type = MYSQL_TYPE_LONGLONG;
+    bind_parameter.buffer = &field;
+    bind_parameter.buffer_length = sizeof(field);
+    bind_parameter.is_unsigned = false;
+    prepare_field_meta_parameter(meta_data, bind_parameter);
+  }
+
+  inline auto prepare_field_parameter(float& field,
+                                      [[maybe_unused]] float& buffer,
+                                      bind_meta_data_t& meta_data,
+                                      MYSQL_BIND& bind_parameter) -> void
+  {
+    bind_parameter.buffer_type = MYSQL_TYPE_FLOAT;
+    bind_parameter.buffer = &field;
+    bind_parameter.buffer_length = sizeof(field);
+    bind_parameter.is_unsigned = false;
+    prepare_field_meta_parameter(meta_data, bind_parameter);
+  }
+
+  inline auto prepare_field_parameter(double& field,
+                                      [[maybe_unused]] double& buffer,
+                                      bind_meta_data_t& meta_data,
+                                      MYSQL_BIND& bind_parameter) -> void
+  {
+    bind_parameter.buffer_type = MYSQL_TYPE_DOUBLE;
+    bind_parameter.buffer = &field;
+    bind_parameter.buffer_length = sizeof(field);
+    bind_parameter.is_unsigned = false;
+    prepare_field_meta_parameter(meta_data, bind_parameter);
+  }
+
+  inline auto prepare_field_parameter([[maybe_unused]] std::string_view& field,
+                                      std::string& buffer,
+                                      bind_meta_data_t& meta_data,
+                                      MYSQL_BIND& bind_parameter) -> void
+  {
+    bind_parameter.buffer_type = MYSQL_TYPE_STRING;
+    bind_parameter.buffer = buffer.data();
+    bind_parameter.buffer_length = buffer.size();
+    bind_parameter.is_unsigned = false;
+    prepare_field_meta_parameter(meta_data, bind_parameter);
+  }
+
+  inline auto prepare_field_parameter(std::string& field,
+                                      [[maybe_unused]] std::string& buffer,
+                                      bind_meta_data_t& meta_data,
+                                      MYSQL_BIND& bind_parameter) -> void
+  {
+    bind_parameter.buffer_type = MYSQL_TYPE_STRING;
+    bind_parameter.buffer = field.data();
+    bind_parameter.buffer_length = field.size();
+    bind_parameter.is_unsigned = false;
+    prepare_field_meta_parameter(meta_data, bind_parameter);
+  }
+
+  template <typename Field, typename Buffer>
+  auto prepare_field_parameter(std::optional<Field>& field,
+                               Buffer& buffer,
+                               bind_meta_data_t& meta_data,
+                               MYSQL_BIND& bind_parameter) -> void
+  {
+    // In case of optional fields, always bind to the buffer (the field could be unavailable if the previous value was NULL)
+    prepare_field_parameter(buffer, buffer, meta_data, bind_parameter);
+  }
+
+  template <typename... ColumnSpecs,
+            unsigned... Is>
+  auto prepare_field_parameters(result_row_t<ColumnSpecs...>& row,
+                                std::tuple<buffer_type_of_t<ColumnSpecs>...>& buffers,
+                                std::array<bind_meta_data_t, sizeof...(ColumnSpecs)>& meta_data,
+                                std::array<MYSQL_BIND, sizeof...(ColumnSpecs)>& bind_parameters,
+                                std::integer_sequence<unsigned, Is...>) -> void
+  {
+    (..., prepare_field_parameter(static_cast<result_column_base<ColumnSpecs>&>(row)(), std::get<Is>(buffers),
+                                  meta_data[Is], bind_parameters[Is]));
+  }
+
+  template <typename Field, typename Buffer>
+  auto assign_field(Field& field, const Buffer& buffer, const bind_meta_data_t& meta_data) -> void
+  {
+  }
+
+  inline auto assign_field(std::string_view& field,
+                           const std::string& buffer,
+                           [[maybe_unused]] const bind_meta_data_t meta_data) -> void
+  {
+    field = std::string_view{buffer.data(), meta_data.length};
+  }
+
+  template <typename Field, typename Buffer>
+  auto assign_field(std::optional<Field>& field, const Buffer& buffer, const bind_meta_data_t& meta_data)
+      -> void
+  {
+    if (meta_data.is_null)
+    {
+      field.reset();
+    }
+    else
+    {
+      field = buffer;
+    }
+  }
+
+  template <typename... ColumnSpecs,
+            unsigned... Is>
+  auto assign_fields(result_row_t<ColumnSpecs...>& row,
+                     const std::tuple<buffer_type_of_t<ColumnSpecs>...>& buffers,
+                     const std::array<bind_meta_data_t, sizeof...(ColumnSpecs)>& meta_data,
+                     std::integer_sequence<unsigned, Is...>) -> void
+  {
+    (..., assign_field(static_cast<result_column_base<ColumnSpecs>&>(row)(), std::get<Is>(buffers), meta_data[Is]));
+  }
+
+  template <typename ResultRow>
   class prepared_statement_result_t
   {
-    detail::unique_prepared_result_ptr _handle;
-    std::vector<detail::bind_meta_data_t> _bind_meta_data;
-    std::vector<MYSQL_BIND> _bind_data;
-    void* _result_row_address = nullptr;
+    static_assert(wrong<ResultRow>, "ResultRow must be a result_row_t<...>");
+  };
 
-    friend auto detail::bind_impl(prepared_statement_result_t& result) -> void;
-    friend auto detail::get_next_result_row(prepared_statement_result_t& result) -> bool;
-    template <typename Row>
-    friend auto get_next_result_row(prepared_statement_result_t& result, Row& row) -> void;
+  template <typename... ColumnSpecs>
+  class prepared_statement_result_t<result_row_t<ColumnSpecs...>>
+  {
+    detail::unique_prepared_result_ptr _handle;
+    bool _unbound = true;
+    std::tuple<buffer_type_of_t<ColumnSpecs>...> _bind_buffers; // For receiving optional values
+    std::array<bind_meta_data_t, sizeof...(ColumnSpecs)> _bind_meta_data;  // For receiving is_null / length
+    std::array<MYSQL_BIND, sizeof...(ColumnSpecs)> _bind_parameters;
+
+    result_row_t<ColumnSpecs...> _row;
 
   public:
+    using row_type = decltype(_row);
+
     prepared_statement_result_t() = default;
     prepared_statement_result_t(detail::unique_prepared_result_ptr&& handle, size_t number_of_columns)
-        : _handle(std::move(handle)),
-          _bind_meta_data(number_of_columns),
-          _bind_data(number_of_columns)
+        : _handle(std::move(handle))
     {
     }
-
     prepared_statement_result_t(const prepared_statement_result_t&) = delete;
     prepared_statement_result_t(prepared_statement_result_t&& rhs) = default;
     prepared_statement_result_t& operator=(const prepared_statement_result_t&) = delete;
     prepared_statement_result_t& operator=(prepared_statement_result_t&& rhs) = default;
+    ~prepared_statement_result_t() = default;
 
-    ~prepared_statement_result_t()
+    auto get_next_row() -> void
     {
+      if (_unbound)
+      {
+        prepare_field_parameters(_row, _bind_buffers, _bind_meta_data, _bind_parameters,
+                                 std::make_integer_sequence<unsigned, sizeof...(ColumnSpecs)>{});
+        bind(_handle.get(), _bind_parameters);
+        _unbound = false;
+      }
+
+      if (get_next_result_row(_handle.get(), _row, _bind_buffers, _bind_meta_data, _bind_parameters))
+      {
+        // assign bound fields, where necessary (e.g. optional columns, string_views)
+        assign_fields(_row, _bind_buffers, _bind_meta_data, std::make_integer_sequence<unsigned, sizeof...(ColumnSpecs)>{});
+      }
+      else
+      {
+        reset();
+      }
+    }
+
+    [[nodiscard]] auto& row() const
+    {
+      return _row;
     }
 
     [[nodiscard]] operator bool() const
@@ -100,226 +371,12 @@ namespace sqlpp::mysql
       return _handle.get();
     }
 
-    [[nodiscard]] auto& get_bind_meta_data()
-    {
-      return _bind_meta_data;
-    }
-
-    [[nodiscard]] auto& get_bind_data()
-    {
-      return _bind_data;
-    }
-
     auto reset() -> void
     {
       operator=(prepared_statement_result_t{});
     }
   };
 
-  template <typename Row>
-  auto get_next_result_row(prepared_statement_result_t& result, Row& row) -> void
-  {
-    // Prepare reading results
-    // This binds memory of all non-optional values
-    if (&row != result._result_row_address)
-    {
-      row.pre_bind(result);       // binds row data to statement data
-      detail::bind_impl(result);  // bind statement data
-      result._result_row_address = &row;
-    }
-
-    // This binds optional values.
-    // It has the side effect of turning all NULL values into T{}
-    // before reading the next row (otherwise there would be nothing to bind).
-    row.bind(result);
-
-    if (detail::get_next_result_row(result))
-    {
-      // post-process bound fields, where necessary
-      row.post_bind(result);
-    }
-    else
-    {
-      result.reset();
-    }
-  }
-
-  inline auto pre_bind_field(prepared_statement_result_t& result, std::int32_t& value, std::size_t index) -> void
-  {
-    auto& meta_data = result.get_bind_meta_data()[index];
-
-    auto& param = result.get_bind_data()[index];
-    param.buffer_type = MYSQL_TYPE_LONG;
-    param.buffer = &value;
-    param.buffer_length = sizeof(value);
-    param.length = &meta_data.bound_len;
-    param.is_null = &meta_data.bound_is_null;
-    param.is_unsigned = false;
-    param.error = &meta_data.bound_error;
-  }
-
-  inline auto pre_bind_field(prepared_statement_result_t& result, std::int64_t& value, std::size_t index) -> void
-  {
-    auto& meta_data = result.get_bind_meta_data()[index];
-
-    auto& param = result.get_bind_data()[index];
-    param.buffer_type = MYSQL_TYPE_LONGLONG;
-    param.buffer = &value;
-    param.buffer_length = sizeof(value);
-    param.length = &meta_data.bound_len;
-    param.is_null = &meta_data.bound_is_null;
-    param.is_unsigned = false;
-    param.error = &meta_data.bound_error;
-  }
-
-  inline auto pre_bind_field(prepared_statement_result_t& result, float& value, std::size_t index) -> void
-  {
-    auto& meta_data = result.get_bind_meta_data()[index];
-
-    auto& param = result.get_bind_data()[index];
-    param.buffer_type = MYSQL_TYPE_FLOAT;
-    param.buffer = &value;
-    param.buffer_length = sizeof(value);
-    param.length = &meta_data.bound_len;
-    param.is_null = &meta_data.bound_is_null;
-    param.is_unsigned = false;
-    param.error = &meta_data.bound_error;
-  }
-
-  inline auto pre_bind_field(prepared_statement_result_t& result, double& value, std::size_t index) -> void
-  {
-    auto& meta_data = result.get_bind_meta_data()[index];
-
-    auto& param = result.get_bind_data()[index];
-    param.buffer_type = MYSQL_TYPE_DOUBLE;
-    param.buffer = &value;
-    param.buffer_length = sizeof(value);
-    param.length = &meta_data.bound_len;
-    param.is_null = &meta_data.bound_is_null;
-    param.is_unsigned = false;
-    param.error = &meta_data.bound_error;
-  }
-
-  inline auto pre_bind_field(prepared_statement_result_t& result,
-                             [[maybe_unused]] std::string_view& value,
-                             std::size_t index) -> void
-  {
-    auto& meta_data = result.get_bind_meta_data()[index];
-    meta_data.use_buffer = true;
-
-    auto& param = result.get_bind_data()[index];
-    param.buffer_type = MYSQL_TYPE_STRING;
-    param.buffer = meta_data.bound_buffer.data();
-    param.buffer_length = meta_data.bound_buffer.size();
-    param.length = &meta_data.bound_len;
-    param.is_null = &meta_data.bound_is_null;
-    param.is_unsigned = false;
-    param.error = &meta_data.bound_error;
-  }
-
-  template <typename T>
-  inline auto pre_bind_field(prepared_statement_result_t& result, std::optional<T>& value, std::size_t index) -> void
-  {
-    if (not value)
-      value = {};
-    pre_bind_field(result, *value, index);
-  }
-
-  inline auto bind_field(prepared_statement_result_t& result, ...) -> void
-  {
-  }
-
-  template <typename T>
-  inline auto bind_field(prepared_statement_result_t& result, std::optional<T>& value, std::size_t index) -> void
-  {
-    if (not value)
-    {
-      value = {};
-      pre_bind_field(result, value, index);
-    }
-  }
-
-  inline auto post_bind_field(prepared_statement_result_t& result, ...) -> void
-  {
-  }
-
-  inline auto post_bind_field(prepared_statement_result_t& result, std::string_view& value, std::size_t index) -> void
-  {
-    const auto& meta_data = result.get_bind_meta_data()[index];
-
-    value = std::string_view{meta_data.bound_buffer.data(), meta_data.bound_len};
-  }
-
-  template<typename T>
-  inline auto post_bind_field(prepared_statement_result_t& result,
-                              std::optional<T>& value,
-                              std::size_t index) -> void
-  {
-    const auto& meta_data = result.get_bind_meta_data()[index];
-
-    if (meta_data.bound_is_null)
-    {
-      value.reset();
-    }
-    else
-    {
-      post_bind_field(result, *value, index);
-    }
-  }
-
 }  // namespace sqlpp::mysql
 
-namespace sqlpp::mysql::detail
-{
-  inline auto bind_impl(prepared_statement_result_t& result) -> void
-  {
-    if (mysql_stmt_bind_result(result.get(), result.get_bind_data().data()))
-    {
-      throw sqlpp::exception(std::string("MySQL: mysql_stmt_prepared_statement_result: ") +
-                             mysql_stmt_error(result.get()));
-    }
-  }
-
-  inline auto get_next_result_row(prepared_statement_result_t& result) -> bool
-  {
-    auto flag = mysql_stmt_fetch(result.get());
-
-    switch (flag)
-    {
-      case 0:
-      case MYSQL_DATA_TRUNCATED:
-      {
-        bool need_to_rebind = false;
-        std::size_t index = 0;
-        for (auto& r : result.get_bind_meta_data())
-        {
-          if (r.use_buffer and r.bound_len > r.bound_buffer.size())
-          {
-            need_to_rebind = true;
-            r.bound_buffer.resize(r.bound_len);
-            MYSQL_BIND& param = result.get_bind_data()[index];
-            param.buffer = r.bound_buffer.data();
-            param.buffer_length = r.bound_buffer.size();
-
-            auto err = mysql_stmt_fetch_column(result.get(), &result.get_bind_data()[index], index, 0);
-            if (err)
-              throw sqlpp::exception(std::string("MySQL: Fetch column after reallocate failed: ") + "error-code: " +
-                                     std::to_string(err) + ", stmt-error: " + mysql_stmt_error(result.get()) +
-                                     ", stmt-errno: " + std::to_string(mysql_stmt_errno(result.get())));
-          }
-          ++index;
-        }
-        if (need_to_rebind)
-          detail::bind_impl(result);
-      }
-        return true;
-      case 1:
-        throw sqlpp::exception(std::string("MySQL: Could not fetch next result: ") + mysql_stmt_error(result.get()));
-      case MYSQL_NO_DATA:
-        return false;
-      default:
-        throw sqlpp::exception("MySQL: Unexpected return value for mysql_stmt_fetch()");
-    }
-  }
-}  // namespace sqlpp::mysql::detail
 

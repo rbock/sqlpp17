@@ -47,6 +47,8 @@ cmake .. -DCMAKE_CXX_COMPILER=/usr/local/clang-trunk/bin/clang++          -DCMAK
 cmake .. -DCMAKE_CXX_COMPILER=/usr/local/clang-trunk/bin/clang++          -DCMAKE_CXX_FLAGS='-std=c++17 -stdlib=libc++ -fcolor-diagnostics -Wall -Wpedantic -fsanitize=thread -O1 -g'
 ...
 
+export MSAN_SYMBOLIZER_PATH=/usr/local/clang-trunk/bin/llvm-symbolizer
+
 float:
 =====
 need a way to deal with NaN or +-inf.

@@ -38,6 +38,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp::postgresql
 {
+  struct prepared_statement_cleanup_t
+  {
+    std::string_view _name;
+  public:
+    auto operator()(PGconn* handle) -> void
+    {
+#warning implement cleanup
+    }
+  };
+  using unique_prepared_statement_ptr = std::unique_ptr<PGconn, prepared_statement_cleanup_t>;
+
   inline auto bind_parameter([[maybe_unused]] std::string& parameter_string, char* parameter_pointer, const std::nullopt_t& value) -> void
   {
     parameter_pointer = nullptr;
@@ -112,8 +123,9 @@ namespace sqlpp::postgresql
   template<typename ResultType, typename ParameterVector, typename ResultRow>
   class prepared_statement_t
   {
-    PGconn* _connection;
     std::string _name;
+    unique_prepared_statement_ptr _connection;
+
     std::array<std::string, ParameterVector::size()> _parameter_strings;
     std::array<char*, ParameterVector::size()> _parameter_pointers;
 
@@ -121,10 +133,10 @@ namespace sqlpp::postgresql
     ::sqlpp::prepared_statement_parameters<ParameterVector> parameters = {};
 
     prepared_statement_t() = default;
-       template<typename Connection, typename Statement>
+    template <typename Connection, typename Statement>
     prepared_statement_t(const Connection& connection, const Statement& statement)
-        : _connection(connection.get()),
-          _name(std::to_string(connection.get_statement_index()) + "at" + std::to_string(::time(nullptr)))
+        : _name(std::to_string(connection.get_statement_index()) + "at" + std::to_string(::time(nullptr))),
+          _connection(connection.get(), {_name})
     {
       const auto sql_string = to_sql_string_c(context_t{}, statement);
 #warning: connection needs to decide whether or not to print
@@ -154,13 +166,12 @@ namespace sqlpp::postgresql
     prepared_statement_t& operator=(const prepared_statement_t&) = delete;
     prepared_statement_t& operator=(prepared_statement_t&&) = default;
     ~prepared_statement_t() = default;
-#warning: When does the prepared statement get freed?
 
     auto execute()
     {
       ::sqlpp::postgresql::bind_parameters(_parameter_strings, _parameter_pointers, parameters);
       auto result = detail::unique_result_ptr(
-          PQexecPrepared(_connection, _name.c_str(),
+          PQexecPrepared(_connection.get(), _name.c_str(),
                          _parameter_pointers.size(),
                          _parameter_pointers.data(), nullptr, nullptr, 0),
           {});
@@ -196,7 +207,7 @@ namespace sqlpp::postgresql
       }
       else if constexpr (std::is_same_v<ResultType, select_result>)
       {
-        return ::sqlpp::result_t<ResultRow, char_result_t>{char_result_t{std::move(result)}};
+        return ::sqlpp::result_t<char_result_t<ResultRow>>{std::move(result)};
       }
       else if constexpr (std::is_same_v<ResultType, execute_result>)
       {
@@ -210,7 +221,7 @@ namespace sqlpp::postgresql
 
     auto* get_connection() const
     {
-      return _connection;
+      return _connection.get();
     }
 
     auto& get_name() const

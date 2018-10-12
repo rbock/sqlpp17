@@ -197,10 +197,9 @@ namespace sqlpp::sqlite3
       }
       else if constexpr (std::is_same_v<ResultType, select_result>)
       {
-        return ::sqlpp::result_t<ResultRow, prepared_statement_result_t>{
-          prepared_statement_result_t{_result_gets_ownership
-                                          ? detail::unique_prepared_statement_ptr{_handle.release(), {true}}
-                                          : detail::unique_prepared_statement_ptr{_handle.get(), {false}}}};
+        return ::sqlpp::result_t<prepared_statement_result_t<ResultRow>>{
+            _result_gets_ownership ? detail::unique_prepared_statement_ptr{_handle.release(), {true}}
+                                   : detail::unique_prepared_statement_ptr{_handle.get(), {false}}};
       }
       else if constexpr (std::is_same_v<ResultType, execute_result>)
       {

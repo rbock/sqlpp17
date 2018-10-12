@@ -32,17 +32,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string>
 #include <string_view>
 
-#include <sqlpp17/mysql/mysql.h>
+#include <sqlpp17/result_row.h>
 
-namespace sqlpp ::mysql
-{
-  class direct_execution_result_t;
-}
+#include <sqlpp17/mysql/mysql.h>
 
 namespace sqlpp ::mysql::detail
 {
-  auto get_next_result_row(direct_execution_result_t& result) -> bool;
-
   struct result_cleanup_t
   {
     auto operator()(MYSQL_RES* result) const -> void
@@ -53,19 +48,87 @@ namespace sqlpp ::mysql::detail
   };
   using unique_result_ptr = std::unique_ptr<MYSQL_RES, result_cleanup_t>;
 
+  inline auto assert_field(char* data) -> void
+  {
+    if (data == nullptr)
+      throw std::logic_error("Trying to obtain NULL for non-nullable value");
+  }
+
 }  // namespace sqlpp::mysql::detail
 
 namespace sqlpp ::mysql
 {
+  inline auto read_field(char* data, unsigned long length, std::int64_t& value) -> void
+  {
+    detail::assert_field(data);
+    value = std::strtoll(data, nullptr, 10);
+  }
+
+  inline auto read_field(char* data, unsigned long length, std::int32_t& value) -> void
+  {
+    detail::assert_field(data);
+    value = std::strtol(data, nullptr, 10);
+  }
+
+  inline auto read_field(char* data, unsigned long length, float& value) -> void
+  {
+    detail::assert_field(data);
+    value = std::strtof(data, nullptr);
+  }
+
+  inline auto read_field(char* data, unsigned long length, double& value) -> void
+  {
+    detail::assert_field(data);
+    value = std::strtod(data, nullptr);
+  }
+
+  inline auto read_field(char* data, unsigned long length, std::string_view& value) -> void
+  {
+    detail::assert_field(data);
+    value = std::string_view(data, length);
+  }
+
+  template <typename T>
+  auto read_field(char* data, unsigned long length, std::optional<T>& value) -> void
+  {
+    if (not data)
+    {
+      value.reset();
+    }
+    else
+    {
+      value = T{};
+      read_field(data, length, *value);
+    }
+  }
+
+  template <typename... ColumnSpecs>
+  auto read_fields(MYSQL_ROW data, unsigned long* lengths, result_row_t<ColumnSpecs...>& row) -> void
+  {
+    if (!data)
+      throw std::logic_error("Trying to obtain value from non-existing row");
+
+    std::size_t index = 0;
+    (..., (read_field(data[index], lengths[index], static_cast<result_column_base<ColumnSpecs>&>(row)()), ++index));
+  }
+
+  template <typename ResultRow>
   class direct_execution_result_t
+  {
+    static_assert(wrong<ResultRow>, "ResultRow must be a result_row_t<...>");
+  };
+
+  template <typename... ColumnSpecs>
+  class direct_execution_result_t<result_row_t<ColumnSpecs...>>
   {
     detail::unique_result_ptr _handle;
     MYSQL_ROW _data = nullptr;
     unsigned long* _lengths = nullptr;
-
-    friend auto sqlpp ::mysql::detail::get_next_result_row(direct_execution_result_t& result) -> bool;
+    result_row_t<ColumnSpecs...> _row;
 
   public:
+    using row_type = decltype(_row);
+
     direct_execution_result_t() = default;
     direct_execution_result_t(detail::unique_result_ptr handle)
         : _handle(std::move(handle))
@@ -80,6 +143,26 @@ namespace sqlpp ::mysql
     [[nodiscard]] operator bool() const
     {
       return !!_handle;
+    }
+
+    auto get_next_row() -> void
+    {
+      _data = mysql_fetch_row(_handle.get());
+      _lengths = mysql_fetch_lengths(_handle.get());
+
+      if (_data != nullptr)
+      {
+        read_fields(_data, _lengths, _row);
+      }
+      else
+      {
+        reset();
+      }
+    }
+
+    [[nodiscard]] auto& row() const
+    {
+      return _row;
     }
 
     auto* get() const
@@ -102,85 +185,5 @@ namespace sqlpp ::mysql
       *this = direct_execution_result_t{};
     }
   };
-}  // namespace sqlpp::mysql
-
-namespace sqlpp::mysql::detail
-{
-  inline auto assert_field(sqlpp::mysql::direct_execution_result_t& result, int index) -> void
-  {
-    if (!result.get_data())
-      throw std::logic_error("Trying to obtain value from non-existing row");
-    if (!result.get_data()[index])
-      throw std::logic_error("Trying to obtain NULL for non-nullable value");
-  }
-
-  inline auto get_next_result_row(direct_execution_result_t& result) -> bool
-  {
-    result._data = mysql_fetch_row(result.get());
-    result._lengths = mysql_fetch_lengths(result.get());
-
-    return !!result._data;
-  }
-}  // namespace sqlpp::mysql::detail
-
-namespace sqlpp::mysql
-{
-  template <typename Row>
-  inline auto get_next_result_row(direct_execution_result_t& result, Row& row) -> void
-  {
-    if (detail::get_next_result_row(result))
-    {
-      row.bind(result);
-    }
-    else
-    {
-      result.reset();
-    }
-  }
-
-  inline auto bind_field(direct_execution_result_t& result, std::int64_t& value, int index) -> void
-  {
-    detail::assert_field(result, index);
-    value = std::strtoll(result.get_data()[index], nullptr, 10);
-  }
-
-  inline auto bind_field(direct_execution_result_t& result, std::int32_t& value, int index) -> void
-  {
-    detail::assert_field(result, index);
-    value = std::strtol(result.get_data()[index], nullptr, 10);
-  }
-
-  inline auto bind_field(direct_execution_result_t& result, float& value, int index) -> void
-  {
-    detail::assert_field(result, index);
-    value = std::strtof(result.get_data()[index], nullptr);
-  }
-
-  inline auto bind_field(direct_execution_result_t& result, double& value, int index) -> void
-  {
-    detail::assert_field(result, index);
-    value = std::strtod(result.get_data()[index], nullptr);
-  }
-
-  inline auto bind_field(direct_execution_result_t& result, std::string_view& value, int index) -> void
-  {
-    detail::assert_field(result, index);
-    value = std::string_view(result.get_data()[index], result.get_lengths()[index]);
-  }
-
-  template <typename T>
-  auto bind_field(direct_execution_result_t& result, std::optional<T>& value, int index) -> void
-  {
-    if (!result.get_data()[index])
-    {
-      value.reset();
-    }
-    else
-    {
-      value = T{};
-      bind_field(result, *value, index);
-    }
-  }
-
 }  // namespace sqlpp::mysql
 

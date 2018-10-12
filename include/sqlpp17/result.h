@@ -28,7 +28,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <iterator>
 #include <memory>
-#include <optional>
 
 #include <sqlpp17/type_traits.h>
 
@@ -38,12 +37,10 @@ namespace sqlpp
   {
   };
 
-  template <typename Row, typename ResultHandle>
+  template <typename ResultHandle>
   struct result_t
   {
-    using _row_t = Row;
-
-    std::optional<_row_t> _row;
+    using _row_t = typename ResultHandle::row_type;
     ResultHandle _handle;
 
   public:
@@ -71,17 +68,17 @@ namespace sqlpp
       using difference_type = std::ptrdiff_t;
 
       iterator(result_t& result) : _result(result)
-			{ //
-			}
+      {
+      }
 
       [[nodiscard]] auto operator*() const -> reference
       {
-        return *(_result._row);
+        return _result._handle.row();
       }
 
       [[nodiscard]] auto operator-> () const -> pointer
       {
-        return &(_result._row);
+        return &_result._handle.row();
       }
 
       [[nodiscard]] auto operator==(const iterator& rhs) const -> bool
@@ -102,7 +99,7 @@ namespace sqlpp
 
       auto operator++() -> iterator&
       {
-        get_next_result_row(_result._handle, *_result._row);
+        _result._handle.get_next_row();
         return *this;
       }
 
@@ -116,11 +113,7 @@ namespace sqlpp
 
     [[nodiscard]] auto begin() -> iterator
     {
-      if (!_row)
-      {
-        _row.emplace();
-        get_next_result_row(_handle, *_row);
-      }
+      _handle.get_next_row();
       return {*this};
     }
 

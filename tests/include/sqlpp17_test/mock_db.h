@@ -39,8 +39,24 @@ namespace sqlpp::test
   {
   };
 
+  template <typename ResultRow>
   struct mock_result
   {
+    ResultRow _row;
+
+  public:
+    using row_type = ResultRow;
+
+    auto& row()
+    {
+      return _row;
+    }
+
+    auto get_next_row() -> void
+    {
+      _row = {};
+    }
+
     [[nodiscard]] operator bool() const
     {
       return false;  // no more rows available
@@ -79,7 +95,7 @@ namespace sqlpp::test
       }
       else if constexpr (std::is_same_v<ResultType, select_result>)
       {
-        return mock_result{};
+        return mock_result<ResultRow>{};
       }
       else
       {
@@ -95,11 +111,6 @@ namespace sqlpp::test
   auto execute(prepared_statement_t<ResultType, ParameterVector, ResultRow>& statement)
   {
     return statement.execute();
-  }
-
-  template <typename Row>
-  auto get_next_result_row(mock_result& result, Row& row)
-  {
   }
 
   class mock_db : public ::sqlpp::connection_base
@@ -213,7 +224,7 @@ namespace sqlpp::test
     auto select(const Statement& statement)
     {
       [[maybe_unused]] auto x = to_sql_string_c(mock_context_t{}, statement);
-      return ::sqlpp::result_t<result_row_of_t<Statement>, mock_result>{mock_result{}};
+      return ::sqlpp::result_t<mock_result<result_row_of_t<Statement>>>{{}};
     }
 
   };

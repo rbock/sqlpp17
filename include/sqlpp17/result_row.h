@@ -33,36 +33,13 @@ namespace sqlpp
   template <typename... ColumnSpecs>
   class result_row_t : public result_column_base<ColumnSpecs>...
   {
-  public:
-    template <typename Result>
-    auto bind(Result& result) -> void
-    {
-      std::size_t index = 0;
-      (bind_field(result, result_column_base<ColumnSpecs>::operator()(), index++), ...);
-    }
-
-    template <typename Result>
-    auto pre_bind(Result& result) -> void
-    {
-      std::size_t index = 0;
-      (pre_bind_field(result, result_column_base<ColumnSpecs>::operator()(), index++), ...);
-    }
-
-    template <typename Result>
-    auto post_bind(Result& result) -> void
-    {
-      std::size_t index = 0;
-      (post_bind_field(result, result_column_base<ColumnSpecs>::operator()(), index++), ...);
-    }
   };
 
   template<typename T>
-  inline constexpr auto column_count = 1;
+  inline constexpr auto column_count_v = 1;
 
   template <typename... ColumnSpecs>
-  inline constexpr auto column_count<result_row_t<ColumnSpecs...>> = sizeof...(ColumnSpecs);
-
-#warning: This is not accurate if one or more columns are actually multicolumns
+  inline constexpr auto column_count_v<result_row_t<ColumnSpecs...>> = sizeof...(ColumnSpecs);
 
   template <typename... LeftColumnSpecs, typename... RightColumnSpecs>
   struct result_rows_are_compatible<result_row_t<LeftColumnSpecs...>, result_row_t<RightColumnSpecs...>>

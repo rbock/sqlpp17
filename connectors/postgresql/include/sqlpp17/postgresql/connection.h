@@ -65,18 +65,35 @@ namespace sqlpp::postgresql::detail
   };
   using unique_connection_ptr = std::unique_ptr<PGconn, detail::connection_cleanup_t>;
 
-  // direct execution
-  template<typename Pool, ::sqlpp::debug Debug>
-  auto select(const base_connection<Pool, Debug>&, const std::string& statement) -> char_result_t;
-  template<typename Pool, ::sqlpp::debug Debug>
-  auto insert(const base_connection<Pool, Debug>&, const std::string& statement) -> std::size_t;
-  template<typename Pool, ::sqlpp::debug Debug>
-  auto update(const base_connection<Pool, Debug>&, const std::string& statement) -> std::size_t;
-  template<typename Pool, ::sqlpp::debug Debug>
-  auto delete_from(const base_connection<Pool, Debug>&, const std::string& statement) -> std::size_t;
-  template<typename Pool, ::sqlpp::debug Debug>
-  auto execute(const base_connection<Pool, Debug>&, const std::string& statement) -> void;
+  template<typename Connection, typename Statement>
+  inline auto execute(const Connection& connection, const Statement& statement) -> detail::unique_result_ptr
+  {
+    const auto sql_string = to_sql_string_c(context_t{}, statement);
 
+    if (connection.is_debug_allowed())
+      connection.debug("Executing: '" + sql_string + "'");
+
+    // If one day we switch to binary format, then we could use PQexecParams with resultFormat=1
+    auto result = detail::unique_result_ptr(PQexec(connection.get(), sql_string.c_str()), {});
+
+    if (not result)
+    {
+      throw sqlpp::exception("Postgresql: out of memory (query was >>" + sql_string + "<<\n");
+    }
+
+    switch (PQresultStatus(result.get()))
+    {
+      case PGRES_COMMAND_OK:
+        [[fallthrough]];
+      case PGRES_TUPLES_OK:
+        return result;
+      default:
+        throw sqlpp::exception(std::string("Postgresql: Error during query execution: ") +
+                               PQresultErrorMessage(result.get()) + " (query was >>" + sql_string + "<<\n");
+    }
+  }
+
+  // direct execution
   inline auto config_field_to_string(std::string_view name, const std::optional<std::string>& value) -> std::string
   {
     return value ? std::string(name) + "=" + *value + " " : "";
@@ -199,23 +216,26 @@ namespace sqlpp::postgresql
         using ResultType = result_type_of_t<Statement>;
         if constexpr (std::is_same_v<ResultType, insert_result>)
         {
-          return insert(statement);
+          return PQoidValue(detail::execute(*this, statement).get());
         }
         else if constexpr (std::is_same_v<ResultType, delete_result>)
         {
-          return delete_from(statement);
+          return std::strtoll(PQcmdTuples(detail::execute(*this, statement).get()), nullptr, 10);
         }
         else if constexpr (std::is_same_v<ResultType, update_result>)
         {
-          return update(statement);
+          return std::strtoll(PQcmdTuples(detail::execute(*this, statement).get()), nullptr, 10);
         }
         else if constexpr (std::is_same_v<ResultType, select_result>)
         {
-          return select(statement);
+          auto result = detail::execute(*this, statement);
+
+          using _result_type = char_result_t<result_row_of_t<Statement>>;
+          return ::sqlpp::result_t<_result_type>{_result_type{std::move(result)}};
         }
         else if constexpr (std::is_same_v<ResultType, execute_result>)
         {
-          return execute(statement);
+          return std::strtoll(PQcmdTuples(detail::execute(*this, statement).get()), nullptr, 10);
         }
         else
         {
@@ -316,100 +336,8 @@ namespace sqlpp::postgresql
     {
       return ++_statement_index;
     }
-
-  private:
-    template <typename... Clauses>
-    auto execute(const ::sqlpp::statement<Clauses...>& statement)
-    {
-      return detail::execute(*this, to_sql_string_c(context_t{}, statement));
-    }
-
-    template <typename Statement>
-    auto insert(const Statement& statement)
-    {
-      return detail::insert(*this, to_sql_string_c(context_t{}, statement));
-    }
-
-    template <typename Statement>
-    auto update(const Statement& statement)
-    {
-      return detail::update(*this, to_sql_string_c(context_t{}, statement));
-    }
-
-    template <typename Statement>
-    auto delete_from(const Statement& statement)
-    {
-      return detail::delete_from(*this, to_sql_string_c(context_t{}, statement));
-    }
-
-    template <typename Statement>
-    [[nodiscard]] auto select(const Statement& statement)
-    {
-      return ::sqlpp::result_t<result_row_of_t<Statement>, char_result_t>{
-          detail::select(*this, to_sql_string_c(context_t{}, statement))};
-    }
   };
 
 }  // namespace sqlpp::postgresql
-
-namespace sqlpp::postgresql::detail
-{
-  template<typename Pool, ::sqlpp::debug Debug>
-  inline auto execute_query(const base_connection<Pool, Debug>& connection, const std::string& query) -> detail::unique_result_ptr
-  {
-    if (connection.is_debug_allowed())
-      connection.debug("Executing: '" + query + "'");
-
-    // If one day we switch to binary format, then we could use PQexecParams with resultFormat=1
-    auto result = detail::unique_result_ptr(PQexec(connection.get(), query.c_str()), {});
-
-    if (not result)
-    {
-      throw sqlpp::exception("Postgresql: out of memory (query was >>" + query + "<<\n");
-    }
-
-    switch (PQresultStatus(result.get()))
-    {
-      case PGRES_COMMAND_OK:
-        [[fallthrough]];
-      case PGRES_TUPLES_OK:
-        return result;
-      default:
-        throw sqlpp::exception(std::string("Postgresql: Error during query execution: ") +
-                               PQresultErrorMessage(result.get()) + " (query was >>" + query + "<<\n");
-    }
-  }
-
-  template<typename Pool, ::sqlpp::debug Debug>
-  inline auto select(const base_connection<Pool, Debug>& connection, const std::string& query) -> char_result_t
-  {
-    return {execute_query(connection, query)};
-  }
-
-  template<typename Pool, ::sqlpp::debug Debug>
-  inline auto insert(const base_connection<Pool, Debug>& connection, const std::string& query) -> size_t
-  {
-    return PQoidValue(execute_query(connection, query).get());
-  }
-
-  template<typename Pool, ::sqlpp::debug Debug>
-  inline auto update(const base_connection<Pool, Debug>& connection, const std::string& statement) -> size_t
-  {
-    return std::strtoll(PQcmdTuples(execute_query(connection, statement).get()), nullptr, 10);
-  }
-
-  template<typename Pool, ::sqlpp::debug Debug>
-  inline auto delete_from(const base_connection<Pool, Debug>& connection, const std::string& statement) -> size_t
-  {
-    return std::strtoll(PQcmdTuples(execute_query(connection, statement).get()), nullptr, 10);
-  }
-
-  template<typename Pool, ::sqlpp::debug Debug>
-  inline auto execute(const base_connection<Pool, Debug>& connection, const std::string& statement) -> void
-  {
-    execute_query(connection, statement);
-  }
-
-}  // namespace sqlpp::postgresql::detail
 
 

@@ -37,10 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlite3.h>
 #endif
 
-namespace sqlpp::sqlite3
-{
-  class prepared_statement_result_t;
-}  // namespace sqlpp::sqlite3
+#include <sqlpp17/result_row.h>
 
 namespace sqlpp::sqlite3::detail
 {
@@ -56,112 +53,9 @@ namespace sqlpp::sqlite3::detail
   };
   using unique_prepared_statement_ptr = std::unique_ptr<::sqlite3_stmt, detail::prepared_statement_cleanup_t>;
 
-  auto get_next_result_row(prepared_statement_result_t& result) -> bool;
-}  // namespace sqlpp::sqlite3::detail
-
-namespace sqlpp::sqlite3
-{
-  class direct_execution_result_t;
-
-  class prepared_statement_result_t
+  inline auto get_next_result_row(::sqlite3_stmt* stmt) -> bool
   {
-    detail::unique_prepared_statement_ptr _handle;
-
-  public:
-    prepared_statement_result_t() = default;
-    prepared_statement_result_t(detail::unique_prepared_statement_ptr&& handle)
-        : _handle(std::move(handle))
-    {
-    }
-    prepared_statement_result_t(const prepared_statement_result_t&) = delete;
-    prepared_statement_result_t(prepared_statement_result_t&& rhs) = default;
-    prepared_statement_result_t(direct_execution_result_t&& rhs) = delete;
-    prepared_statement_result_t& operator=(const prepared_statement_result_t&) = delete;
-    prepared_statement_result_t& operator=(prepared_statement_result_t&&) = default;
-    prepared_statement_result_t& operator=(direct_execution_result_t&&) = delete;
-    ~prepared_statement_result_t(){}
-
-    [[nodiscard]] operator bool() const
-    {
-      return !!_handle;
-    }
-
-    [[nodiscard]] auto* get() const
-    {
-      return _handle.get();
-    }
-
-    auto reset() -> void
-    {
-      *this = prepared_statement_result_t{};
-    }
-  };
-
-  template <typename Row>
-  auto get_next_result_row(prepared_statement_result_t& result, Row& row) -> void
-  {
-    if (detail::get_next_result_row(result))
-    {
-      row.post_bind(result);
-    }
-    else
-    {
-      result.reset();
-    }
-  }
-
-  inline auto post_bind_field(prepared_statement_result_t& result, bool& value, int index) -> void
-  {
-    value = sqlite3_column_int(result.get(), index);
-  }
-
-  inline auto post_bind_field(prepared_statement_result_t& result, std::int32_t& value, int index) -> void
-  {
-    value = sqlite3_column_int(result.get(), index);
-  }
-
-  inline auto post_bind_field(prepared_statement_result_t& result, std::int64_t& value, int index) -> void
-  {
-    value = sqlite3_column_int64(result.get(), index);
-  }
-
-  inline auto post_bind_field(prepared_statement_result_t& result, float& value, int index) -> void
-  {
-    // There is no column_float
-    value = sqlite3_column_double(result.get(), index);
-  }
-
-  inline auto post_bind_field(prepared_statement_result_t& result, double& value, int index) -> void
-  {
-    value = sqlite3_column_double(result.get(), index);
-  }
-
-  inline auto post_bind_field(prepared_statement_result_t& result, std::string_view& value, int index) -> void
-  {
-    value = std::string_view{reinterpret_cast<const char*>(sqlite3_column_text(result.get(), index)),
-                             static_cast<std::size_t>(sqlite3_column_bytes(result.get(), index))};
-  }
-
-  template <typename T>
-  auto post_bind_field(prepared_statement_result_t& result, std::optional<T>& value, int index) -> void
-  {
-    if (sqlite3_column_type(result.get(), index) == SQLITE_NULL)
-    {
-      value.reset();
-    }
-    else
-    {
-      value = T{};
-      post_bind_field(result, *value, index);
-    }
-  }
-}  // namespace sqlpp::sqlite3
-
-namespace sqlpp::sqlite3::detail
-{
-  inline auto get_next_result_row(prepared_statement_result_t& result) -> bool
-  {
-    auto rc = sqlite3_step(result.get());
+    auto rc = sqlite3_step(stmt);
 
     switch (rc)
     {
@@ -176,4 +70,120 @@ namespace sqlpp::sqlite3::detail
   }
 }  // namespace sqlpp::sqlite3::detail
 
+namespace sqlpp::sqlite3
+{
+  inline auto assign_field(sqlite3_stmt* stmt, bool& value, int index) -> void
+  {
+    value = sqlite3_column_int(stmt, index);
+  }
+
+  inline auto assign_field(sqlite3_stmt* stmt, std::int32_t& value, int index) -> void
+  {
+    value = sqlite3_column_int(stmt, index);
+  }
+
+  inline auto assign_field(sqlite3_stmt* stmt, std::int64_t& value, int index) -> void
+  {
+    value = sqlite3_column_int64(stmt, index);
+  }
+
+  inline auto assign_field(sqlite3_stmt* stmt, float& value, int index) -> void
+  {
+    // There is no column_float
+    value = sqlite3_column_double(stmt, index);
+  }
+
+  inline auto assign_field(sqlite3_stmt* stmt, double& value, int index) -> void
+  {
+    value = sqlite3_column_double(stmt, index);
+  }
+
+  inline auto assign_field(sqlite3_stmt* stmt, std::string_view& value, int index) -> void
+  {
+    value = std::string_view{reinterpret_cast<const char*>(sqlite3_column_text(stmt, index)),
+                             static_cast<std::size_t>(sqlite3_column_bytes(stmt, index))};
+  }
+
+  template <typename T>
+  auto assign_field(sqlite3_stmt* stmt, std::optional<T>& value, int index) -> void
+  {
+    if (sqlite3_column_type(stmt, index) == SQLITE_NULL)
+    {
+      value.reset();
+    }
+    else
+    {
+      value = T{};
+      assign_field(stmt, *value, index);
+    }
+  }
+
+  template <typename... ColumnSpecs, unsigned... Is>
+  auto assign_fields(sqlite3_stmt* stmt, result_row_t<ColumnSpecs...>& row, std::integer_sequence<unsigned, Is...>)
+      -> void
+  {
+    (..., assign_field(stmt, static_cast<result_column_base<ColumnSpecs>&>(row)(), Is));
+  }
+
+  template <typename ResultRow>
+  class prepared_statement_result_t
+  {
+    static_assert(wrong<ResultRow>, "ResultRow must be a result_row_t<...>");
+  };
+
+  template <typename... ColumnSpecs>
+  class prepared_statement_result_t<result_row_t<ColumnSpecs...>>
+  {
+    detail::unique_prepared_statement_ptr _handle;
+
+    result_row_t<ColumnSpecs...> _row;
+
+  public:
+    using row_type = decltype(_row);
+
+    prepared_statement_result_t() = default;
+    prepared_statement_result_t(detail::unique_prepared_statement_ptr&& handle)
+        : _handle(std::move(handle))
+    {
+    }
+    prepared_statement_result_t(const prepared_statement_result_t&) = delete;
+    prepared_statement_result_t(prepared_statement_result_t&& rhs) = default;
+    prepared_statement_result_t& operator=(const prepared_statement_result_t&) = delete;
+    prepared_statement_result_t& operator=(prepared_statement_result_t&&) = default;
+    ~prepared_statement_result_t(){}
+
+    auto get_next_row() -> void
+    {
+      if (detail::get_next_result_row(_handle.get()))
+      {
+        assign_fields(_handle.get(), _row, std::make_integer_sequence<unsigned, sizeof...(ColumnSpecs)>{});
+      }
+      else
+      {
+        reset();
+      }
+    }
+
+    [[nodiscard]] auto& row() const
+    {
+      return _row;
+    }
+
+    [[nodiscard]] operator bool() const
+    {
+      return !!_handle;
+    }
+
+    [[nodiscard]] auto* get() const
+    {
+      return _handle.get();
+    }
+
+    auto reset() -> void
+    {
+      *this = {};
+    }
+  };
+
+}  // namespace sqlpp::sqlite3
 

@@ -31,6 +31,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <optional>
 #include <string_view>
 
+#include <sqlpp17/result_row.h>
+
 #include <libpq-fe.h>
 
 namespace sqlpp::postgresql::detail
@@ -48,13 +50,66 @@ namespace sqlpp::postgresql::detail
 
 namespace sqlpp::postgresql
 {
+  inline auto read_field(PGresult* result, int row_index, std::int32_t& value, int index) -> void
+  {
+    value = std::strtol(PQgetvalue(result, row_index, index), nullptr, 10);
+  }
+
+  inline auto read_field(PGresult* result, int row_index, std::int64_t& value, int index) -> void
+  {
+    value = std::strtoll(PQgetvalue(result, row_index, index), nullptr, 10);
+  }
+
+  inline auto read_field(PGresult* result, int row_index, float& value, int index) -> void
+  {
+    value = std::strtof(PQgetvalue(result, row_index, index), nullptr);
+  }
+
+  inline auto read_field(PGresult* result, int row_index, double& value, int index) -> void
+  {
+    value = std::strtod(PQgetvalue(result, row_index, index), nullptr);
+  }
+
+  inline auto read_field(PGresult* result, int row_index, std::string_view& value, int index) -> void
+  {
+    value = std::string_view(PQgetvalue(result, row_index, index),
+                             PQgetlength(result, row_index, index));
+  }
+
+  inline auto read_field(PGresult* result, int row_index, std::optional<std::string_view>& value, int index) -> void
+  {
+    value = PQgetisnull(result, row_index, index)
+                ? std::nullopt
+                : std::optional<std::string_view>{
+                      std::string_view(PQgetvalue(result, row_index, index),
+                                       PQgetlength(result, row_index, index))};
+  }
+
+  template <typename... ColumnSpecs>
+  auto read_fields(PGresult* result, int row_index, result_row_t<ColumnSpecs...>& row) -> void
+  {
+    std::size_t index = 0;
+    (..., (read_field(result, row_index, static_cast<result_column_base<ColumnSpecs>&>(row)(), ++index)));
+  }
+
+  template<typename ResultRow>
   class char_result_t
+  {
+    static_assert(wrong<ResultRow>, "ResultRow must be a result_row_t<...>");
+  };
+
+  template <typename... ColumnSpecs>
+  class char_result_t<result_row_t<ColumnSpecs...>>
   {
     detail::unique_result_ptr _handle;
     int _row_index = -1;
     int _row_count;
 
+    result_row_t<ColumnSpecs...> _row;
+
   public:
+    using row_type = decltype(_row);
+
     char_result_t() = default;
     char_result_t(detail::unique_result_ptr handle)
         : _handle(std::move(handle))
@@ -68,6 +123,25 @@ namespace sqlpp::postgresql
     char_result_t& operator=(char_result_t&&) = default;
     ~char_result_t() = default;
 
+    auto get_next_row() -> void
+    {
+      ++_row_index;
+      if (_row_index < get_row_count())
+      {
+        read_fields(_handle.get(), _row_index, _row);
+      }
+      else
+      {
+        reset();
+      }
+    }
+
+    [[nodiscard]] auto& row() const
+    {
+      return _row;
+    }
+
+
     [[nodiscard]] operator bool() const
     {
       return !!_handle;
@@ -76,17 +150,6 @@ namespace sqlpp::postgresql
     auto* get() const
     {
       return _handle.get();
-    }
-
-    auto increase_row_index()
-    {
-      if (_handle)
-        ++_row_index;
-    }
-
-    auto get_row_index() const
-    {
-      return _row_index;
     }
 
     auto get_row_count() const
@@ -100,53 +163,5 @@ namespace sqlpp::postgresql
     }
   };
 
-  template <typename Row>
-  auto get_next_result_row(char_result_t& result, Row& row) -> void
-  {
-    result.increase_row_index();
-    if (result.get_row_index() < result.get_row_count())
-    {
-      row.bind(result);
-    }
-    else
-    {
-      result.reset();
-    }
-  }
-
-  inline auto bind_field(char_result_t& result, std::int32_t& value, int index) -> void
-  {
-    value = std::strtol(PQgetvalue(result.get(), result.get_row_index(), index), nullptr, 10);
-  }
-
-  inline auto bind_field(char_result_t& result, std::int64_t& value, int index) -> void
-  {
-    value = std::strtoll(PQgetvalue(result.get(), result.get_row_index(), index), nullptr, 10);
-  }
-
-  inline auto bind_field(char_result_t& result, float& value, int index) -> void
-  {
-    value = std::strtof(PQgetvalue(result.get(), result.get_row_index(), index), nullptr);
-  }
-
-  inline auto bind_field(char_result_t& result, double& value, int index) -> void
-  {
-    value = std::strtod(PQgetvalue(result.get(), result.get_row_index(), index), nullptr);
-  }
-
-  inline auto bind_field(char_result_t& result, std::string_view& value, int index) -> void
-  {
-    value = std::string_view(PQgetvalue(result.get(), result.get_row_index(), index),
-                             PQgetlength(result.get(), result.get_row_index(), index));
-  }
-
-  inline auto bind_field(char_result_t& result, std::optional<std::string_view>& value, int index) -> void
-  {
-    value = PQgetisnull(result.get(), result.get_row_index(), index)
-                ? std::nullopt
-                : std::optional<std::string_view>{
-                      std::string_view(PQgetvalue(result.get(), result.get_row_index(), index),
-                                       PQgetlength(result.get(), result.get_row_index(), index))};
-  }
 }  // namespace sqlpp::postgresql
 

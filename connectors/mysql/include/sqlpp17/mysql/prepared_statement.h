@@ -57,11 +57,11 @@ namespace sqlpp::mysql::detail
 
 namespace sqlpp::mysql
 {
-  inline auto bind_parameter(detail::bind_meta_data_t& meta_data, MYSQL_BIND& parameter, const std::nullopt_t& value) -> void
+  inline auto bind_parameter(bind_meta_data_t& meta_data, MYSQL_BIND& parameter, const std::nullopt_t& value) -> void
   {
-    meta_data.bound_is_null = true;
+    meta_data.is_null = true;
 
-    parameter.is_null = &meta_data.bound_is_null;
+    parameter.is_null = &meta_data.is_null;
     parameter.buffer_type = MYSQL_TYPE_NULL;
     parameter.buffer = nullptr;
     parameter.buffer_length = 0;
@@ -72,11 +72,11 @@ namespace sqlpp::mysql
 
   // Taking parameters by non-const reference to prevent temporaries being created which
   // would lead to dangling pointers in the implementation
-  inline auto bind_parameter(detail::bind_meta_data_t& meta_data, MYSQL_BIND& parameter, bool& value) -> void
+  inline auto bind_parameter(bind_meta_data_t& meta_data, MYSQL_BIND& parameter, bool& value) -> void
   {
-    meta_data.bound_is_null = false;
+    meta_data.is_null = false;
 
-    parameter.is_null = &meta_data.bound_is_null;
+    parameter.is_null = &meta_data.is_null;
     parameter.buffer_type = MYSQL_TYPE_TINY;
     parameter.buffer = &value;
     parameter.buffer_length = sizeof(value);
@@ -85,11 +85,11 @@ namespace sqlpp::mysql
     parameter.error = nullptr;
   }
 
-  inline auto bind_parameter(detail::bind_meta_data_t& meta_data, MYSQL_BIND& parameter, std::int32_t& value) -> void
+  inline auto bind_parameter(bind_meta_data_t& meta_data, MYSQL_BIND& parameter, std::int32_t& value) -> void
   {
-    meta_data.bound_is_null = false;
+    meta_data.is_null = false;
 
-    parameter.is_null = &meta_data.bound_is_null;
+    parameter.is_null = &meta_data.is_null;
     parameter.buffer_type = MYSQL_TYPE_LONG;
     parameter.buffer = &value;
     parameter.buffer_length = sizeof(value);
@@ -98,11 +98,11 @@ namespace sqlpp::mysql
     parameter.error = nullptr;
   }
 
-  inline auto bind_parameter(detail::bind_meta_data_t& meta_data, MYSQL_BIND& parameter, std::int64_t& value) -> void
+  inline auto bind_parameter(bind_meta_data_t& meta_data, MYSQL_BIND& parameter, std::int64_t& value) -> void
   {
-    meta_data.bound_is_null = false;
+    meta_data.is_null = false;
 
-    parameter.is_null = &meta_data.bound_is_null;
+    parameter.is_null = &meta_data.is_null;
     parameter.buffer_type = MYSQL_TYPE_LONGLONG;
     parameter.buffer = &value;
     parameter.buffer_length = sizeof(value);
@@ -111,11 +111,11 @@ namespace sqlpp::mysql
     parameter.error = nullptr;
   }
 
-  inline auto bind_parameter(detail::bind_meta_data_t& meta_data, MYSQL_BIND& parameter, float& value) -> void
+  inline auto bind_parameter(bind_meta_data_t& meta_data, MYSQL_BIND& parameter, float& value) -> void
   {
-    meta_data.bound_is_null = false;
+    meta_data.is_null = false;
 
-    parameter.is_null = &meta_data.bound_is_null;
+    parameter.is_null = &meta_data.is_null;
     parameter.buffer_type = MYSQL_TYPE_FLOAT;
     parameter.buffer = &value;
     parameter.buffer_length = sizeof(value);
@@ -124,11 +124,11 @@ namespace sqlpp::mysql
     parameter.error = nullptr;
   }
 
-  inline auto bind_parameter(detail::bind_meta_data_t& meta_data, MYSQL_BIND& parameter, double& value) -> void
+  inline auto bind_parameter(bind_meta_data_t& meta_data, MYSQL_BIND& parameter, double& value) -> void
   {
-    meta_data.bound_is_null = false;
+    meta_data.is_null = false;
 
-    parameter.is_null = &meta_data.bound_is_null;
+    parameter.is_null = &meta_data.is_null;
     parameter.buffer_type = MYSQL_TYPE_DOUBLE;
     parameter.buffer = &value;
     parameter.buffer_length = sizeof(value);
@@ -137,11 +137,11 @@ namespace sqlpp::mysql
     parameter.error = nullptr;
   }
 
-  inline auto bind_parameter(detail::bind_meta_data_t& meta_data, MYSQL_BIND& parameter, std::string& value) -> void
+  inline auto bind_parameter(bind_meta_data_t& meta_data, MYSQL_BIND& parameter, std::string& value) -> void
   {
-    meta_data.bound_is_null = false;
+    meta_data.is_null = false;
 
-    parameter.is_null = &meta_data.bound_is_null;
+    parameter.is_null = &meta_data.is_null;
     parameter.buffer_type = MYSQL_TYPE_STRING;
     parameter.buffer = value.data();
     parameter.buffer_length = value.size();
@@ -150,11 +150,11 @@ namespace sqlpp::mysql
     parameter.error = nullptr;
   }
 
-  inline auto bind_parameter(detail::bind_meta_data_t& meta_data, MYSQL_BIND& parameter, std::string_view& value) -> void
+  inline auto bind_parameter(bind_meta_data_t& meta_data, MYSQL_BIND& parameter, std::string_view& value) -> void
   {
-    meta_data.bound_is_null = false;
+    meta_data.is_null = false;
 
-    parameter.is_null = &meta_data.bound_is_null;
+    parameter.is_null = &meta_data.is_null;
     parameter.buffer_type = MYSQL_TYPE_STRING;
     parameter.buffer = const_cast<char*>(value.data());  // Sigh...
     parameter.buffer_length = value.size();
@@ -164,13 +164,13 @@ namespace sqlpp::mysql
   }
 
   template <typename T>
-  auto bind_parameter(detail::bind_meta_data_t& meta_data, MYSQL_BIND& parameter, std::optional<T>& value) -> void
+  auto bind_parameter(bind_meta_data_t& meta_data, MYSQL_BIND& parameter, std::optional<T>& value) -> void
   {
     value ? bind_parameter(meta_data, parameter, *value) : bind_parameter(meta_data, parameter, std::nullopt);
   }
 
   template <typename... ParameterSpecs>
-  auto bind_parameters(std::array<detail::bind_meta_data_t, sizeof...(ParameterSpecs)>& meta_data,
+  auto bind_parameters(std::array<bind_meta_data_t, sizeof...(ParameterSpecs)>& meta_data,
                        std::array<MYSQL_BIND, sizeof...(ParameterSpecs)>& bind_data,
                        ::sqlpp::prepared_statement_parameters<type_vector<ParameterSpecs...>>& parameters) -> void
   {
@@ -184,7 +184,8 @@ namespace sqlpp::mysql
   class prepared_statement_t
   {
     detail::unique_prepared_statement_ptr _handle;
-    std::array<detail::bind_meta_data_t, ParameterVector::size()> _parameter_bind_meta_data = {};
+#warning: This should be a tuple of correct types
+    std::array<bind_meta_data_t, ParameterVector::size()> _parameter_bind_meta_data = {};
     std::array<MYSQL_BIND, ParameterVector::size()> _parameter_bind_data = {};
 
   public:
@@ -250,7 +251,7 @@ namespace sqlpp::mysql
       {
         mysql_stmt_store_result(this->get());
 
-        return ::sqlpp::result_t<ResultRow, prepared_statement_result_t>{prepared_statement_result_t{detail::unique_prepared_result_ptr{_handle.get(), {}}, column_count<ResultRow>}};
+        return ::sqlpp::result_t<prepared_statement_result_t<ResultRow>>{{detail::unique_prepared_result_ptr{_handle.get(), {}}, column_count_v<ResultRow>}};
       }
       else if constexpr (std::is_same_v<ResultType, execute_result>)
       {
