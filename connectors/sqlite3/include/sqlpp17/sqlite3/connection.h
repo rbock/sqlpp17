@@ -292,7 +292,7 @@ namespace sqlpp::sqlite3
     template <typename Statement>
     [[nodiscard]] auto select(const Statement& statement)
     {
-      auto prepared_statement = prepare(statement);
+      auto prepared_statement = ::sqlpp::sqlite3::prepared_statement_t{*this, statement, true};
       return prepared_statement.execute();
     }
 
