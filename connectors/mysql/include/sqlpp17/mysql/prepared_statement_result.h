@@ -153,7 +153,7 @@ namespace sqlpp::mysql
       case MYSQL_DATA_TRUNCATED:
         refetch_truncated_fields(stmt, row, buffers, meta_data, bind_parameters,
                                  std::make_integer_sequence<unsigned, sizeof...(ColumnSpecs)>{});
-        bind(stmt, bind_parameters);
+        ::sqlpp::mysql::detail::bind(stmt, bind_parameters);
         return true;
       case 1:
         throw sqlpp::exception(std::string("MySQL: Could not fetch next result: ") + mysql_stmt_error(stmt));
@@ -341,7 +341,7 @@ namespace sqlpp::mysql
       {
         prepare_field_parameters(_row, _bind_buffers, _bind_meta_data, _bind_parameters,
                                  std::make_integer_sequence<unsigned, sizeof...(ColumnSpecs)>{});
-        bind(_handle.get(), _bind_parameters);
+        ::sqlpp::mysql::detail::bind(_handle.get(), _bind_parameters);
         _unbound = false;
       }
 
