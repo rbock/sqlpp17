@@ -49,55 +49,55 @@ namespace sqlpp::postgresql
   };
   using unique_prepared_statement_ptr = std::unique_ptr<PGconn, prepared_statement_cleanup_t>;
 
-  inline auto bind_parameter([[maybe_unused]] std::string& parameter_string, char* parameter_pointer, const std::nullopt_t& value) -> void
+  inline auto bind_parameter([[maybe_unused]] std::string& parameter_string, char*& parameter_pointer, const std::nullopt_t& value) -> void
   {
     parameter_pointer = nullptr;
   }
 
-  inline auto bind_parameter(std::string& parameter_string, char* parameter_pointer, bool& value) -> void
+  inline auto bind_parameter(std::string& parameter_string, char*& parameter_pointer, bool& value) -> void
   {
     parameter_string = value ? "TRUE" : "FALSE";
     parameter_pointer = parameter_string.data();
   }
 
-  inline auto bind_parameter(std::string& parameter_string, char* parameter_pointer, std::int32_t& value) -> void
+  inline auto bind_parameter(std::string& parameter_string, char*& parameter_pointer, std::int32_t& value) -> void
   {
     parameter_string = std::to_string(value);
     parameter_pointer = parameter_string.data();
   }
 
-  inline auto bind_parameter(std::string& parameter_string, char* parameter_pointer, std::int64_t& value) -> void
+  inline auto bind_parameter(std::string& parameter_string, char*& parameter_pointer, std::int64_t& value) -> void
   {
     parameter_string = std::to_string(value);
     parameter_pointer = parameter_string.data();
   }
 
-  inline auto bind_parameter(std::string& parameter_string, char* parameter_pointer, float& value) -> void
+  inline auto bind_parameter(std::string& parameter_string, char*& parameter_pointer, float& value) -> void
   {
     parameter_string = to_sql_string_c(::sqlpp::postgresql::context_t{}, value);
     parameter_pointer = parameter_string.data();
   }
 
-  inline auto bind_parameter(std::string& parameter_string, char* parameter_pointer, double& value) -> void
+  inline auto bind_parameter(std::string& parameter_string, char*& parameter_pointer, double& value) -> void
   {
     parameter_string = to_sql_string_c(::sqlpp::postgresql::context_t{}, value);
     parameter_pointer = parameter_string.data();
   }
 
-  inline auto bind_parameter(std::string& parameter_string, char* parameter_pointer, std::string& value) -> void
+  inline auto bind_parameter(std::string& parameter_string, char*& parameter_pointer, std::string& value) -> void
   {
     parameter_string = value;
     parameter_pointer = parameter_string.data();
   }
 
-  inline auto bind_parameter(std::string& parameter_string, char* parameter_pointer, std::string_view& value) -> void
+  inline auto bind_parameter(std::string& parameter_string, char*& parameter_pointer, std::string_view& value) -> void
   {
     parameter_string = value;
     parameter_pointer = parameter_string.data();
   }
 
   template <typename T>
-  auto bind_parameter(std::string& parameter_string, char* parameter_pointer, std::optional<T>& value) -> void
+  auto bind_parameter(std::string& parameter_string, char*& parameter_pointer, std::optional<T>& value) -> void
   {
     value ? bind_parameter(parameter_string, parameter_pointer, *value) : bind_parameter(parameter_string, parameter_pointer, std::nullopt);
   }

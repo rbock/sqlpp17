@@ -88,7 +88,7 @@ namespace sqlpp::postgresql
   template <typename... ColumnSpecs>
   auto read_fields(PGresult* result, int row_index, result_row_t<ColumnSpecs...>& row) -> void
   {
-    std::size_t index = 0;
+    int index = -1;
     (..., (read_field(result, row_index, static_cast<result_column_base<ColumnSpecs>&>(row)(), ++index)));
   }
 

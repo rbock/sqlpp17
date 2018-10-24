@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <functional>
 #include <type_traits>
 
+#include <sqlpp17/clause/command.h>
 #include <sqlpp17/connection_base.h>
 #include <sqlpp17/result.h>
 #include <sqlpp17/statement.h>
@@ -66,9 +67,9 @@ namespace sqlpp::postgresql::detail
   using unique_connection_ptr = std::unique_ptr<PGconn, detail::connection_cleanup_t>;
 
   template<typename Connection, typename Statement>
-  inline auto execute(const Connection& connection, const Statement& statement) -> detail::unique_result_ptr
+  auto execute(const Connection& connection, const Statement& statement) -> detail::unique_result_ptr
   {
-    const auto sql_string = to_sql_string_c(context_t{}, statement);
+    const auto sql_string =  to_sql_string_c(context_t{}, statement);
 
     if (connection.is_debug_allowed())
       connection.debug("Executing: '" + sql_string + "'");
@@ -269,7 +270,7 @@ namespace sqlpp::postgresql
         throw sqlpp::exception("Postgresql: Cannot have more than one open transaction per connection");
       }
 
-      detail::execute(*this, "START TRANSACTION");
+      detail::execute(*this, sqlpp::command("START TRANSACTION"));
       _transaction_active = true;
     }
 
@@ -281,7 +282,7 @@ namespace sqlpp::postgresql
       }
 
       _transaction_active = false;
-      detail::execute(*this, "COMMIT");
+      detail::execute(*this, sqlpp::command("COMMIT"));
     }
 
     auto rollback() -> void
@@ -292,7 +293,7 @@ namespace sqlpp::postgresql
       }
 
       _transaction_active = false;
-      detail::execute(*this, "ROLLBACK");
+      detail::execute(*this, sqlpp::command("ROLLBACK"));
     }
 
     auto destroy_transaction() noexcept -> void
