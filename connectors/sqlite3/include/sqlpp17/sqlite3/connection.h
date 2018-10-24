@@ -236,8 +236,8 @@ namespace sqlpp::sqlite3
     {
       try
       {
-        if (debug())
-          debug()("Auto rollback!");
+        if (is_debug_allowed())
+          debug("Auto rollback!");
 
         rollback();
       }
@@ -248,9 +248,15 @@ namespace sqlpp::sqlite3
       }
     }
 
-    auto debug() const
+    static constexpr auto is_debug_allowed()
     {
-      return _debug;
+      return Debug == ::sqlpp::debug::allowed;
+    }
+
+    auto debug(const std::string_view message) const
+    {
+      if (is_debug_allowed() and _debug)
+        _debug(message);
     }
 
     auto* get() const

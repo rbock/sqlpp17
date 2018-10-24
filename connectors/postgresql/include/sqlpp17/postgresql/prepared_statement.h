@@ -139,8 +139,9 @@ namespace sqlpp::postgresql
           _connection(connection.get(), {_name})
     {
       const auto sql_string = to_sql_string_c(context_t{}, statement);
-#warning: connection needs to decide whether or not to print
-      connection.debug("Preparing " + _name + ": '" + sql_string + "'");
+
+      if constexpr (Connection::is_debug_allowed())
+        connection.debug("Preparing " + _name + ": '" + sql_string + "'");
 
       auto result = detail::unique_result_ptr(
           PQprepare(connection.get(), _name.c_str(), sql_string.c_str(), ParameterVector::size(), nullptr), {});

@@ -68,7 +68,8 @@ namespace sqlpp::mysql::detail
   {
     detail::thread_init();
 
-    connection.debug("Executing: '" + query + "'");
+    if constexpr (base_connection<Pool, Debug>::is_debug_allowed())
+      connection.debug("Executing: '" + query + "'");
 
     if (mysql_real_query(connection.get(), query.c_str(), query.size()))
     {
@@ -249,7 +250,8 @@ namespace sqlpp::mysql
     {
       try
       {
-        debug("Auto rollback!");
+        if constexpr (is_debug_allowed())
+          debug("Auto rollback!");
 
         rollback();
       }
@@ -260,7 +262,7 @@ namespace sqlpp::mysql
       }
     }
 
-    constexpr auto is_debug_allowed() const
+    static constexpr auto is_debug_allowed()
     {
       return Debug == ::sqlpp::debug::allowed;
     }

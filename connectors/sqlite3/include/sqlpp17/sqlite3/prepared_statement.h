@@ -142,8 +142,10 @@ namespace sqlpp::sqlite3
         : _result_gets_ownership(result_gets_ownership), _connection(connection.get())
     {
       const auto sql_string = to_sql_string_c(context_t{}, statement);
-#warning: debug should act like in mysql
-      connection.debug()("Preparing: '" + sql_string + "'");
+      if constexpr (Connection::is_debug_allowed())
+      {
+        connection.debug("Preparing: '" + sql_string + "'");
+      }
 
       ::sqlite3_stmt* statement_ptr = nullptr;
 

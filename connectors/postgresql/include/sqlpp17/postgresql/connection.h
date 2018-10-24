@@ -71,7 +71,7 @@ namespace sqlpp::postgresql::detail
   {
     const auto sql_string =  to_sql_string_c(context_t{}, statement);
 
-    if (connection.is_debug_allowed())
+    if (Connection::is_debug_allowed())
       connection.debug("Executing: '" + sql_string + "'");
 
     // If one day we switch to binary format, then we could use PQexecParams with resultFormat=1
@@ -312,14 +312,14 @@ namespace sqlpp::postgresql
       }
     }
 
-    constexpr auto is_debug_allowed() const
+    static constexpr auto is_debug_allowed()
     {
       return Debug == ::sqlpp::debug::allowed;
     }
 
     auto debug([[maybe_unused]] std::string_view message) const
     {
-      if (is_debug_allowed())
+      if (is_debug_allowed() and _debug)
         _debug(message);
     }
 

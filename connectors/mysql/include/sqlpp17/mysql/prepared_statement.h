@@ -198,7 +198,8 @@ namespace sqlpp::mysql
       detail::thread_init();
       const auto sql_string = to_sql_string_c(context_t{}, statement);
 
-      connection.debug("Preparing: '" + sql_string + "'");
+      if constexpr (Connection::is_debug_allowed())
+        connection.debug("Preparing: '" + sql_string + "'");
 
       _handle = detail::unique_prepared_statement_ptr(mysql_stmt_init(connection.get()), {});
       if (not _handle)
