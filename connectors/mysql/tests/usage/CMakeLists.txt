@@ -44,5 +44,5 @@ test_usage(transaction)
 
 test_usage(float)
 
-#test_usage(connection_pool Threads::Threads)
+test_usage(connection_pool Threads::Threads)
 

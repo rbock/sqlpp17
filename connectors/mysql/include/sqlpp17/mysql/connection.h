@@ -92,14 +92,29 @@ namespace sqlpp::mysql
   {
     detail::unique_connection_ptr _handle;
     bool _transaction_active = false;
+#warning: These two members are optional
+    Pool* _connection_pool = nullptr;
     std::function<void(std::string_view)> _debug;
-    Pool* _pool = nullptr;
 
     template <typename... Clauses>
     friend class ::sqlpp::statement;
 
     template <typename Clause, typename Statement>
     friend class ::sqlpp::clause_base;
+
+    friend Pool;
+
+    base_connection(const connection_config_t& config,
+                 detail::unique_connection_ptr&& handle,
+                 Pool* connection_pool)
+        : _handle(std::move(handle)), _connection_pool(connection_pool), _debug(config.debug)
+    {
+    }
+
+    base_connection(const connection_config_t& config, Pool* connection_pool) : base_connection(config)
+    {
+      _connection_pool = connection_pool;
+    }
 
   public:
     base_connection() = delete;
@@ -157,8 +172,8 @@ namespace sqlpp::mysql
     {
       if constexpr (not std::is_same_v<Pool, no_pool>)
       {
-        if (_pool)
-          _pool->put(std::move(_handle));
+        if (_connection_pool)
+          _connection_pool->put(std::move(_handle));
       }
     }
 

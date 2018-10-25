@@ -117,9 +117,9 @@ namespace sqlpp::postgresql
   template<typename Pool, ::sqlpp::debug Debug>
   class base_connection : public ::sqlpp::connection_base
   {
-    detail::unique_connection_ptr _handle;
     Pool* _connection_pool = nullptr;
     bool _transaction_active = false;
+    detail::unique_connection_ptr _handle;
     std::function<void(std::string_view)> _debug;
 
     mutable std::size_t _statement_index = 0;

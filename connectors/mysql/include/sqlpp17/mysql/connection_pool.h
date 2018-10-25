@@ -89,7 +89,7 @@ namespace sqlpp::mysql::detail
 
 namespace sqlpp::mysql
 {
-  template <debug Debug>
+  template <::sqlpp::debug Debug>
   class connection_pool_t
   {
     connection_config_t _connection_config;
@@ -97,7 +97,7 @@ namespace sqlpp::mysql
     std::mutex _mutex;
 
     using _connection_t = ::sqlpp::mysql::base_connection<connection_pool_t, Debug>;
-    friend class connection_t;
+    friend _connection_t;
 
   public:
     connection_pool_t() = delete;

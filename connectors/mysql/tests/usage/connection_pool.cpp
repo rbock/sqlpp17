@@ -51,7 +51,7 @@ namespace
     return config;
   };
 
-  auto pool = mysql::connection_pool_t{5, get_config()};
+  auto pool = mysql::connection_pool_t<::sqlpp::debug::none>{5, get_config()};
 }  // namespace
 
 [[nodiscard]] auto test_setup()
@@ -110,7 +110,7 @@ namespace
 
 [[nodiscard]] auto test_multiple_connections()
 {
-  auto connections = std::vector<mysql::connection_t>{};
+  auto connections = std::vector<std::decay_t<decltype(pool.get())>>{};
   auto pointers = std::set<void*>{};
   for (auto i = 0; i < 100; ++i)
   {
