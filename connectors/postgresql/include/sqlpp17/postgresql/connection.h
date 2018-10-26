@@ -30,7 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <type_traits>
 
 #include <sqlpp17/clause/command.h>
-#include <sqlpp17/connection_base.h>
+#include <sqlpp17/connection.h>
 #include <sqlpp17/result.h>
 #include <sqlpp17/statement.h>
 
@@ -115,7 +115,7 @@ namespace sqlpp::postgresql::detail
 namespace sqlpp::postgresql
 {
   template<typename Pool, ::sqlpp::debug Debug>
-  class base_connection : public ::sqlpp::connection_base
+  class base_connection : public ::sqlpp::connection
   {
     Pool* _connection_pool = nullptr;
     bool _transaction_active = false;
