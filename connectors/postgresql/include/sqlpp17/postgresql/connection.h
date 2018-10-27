@@ -114,13 +114,15 @@ namespace sqlpp::postgresql::detail
 
 namespace sqlpp::postgresql
 {
-  template<typename Pool, ::sqlpp::debug Debug>
-  class base_connection : public ::sqlpp::connection
+  template <typename Pool, ::sqlpp::debug Debug>
+  class base_connection : public ::sqlpp::connection,
+                          private ::sqlpp::pool_base<Pool>,
+                          private ::sqlpp::debug_base<Debug>
   {
-    Pool* _connection_pool = nullptr;
-    bool _transaction_active = false;
+    using _pool_base = ::sqlpp::pool_base<Pool>;
+    using _debug_base = ::sqlpp::debug_base<Debug>;
     detail::unique_connection_ptr _handle;
-    std::function<void(std::string_view)> _debug;
+    bool _transaction_active = false;
 
     mutable std::size_t _statement_index = 0;
 
@@ -135,18 +137,18 @@ namespace sqlpp::postgresql
     base_connection(const connection_config_t& config,
                  detail::unique_connection_ptr&& handle,
                  Pool* connection_pool)
-        : _handle(std::move(handle)), _connection_pool(connection_pool), _debug(config.debug)
+        : _pool_base{connection_pool}, _debug_base{config.debug}, _handle{std::move(handle)}
     {
     }
 
-    base_connection(const connection_config_t& config, Pool* connection_pool) : base_connection(config)
+    base_connection(const connection_config_t& config, Pool* connection_pool) : base_connection{config}
     {
-      _connection_pool = connection_pool;
+      this->_connection_pool = connection_pool;
     }
 
   public:
     base_connection() = delete;
-    base_connection(const connection_config_t& config) : _handle(nullptr, {}), _debug(config.debug)
+    base_connection(const connection_config_t& config) : _debug_base{config.debug}, _handle{nullptr, {}}
     {
       if (config.pre_connect)
       {
@@ -203,8 +205,8 @@ namespace sqlpp::postgresql
     {
       if constexpr (not std::is_same_v<Pool, ::sqlpp::no_pool>)
       {
-        if (_connection_pool)
-          _connection_pool->put(std::move(_handle));
+        if (this->_connection_pool)
+          this->_connection_pool->put(std::move(_handle));
       }
     }
 
@@ -317,10 +319,13 @@ namespace sqlpp::postgresql
       return Debug == ::sqlpp::debug::allowed;
     }
 
-    auto debug([[maybe_unused]] std::string_view message) const
+    auto debug([[maybe_unused]] const std::string_view message) const
     {
-      if (is_debug_allowed() and _debug)
-        _debug(message);
+      if constexpr (is_debug_allowed())
+      {
+        if (this->_debug)
+          this->_debug(message);
+      }
     }
 
     auto* get() const

@@ -49,7 +49,6 @@ namespace sqlpp::sqlite3
 
   template <::sqlpp::debug Debug = ::sqlpp::debug::allowed>
   using connection_t = base_connection<no_pool, Debug>;
-
 };  // namespace sqlpp::sqlite3
 
 namespace sqlpp::sqlite3::detail
@@ -73,12 +72,15 @@ namespace sqlpp::sqlite3::detail
 namespace sqlpp::sqlite3
 {
   template<typename Pool, ::sqlpp::debug Debug>
-  class base_connection : public ::sqlpp::connection
+  class base_connection : public ::sqlpp::connection,
+                          private ::sqlpp::pool_base<Pool>,
+                          private ::sqlpp::debug_base<Debug>
   {
+    using _pool_base = ::sqlpp::pool_base<Pool>;
+    using _debug_base = ::sqlpp::debug_base<Debug>;
+
     detail::unique_connection_ptr _handle;
-    Pool* _connection_pool = nullptr;
     bool _transaction_active = false;
-    std::function<void(std::string_view)> _debug;
 
     template <typename... Clauses>
     friend class ::sqlpp::statement;
@@ -91,18 +93,18 @@ namespace sqlpp::sqlite3
     base_connection(const connection_config_t& config,
                  detail::unique_connection_ptr&& handle,
                  Pool* connection_pool)
-        : _handle(std::move(handle)), _connection_pool(connection_pool), _debug(config.debug)
+        : _pool_base{connection_pool}, _debug_base{config.debug}, _handle{std::move(handle)}
     {
     }
 
-    base_connection(const connection_config_t& config, Pool* connection_pool) : base_connection(config)
+    base_connection(const connection_config_t& config, Pool* connection_pool) : base_connection{config}
     {
-      _connection_pool = connection_pool;
+      this->_connection_pool = connection_pool;
     }
 
   public:
     base_connection() = delete;
-    base_connection(const connection_config_t& config) : _handle(nullptr, {}), _debug(config.debug)
+    base_connection(const connection_config_t& config) : _debug_base{config.debug}, _handle{nullptr, {}}
     {
       ::sqlite3* connection_ptr = nullptr;
       const auto rc = sqlite3_open_v2(config.path_to_database.c_str(), &connection_ptr, config.flags,
@@ -137,8 +139,8 @@ namespace sqlpp::sqlite3
     {
       if constexpr (not std::is_same_v<Pool, ::sqlpp::no_pool>)
       {
-        if (_connection_pool)
-          _connection_pool->put(std::move(_handle));
+        if (this->_connection_pool)
+          this->_connection_pool->put(std::move(_handle));
       }
     }
 
@@ -253,10 +255,13 @@ namespace sqlpp::sqlite3
       return Debug == ::sqlpp::debug::allowed;
     }
 
-    auto debug(const std::string_view message) const
+    auto debug([[maybe_unused]] const std::string_view message) const
     {
-      if (is_debug_allowed() and _debug)
-        _debug(message);
+      if constexpr (is_debug_allowed())
+      {
+        if (this->_debug)
+          this->_debug(message);
+      }
     }
 
     auto* get() const

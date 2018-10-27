@@ -26,6 +26,9 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <string_view>
+#include <functional>
+
 namespace sqlpp
 {
   struct connection
@@ -40,6 +43,37 @@ namespace sqlpp
 
   struct no_pool
   {
+  };
+
+  template <typename Pool>
+  struct pool_base
+  {
+    Pool* _connection_pool = nullptr;
+
+    pool_base() = default;
+
+    pool_base(Pool* connection_pool) : _connection_pool{connection_pool}
+    {
+    }
+  };
+
+  template <>
+  struct pool_base<::sqlpp::no_pool>
+  {
+  };
+
+  template <::sqlpp::debug Debug>
+  struct debug_base
+  {
+    std::function<void(std::string_view)> _debug;
+  };
+
+  template <>
+  struct debug_base<::sqlpp::debug::none>
+  {
+    debug_base(const std::function<void(std::string_view)>&)
+    {
+    }
   };
 
 }  // namespace sqlpp
