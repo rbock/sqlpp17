@@ -1,3 +1,12 @@
+The sqlpp11 connector for sqlite3 has additional functions:
+
+  - auto attach(const connection_config&, const std::string name) -> schema_t;
+  - auto set_default_isolation_level(isolation_level level) -> void;
+  - auto get_default_isolation_level() -> isolation_level;
+
+While these functions are probably too specific, it would be good to offer the ability to execute arbitrary strings and obtain results from that.
+Also for other connectors.
+
 Drop multi_column. It makes a lot of things horribly complex (like result binding, or how to treat a result row as a tuple (e.g. is it a flat tuple or a nested one))? It probably never worked for prepared statements in sqlpp11, and it is for a super duper edge case only.
 
 Results of prepared statements:

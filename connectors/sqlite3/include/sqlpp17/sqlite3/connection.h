@@ -130,7 +130,6 @@ namespace sqlpp::sqlite3
 #endif
     }
 
-#warning : There are a bunch of additional functions in the sqlpp11 connector
     base_connection(const base_connection&) = delete;
     base_connection(base_connection&&) = default;
     base_connection& operator=(const base_connection&) = delete;
