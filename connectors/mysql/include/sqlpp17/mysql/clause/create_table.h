@@ -40,45 +40,51 @@ namespace sqlpp::mysql
 
 namespace sqlpp::mysql::detail
 {
+  // A wrapper to prevent accidental conversion in the functions below
+  template <typename T>
+  struct column_type
+  {
+  };
+
   template <typename ValueType>
-  [[nodiscard]] auto value_type_to_sql_string(const ValueType&)
+  [[nodiscard]] auto value_type_to_sql_string(column_type<ValueType>)
   {
     static_assert(wrong<ValueType>, "unknown value type for CREATE TABLE");
   }
 
-  [[nodiscard]] inline auto value_type_to_sql_string(const bool&)
+  [[nodiscard]] inline auto value_type_to_sql_string(column_type<bool>)
   {
     return " BOOLEAN";
   }
 
-  [[nodiscard]] inline auto value_type_to_sql_string(const int64_t&)
+  [[nodiscard]] inline auto value_type_to_sql_string(column_type<int64_t>)
   {
     return " BIGINT";
   }
 
-  [[nodiscard]] inline auto value_type_to_sql_string(const int32_t&)
+  [[nodiscard]] inline auto value_type_to_sql_string(column_type<int32_t>)
   {
     return " INT";
   }
 
-  [[nodiscard]] inline auto value_type_to_sql_string(const float&)
+  [[nodiscard]] inline auto value_type_to_sql_string(column_type<float>)
   {
     return " FLOAT";
   }
 
-  [[nodiscard]] inline auto value_type_to_sql_string(const double&)
+  [[nodiscard]] inline auto value_type_to_sql_string(column_type<double>)
   {
     return " DOUBLE";
   }
 
   template <uint8_t Size>
-  [[nodiscard]] inline auto value_type_to_sql_string(const ::sqlpp::fixchar<Size>&)
+  [[nodiscard]] inline auto value_type_to_sql_string(column_type<::sqlpp::fixchar<Size>>)
   {
     return " CHAR(" + std::to_string(Size) + ")";
   }
 
   template <uint8_t Size>
-  [[nodiscard]] inline auto value_type_to_sql_string(const ::sqlpp::varchar<Size>&)
+  [[nodiscard]] inline auto value_type_to_sql_string(column_type<::sqlpp::varchar<Size>>)
   {
     return " VARCHAR(" + std::to_string(Size) + ")";
   }
@@ -86,7 +92,7 @@ namespace sqlpp::mysql::detail
   template <typename ColumnSpec>
   [[nodiscard]] auto to_sql_column_spec_string(mysql::context_t& context, const ColumnSpec& columnSpec)
   {
-    auto ret = to_sql_name(context, columnSpec) + value_type_to_sql_string(typename ColumnSpec::value_type{});
+    auto ret = to_sql_name(context, columnSpec) + value_type_to_sql_string(column_type<typename ColumnSpec::value_type>{});
 
     if constexpr (!ColumnSpec::can_be_null)
     {
