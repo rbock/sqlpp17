@@ -173,16 +173,19 @@ namespace sqlpp::sqlite3
 
       ::sqlpp::sqlite3::bind_parameters(_handle.get(), parameters);
 
-      switch (const auto rc = sqlite3_step(_handle.get()); rc)
+      if constexpr (not std::is_same_v<ResultType, select_result>)
       {
-        case SQLITE_OK:
-          [[fallthrough]];
-        case SQLITE_ROW:
-          [[fallthrough]];  // might occur if execute is called with a select
-        case SQLITE_DONE:
-          break;
-        default:
-          throw sqlpp::exception("Sqlite3: Could not execute statement: " + std::string(sqlite3_errstr(rc)));
+        switch (const auto rc = sqlite3_step(_handle.get()); rc)
+        {
+          case SQLITE_OK:
+            [[fallthrough]];
+          case SQLITE_ROW:
+            [[fallthrough]];  // might occur if execute is called with a select
+          case SQLITE_DONE:
+            break;
+          default:
+            throw sqlpp::exception("Sqlite3: Could not execute statement: " + std::string(sqlite3_errstr(rc)));
+        }
       }
 
       if constexpr (std::is_same_v<ResultType, insert_result>)

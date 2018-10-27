@@ -45,6 +45,47 @@ auto print_debug(std::string_view message)
   std::cout << "Debug: " << message << std::endl;
 }
 
+void compare(std::size_t index, float expected, float received)
+{
+  if (expected != received)
+  {
+    std::cout << "Row " << index << ": Expected '" << expected << "' and received '" << received << "'" << std::endl;
+    throw std::runtime_error("unexpected result");
+  }
+}
+
+void compare(std::size_t index, double expected, double received)
+{
+  if (expected != received)
+  {
+    std::cout << "Row " << index << ": Expected '" << expected << "' and received '" << received << "'" << std::endl;
+    throw std::runtime_error("unexpected result");
+  }
+}
+
+void compare(std::size_t index, int32_t expected, int32_t received)
+{
+  if (expected != received)
+  {
+    std::cout << "Row " << index << ": Expected '" << expected << "' and received '" << received << "'" << std::endl;
+    throw std::runtime_error("unexpected result");
+  }
+}
+
+struct Row
+{
+  float valueFloat;
+  double valueDouble;
+  std::int32_t valueInt;
+};
+
+const auto inputRows = std::vector<Row>{{12345678901234567890., 12345678901234567890., 1234567890},
+                                        {-12345678901234567890., -12345678901234567890., -1234567890},
+                                        {0., 0., 0},
+                                        {1.2345678901234567890, 1.2345678901234567890, 0},
+                                        {-1.2345678901234567890, -1.2345678901234567890, 0},
+                                        {DBL_MIN / 2.0, DBL_MIN, 0}};
+
 int main()
 {
   auto config = ::sqlpp::sqlite3::connection_config_t{};
@@ -60,57 +101,60 @@ int main()
 
     std::cout << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
     {
+      std::cout << "Comparing inserted and retrieved values in direct execution" << std::endl;
       db(truncate(tabFloat));
-      [[maybe_unused]] auto id =
-          db(insert_into(tabFloat).set(tabFloat.valueFloat = 1.2345678901234567890,
-                                       tabFloat.valueDouble = 1.2345678901234567890, tabFloat.valueInt = 1234567890));
-      for (const auto& row : db(select(all_of(tabFloat)).from(tabFloat).unconditionally()))
+      for (const auto& input : inputRows)
       {
-        std::cout << row.valueFloat << "\n" << row.valueDouble << "\n" << row.valueInt << "\n";
+        [[maybe_unused]] auto id =
+            db(insert_into(tabFloat).set(tabFloat.valueFloat = input.valueFloat,
+                                         tabFloat.valueDouble = input.valueDouble, tabFloat.valueInt = input.valueInt));
+      }
+
+      auto index = std::size_t{};
+      for (const auto& row : db(select(all_of(tabFloat)).from(tabFloat).unconditionally().order_by(tabFloat.id.asc())))
+      {
+        //std::cout << row.id << " " << row.valueFloat << ", " << row.valueDouble << ", " << row.valueInt << std::endl;
+        compare(index, inputRows[index].valueFloat, row.valueFloat);
+        compare(index, inputRows[index].valueDouble, row.valueDouble);
+        compare(index, inputRows[index].valueInt, row.valueInt);
+        ++index;
       }
     }
     {
-      std::cout << "-------------------------------------------\n";
-      std::cout << "prepared insert\n";
-      std::cout << "-------------------------------------------\n";
+      std::cout << "Comparing inserted and retrieved values in prepared statements with parameters for insert" << std::endl;
       db(truncate(tabFloat));
-      auto preparedInsert = db.prepare(insert_into(tabFloat).set(
-          tabFloat.valueFloat = ::sqlpp::parameter<float>(tabFloat.valueFloat),
-          tabFloat.valueDouble = ::sqlpp::parameter<double>(tabFloat.valueDouble), tabFloat.valueInt = 1234567890));
-      preparedInsert.parameters.valueFloat = 1.2345678901234567890;
-      preparedInsert.parameters.valueDouble = 1.2345678901234567890;
-      execute(preparedInsert);
-      preparedInsert.parameters.valueFloat = DBL_MIN / 2.0;
-      preparedInsert.parameters.valueDouble = INFINITY;
-      execute(preparedInsert);
-      /*
-#warning: sqlite3 does not support NaN in bind_double
-      preparedInsert.valueFloat = std::nanf("");
-      preparedInsert.valueDouble = std::nan("");
-      execute(preparedInsert);
-      */
-#warning: Need to actually check the results
-      for (const auto& row : db(select(all_of(tabFloat)).from(tabFloat).unconditionally()))
+      auto preparedInsert = db.prepare(
+          insert_into(tabFloat).set(tabFloat.valueFloat = ::sqlpp::parameter<float>(tabFloat.valueFloat),
+                                    tabFloat.valueDouble = ::sqlpp::parameter<double>(tabFloat.valueDouble),
+                                    tabFloat.valueInt = ::sqlpp::parameter<std::int32_t>(tabFloat.valueInt)));
+      for (const auto& input : inputRows)
       {
-        std::cout << "char result: " << row.valueFloat << "\n" << row.valueDouble << "\n" << row.valueInt << "\n";
+        preparedInsert.parameters.valueFloat = input.valueFloat;
+        preparedInsert.parameters.valueDouble = input.valueDouble;
+        preparedInsert.parameters.valueInt = input.valueInt;
+        std::cout << '.';
+        execute(preparedInsert);
       }
-      auto preparedSelect = db.prepare(select(all_of(tabFloat)).from(tabFloat).unconditionally());
-      for (const auto& row : execute(preparedSelect))
+      std::cout << std::endl;
+      auto index = std::size_t{};
+      for (const auto& row : db(select(all_of(tabFloat)).from(tabFloat).unconditionally().order_by(tabFloat.id.asc())))
       {
-        std::cout << "bind result: " << row.valueFloat << "\n" << row.valueDouble << "\n" << row.valueInt << "\n";
+        //std::cout << row.id << " " << row.valueFloat << ", " << row.valueDouble << ", " << row.valueInt << std::endl;
+        compare(index, inputRows[index].valueFloat, row.valueFloat);
+        compare(index, inputRows[index].valueDouble, row.valueDouble);
+        compare(index, inputRows[index].valueInt, row.valueInt);
+        ++index;
       }
-    }
-    {
-      std::cout << "-------------------------------------------\n";
-      std::cout << "big number insert\n";
-      std::cout << "-------------------------------------------\n";
-      db(truncate(tabFloat));
-      [[maybe_unused]] auto id =
-          db(insert_into(tabFloat).set(tabFloat.valueFloat = 1234567890.1234567890,
-                                       tabFloat.valueDouble = 1234567890.1234567890, tabFloat.valueInt = 1234567890));
-      for (const auto& row : db(select(all_of(tabFloat)).from(tabFloat).unconditionally()))
+      try
       {
-        std::cout << row.valueFloat << "\n" << row.valueDouble << "\n" << row.valueInt << "\n";
+        preparedInsert.parameters.valueFloat = std::nanf("");
+        preparedInsert.parameters.valueDouble = std::nan("");
+        execute(preparedInsert);
+        throw std::domain_error("Unexpected acceptance of std::nan and std:nanf");
+      }
+      catch (const ::sqlpp::exception& e)
+      {
+        // expected exception
       }
     }
   }
