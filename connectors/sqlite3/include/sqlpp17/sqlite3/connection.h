@@ -216,10 +216,9 @@ namespace sqlpp::sqlite3
         throw sqlpp::exception("Sqlite3: Cannot commit without active transaction");
       }
 
+      _transaction_active = false;
       auto prepared_statement = prepared_statement_t{*this, ::sqlpp::command("COMMIT"), detail::result_owns_statement{true}};
       prepared_statement.execute();
-#warning: Need to check other connectors, if they have the order of things correct, here.
-      _transaction_active = false;
     }
 
     auto rollback() -> void
@@ -229,9 +228,9 @@ namespace sqlpp::sqlite3
         throw sqlpp::exception("Sqlite3: Cannot rollback without active transaction");
       }
 
+      _transaction_active = false;
       auto prepared_statement = prepared_statement_t{*this, ::sqlpp::command("ROLLBACK"), detail::result_owns_statement{true}};
       prepared_statement.execute();
-      _transaction_active = false;
     }
 
     auto destroy_transaction() noexcept -> void

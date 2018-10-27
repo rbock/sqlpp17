@@ -250,6 +250,7 @@ namespace sqlpp::mysql
       _transaction_active = false;
       detail::execute_query(*this, "COMMIT");
     }
+
     auto rollback() -> void
     {
       if (not _transaction_active)
