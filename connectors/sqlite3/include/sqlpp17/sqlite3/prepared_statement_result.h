@@ -41,6 +41,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp::sqlite3::detail
 {
+  enum class result_owns_statement : bool {};
+
   struct prepared_statement_cleanup_t
   {
     bool _owning;

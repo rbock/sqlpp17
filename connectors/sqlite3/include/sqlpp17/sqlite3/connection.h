@@ -188,8 +188,7 @@ namespace sqlpp::sqlite3
       using Statement = ::sqlpp::statement<Clauses...>;
       if constexpr (constexpr auto _check = check_statement_preparable<base_connection>(type_v<Statement>); _check)
       {
-#warning: Need to have an enum for result owns statement
-        return ::sqlpp::sqlite3::prepared_statement_t{*this, statement, false};
+        return ::sqlpp::sqlite3::prepared_statement_t{*this, statement, detail::result_owns_statement{false}};
       }
       else
       {
@@ -204,7 +203,8 @@ namespace sqlpp::sqlite3
         throw sqlpp::exception("Sqlite3: Cannot have more than one open transaction per connection");
       }
 
-      auto prepared_statement = prepared_statement_t{*this, ::sqlpp::command("BEGIN TRANSACTION"), true};
+      auto prepared_statement =
+          prepared_statement_t{*this, ::sqlpp::command("BEGIN TRANSACTION"), detail::result_owns_statement{true}};
       prepared_statement.execute();
       _transaction_active = true;
     }
@@ -216,7 +216,7 @@ namespace sqlpp::sqlite3
         throw sqlpp::exception("Sqlite3: Cannot commit without active transaction");
       }
 
-      auto prepared_statement = prepared_statement_t{*this, ::sqlpp::command("COMMIT"), true};
+      auto prepared_statement = prepared_statement_t{*this, ::sqlpp::command("COMMIT"), detail::result_owns_statement{true}};
       prepared_statement.execute();
 #warning: Need to check other connectors, if they have the order of things correct, here.
       _transaction_active = false;
@@ -229,7 +229,7 @@ namespace sqlpp::sqlite3
         throw sqlpp::exception("Sqlite3: Cannot rollback without active transaction");
       }
 
-      auto prepared_statement = prepared_statement_t{*this, ::sqlpp::command("ROLLBACK"), true};
+      auto prepared_statement = prepared_statement_t{*this, ::sqlpp::command("ROLLBACK"), detail::result_owns_statement{true}};
       prepared_statement.execute();
       _transaction_active = false;
     }
@@ -303,7 +303,7 @@ namespace sqlpp::sqlite3
     template <typename Statement>
     [[nodiscard]] auto select(const Statement& statement)
     {
-      auto prepared_statement = ::sqlpp::sqlite3::prepared_statement_t{*this, statement, true};
+      auto prepared_statement = ::sqlpp::sqlite3::prepared_statement_t{*this, statement, detail::result_owns_statement{true}};
       return prepared_statement.execute();
     }
 

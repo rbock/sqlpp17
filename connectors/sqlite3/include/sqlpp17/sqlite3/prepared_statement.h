@@ -130,7 +130,7 @@ namespace sqlpp::sqlite3
   class prepared_statement_t
   {
     detail::unique_prepared_statement_ptr _handle;
-    bool _result_gets_ownership;
+    detail::result_owns_statement _ownership;
     ::sqlite3* _connection;
 
   public:
@@ -138,8 +138,8 @@ namespace sqlpp::sqlite3
 
     prepared_statement_t() = default;
     template <typename Connection, typename Statement>
-    prepared_statement_t(const Connection& connection, const Statement& statement, bool result_gets_ownership)
-        : _result_gets_ownership(result_gets_ownership), _connection(connection.get())
+    prepared_statement_t(const Connection& connection, const Statement& statement, detail::result_owns_statement ownership)
+        : _ownership(ownership), _connection(connection.get())
     {
       const auto sql_string = to_sql_string_c(context_t{}, statement);
       if constexpr (Connection::is_debug_allowed())
@@ -200,8 +200,9 @@ namespace sqlpp::sqlite3
       else if constexpr (std::is_same_v<ResultType, select_result>)
       {
         return ::sqlpp::result_t<prepared_statement_result_t<ResultRow>>{
-            _result_gets_ownership ? detail::unique_prepared_statement_ptr{_handle.release(), {true}}
-                                   : detail::unique_prepared_statement_ptr{_handle.get(), {false}}};
+            (_ownership == (detail::result_owns_statement{true}))
+                ? detail::unique_prepared_statement_ptr{_handle.release(), {true}}
+                : detail::unique_prepared_statement_ptr{_handle.get(), {false}}};
       }
       else if constexpr (std::is_same_v<ResultType, execute_result>)
       {
@@ -225,7 +226,7 @@ namespace sqlpp::sqlite3
   };
 
   template <typename Connection, typename Statement>
-  prepared_statement_t(const Connection&, const Statement&, bool)
+  prepared_statement_t(const Connection&, const Statement&, detail::result_owns_statement)
       ->prepared_statement_t<result_type_of_t<Statement>, parameters_of_t<Statement>, result_row_of_t<Statement>>;
 
   template <typename ResultType, typename ParameterVector, typename ResultRow>
