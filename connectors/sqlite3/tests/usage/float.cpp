@@ -40,51 +40,128 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using test::tabFloat;
 
-auto print_debug(std::string_view message)
+namespace
 {
-  std::cout << "Debug: " << message << std::endl;
-}
-
-void compare(std::size_t index, float expected, float received)
-{
-  if (expected != received)
+  auto print_debug(std::string_view message)
   {
-    std::cout << "Row " << index << ": Expected '" << expected << "' and received '" << received << "'" << std::endl;
-    throw std::runtime_error("unexpected result");
+    std::cout << "Debug: " << message << std::endl;
   }
-}
 
-void compare(std::size_t index, double expected, double received)
-{
-  if (expected != received)
+  void compare(std::size_t index, float expected, float received)
   {
-    std::cout << "Row " << index << ": Expected '" << expected << "' and received '" << received << "'" << std::endl;
-    throw std::runtime_error("unexpected result");
+    if (expected != received)
+    {
+      std::cout << "Row " << index << ": Expected '" << expected << "' and received '" << received << "'" << std::endl;
+      throw std::runtime_error("unexpected result");
+    }
   }
-}
 
-void compare(std::size_t index, int32_t expected, int32_t received)
-{
-  if (expected != received)
+  void compare(std::size_t index, double expected, double received)
   {
-    std::cout << "Row " << index << ": Expected '" << expected << "' and received '" << received << "'" << std::endl;
-    throw std::runtime_error("unexpected result");
+    if (expected != received)
+    {
+      std::cout << "Row " << index << ": Expected '" << expected << "' and received '" << received << "'" << std::endl;
+      throw std::runtime_error("unexpected result");
+    }
   }
-}
 
-struct Row
-{
-  float valueFloat;
-  double valueDouble;
-  std::int32_t valueInt;
-};
+  void compare(std::size_t index, int32_t expected, int32_t received)
+  {
+    if (expected != received)
+    {
+      std::cout << "Row " << index << ": Expected '" << expected << "' and received '" << received << "'" << std::endl;
+      throw std::runtime_error("unexpected result");
+    }
+  }
 
-const auto inputRows = std::vector<Row>{{12345678901234567890., 12345678901234567890., 1234567890},
-                                        {-12345678901234567890., -12345678901234567890., -1234567890},
-                                        {0., 0., 0},
-                                        {1.2345678901234567890, 1.2345678901234567890, 0},
-                                        {-1.2345678901234567890, -1.2345678901234567890, 0},
-                                        {DBL_MIN / 2.0, DBL_MIN, 0}};
+  struct Row
+  {
+    float valueFloat;
+    double valueDouble;
+    std::int32_t valueInt;
+  };
+
+  const auto inputRows = std::vector<Row>{{12345678901234567890., 12345678901234567890., 1234567890},
+                                          {-12345678901234567890., -12345678901234567890., -1234567890},
+                                          {0., 0., 0},
+                                          {1.2345678901234567890, 1.2345678901234567890, 0},
+                                          {-1.2345678901234567890, -1.2345678901234567890, 0},
+                                          {DBL_MIN / 2.0, DBL_MIN, 0}};
+
+  template <typename Db>
+  auto testDirectExecution(Db& db) -> void
+  {
+    std::cout << "Comparing inserted and retrieved values in direct execution...";
+    db(truncate(tabFloat));
+    for (const auto& input : inputRows)
+    {
+      [[maybe_unused]] auto id =
+          db(insert_into(tabFloat).set(tabFloat.valueFloat = input.valueFloat, tabFloat.valueDouble = input.valueDouble,
+                                       tabFloat.valueInt = input.valueInt));
+    }
+
+    auto index = std::size_t{};
+    for (const auto& row : db(select(all_of(tabFloat)).from(tabFloat).unconditionally().order_by(tabFloat.id.asc())))
+    {
+      // std::cout << row.id << " " << row.valueFloat << ", " << row.valueDouble << ", " << row.valueInt << std::endl;
+      compare(index, inputRows[index].valueFloat, row.valueFloat);
+      compare(index, inputRows[index].valueDouble, row.valueDouble);
+      compare(index, inputRows[index].valueInt, row.valueInt);
+      ++index;
+    }
+    std::cout << " OK" << std::endl;
+  }
+
+  template <typename Db>
+  auto testPreparedExecution(Db& db) -> void
+  {
+    std::cout << "Comparing inserted and retrieved values in prepared statements with parameters for insert...";
+    db(truncate(tabFloat));
+    auto preparedInsert =
+        db.prepare(insert_into(tabFloat).set(tabFloat.valueFloat = ::sqlpp::parameter<float>(tabFloat.valueFloat),
+                                             tabFloat.valueDouble = ::sqlpp::parameter<double>(tabFloat.valueDouble),
+                                             tabFloat.valueInt = ::sqlpp::parameter<std::int32_t>(tabFloat.valueInt)));
+    for (const auto& input : inputRows)
+    {
+      preparedInsert.parameters.valueFloat = input.valueFloat;
+      preparedInsert.parameters.valueDouble = input.valueDouble;
+      preparedInsert.parameters.valueInt = input.valueInt;
+      execute(preparedInsert);
+    }
+    auto index = std::size_t{};
+    for (const auto& row : db(select(all_of(tabFloat)).from(tabFloat).unconditionally().order_by(tabFloat.id.asc())))
+    {
+      // std::cout << row.id << " " << row.valueFloat << ", " << row.valueDouble << ", " << row.valueInt << std::endl;
+      compare(index, inputRows[index].valueFloat, row.valueFloat);
+      compare(index, inputRows[index].valueDouble, row.valueDouble);
+      compare(index, inputRows[index].valueInt, row.valueInt);
+      ++index;
+    }
+    std::cout << " OK" << std::endl;
+  }
+
+  template <typename Db>
+  auto testInvalidValues(Db& db) -> void
+  {
+    std::cout << "Testing invalid values for insertion...";
+    auto preparedInsert =
+        db.prepare(insert_into(tabFloat).set(tabFloat.valueFloat = ::sqlpp::parameter<float>(tabFloat.valueFloat),
+                                             tabFloat.valueDouble = ::sqlpp::parameter<double>(tabFloat.valueDouble),
+                                             tabFloat.valueInt = ::sqlpp::parameter<std::int32_t>(tabFloat.valueInt)));
+    try
+    {
+      preparedInsert.parameters.valueFloat = std::nanf("");
+      preparedInsert.parameters.valueDouble = std::nan("");
+      execute(preparedInsert);
+      throw std::domain_error("Unexpected acceptance of std::nan and std:nanf");
+    }
+    catch (const ::sqlpp::exception& e)
+    {
+      // expected exception
+    }
+    std::cout << " OK (still invalid)" << std::endl;
+  }
+}  // namespace
 
 int main()
 {
@@ -95,68 +172,15 @@ int main()
 
   try
   {
-    auto db = ::sqlpp::sqlite3::connection_t<::sqlpp::debug::allowed>{config};
+    auto db = ::sqlpp::sqlite3::connection_t<::sqlpp::debug::none>{config};
     db(drop_table(tabFloat));
     db(create_table(tabFloat));
 
     std::cout << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
-    {
-      std::cout << "Comparing inserted and retrieved values in direct execution" << std::endl;
-      db(truncate(tabFloat));
-      for (const auto& input : inputRows)
-      {
-        [[maybe_unused]] auto id =
-            db(insert_into(tabFloat).set(tabFloat.valueFloat = input.valueFloat,
-                                         tabFloat.valueDouble = input.valueDouble, tabFloat.valueInt = input.valueInt));
-      }
 
-      auto index = std::size_t{};
-      for (const auto& row : db(select(all_of(tabFloat)).from(tabFloat).unconditionally().order_by(tabFloat.id.asc())))
-      {
-        //std::cout << row.id << " " << row.valueFloat << ", " << row.valueDouble << ", " << row.valueInt << std::endl;
-        compare(index, inputRows[index].valueFloat, row.valueFloat);
-        compare(index, inputRows[index].valueDouble, row.valueDouble);
-        compare(index, inputRows[index].valueInt, row.valueInt);
-        ++index;
-      }
-    }
-    {
-      std::cout << "Comparing inserted and retrieved values in prepared statements with parameters for insert" << std::endl;
-      db(truncate(tabFloat));
-      auto preparedInsert = db.prepare(
-          insert_into(tabFloat).set(tabFloat.valueFloat = ::sqlpp::parameter<float>(tabFloat.valueFloat),
-                                    tabFloat.valueDouble = ::sqlpp::parameter<double>(tabFloat.valueDouble),
-                                    tabFloat.valueInt = ::sqlpp::parameter<std::int32_t>(tabFloat.valueInt)));
-      for (const auto& input : inputRows)
-      {
-        preparedInsert.parameters.valueFloat = input.valueFloat;
-        preparedInsert.parameters.valueDouble = input.valueDouble;
-        preparedInsert.parameters.valueInt = input.valueInt;
-        std::cout << '.';
-        execute(preparedInsert);
-      }
-      std::cout << std::endl;
-      auto index = std::size_t{};
-      for (const auto& row : db(select(all_of(tabFloat)).from(tabFloat).unconditionally().order_by(tabFloat.id.asc())))
-      {
-        //std::cout << row.id << " " << row.valueFloat << ", " << row.valueDouble << ", " << row.valueInt << std::endl;
-        compare(index, inputRows[index].valueFloat, row.valueFloat);
-        compare(index, inputRows[index].valueDouble, row.valueDouble);
-        compare(index, inputRows[index].valueInt, row.valueInt);
-        ++index;
-      }
-      try
-      {
-        preparedInsert.parameters.valueFloat = std::nanf("");
-        preparedInsert.parameters.valueDouble = std::nan("");
-        execute(preparedInsert);
-        throw std::domain_error("Unexpected acceptance of std::nan and std:nanf");
-      }
-      catch (const ::sqlpp::exception& e)
-      {
-        // expected exception
-      }
-    }
+    testDirectExecution(db);
+    testPreparedExecution(db);
+    testInvalidValues(db);
   }
   catch (const std::exception& e)
   {
