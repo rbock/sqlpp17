@@ -49,8 +49,8 @@ namespace sqlpp::test
 
   void compare(std::size_t index, double expected, double received)
   {
-    const auto expectedString = (std::ostringstream{} << std::setprecision(10) << expected).str();
-    const auto receivedString = (std::ostringstream{} << std::setprecision(10) << received).str();
+    const auto expectedString = (std::ostringstream{} << std::setprecision(12) << expected).str();
+    const auto receivedString = (std::ostringstream{} << std::setprecision(12) << received).str();
 
     if (expectedString != receivedString)
     {

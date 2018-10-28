@@ -29,24 +29,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/transaction.h>
 
 #include <sqlpp17/postgresql/connection.h>
+#include <sqlpp17/postgresql_test/get_config.h>
 
 inline constexpr auto everythingIsGood = true;
 inline constexpr auto everythingIsBad = false;
 
-auto print_debug(std::string_view message)
-{
-  std::cout << "Debug: " << message << std::endl;
-}
-
+namespace postgresql = ::sqlpp::postgresql;
 int main()
 {
-  auto config = ::sqlpp::postgresql::connection_config_t{};
-  config.dbname = "sqlpp17_test";
-  config.debug = print_debug;
-
   try
   {
-    auto db = ::sqlpp::postgresql::connection_t<::sqlpp::debug::allowed>{config};
+    const auto config = postgresql::test::get_config();
+    auto db = postgresql::connection_t<::sqlpp::debug::allowed>{config};
 
     // good case
     {

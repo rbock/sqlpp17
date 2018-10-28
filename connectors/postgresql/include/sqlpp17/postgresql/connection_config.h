@@ -32,16 +32,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp::postgresql
 {
-#warning : Need to review
-  struct ssl_config_t
-  {
-    std::string key;
-    std::string cert;
-    std::string ca;
-    std::string caPath;
-    std::string cipher;
-  };
-
   struct connection_config_t
   {
     std::function<void(PGconn*)> pre_connect;

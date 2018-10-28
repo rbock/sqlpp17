@@ -1,5 +1,7 @@
+#pragma once
+
 /*
-Copyright (c) 2017 - 2018, Roland Bock
+Copyright (c) 2018 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,45 +28,31 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <iostream>
 
-#include <sqlpp17/clause/create_table.h>
-#include <sqlpp17/clause/drop_table.h>
-#include <sqlpp17/clause/insert_into.h>
-#include <sqlpp17/clause/select.h>
-
 #include <sqlpp17/postgresql/connection.h>
-#include <sqlpp17/postgresql_test/get_config.h>
 
-#include <sqlpp17_test/tables/TabDepartment.h>
-
-auto print_debug(std::string_view message)
+namespace sqlpp::postgresql::test
 {
-  std::cout << "Debug: " << message << std::endl;
-}
-
-namespace postgresql = sqlpp::postgresql;
-int main()
-{
-  try
+  auto print_debug(std::string_view message)
   {
-    const auto config = postgresql::test::get_config();
-    auto db = postgresql::connection_t<::sqlpp::debug::allowed>{config};
-    db(drop_table(test::tabDepartment));
-    db(create_table(test::tabDepartment));
+    std::cout << "Debug: " << message << std::endl;
+  }
 
-    auto id = db(insert_into(test::tabDepartment).default_values());
-    id = db(insert_into(test::tabDepartment).set(test::tabDepartment.name = "hansi"));
-
-    for (const auto& row : db(sqlpp::select(test::tabDepartment.id, test::tabDepartment.name)
-                                  .from(test::tabDepartment)
-                                  .unconditionally()))
+  auto get_config() -> ::sqlpp::postgresql::connection_config_t
+  {
+    auto config = postgresql::connection_config_t{};
+    config.dbname = "sqlpp17_test";
+    config.debug = print_debug;
+    try
     {
-      std::cout << row.id << ", " << row.name.value_or("NULL") << std::endl;
+      auto db = postgresql::connection_t<::sqlpp::debug::none>{config};
     }
+    catch (const sqlpp::exception& e)
+    {
+      std::cerr << "For testing, you'll need to create a database " << *config.dbname << " for user root (no password)"
+                << std::endl;
+      throw;
+    }
+    return config;
   }
-  catch (const std::exception& e)
-  {
-    std::cerr << "Exception: " << e.what() << std::endl;
-    return 1;
-  }
-}
+}  // namespace sqlpp::postgresql::test
 

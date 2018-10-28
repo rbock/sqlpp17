@@ -31,33 +31,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/clause/insert_into.h>
 
 #include <sqlpp17/postgresql/connection.h>
+#include <sqlpp17/postgresql_test/get_config.h>
 
 #include <sqlpp17_test/tables/TabDepartment.h>
-
-auto print_debug(std::string_view message)
-{
-  std::cout << "Debug: " << message << std::endl;
-}
 
 namespace postgresql = sqlpp::postgresql;
 int main()
 {
-  auto config = postgresql::connection_config_t{};
-  config.dbname = "sqlpp17_test";
-  config.debug = print_debug;
   try
   {
-    auto db = postgresql::connection_t<::sqlpp::debug::none>{config};
-  }
-  catch (const sqlpp::exception& e)
-  {
-    std::cerr << "For testing, you'll need to create a database sqlpp17_test for the current user (no password)"
-              << std::endl;
-    std::cerr << e.what() << std::endl;
-    return 1;
-  }
-  try
-  {
+    const auto config = postgresql::test::get_config();
     auto db = postgresql::connection_t<::sqlpp::debug::allowed>{config};
     db(drop_table(test::tabDepartment));
     db(create_table(test::tabDepartment));

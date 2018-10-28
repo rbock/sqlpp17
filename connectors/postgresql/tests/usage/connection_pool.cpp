@@ -34,21 +34,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/clause/insert_into.h>
 
 #include <sqlpp17/postgresql/connection_pool.h>
+#include <sqlpp17/postgresql_test/get_config.h>
 
 #include <sqlpp17_test/tables/TabDepartment.h>
 
 namespace postgresql = ::sqlpp::postgresql;
+
 namespace
 {
-  auto get_config()
-  {
-    auto config = postgresql::connection_config_t{};
-    config.dbname = "sqlpp17_test";
-    // config.debug = print_debug;
-    return config;
-  };
-
-  auto pool = postgresql::connection_pool_t<::sqlpp::debug::none>{5, get_config()};
+  auto pool = postgresql::connection_pool_t<::sqlpp::debug::none>{5, postgresql::test::get_config()};
 }  // namespace
 
 [[nodiscard]] auto test_setup()
@@ -59,9 +53,7 @@ namespace
   }
   catch (const sqlpp::exception& e)
   {
-    std::cerr << "For testing, you'll need to create a database sqlpp17_test for the current user (no password)"
-              << std::endl;
-    std::cerr << e.what() << std::endl;
+    std::cerr << std::string(__func__) + "Exception: " << e.what() << "\n";
     return 1;
   }
   return 0;
