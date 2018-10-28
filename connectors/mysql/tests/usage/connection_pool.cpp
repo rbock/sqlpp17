@@ -34,24 +34,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/clause/insert_into.h>
 
 #include <sqlpp17/mysql/connection_pool.h>
+#include <sqlpp17/mysql_test/get_config.h>
 
 #include <sqlpp17_test/tables/TabDepartment.h>
 
 namespace mysql = ::sqlpp::mysql;
 namespace
 {
-  auto get_config()
-  {
-    auto config = mysql::connection_config_t{};
-    config.user = "root";
-#warning : This needs to be configurable
-    config.password = "";
-    config.database = "sqlpp_mysql";
-    // config.debug = print_debug;
-    return config;
-  };
-
-  auto pool = mysql::connection_pool_t<::sqlpp::debug::none>{5, get_config()};
+  auto pool = mysql::connection_pool_t<::sqlpp::debug::none>{5, mysql::test::get_config()};
 }  // namespace
 
 [[nodiscard]] auto test_setup()

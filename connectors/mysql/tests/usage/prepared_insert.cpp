@@ -32,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/parameter.h>
 
 #include <sqlpp17/mysql/connection.h>
+#include <sqlpp17/mysql_test/get_config.h>
 
 #include <sqlpp17_test/tables/TabDepartment.h>
 #include <sqlpp17_test/tables/TabPerson.h>
@@ -43,34 +44,14 @@ SQLPP_CREATE_NAME_TAG(pName);
 SQLPP_CREATE_NAME_TAG(pIsManager);
 SQLPP_CREATE_NAME_TAG(pAddress);
 
-auto print_debug(std::string_view message)
-{
-  std::cout << "Debug: " << message << std::endl;
-}
-
 namespace mysql = sqlpp::mysql;
 int main()
 {
-  mysql::global_library_init();
+  try
+  {
+    mysql::global_library_init();
 
-  auto config = mysql::connection_config_t{};
-  config.user = "root";
-#warning : This needs to be configurable
-  config.password = "";
-  config.database = "sqlpp_mysql";
-  config.debug = print_debug;
-  try
-  {
-    auto db = mysql::connection_t<sqlpp::debug::none>{config};
-  }
-  catch (const sqlpp::exception& e)
-  {
-    std::cerr << "For testing, you'll need to create a database sqlpp_mysql for user root (no password)" << std::endl;
-    std::cerr << e.what() << std::endl;
-    return 1;
-  }
-  try
-  {
+    const auto config = mysql::test::get_config();
     auto db = mysql::connection_t<sqlpp::debug::allowed>{config};
     db(drop_table(tabDepartment));
     db(drop_table(tabPerson));

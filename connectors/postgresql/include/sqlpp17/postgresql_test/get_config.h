@@ -39,12 +39,12 @@ namespace sqlpp::postgresql::test
 
   auto get_config() -> ::sqlpp::postgresql::connection_config_t
   {
-    auto config = postgresql::connection_config_t{};
+    auto config = ::sqlpp::postgresql::connection_config_t{};
     config.dbname = "sqlpp17_test";
     config.debug = print_debug;
     try
     {
-      auto db = postgresql::connection_t<::sqlpp::debug::none>{config};
+      auto db = ::sqlpp::postgresql::connection_t<::sqlpp::debug::none>{config};
     }
     catch (const sqlpp::exception& e)
     {

@@ -1,3 +1,5 @@
+#pragma once
+
 /*
 Copyright (c) 2018 - 2018, Roland Bock
 All rights reserved.
@@ -26,45 +28,34 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <iostream>
 
-#include <sqlpp17/transaction.h>
-
 #include <sqlpp17/mysql/connection.h>
-#include <sqlpp17/mysql_test/get_config.h>
 
-namespace mysql = sqlpp::mysql;
-int main()
+namespace sqlpp::mysql::test
 {
-  try
+  auto print_debug(std::string_view message)
   {
-    mysql::global_library_init();
-
-    const auto config = mysql::test::get_config();
-    auto db = mysql::connection_t<sqlpp::debug::allowed>{config};
-
-    // good case
-    {
-      auto tx = start_transaction(db);
-      // ...
-      tx.commit();
-    }
-
-    // expected bad case
-    {
-      auto tx = start_transaction(db);
-      // ...
-      tx.rollback();
-    }
-
-    // exceptional case
-    {
-      auto tx = start_transaction(db);
-      // ...
-      // tx' destructor will auto-rollback the transaction
-    }
+    std::cout << "Debug: " << message << std::endl;
   }
-  catch (const std::exception& e)
+
+  auto get_config() -> ::sqlpp::mysql::connection_config_t
   {
-    std::cerr << "Exception: " << e.what() << std::endl;
-    return 1;
+    auto config = ::sqlpp::mysql::connection_config_t{};
+    config.user = "root";
+#warning : This needs to be configurable
+    config.password = "";
+    config.database = "sqlpp17_test";
+    config.debug = print_debug;
+    try
+    {
+      auto db = ::sqlpp::mysql::connection_t<::sqlpp::debug::none>{config};
+    }
+    catch (const sqlpp::exception& e)
+    {
+      std::cerr << "For testing, you'll need to create a database " << config.database << " for user root (no password)"
+                << std::endl;
+      throw;
+    }
+    return config;
   }
-}
+}  // namespace sqlpp::mysql::test
+
