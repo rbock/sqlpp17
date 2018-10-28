@@ -1,3 +1,5 @@
+#pragma once
+
 /*
 Copyright (c) 2018 - 2018, Roland Bock
 All rights reserved.
@@ -26,42 +28,23 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <iostream>
 
-#include <sqlpp17/transaction.h>
-
 #include <sqlpp17/sqlite3/connection.h>
-#include <sqlpp17/sqlite3_test/get_config.h>
 
-int main()
+namespace sqlpp::sqlite3::test
 {
-  try
+  auto print_debug(std::string_view message)
   {
-    const auto config = ::sqlpp::sqlite3::test::get_config();
-    auto db = ::sqlpp::sqlite3::connection_t<::sqlpp::debug::allowed>{config};
-
-    // good case
-    {
-      auto tx = start_transaction(db);
-      // ...
-      tx.commit();
-    }
-
-    // expected bad case
-    {
-      auto tx = start_transaction(db);
-      // ...
-      tx.rollback();
-    }
-
-    // exceptional case
-    {
-      auto tx = start_transaction(db);
-      // ...
-      // tx' destructor will auto-rollback the transaction
-    }
+    std::cout << "Debug: " << message << std::endl;
   }
-  catch (const std::exception& e)
+
+  auto get_config() -> ::sqlpp::sqlite3::connection_config_t
   {
-    std::cerr << "Exception: " << e.what() << std::endl;
-    return 1;
+    auto config = ::sqlpp::sqlite3::connection_config_t{};
+    config.path_to_database = ":memory:";
+    config.flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
+    config.debug = print_debug;
+
+    return config;
   }
-}
+}  // namespace sqlpp::sqlite3::test
+

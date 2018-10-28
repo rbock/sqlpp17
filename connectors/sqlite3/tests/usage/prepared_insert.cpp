@@ -31,6 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/clause/insert_into.h>
 
 #include <sqlpp17/sqlite3/connection.h>
+#include <sqlpp17/sqlite3_test/get_config.h>
 
 #include <sqlpp17_test/tables/TabDepartment.h>
 #include <sqlpp17_test/tables/TabPerson.h>
@@ -42,20 +43,11 @@ SQLPP_CREATE_NAME_TAG(pName);
 SQLPP_CREATE_NAME_TAG(pIsManager);
 SQLPP_CREATE_NAME_TAG(pAddress);
 
-auto print_debug(std::string_view message)
-{
-  std::cout << "Debug: " << message << std::endl;
-}
-
 int main()
 {
-  auto config = ::sqlpp::sqlite3::connection_config_t{};
-  config.path_to_database = ":memory:";
-  config.flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
-  config.debug = print_debug;
-
   try
   {
+    const auto config = ::sqlpp::sqlite3::test::get_config();
     auto db = ::sqlpp::sqlite3::connection_t<::sqlpp::debug::allowed>{config};
     db(drop_table(tabDepartment));
     db(drop_table(tabPerson));

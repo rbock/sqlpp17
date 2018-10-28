@@ -35,21 +35,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/clause/insert_into.h>
 
 #include <sqlpp17/sqlite3/connection_pool.h>
+#include <sqlpp17/sqlite3_test/get_config.h>
 
 #include <sqlpp17_test/tables/TabDepartment.h>
 
 namespace
 {
-  auto get_config()
-  {
-    auto config = ::sqlpp::sqlite3::connection_config_t{};
-    config.path_to_database = "file::memory:?cache=shared";
-    config.flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
-
-    return config;
-  };
-
-  auto pool = ::sqlpp::sqlite3::connection_pool_t<::sqlpp::debug::allowed>{5, get_config()};
+  auto pool = ::sqlpp::sqlite3::connection_pool_t<::sqlpp::debug::allowed>{5, ::sqlpp::sqlite3::test::get_config()};
 }  // namespace
 
 [[nodiscard]] auto test_basic_functionality()
