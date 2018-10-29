@@ -26,14 +26,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <iostream>
 
-#include <sqlpp17/clause/create_table.h>
-#include <sqlpp17/clause/drop_table.h>
-#include <sqlpp17/clause/insert_into.h>
+#include <sqlpp17_test/insert_tests.h>
 
 #include <sqlpp17/postgresql/connection.h>
 #include <sqlpp17/postgresql_test/get_config.h>
-
-#include <sqlpp17_test/tables/TabDepartment.h>
 
 namespace postgresql = sqlpp::postgresql;
 int main()
@@ -42,10 +38,8 @@ int main()
   {
     const auto config = postgresql::test::get_config();
     auto db = postgresql::connection_t<::sqlpp::debug::allowed>{config};
-    db(drop_table(test::tabDepartment));
-    db(create_table(test::tabDepartment));
 
-    auto id = db(insert_into(test::tabDepartment).default_values());
+    ::sqlpp::test::insert_tests(db);
   }
   catch (const std::exception& e)
   {

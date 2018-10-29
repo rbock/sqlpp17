@@ -1,3 +1,4 @@
+#pragma once
 /*
 Copyright (c) 2017 - 2018, Roland Bock
 All rights reserved.
@@ -26,27 +27,23 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <iostream>
 
-#include <sqlpp17_test/insert_tests.h>
+#include <sqlpp17/clause/create_table.h>
+#include <sqlpp17/clause/drop_table.h>
+#include <sqlpp17/clause/insert_into.h>
 
-#include <sqlpp17/mysql/connection.h>
-#include <sqlpp17/mysql_test/get_config.h>
+#include <sqlpp17_test/tables/TabDepartment.h>
 
-namespace mysql = sqlpp::mysql;
-int main()
+namespace sqlpp::test
 {
-  try
+  template <typename Db>
+  auto insert_tests(Db& db) -> void
   {
-    mysql::global_library_init();
+    db(drop_table(::test::tabDepartment));
+    db(create_table(::test::tabDepartment));
 
-    const auto config = mysql::test::get_config();
-    auto db = mysql::connection_t<sqlpp::debug::allowed>{config};
+    [[maybe_unused]] auto id = db(insert_into(::test::tabDepartment).default_values());
 
-    ::sqlpp::test::insert_tests(db);
+#warning: Add some more tests...
   }
-  catch (const std::exception& e)
-  {
-    std::cerr << "Exception: " << e.what() << std::endl;
-    return 1;
-  }
-}
+}  // namespace sqlpp::test
 
