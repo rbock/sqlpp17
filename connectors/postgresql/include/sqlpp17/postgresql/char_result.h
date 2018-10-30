@@ -50,6 +50,16 @@ namespace sqlpp::postgresql::detail
 
 namespace sqlpp::postgresql
 {
+  inline auto read_field(PGresult* result, int row_index, bool& value, int index) -> void
+  {
+    switch (PQgetvalue(result, row_index, index)[0])
+    {
+      case 't': [[fall_through]];
+      case '1': value = true;
+      default: value = false;
+    }
+  }
+
   inline auto read_field(PGresult* result, int row_index, std::int32_t& value, int index) -> void
   {
     value = std::strtol(PQgetvalue(result, row_index, index), nullptr, 10);

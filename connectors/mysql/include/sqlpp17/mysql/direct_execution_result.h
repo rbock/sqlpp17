@@ -58,16 +58,27 @@ namespace sqlpp ::mysql::detail
 
 namespace sqlpp ::mysql
 {
-  inline auto read_field(char* data, unsigned long length, std::int64_t& value) -> void
+  inline auto read_field(char* data, unsigned long length, bool& value) -> void
   {
     detail::assert_field(data);
-    value = std::strtoll(data, nullptr, 10);
+    switch (data[0])
+    {
+      case 't': [[fall_through]];
+      case '1': value = true;
+      default: value = false;
+    }
   }
 
   inline auto read_field(char* data, unsigned long length, std::int32_t& value) -> void
   {
     detail::assert_field(data);
     value = std::strtol(data, nullptr, 10);
+  }
+
+  inline auto read_field(char* data, unsigned long length, std::int64_t& value) -> void
+  {
+    detail::assert_field(data);
+    value = std::strtoll(data, nullptr, 10);
   }
 
   inline auto read_field(char* data, unsigned long length, float& value) -> void

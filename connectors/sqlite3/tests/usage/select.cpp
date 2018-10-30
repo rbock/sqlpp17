@@ -26,24 +26,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <iostream>
 
-#include <sqlpp17/clause/create_table.h>
-#include <sqlpp17/clause/drop_table.h>
-#include <sqlpp17/clause/insert_into.h>
-#include <sqlpp17/clause/select.h>
-#include <sqlpp17/function.h>
-
 #include <sqlpp17/sqlite3/connection.h>
 #include <sqlpp17/sqlite3_test/get_config.h>
 
-#include <sqlpp17_test/tables/TabDepartment.h>
-#include <sqlpp17_test/tables/TabPerson.h>
-
-using test::tabDepartment;
-using test::tabPerson;
-
-auto SQLPP_CREATE_NAME_TAG(rowCount);
-SQLPP_CREATE_NAME_TAG(maxName);
-SQLPP_CREATE_NAME_TAG(avgId);
+#include <sqlpp17_test/select_tests.h>
 
 int main()
 {
@@ -51,34 +37,6 @@ int main()
   {
     const auto config = ::sqlpp::sqlite3::test::get_config();
     auto db = ::sqlpp::sqlite3::connection_t<::sqlpp::debug::allowed>{config};
-    db(drop_table(tabDepartment));
-    db(drop_table(tabPerson));
-    db(create_table(tabDepartment));
-    db(create_table(tabPerson));
-
-    auto id = db(insert_into(tabDepartment).default_values());
-    id = db(insert_into(tabDepartment).set(tabDepartment.name = "hansi"));
-
-    for (const auto& row :
-         db(sqlpp::select(tabDepartment.id, tabDepartment.name).from(tabDepartment).unconditionally()))
-    {
-      std::cout << row.id << ", " << row.name.value_or("NULL") << std::endl;
-    }
-
-    for (const auto& row : db(select(::sqlpp::count(1).as(rowCount), max(tabPerson.name).as(maxName),
-                                     avg(tabPerson.id).as<float>(avgId), tabPerson.isManager)
-                                  .from(tabPerson)
-                                  .where(tabPerson.isManager and tabPerson.name != "")
-                                  .group_by(tabPerson.isManager)
-                                  .having(::sqlpp::count(1) > 7)
-                                  .order_by(asc(max(tabPerson.id)))
-                                  .limit(1)
-                                  .offset(1)))
-    {
-      std::cout << row.rowCount << std::endl;
-      std::cout << row.maxName << std::endl;
-      std::cout << row.avgId << std::endl;
-    }
   }
   catch (const std::exception& e)
   {
