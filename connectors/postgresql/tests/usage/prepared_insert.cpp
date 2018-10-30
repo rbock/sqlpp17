@@ -26,22 +26,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <iostream>
 
-#include <sqlpp17/clause/create_table.h>
-#include <sqlpp17/clause/drop_table.h>
-#include <sqlpp17/clause/insert_into.h>
-
 #include <sqlpp17/postgresql/connection.h>
 #include <sqlpp17/postgresql_test/get_config.h>
 
-#include <sqlpp17_test/tables/TabDepartment.h>
-#include <sqlpp17_test/tables/TabPerson.h>
-
-using test::tabDepartment;
-using test::tabPerson;
-
-SQLPP_CREATE_NAME_TAG(pName);
-SQLPP_CREATE_NAME_TAG(pIsManager);
-SQLPP_CREATE_NAME_TAG(pAddress);
+#include <sqlpp17_test/prepared_insert_tests.h>
 
 namespace postgresql = sqlpp::postgresql;
 int main()
@@ -50,36 +38,8 @@ int main()
   {
     const auto config = postgresql::test::get_config();
     auto db = postgresql::connection_t<::sqlpp::debug::allowed>{config};
-    db(drop_table(test::tabDepartment));
-    db(drop_table(test::tabPerson));
-    db(create_table(test::tabDepartment));
-    db(create_table(test::tabPerson));
 
-    {
-      auto prepared_insert = db.prepare(insert_into(test::tabDepartment).default_values());
-      [[maybe_unused]] const auto id = execute(prepared_insert);
-    }
-
-    {
-      auto s = db.prepare(insert_into(tabPerson).set(tabPerson.isManager = true,
-                                                     tabPerson.name = ::sqlpp::parameter<std::string>(pName)));
-      s.parameters.pName = "Herb";
-      [[maybe_unused]] const auto id = execute(s);
-    }
-
-    {
-      auto s = db.prepare(insert_into(tabPerson).set(
-          tabPerson.isManager = ::sqlpp::parameter<bool>(pIsManager),
-          tabPerson.name = ::sqlpp::parameter<std::string>(pName),
-          tabPerson.address = ::sqlpp::parameter<::std::optional<std::string>>(pAddress), tabPerson.language = "C++"));
-      s.parameters.pIsManager = true;
-      s.parameters.pName = "Herb";
-      s.parameters.pAddress = "Somewhere";
-      s.parameters.pAddress = std::nullopt;
-      s.parameters.pAddress.reset();
-
-      [[maybe_unused]] const auto id = execute(s);
-    }
+    ::sqlpp::test::prepared_insert_tests(db);
   }
   catch (const std::exception& e)
   {
