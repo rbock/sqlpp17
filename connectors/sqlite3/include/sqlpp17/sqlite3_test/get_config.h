@@ -40,8 +40,8 @@ namespace sqlpp::sqlite3::test
   auto get_config() -> ::sqlpp::sqlite3::connection_config_t
   {
     auto config = ::sqlpp::sqlite3::connection_config_t{};
-    config.path_to_database = ":memory:";
-    config.flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
+    config.path_to_database = "sqlpp17_test";
+    config.flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX;
     config.debug = print_debug;
 
     return config;

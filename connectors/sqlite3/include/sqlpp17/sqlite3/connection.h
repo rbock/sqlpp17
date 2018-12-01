@@ -58,7 +58,7 @@ namespace sqlpp::sqlite3::detail
   public:
     auto operator()(::sqlite3* handle) -> void
     {
-      auto rc = sqlite3_close(handle);
+      const auto rc = sqlite3_close(handle);
       if (rc != SQLITE_OK)
       {
         throw sqlpp::exception(std::string("Sqlite3 error: Can't close database: ") + sqlite3_errmsg(handle));
@@ -128,6 +128,11 @@ namespace sqlpp::sqlite3
         }
       }
 #endif
+
+      if (config.post_connect)
+      {
+        config.post_connect(_handle.get());
+      }
     }
 
     base_connection(const base_connection&) = delete;
@@ -141,6 +146,12 @@ namespace sqlpp::sqlite3
         if (this->_connection_pool)
           this->_connection_pool->put(std::move(_handle));
       }
+    }
+
+    auto operator()(const std::string& sql_string)
+    {
+      auto prepared_statement = prepared_statement_t<::sqlpp::execute_result, ::sqlpp::type_vector<>, ::sqlpp::none_t>{*this, sql_string, detail::result_owns_statement{true}};
+      prepared_statement.execute();
     }
 
     template <typename... Clauses>

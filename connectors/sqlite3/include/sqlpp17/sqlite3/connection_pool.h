@@ -73,6 +73,7 @@ namespace sqlpp::sqlite3::detail
 
     auto push_back(detail::unique_connection_ptr t)
     {
+      if (_data.empty()) return;
       _data[_head] = std::move(t);
       if ((_head != _tail) or empty())
       {
@@ -116,8 +117,15 @@ namespace sqlpp::sqlite3
     {
       const auto lock = std::scoped_lock{_mutex};
 
-      auto handle = detail::unique_connection_ptr(std::move(_handles.front()));
-      _handles.pop_front();
+      auto handle = [this]()
+      {
+        if (_handles.empty())
+          return detail::unique_connection_ptr{};
+
+        auto handle = detail::unique_connection_ptr(std::move(_handles.front()));
+        _handles.pop_front();
+        return handle;
+      }();
 
       return handle ? _connection_t{_connection_config, std::move(handle), this}
                     : _connection_t{_connection_config, this};

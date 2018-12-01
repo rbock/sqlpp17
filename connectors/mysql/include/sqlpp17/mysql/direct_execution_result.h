@@ -63,7 +63,7 @@ namespace sqlpp ::mysql
     detail::assert_field(data);
     switch (data[0])
     {
-      case 't': [[fall_through]];
+      case 't': [[fallthrough]];
       case '1': value = true;
       default: value = false;
     }

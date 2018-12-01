@@ -54,7 +54,7 @@ namespace sqlpp::postgresql
   {
     switch (PQgetvalue(result, row_index, index)[0])
     {
-      case 't': [[fall_through]];
+      case 't': [[fallthrough]];
       case '1': value = true;
       default: value = false;
     }

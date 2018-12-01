@@ -137,16 +137,11 @@ namespace sqlpp::sqlite3
     ::sqlpp::prepared_statement_parameters<ParameterVector> parameters = {};
 
     prepared_statement_t() = default;
-    template <typename Connection, typename Statement>
-    prepared_statement_t(const Connection& connection, const Statement& statement, detail::result_owns_statement ownership)
+
+    template <typename Connection>
+    prepared_statement_t(const Connection& connection, const std::string& sql_string, detail::result_owns_statement ownership)
         : _ownership(ownership), _connection(connection.get())
     {
-      const auto sql_string = to_sql_string_c(context_t{}, statement);
-      if constexpr (Connection::is_debug_allowed())
-      {
-        connection.debug("Preparing: '" + sql_string + "'");
-      }
-
       ::sqlite3_stmt* statement_ptr = nullptr;
 
       const auto rc = sqlite3_prepare_v2(connection.get(), sql_string.c_str(), static_cast<int>(sql_string.size()),
@@ -161,6 +156,11 @@ namespace sqlpp::sqlite3
       }
     }
 
+    template <typename Connection, typename Statement>
+    prepared_statement_t(const Connection& connection, const Statement& statement, detail::result_owns_statement ownership)
+        : prepared_statement_t{connection, to_sql_string_c(context_t{}, statement), ownership}
+    {}
+
     prepared_statement_t(const prepared_statement_t&) = delete;
     prepared_statement_t(prepared_statement_t&& rhs) = default;
     prepared_statement_t& operator=(const prepared_statement_t&) = delete;
@@ -169,7 +169,10 @@ namespace sqlpp::sqlite3
 
     auto execute()
     {
-      sqlite3_reset(_handle.get());
+      if (const auto rc = sqlite3_reset(_handle.get()); rc != SQLITE_OK)
+      {
+        throw sqlpp::exception("Sqlite3: Could not reset statement: " + std::string(sqlite3_errmsg(_connection)));
+      }
 
       ::sqlpp::sqlite3::bind_parameters(_handle.get(), parameters);
 
@@ -184,7 +187,7 @@ namespace sqlpp::sqlite3
           case SQLITE_DONE:
             break;
           default:
-            throw sqlpp::exception("Sqlite3: Could not execute statement: " + std::string(sqlite3_errstr(rc)));
+            throw sqlpp::exception("Sqlite3: Could not execute statement: "  + std::string(sqlite3_errstr(rc)));
         }
       }
 

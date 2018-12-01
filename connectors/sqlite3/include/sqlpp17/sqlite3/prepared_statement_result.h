@@ -47,10 +47,13 @@ namespace sqlpp::sqlite3::detail
   {
     bool _owning;
 
-    auto operator()(::sqlite3_stmt* handle) -> void
+    auto operator()(::sqlite3_stmt* handle) noexcept -> void
     {
       if (_owning and handle)
+      {
+        // This might fail, but throwing is not an option here
         sqlite3_finalize(handle);
+      }
     }
   };
   using unique_prepared_statement_ptr = std::unique_ptr<::sqlite3_stmt, detail::prepared_statement_cleanup_t>;
