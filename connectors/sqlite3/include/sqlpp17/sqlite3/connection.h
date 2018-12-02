@@ -56,12 +56,11 @@ namespace sqlpp::sqlite3::detail
   struct connection_cleanup_t
   {
   public:
-    auto operator()(::sqlite3* handle) -> void
+    auto operator()(::sqlite3* handle) const noexcept -> void
     {
-      const auto rc = sqlite3_close(handle);
-      if (rc != SQLITE_OK)
+      if (handle)
       {
-        throw sqlpp::exception(std::string("Sqlite3 error: Can't close database: ") + sqlite3_errmsg(handle));
+        sqlite3_close_v2(handle);
       }
     }
   };

@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017, Roland Bock
+Copyright (c) 2017 - 2018, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -47,11 +47,10 @@ namespace sqlpp::sqlite3::detail
   {
     bool _owning;
 
-    auto operator()(::sqlite3_stmt* handle) noexcept -> void
+    auto operator()(::sqlite3_stmt* handle) const noexcept -> void
     {
       if (_owning and handle)
       {
-        // This might fail, but throwing is not an option here
         sqlite3_finalize(handle);
       }
     }

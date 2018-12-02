@@ -40,10 +40,12 @@ namespace sqlpp ::mysql::detail
 {
   struct result_cleanup_t
   {
-    auto operator()(MYSQL_RES* result) const -> void
+    auto operator()(MYSQL_RES* result) const noexcept -> void
     {
       if (result)
+      {
         mysql_free_result(result);
+      }
     }
   };
   using unique_result_ptr = std::unique_ptr<MYSQL_RES, result_cleanup_t>;

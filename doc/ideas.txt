@@ -1,3 +1,4 @@
+
 The sqlpp11 connector for sqlite3 has additional functions:
 
   - auto attach(const connection_config&, const std::string name) -> schema_t;

@@ -58,10 +58,12 @@ namespace sqlpp::postgresql::detail
   class connection_cleanup_t
   {
   public:
-    auto operator()(PGconn* handle) -> void
+    auto operator()(PGconn* handle) const noexcept -> void
     {
       if (handle)
+      {
         PQfinish(handle);
+      }
     }
   };
   using unique_connection_ptr = std::unique_ptr<PGconn, detail::connection_cleanup_t>;

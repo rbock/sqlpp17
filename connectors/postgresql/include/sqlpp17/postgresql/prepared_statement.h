@@ -40,11 +40,14 @@ namespace sqlpp::postgresql
 {
   struct prepared_statement_cleanup_t
   {
-    std::string_view _name;
+    std::string _name;
   public:
-    auto operator()(PGconn* handle) -> void
+    auto operator()(PGconn* handle) const noexcept -> void
     {
-#warning implement cleanup
+      if (handle)
+      {
+        PQexec(handle, ("DEALLOCATE " + _name).c_str());
+      }
     }
   };
   using unique_prepared_statement_ptr = std::unique_ptr<PGconn, prepared_statement_cleanup_t>;

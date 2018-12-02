@@ -39,10 +39,12 @@ namespace sqlpp::postgresql::detail
 {
   struct result_cleanup_t
   {
-    auto operator()(PGresult* handle) const -> void
+    auto operator()(PGresult* handle) const noexcept -> void
     {
       if (handle)
+      {
         PQclear(handle);
+      }
     }
   };
   using unique_result_ptr = std::unique_ptr<PGresult, detail::result_cleanup_t>;

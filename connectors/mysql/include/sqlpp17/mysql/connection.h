@@ -56,9 +56,12 @@ namespace sqlpp::mysql::detail
   class connection_cleanup_t
   {
   public:
-    auto operator()(MYSQL* handle) -> void
+    auto operator()(MYSQL* handle) const noexcept -> void
     {
-      mysql_close(handle);
+      if (handle)
+      {
+        mysql_close(handle);
+      }
     }
   };
   using unique_connection_ptr = std::unique_ptr<MYSQL, detail::connection_cleanup_t>;

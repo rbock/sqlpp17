@@ -41,10 +41,12 @@ namespace sqlpp::mysql::detail
   struct prepared_result_cleanup_t
   {
   public:
-    auto operator()(MYSQL_STMT* handle) -> void
+    auto operator()(MYSQL_STMT* handle) const noexcept -> void
     {
       if (handle)
+      {
         mysql_stmt_free_result(handle);
+      }
     }
   };
   using unique_prepared_result_ptr = std::unique_ptr<MYSQL_STMT, prepared_result_cleanup_t>;
