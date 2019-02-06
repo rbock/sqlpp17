@@ -55,7 +55,7 @@ int main()
                   std::tuple{tabDepartment.name = "Sales"},
               }));
 
-  id = db(insert_into(tabPerson).set(tabPerson.isManager = true, tabPerson.name = "Sample Name"));
+  id = db(insert_into(tabPerson).set(tabPerson.isManager = true, tabPerson.name = std::string_view{"Sample Name"}));
   id = db(insert_into(tabPerson).set(tabPerson.isManager = true, tabPerson.name = "Sample Name",
                                      tabPerson.address = "Sample Address"));
   id = db(insert_into(tabPerson).set(tabPerson.isManager = true, tabPerson.name = "Sample Name",

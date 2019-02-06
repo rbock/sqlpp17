@@ -34,7 +34,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/clause/select.h>
 #include <sqlpp17/function.h>
 #include <sqlpp17/operator.h>
-#include <sqlpp17/result_cast.h>
+#include <sqlpp17/sql_cast.h>
 
 using test::tabPerson;
 
@@ -93,7 +93,7 @@ int main()
   // using << concatenation
   for (const auto& row :
        db(::sqlpp::select() << select_columns(::sqlpp::count(1).as(rowCount), max(tabPerson.name).as(maxName),
-                                              avg(tabPerson.id).as<float>(avgId), tabPerson.isManager)
+                                              avg(tabPerson.id).as(avgId), tabPerson.isManager)
                             << from(tabPerson) << where(tabPerson.isManager and tabPerson.name != "")
                             << group_by(tabPerson.isManager) << having(::sqlpp::count(1) > 7)
                             << order_by(asc(max(tabPerson.id)))))

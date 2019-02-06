@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2018, Roland Bock
+Copyright (c) 2016 - 2019, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,49 +26,14 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/to_sql_string.h>
 #include <sqlpp17/type_traits.h>
 
 namespace sqlpp
 {
-  template <typename ValueType, typename Column>
-  struct result_cast_t
+  template <typename Context, typename ValueType>
+  [[nodiscard]] auto value_type_to_sql_string(Context& context, type_t<ValueType>)
   {
-    Column _column;
-  };
-
-  template <typename ValueType, typename Column>
-  struct nodes_of<result_cast_t<ValueType, Column>>
-  {
-    using type = type_vector<Column>;
-  };
-
-  template <typename ValueType, typename Column>
-  struct value_type_of<result_cast_t<ValueType, Column>>
-  {
-    using type = ValueType;
-  };
-
-  template <typename ValueType, typename Column>
-  struct name_tag_of<result_cast_t<ValueType, Column>>
-  {
-    using type = name_tag_of_t<Column>;
-  };
-
-  template <typename ValueType, typename Column>
-  constexpr auto is_aggregate_v<result_cast_t<ValueType, Column>> = is_aggregate_v<Column>;
-
-  template <typename ValueType, typename Column>
-  [[nodiscard]] auto result_cast(Column column)
-  {
-#warning: result_cast must check compatibility of ValueType and Column-ValueType
-    return result_cast_t<ValueType, Column>{column};
-  }
-
-  template <typename Context, typename ValueType, typename Column>
-  [[nodiscard]] auto to_sql_string(Context& context, const result_cast_t<ValueType, Column>& t)
-  {
-    return to_sql_string(context, t._column);
+    static_assert(wrong<Context, ValueType>, "missing value_type_to_sql_string specialization");
   }
 
 }  // namespace sqlpp

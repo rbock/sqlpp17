@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2018, Roland Bock
+Copyright (c) 2017 - 2019, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,25 +26,52 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/operator/as.h>
-#include <sqlpp17/type_traits.h>
+#include <string>
+
+#include <sqlpp17/value_type_to_sql_string.h>
+
+namespace sqlpp::mysql
+{
+  struct context_t;
+}
 
 namespace sqlpp
 {
-  template <typename DerivedExpression>
-  class as_base
+  [[nodiscard]] inline auto value_type_to_sql_string(::sqlpp::mysql::context_t&, type_t<bool>)
   {
-    constexpr decltype(auto) get() const
-    {
-      return static_cast<const DerivedExpression&>(*this);
-    }
+    return " BOOLEAN";
+  }
 
-  public:
-    template <typename Alias>
-    [[nodiscard]] constexpr auto as(const Alias& alias) const
-    {
-      return ::sqlpp::as(get(), alias);
-    }
-  };
+  [[nodiscard]] inline auto value_type_to_sql_string(::sqlpp::mysql::context_t&, type_t<int64_t>)
+  {
+    return " BIGINT";
+  }
+
+  [[nodiscard]] inline auto value_type_to_sql_string(::sqlpp::mysql::context_t&, type_t<int32_t>)
+  {
+    return " INT";
+  }
+
+  [[nodiscard]] inline auto value_type_to_sql_string(::sqlpp::mysql::context_t&, type_t<float>)
+  {
+    return " FLOAT";
+  }
+
+  [[nodiscard]] inline auto value_type_to_sql_string(::sqlpp::mysql::context_t&, type_t<double>)
+  {
+    return " DOUBLE";
+  }
+
+  template <uint8_t Size>
+  [[nodiscard]] inline auto value_type_to_sql_string(::sqlpp::mysql::context_t&, type_t<::sqlpp::fixchar<Size>>)
+  {
+    return " CHAR(" + std::to_string(Size) + ")";
+  }
+
+  template <uint8_t Size>
+  [[nodiscard]] inline auto value_type_to_sql_string(::sqlpp::mysql::context_t&, type_t<::sqlpp::varchar<Size>>)
+  {
+    return " VARCHAR(" + std::to_string(Size) + ")";
+  }
 
 }  // namespace sqlpp

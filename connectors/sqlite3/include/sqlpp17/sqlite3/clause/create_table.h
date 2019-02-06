@@ -34,64 +34,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/table.h>
 
 #include <sqlpp17/sqlite3/context.h>
+#include <sqlpp17/sqlite3/value_type_to_sql_string.h>
 
 namespace sqlpp::sqlite3::detail
 {
-  // A wrapper to prevent accidental conversion in the functions below
-  template <typename T>
-  struct column_type
-  {
-  };
-
-  template <typename ValueType>
-  [[nodiscard]] auto value_type_to_sql_string(column_type<ValueType>)
-  {
-    static_assert(wrong<ValueType>, "unknown value type for CREATE TABLE");
-  }
-
-  [[nodiscard]] inline auto value_type_to_sql_string(column_type<bool>)
-  {
-    return " INTEGER";
-  }
-
-  [[nodiscard]] inline auto value_type_to_sql_string(column_type<int32_t>)
-  {
-    return " INTEGER";
-  }
-
-  [[nodiscard]] inline auto value_type_to_sql_string(column_type<int64_t>)
-  {
-    return " INTEGER";
-  }
-
-  [[nodiscard]] inline auto value_type_to_sql_string(column_type<float>)
-  {
-    return " FLOAT";
-  }
-
-  [[nodiscard]] inline auto value_type_to_sql_string(column_type<double>)
-  {
-    return " DOUBLE";
-  }
-
-  template <uint8_t Size>
-  [[nodiscard]] inline auto value_type_to_sql_string(column_type<::sqlpp::fixchar<Size>>)
-  {
-    return " TEXT";
-  }
-
-  template <uint8_t Size>
-  [[nodiscard]] inline auto value_type_to_sql_string(column_type<::sqlpp::varchar<Size>>)
-  {
-    return " TEXT";
-  }
-
   template <typename TableSpec, typename ColumnSpec>
   [[nodiscard]] auto to_sql_column_spec_string(sqlite3::context_t& context,
                                                [[maybe_unused]] const TableSpec&,
                                                const ColumnSpec& columnSpec)
   {
-    auto ret = to_sql_name(context, columnSpec) + value_type_to_sql_string(column_type<typename ColumnSpec::value_type>{});
+    auto ret = to_sql_name(context, columnSpec) + value_type_to_sql_string(context, type_t<typename ColumnSpec::value_type>{});
 
     if constexpr (not ColumnSpec::can_be_null)
     {

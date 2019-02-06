@@ -34,58 +34,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/table.h>
 
 #include <sqlpp17/postgresql/context.h>
+#include <sqlpp17/postgresql/value_type_to_sql_string.h>
 
 namespace sqlpp::postgresql::detail
 {
-  // A wrapper to prevent accidental conversion in the functions below
-  template <typename T>
-  struct column_type
-  {
-  };
-
-  template <typename ValueType>
-  [[nodiscard]] auto value_type_to_sql_string(column_type<ValueType>)
-  {
-    static_assert(wrong<ValueType>, "unknown value type for CREATE TABLE");
-  }
-
-  [[nodiscard]] inline auto value_type_to_sql_string(column_type<bool>)
-  {
-    return " BOOLEAN";
-  }
-
-  [[nodiscard]] inline auto value_type_to_sql_string(column_type<std::int32_t>)
-  {
-    return " INTEGER";
-  }
-
-  [[nodiscard]] inline auto value_type_to_sql_string(column_type<std::int64_t>)
-  {
-    return " BIGINT";
-  }
-
-  [[nodiscard]] inline auto value_type_to_sql_string(column_type<float>)
-  {
-    return " REAL";
-  }
-
-  [[nodiscard]] inline auto value_type_to_sql_string(column_type<double>)
-  {
-    return " DOUBLE PRECISION";
-  }
-
-  template <uint8_t Size>
-  [[nodiscard]] inline auto value_type_to_sql_string(column_type<::sqlpp::fixchar<Size>>)
-  {
-    return " CHAR(" + std::to_string(Size) + ")";
-  }
-
-  template <uint8_t Size>
-  [[nodiscard]] inline auto value_type_to_sql_string(column_type<::sqlpp::varchar<Size>>)
-  {
-    return " VARCHAR(" + std::to_string(Size) + ")";
-  }
-
   template <typename ColumnSpec>
   [[nodiscard]] auto to_sql_column_spec_string(postgresql::context_t& context, const ColumnSpec& columnSpec)
   {
@@ -112,7 +64,7 @@ namespace sqlpp::postgresql::detail
     }
     else
     {
-      ret += value_type_to_sql_string(column_type<typename ColumnSpec::value_type>{});
+      ret += value_type_to_sql_string(context, type_t<typename ColumnSpec::value_type>{});
 
       if constexpr (!ColumnSpec::can_be_null)
       {

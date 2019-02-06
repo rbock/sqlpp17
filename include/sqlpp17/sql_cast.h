@@ -26,25 +26,50 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/operator/as.h>
+#include <sqlpp17/to_sql_string.h>
 #include <sqlpp17/type_traits.h>
+#include <sqlpp17/value_type_to_sql_string.h>
 
 namespace sqlpp
 {
-  template <typename DerivedExpression>
-  class as_base
+  template <typename ValueType, typename Expression>
+  struct sql_cast_t
   {
-    constexpr decltype(auto) get() const
-    {
-      return static_cast<const DerivedExpression&>(*this);
-    }
-
-  public:
-    template <typename Alias>
-    [[nodiscard]] constexpr auto as(const Alias& alias) const
-    {
-      return ::sqlpp::as(get(), alias);
-    }
+    Expression _expression;
   };
+
+  template <typename ValueType, typename Expression>
+  struct nodes_of<sql_cast_t<ValueType, Expression>>
+  {
+    using type = type_vector<Expression>;
+  };
+
+  template <typename ValueType, typename Expression>
+  struct value_type_of<sql_cast_t<ValueType, Expression>>
+  {
+    using type = ValueType;
+  };
+
+  template <typename ValueType, typename Expression>
+  struct name_tag_of<sql_cast_t<ValueType, Expression>>
+  {
+    using type = name_tag_of_t<Expression>;
+  };
+
+  template <typename ValueType, typename Expression>
+  constexpr auto is_aggregate_v<sql_cast_t<ValueType, Expression>> = is_aggregate_v<Expression>;
+
+  template <typename ValueType, typename Expression>
+  [[nodiscard]] auto sql_cast(Expression expression)
+  {
+#warning: Need to check that ValueType is a valueType and Expression is an expression
+    return sql_cast_t<ValueType, Expression>{expression};
+  }
+
+  template <typename Context, typename ValueType, typename Expression>
+  [[nodiscard]] auto to_sql_string(Context& context, const sql_cast_t<ValueType, Expression>& t)
+  {
+    return " CAST(" + to_sql_string(context, t._expression) + " AS " + value_type_to_sql_string(context, type_t<ValueType>{}) + ")";
+  }
 
 }  // namespace sqlpp

@@ -66,7 +66,7 @@ namespace sqlpp::test
     }
 
     for (const auto& row : db(select(::sqlpp::count(1).as(rowCount), max(::test::tabPerson.name).as(maxName),
-                                     avg(::test::tabPerson.id).as<float>(avgId), ::test::tabPerson.isManager)
+                                     avg(::test::tabPerson.id).as(avgId), ::test::tabPerson.isManager)
                                   .from(::test::tabPerson)
                                   .where(::test::tabPerson.isManager and ::test::tabPerson.name != "")
                                   .group_by(::test::tabPerson.isManager)

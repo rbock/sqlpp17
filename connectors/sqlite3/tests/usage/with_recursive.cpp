@@ -30,10 +30,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/clause/with.h>
 #include <sqlpp17/name_tag.h>
 #include <sqlpp17/operator.h>
-#include <sqlpp17/result_cast.h>
+#include <sqlpp17/sql_cast.h>
 #include <sqlpp17/value.h>
 
 #include <sqlpp17/sqlite3/connection.h>
+#include <sqlpp17/sqlite3/value_type_to_sql_string.h>
 #include <sqlpp17/sqlite3_test/get_config.h>
 
 namespace
@@ -62,7 +63,7 @@ int main()
     */
     const auto cnt = [&]() {
       auto cnt = cte(alias::cnt).as(select(as(::sqlpp::value(int32_t(1)), alias::x)));
-      return cnt.union_all(select(as(::sqlpp::result_cast<int32_t>(cnt.x + 1), alias::x)).from(cnt).where(cnt.x < 10));
+      return cnt.union_all(select(as(::sqlpp::sql_cast<int32_t>(cnt.x + 1), alias::x)).from(cnt).where(cnt.x < 10));
     }();
     for (const auto& row : db(with_recursive(cnt) << select(cnt.x).from(cnt).unconditionally()))
     {
