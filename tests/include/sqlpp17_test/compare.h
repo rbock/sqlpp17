@@ -28,15 +28,23 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <cfloat>
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <stdexcept>
 
 namespace sqlpp::test
 {
+  std::string to_decimal_string(float value, int precision)
+  {
+    std::ostringstream oss;
+    oss << std::setprecision(precision) << value;
+    return oss.str();
+  }
+
   void compare(std::size_t index, float expected, float received)
   {
-    const auto expectedString = (std::ostringstream{} << std::setprecision(5) << expected).str();
-    const auto receivedString = (std::ostringstream{} << std::setprecision(5) << received).str();
+    const auto expectedString = to_decimal_string(expected, 5);
+    const auto receivedString = to_decimal_string(received, 5);
 
     if (expectedString != receivedString)
     {
@@ -49,8 +57,8 @@ namespace sqlpp::test
 
   void compare(std::size_t index, double expected, double received)
   {
-    const auto expectedString = (std::ostringstream{} << std::setprecision(12) << expected).str();
-    const auto receivedString = (std::ostringstream{} << std::setprecision(12) << received).str();
+    const auto expectedString = to_decimal_string(expected, 12);
+    const auto receivedString = to_decimal_string(received, 12);
 
     if (expectedString != receivedString)
     {
@@ -83,4 +91,3 @@ namespace sqlpp::test
     }
   }
 }
-
