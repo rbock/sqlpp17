@@ -44,7 +44,7 @@ if (SQLITE3_FOUND)
 
     target_include_directories(sqlpp17-connector-sqlite3 INTERFACE
         ${SQLITE3_INCLUDE_DIRS}
-        $<BUILD_INTERFACE:${sqlpp17_SOURCE_DIR}/connectors/sqlite3/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
     )
 
@@ -53,5 +53,7 @@ if (SQLITE3_FOUND)
 
     add_subdirectory(tests)
 
-    install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/sqlpp17" DESTINATION include)
+    install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/sqlpp17"
+            DESTINATION include
+            FILES_MATCHING PATTERN "*.h")
 endif()

@@ -32,7 +32,7 @@ if (POSTGRESQL_FOUND)
 
    target_include_directories(sqlpp17-connector-postgresql INTERFACE
         ${PostgreSQL_INCLUDE_DIRS}
-        $<BUILD_INTERFACE:${sqlpp17_SOURCE_DIR}/connectors/postgresql/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
     )
 
@@ -41,5 +41,7 @@ if (POSTGRESQL_FOUND)
 
     add_subdirectory(tests)
 
-    install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/sqlpp17" DESTINATION include)
+    install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/sqlpp17"
+            DESTINATION include
+            FILES_MATCHING PATTERN "*.h")
 endif()

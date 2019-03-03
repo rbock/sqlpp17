@@ -40,7 +40,7 @@ if (MYSQL_FOUND)
 
     target_include_directories(sqlpp17-connector-mysql INTERFACE
         ${MYSQL_INCLUDE_DIRS}
-        $<BUILD_INTERFACE:${sqlpp17_SOURCE_DIR}/connectors/mysql/include>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>
     )
 
@@ -52,5 +52,7 @@ if (MYSQL_FOUND)
 
     add_subdirectory(tests)
 
-    install(DIRECTORY "${sqlpp17_SOURCE_DIR}/connectors/mysql/include" DESTINATION include)
+    install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/sqlpp17"
+            DESTINATION include
+            FILES_MATCHING PATTERN "*.h")
 endif()
