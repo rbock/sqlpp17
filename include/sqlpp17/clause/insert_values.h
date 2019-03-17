@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016 - 2018, Roland Bock
+Copyright (c) 2016 - 2019, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -30,6 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vector>
 
 #include <sqlpp17/clause_fwd.h>
+#include <sqlpp17/default_value.h>
 #include <sqlpp17/detail/first.h>
 #include <sqlpp17/exception.h>
 #include <sqlpp17/free_column.h>
@@ -52,19 +53,12 @@ namespace sqlpp
     if constexpr (::sqlpp::is_optional_v<Assignment>)
     {
       if (assignment._assignment)
+      {
         return to_sql_string(context, assignment._assignment.value().value);
+      }
       else
       {
-        using _spec = column_spec_of_t<column_of_t<remove_optional_t<Assignment>>>;
-        if constexpr (std::is_same_v<decltype(_spec::default_value), const none_t>)
-        {
-          static_assert(_spec::can_be_null);
-          return std::string("NULL");
-        }
-        else
-        {
-          return to_sql_string(context, _spec::default_value);
-        }
+        return to_sql_string(context, ::sqlpp::default_value);
       }
     }
     else

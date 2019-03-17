@@ -117,14 +117,12 @@ namespace sqlpp
   };
 
   template <typename TableSpec, typename ColumnSpec>
-  constexpr auto is_read_only_v<column_t<TableSpec, ColumnSpec>> =
-      is_read_only_v<std::decay_t<decltype(ColumnSpec::default_value)>>;
+  constexpr auto is_read_only_v<column_t<TableSpec, ColumnSpec>> = ColumnSpec::has_auto_increment;
 
   template <typename TableSpec, typename ColumnSpec>
   struct has_default<column_t<TableSpec, ColumnSpec>>
   {
-    static constexpr auto value =
-        ColumnSpec::can_be_null or not std::is_same_v<decltype(ColumnSpec::default_value), const ::sqlpp::none_t>;
+    static constexpr auto value = ColumnSpec::has_default_value or ColumnSpec::can_be_null or ColumnSpec::has_auto_increment;
   };
 
   template <typename TableSpec, typename ColumnSpec>

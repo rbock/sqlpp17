@@ -52,14 +52,11 @@ namespace sqlpp::mysql::detail
       ret += " NOT NULL";
     }
 
-    if constexpr (std::is_same_v<std::decay_t<decltype(columnSpec.default_value)>, ::sqlpp::none_t>)
-    {
-    }
-    else if constexpr (std::is_same_v<std::decay_t<decltype(columnSpec.default_value)>, ::sqlpp::auto_increment_t>)
+    if constexpr (ColumnSpec::has_auto_increment)
     {
       ret += " AUTO_INCREMENT";
     }
-    else
+    else if constexpr (ColumnSpec::has_default_value)
     {
       ret += " DEFAULT " + to_sql_string(context, columnSpec.default_value);
     }

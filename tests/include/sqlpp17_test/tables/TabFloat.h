@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2018, Roland Bock
+Copyright (c) 2019, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -41,7 +41,8 @@ namespace test
       SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(id, id);
       using value_type = std::int64_t;
       static constexpr auto can_be_null = false;
-      static constexpr auto default_value = ::sqlpp::auto_increment_t{};
+      static constexpr auto has_default_value = false;
+      static constexpr auto has_auto_increment = true;
     };
 
     struct ValueFloat : public ::sqlpp::spec_base
@@ -49,7 +50,8 @@ namespace test
       SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(value_float, valueFloat);
       using value_type = float;
       static constexpr auto can_be_null = false;
-      static constexpr auto default_value = ::sqlpp::none_t{};
+      static constexpr auto has_default_value = false;
+      static constexpr auto has_auto_increment = false;
     };
 
     struct ValueDouble : public ::sqlpp::spec_base
@@ -57,7 +59,8 @@ namespace test
       SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(value_double, valueDouble);
       using value_type = double;
       static constexpr auto can_be_null = false;
-      static constexpr auto default_value = ::sqlpp::none_t{};
+      static constexpr auto has_default_value = false;
+      static constexpr auto has_auto_increment = false;
     };
 
     struct ValueInt : public ::sqlpp::spec_base
@@ -65,7 +68,9 @@ namespace test
       SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(value_int, valueInt);
       using value_type = std::int32_t;
       static constexpr auto can_be_null = false;
+      static constexpr auto has_default_value = true;
       static constexpr auto default_value = 0;
+      static constexpr auto has_auto_increment = false;
     };
 
     using _columns = ::sqlpp::type_vector<Id, ValueFloat, ValueDouble, ValueInt>;

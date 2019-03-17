@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016 - 2019, Roland Bock
+Copyright (c) 2019 - 2019, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,16 +26,20 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/table.h>
+#include <sqlpp17/to_sql_string.h>
 
-namespace test
+namespace sqlpp
 {
-  struct TabEmpty : public ::sqlpp::spec_base
+  struct default_value_t
   {
-    using _columns = ::sqlpp::type_vector<>;
-
-    SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(tab_empty, tabEmpty);
   };
 
-  constexpr auto tabEmpty = sqlpp::table_t<TabEmpty>{};
-}  // namespace test
+  inline constexpr auto default_value = ::sqlpp::default_value_t{};
+
+  template <typename Context>
+  [[nodiscard]] auto to_sql_string(Context& context, const ::sqlpp::default_value_t&)
+  {
+    return std::string{" DEFAULT "};
+  }
+
+}  // namespace sqlpp

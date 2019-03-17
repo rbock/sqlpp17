@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016 - 2018, Roland Bock
+Copyright (c) 2016 - 2019, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -41,7 +41,8 @@ namespace test
       SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(id, id);
       using value_type = std::int64_t;
       static constexpr auto can_be_null = false;
-      static constexpr auto default_value = ::sqlpp::auto_increment_t{};
+      static constexpr auto has_default_value = false;
+      static constexpr auto has_auto_increment = true;
     };
 
     struct IsManager : public ::sqlpp::spec_base
@@ -49,7 +50,8 @@ namespace test
       SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(is_manager, isManager);
       using value_type = bool;
       static constexpr auto can_be_null = false;
-      static constexpr auto default_value = ::sqlpp::none_t{};
+      static constexpr auto has_default_value = false;
+      static constexpr auto has_auto_increment = false;
     };
 
     struct Name : public ::sqlpp::spec_base
@@ -57,7 +59,8 @@ namespace test
       SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(name, name);
       using value_type = ::sqlpp::varchar<255>;
       static constexpr auto can_be_null = false;
-      static constexpr auto default_value = ::sqlpp::none_t{};
+      static constexpr auto has_default_value = false;
+      static constexpr auto has_auto_increment = false;
     };
 
     struct Address : public ::sqlpp::spec_base
@@ -65,7 +68,8 @@ namespace test
       SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(address, address);
       using value_type = ::sqlpp::varchar<255>;
       static constexpr auto can_be_null = true;
-      static constexpr auto default_value = ::sqlpp::none_t{};
+      static constexpr auto has_default_value = false;
+      static constexpr auto has_auto_increment = false;
     };
 
     struct Language : public ::sqlpp::spec_base
@@ -73,7 +77,9 @@ namespace test
       SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(language, language);
       using value_type = ::sqlpp::varchar<255>;
       static constexpr auto can_be_null = false;
+      static constexpr auto has_default_value = true;
       static constexpr auto default_value = std::string_view{"C++"};
+      static constexpr auto has_auto_increment = false;
     };
 
     using _columns = ::sqlpp::type_vector<Id, IsManager, Name, Address, Language>;

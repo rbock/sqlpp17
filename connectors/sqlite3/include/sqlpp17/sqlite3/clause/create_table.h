@@ -50,10 +50,7 @@ namespace sqlpp::sqlite3::detail
       ret += " NOT NULL";
     }
 
-    if constexpr (std::is_same_v<std::decay_t<decltype(columnSpec.default_value)>, ::sqlpp::none_t>)
-    {
-    }
-    else if constexpr (std::is_same_v<std::decay_t<decltype(columnSpec.default_value)>, ::sqlpp::auto_increment_t>)
+    if constexpr (ColumnSpec::has_auto_increment)
     {
       static_assert(not ColumnSpec::can_be_null, "auto increment columns must not be null");
       static_assert(std::is_integral_v<typename ColumnSpec::value_type>, "auto increment columns must be integer");
@@ -61,7 +58,7 @@ namespace sqlpp::sqlite3::detail
                     "auto increment columns must be integer primary key");
       ret += " PRIMARY KEY AUTOINCREMENT";
     }
-    else
+    else if constexpr (ColumnSpec::has_default_value)
     {
       ret += " DEFAULT " + to_sql_string(context, columnSpec.default_value);
     }
@@ -102,7 +99,7 @@ namespace sqlpp::sqlite3::detail
     {
       return "";
     }
-    else if constexpr (std::is_same_v<std::decay_t<decltype(_primary_key::default_value)>, ::sqlpp::auto_increment_t>)
+    else if constexpr (_primary_key::has_auto_increment)
     {
       return "";  // auto incremented primary keys need to be specified inline
     }
