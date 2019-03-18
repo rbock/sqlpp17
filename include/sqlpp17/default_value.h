@@ -39,7 +39,7 @@ namespace sqlpp
   template <typename Context>
   [[nodiscard]] auto to_sql_string(Context& context, const ::sqlpp::default_value_t&)
   {
-    return std::string{" DEFAULT "};
+    return std::string{"DEFAULT"};
   }
 
 }  // namespace sqlpp
