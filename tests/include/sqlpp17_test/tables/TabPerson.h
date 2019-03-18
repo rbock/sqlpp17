@@ -85,7 +85,7 @@ namespace test
     using _columns = ::sqlpp::type_vector<Id, IsManager, Name, Address, Language>;
 
     SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(tab_person, tabPerson);
-    using primary_key = Id;
+    using primary_key = sqlpp::type_vector<Id>;
   };
 
   constexpr auto tabPerson = sqlpp::table_t<TabPerson>{};

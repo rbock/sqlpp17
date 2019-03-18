@@ -67,7 +67,7 @@ namespace test
     using _columns = ::sqlpp::type_vector<Id, Name, Division>;
 
     SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(tab_department, tabDepartment);
-    using primary_key = Id;
+    using primary_key = sqlpp::type_vector<Id>;
   };
 
   inline constexpr auto tabDepartment = sqlpp::table_t<TabDepartment>{};

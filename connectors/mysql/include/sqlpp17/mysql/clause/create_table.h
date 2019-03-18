@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017 - 2018, Roland Bock
+Copyright (c) 2017 - 2019, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -32,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/column.h>
 #include <sqlpp17/data_types.h>
 #include <sqlpp17/table.h>
+#include <sqlpp17/type_vector_to_sql_name.h>
 
 #include <sqlpp17/mysql/value_type_to_sql_string.h>
 
@@ -92,13 +93,13 @@ namespace sqlpp::mysql::detail
   [[nodiscard]] auto to_sql_primary_key(mysql::context_t& context, const ::sqlpp::table_t<TableSpec>& t)
   {
     using _primary_key = typename TableSpec::primary_key;
-    if constexpr (std::is_same_v<_primary_key, ::sqlpp::none_t>)
+    if constexpr (_primary_key::empty())
     {
       return "";
     }
     else
     {
-      return ", PRIMARY KEY (" + to_sql_name(context, _primary_key{}) + ")";
+      return ", PRIMARY KEY (" + type_vector_to_sql_name(context, _primary_key{}) + ")";
     }
   }
 }  // namespace sqlpp::mysql::detail

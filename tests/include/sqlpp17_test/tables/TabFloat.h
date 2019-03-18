@@ -76,7 +76,7 @@ namespace test
     using _columns = ::sqlpp::type_vector<Id, ValueFloat, ValueDouble, ValueInt>;
 
     SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(tab_float, tabFloat);
-    using primary_key = Id;
+    using primary_key = sqlpp::type_vector<Id>;
   };
 
   inline constexpr auto tabFloat = sqlpp::table_t<TabFloat>{};

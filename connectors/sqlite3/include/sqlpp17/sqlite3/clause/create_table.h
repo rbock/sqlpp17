@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017 - 2018, Roland Bock
+Copyright (c) 2017 - 2019, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -32,6 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/column.h>
 #include <sqlpp17/data_types.h>
 #include <sqlpp17/table.h>
+#include <sqlpp17/type_vector_to_sql_name.h>
 
 #include <sqlpp17/sqlite3/context.h>
 #include <sqlpp17/sqlite3/value_type_to_sql_string.h>
@@ -54,7 +55,7 @@ namespace sqlpp::sqlite3::detail
     {
       static_assert(not ColumnSpec::can_be_null, "auto increment columns must not be null");
       static_assert(std::is_integral_v<typename ColumnSpec::value_type>, "auto increment columns must be integer");
-      static_assert(std::is_same_v<typename TableSpec::primary_key, ColumnSpec>,
+      static_assert(std::is_same_v<typename TableSpec::primary_key, ::sqlpp::type_vector<ColumnSpec>>,
                     "auto increment columns must be integer primary key");
       ret += " PRIMARY KEY AUTOINCREMENT";
     }
@@ -91,21 +92,27 @@ namespace sqlpp::sqlite3::detail
             (separator.to_string() + to_sql_column_spec_string(context, TableSpec{}, ColumnSpecs{})));
   }
 
+  template <typename ColumnSpec>
+  [[nodiscard]] constexpr auto primary_key_has_auto_increment(::sqlpp::type_vector<ColumnSpec>)
+  {
+    return ColumnSpec::has_auto_increment;
+  }
+
   template <typename TableSpec>
-  [[nodiscard]] auto to_sql_primary_key(sqlite3::context_t& context, const ::sqlpp::table_t<TableSpec>& t)
+  [[nodiscard]] auto to_sql_primary_key(::sqlpp::sqlite3::context_t& context, const ::sqlpp::table_t<TableSpec>& t)
   {
     using _primary_key = typename TableSpec::primary_key;
-    if constexpr (std::is_same_v<_primary_key, ::sqlpp::none_t>)
+    if constexpr (_primary_key::empty())
     {
       return "";
     }
-    else if constexpr (_primary_key::has_auto_increment)
+    else if constexpr (_primary_key::size() == 1 and primary_key_has_auto_increment(_primary_key{}))
     {
       return "";  // auto incremented primary keys need to be specified inline
     }
     else
     {
-      return ", PRIMARY KEY (" + to_sql_name(context, _primary_key{}) + " ASC)";
+      return ", PRIMARY KEY (" + type_vector_to_sql_name(context, _primary_key{}) + ")";
     }
   }
 }  // namespace sqlpp::sqlite3::detail
