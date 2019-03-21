@@ -32,9 +32,9 @@ namespace test
 {
   struct TabEmpty : public ::sqlpp::spec_base
   {
-    using _columns = ::sqlpp::type_vector<>;
-
     SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(tab_empty, tabEmpty);
+
+    using _columns = ::sqlpp::type_vector<>;
   };
 
   constexpr auto tabEmpty = sqlpp::table_t<TabEmpty>{};

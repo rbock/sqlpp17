@@ -36,6 +36,8 @@ namespace test
 {
   struct TabFloat : public ::sqlpp::spec_base
   {
+    SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(tab_float, tabFloat);
+
     struct Id : public ::sqlpp::spec_base
     {
       SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(id, id);
@@ -75,7 +77,6 @@ namespace test
 
     using _columns = ::sqlpp::type_vector<Id, ValueFloat, ValueDouble, ValueInt>;
 
-    SQLPP_NAME_TAGS_FOR_SQL_AND_CPP(tab_float, tabFloat);
     using primary_key = sqlpp::type_vector<Id>;
   };
 

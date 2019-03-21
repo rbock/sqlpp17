@@ -26,21 +26,16 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/to_sql_string.h>
-#include <iostream>
+#include <sqlpp17/default_value.h>
+
+#include <sqlpp17/sqlite3/context.h>
 
 namespace sqlpp
 {
-  struct default_value_t
+  template <typename T = void>
+  [[nodiscard]] auto to_sql_string([[maybe_unused]] ::sqlpp::sqlite3::context_t& context, const ::sqlpp::default_value_t&)
   {
-  };
-
-  inline constexpr auto default_value = ::sqlpp::default_value_t{};
-
-  template <typename Context>
-  [[nodiscard]] auto to_sql_string(Context& context, const ::sqlpp::default_value_t&)
-  {
-    return std::string{"DEFAULT"};
+    static_assert(sqlpp::wrong<T>, "default_value cannot be used with sqlite3");
   }
 
 }  // namespace sqlpp

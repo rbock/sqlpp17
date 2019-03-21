@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2016 - 2018, Roland Bock
+Copyright (c) 2016 - 2019, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -89,7 +89,7 @@ int main()
                                       tabPerson.isManager = true, tabPerson.name = "Sample Name",
                                       true ? std::make_optional(tabPerson.address = "Sample Address") : std::nullopt)));
   assert_equality("INSERT INTO tab_person (is_manager, name, address, language) "
-                  "VALUES (1, 'Sample Name', NULL, 'C++')",
+                  "VALUES (1, 'Sample Name', DEFAULT, DEFAULT)",
                   to_sql_string_c(mock_context_t{},
                                   insert_into(tabPerson).set(
                                       tabPerson.isManager = true, tabPerson.name = "Sample Name",
@@ -98,8 +98,8 @@ int main()
 
   assert_equality(
       "INSERT INTO tab_person (is_manager, name, address, language) "
-      "VALUES (0, 'Mr. C++', NULL, 'C++'), (1, 'Mr. CEO', 'Sample Address', 'C++'), "
-      "(0, 'Mr. C++', NULL, 'Python'), (1, 'Mr. CEO', 'Sample Address', 'Python')",
+      "VALUES (0, 'Mr. C++', DEFAULT, DEFAULT), (1, 'Mr. CEO', 'Sample Address', DEFAULT), "
+      "(0, 'Mr. C++', DEFAULT, 'Python'), (1, 'Mr. CEO', 'Sample Address', 'Python')",
       to_sql_string_c(mock_context_t{},
                       insert_into(tabPerson).multiset(std::vector{
                           std::tuple{tabPerson.isManager = false, tabPerson.name = "Mr. C++",

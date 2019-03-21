@@ -32,6 +32,7 @@ function(test_target name type)
     CXX_EXTENSIONS ON
   )
   target_link_libraries(${target} PRIVATE sqlpp17 sqlpp17_testing)
+  add_test(${target} ${target})
 endfunction()
 
 target_include_directories(sqlpp17_testing INTERFACE

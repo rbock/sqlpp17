@@ -42,6 +42,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
+  struct default_value_t;
+
   struct none_t
   {
   };
@@ -545,6 +547,12 @@ namespace sqlpp
 
   template <typename L, typename R, typename Enable = void>
   struct values_are_compatible : std::false_type
+  {
+  };
+
+  template <typename L>
+  struct values_are_compatible<L, ::sqlpp::default_value_t, std::enable_if_t<has_default_v<L>>>
+      : std::true_type
   {
   };
 
