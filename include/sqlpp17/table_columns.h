@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016 - 2018, Roland Bock
+Copyright (c) 2016 - 2019, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -57,16 +57,8 @@ namespace sqlpp
   }
 
   template <typename TableSpec, typename... ColumnSpecs>
-  constexpr auto required_insert_columns_of_v<table_columns<TableSpec, type_vector<ColumnSpecs...>>> =
-      type_set_if<is_insert_required, column_t<TableSpec, ColumnSpecs>...>();
-
-  template <typename TableSpec, typename... ColumnSpecs>
-  constexpr auto default_columns_of_v<table_columns<TableSpec, type_vector<ColumnSpecs...>>> =
-      type_set_if<has_default, column_t<TableSpec, ColumnSpecs>...>();
-
-  template <typename TableSpec, typename... ColumnSpecs>
   constexpr auto columns_of_v<table_columns<TableSpec, type_vector<ColumnSpecs...>>> =
-      type_set<column_t<TableSpec, ColumnSpecs>...>();
+      type_vector<column_t<TableSpec, ColumnSpecs>...>();
 
   template <typename TableSpec, typename... ColumnSpecs>
   constexpr auto can_be_null_columns_of_v<table_columns<TableSpec, type_vector<ColumnSpecs...>>> =

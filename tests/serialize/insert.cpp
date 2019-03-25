@@ -39,10 +39,6 @@ using ::sqlpp::test::mock_context_t;
 using test::tabDepartment;
 using test::tabPerson;
 
-static_assert(::sqlpp::required_insert_columns_of_f(tabDepartment) == ::sqlpp::type_set());
-static_assert(::sqlpp::required_insert_columns_of_f(tabPerson) ==
-              ::sqlpp::type_set(tabPerson.isManager, tabPerson.name));
-
 int main()
 {
   // standard way of constructing an insert statement

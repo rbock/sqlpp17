@@ -73,7 +73,7 @@ namespace sqlpp
   constexpr auto is_table_v<join_t<Lhs, JoinType, Rhs, Condition>> = true;
 
   template <typename Lhs, typename JoinType, typename Rhs, typename Condition>
-  constexpr auto columns_of_v<join_t<Lhs, JoinType, Rhs, Condition>> = columns_of_v<Lhs> | columns_of_v<Rhs>;
+  constexpr auto columns_of_v<join_t<Lhs, JoinType, Rhs, Condition>> = columns_of_v<Lhs> + columns_of_v<Rhs>;
 
   template <typename Lhs, typename JoinType, typename Rhs, typename Condition>
   constexpr auto can_be_null_columns_of_v<join_t<Lhs, JoinType, Rhs, Condition>> =

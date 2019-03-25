@@ -35,10 +35,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using test::tabDepartment;
 using test::tabPerson;
 
-static_assert(::sqlpp::required_insert_columns_of_f(tabDepartment) == ::sqlpp::type_set());
-static_assert(::sqlpp::required_insert_columns_of_f(tabPerson) ==
-              ::sqlpp::type_set(tabPerson.isManager, tabPerson.name));
-
 int main()
 {
   auto db = ::sqlpp::test::mock_db{};

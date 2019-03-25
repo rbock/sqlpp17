@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17_test/tables/TabEmpty.h>
 #include <sqlpp17_test/tables/TabPerson.h>
 #include <sqlpp17/name_tag.h>
+#include <sqlpp17/type_vector.h>
 #include <sqlpp17/operator/equal_to.h>
 
 SQLPP_CREATE_NAME_TAG(foo);
@@ -47,21 +48,21 @@ static_assert(columns_of(tabPerson.id.as(tabPerson)).empty());
 // raw tables
 static_assert(columns_of(tabEmpty).empty());
 static_assert(columns_of(tabPerson) ==
-              type_set(tabPerson.id, tabPerson.isManager, tabPerson.name, tabPerson.address, tabPerson.language));
-static_assert(columns_of(tabDepartment) == type_set(tabDepartment.id, tabDepartment.name, tabDepartment.division));
+              make_type_vector(tabPerson.id, tabPerson.isManager, tabPerson.name, tabPerson.address, tabPerson.language));
+static_assert(columns_of(tabDepartment) == make_type_vector(tabDepartment.id, tabDepartment.name, tabDepartment.division));
 
 // aliased tables
 static_assert(columns_of(tabEmpty.as(foo)).empty());
-static_assert(columns_of(tabPerson.as(foo)) == type_set(tabPerson.as(foo).id,
+static_assert(columns_of(tabPerson.as(foo)) == make_type_vector(tabPerson.as(foo).id,
                                                         tabPerson.as(foo).isManager,
                                                         tabPerson.as(foo).name,
                                                         tabPerson.as(foo).address,
                                                         tabPerson.as(foo).language));
 static_assert(columns_of(tabDepartment.as(foo)) ==
-              type_set(tabDepartment.as(foo).id, tabDepartment.as(foo).name, tabDepartment.as(foo).division));
+              make_type_vector(tabDepartment.as(foo).id, tabDepartment.as(foo).name, tabDepartment.as(foo).division));
 
 // conditionless joins
-constexpr auto colsOfDepartmentAndPerson = (columns_of(tabDepartment) | columns_of(tabPerson));
+constexpr auto colsOfDepartmentAndPerson = (columns_of(tabDepartment) + columns_of(tabPerson));
 static_assert(columns_of(tabDepartment.join(tabPerson)) == colsOfDepartmentAndPerson);
 static_assert(columns_of(tabDepartment.inner_join(tabPerson)) == colsOfDepartmentAndPerson);
 static_assert(columns_of(tabDepartment.left_outer_join(tabPerson)) == colsOfDepartmentAndPerson);
@@ -69,7 +70,7 @@ static_assert(columns_of(tabDepartment.right_outer_join(tabPerson)) == colsOfDep
 static_assert(columns_of(tabDepartment.outer_join(tabPerson)) == colsOfDepartmentAndPerson);
 
 // conditionless self joins
-constexpr auto colsOfFooAndBar(columns_of(tabPerson.as(foo)) | columns_of(tabPerson.as(bar)));
+constexpr auto colsOfFooAndBar(columns_of(tabPerson.as(foo)) + columns_of(tabPerson.as(bar)));
 static_assert(columns_of(tabPerson.as(foo).join(tabPerson.as(bar))) == colsOfFooAndBar);
 static_assert(columns_of(tabPerson.as(foo).inner_join(tabPerson.as(bar))) == colsOfFooAndBar);
 static_assert(columns_of(tabPerson.as(foo).left_outer_join(tabPerson.as(bar))) == colsOfFooAndBar);
@@ -85,10 +86,10 @@ static_assert(columns_of(tabDepartment.right_outer_join(tabPerson).unconditional
 static_assert(columns_of(tabDepartment.outer_join(tabPerson).unconditionally()) == colsOfDepartmentAndPerson);
 
 // triple and quadruple joins
-constexpr auto colsOfFooAndBarAndPing(columns_of(tabPerson.as(foo)) | columns_of(tabPerson.as(bar)) |
+constexpr auto colsOfFooAndBarAndPing(columns_of(tabPerson.as(foo)) + columns_of(tabPerson.as(bar)) +
                                       columns_of(tabPerson.as(ping)));
-constexpr auto colsOfFooAndBarAndPingAndPong(columns_of(tabPerson.as(foo)) | columns_of(tabPerson.as(bar)) |
-                                             columns_of(tabPerson.as(ping)) | columns_of(tabPerson.as(pong)));
+constexpr auto colsOfFooAndBarAndPingAndPong(columns_of(tabPerson.as(foo)) + columns_of(tabPerson.as(bar)) +
+                                             columns_of(tabPerson.as(ping)) + columns_of(tabPerson.as(pong)));
 static_assert(columns_of(tabDepartment.cross_join(tabPerson).cross_join(tabEmpty)) == colsOfDepartmentAndPerson);
 static_assert(columns_of(tabPerson.as(foo).cross_join(tabPerson.as(bar)).cross_join(tabPerson.as(ping))) ==
               colsOfFooAndBarAndPing);

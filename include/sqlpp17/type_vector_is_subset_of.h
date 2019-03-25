@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2017 - 2018, Roland Bock
+Copyright (c) 2019 - 2019, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,43 +26,31 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include <sqlpp17/type_traits.h>
+#include <sqlpp17/type_vector.h>
+
+namespace sqlpp::detail
+{
+  template<typename L, typename... Rs>
+  constexpr auto is_in_rhs() -> bool
+  {
+    return (false || ... || std::is_same_v<L, Rs>);
+  }
+
+  template<typename L, typename... Rs>
+  constexpr auto is_not_in_rhs() -> bool
+  {
+    return not is_in_rhs<L, Rs...>();
+  }
+}
+
 namespace sqlpp
 {
-  template <typename... Elements>
-  struct type_vector
-  {
-    [[nodiscard]] static constexpr auto size()
-    {
-      return sizeof...(Elements);
-    }
-
-    [[nodiscard]] static constexpr auto empty()
-    {
-      return size() == 0;
-    }
-  };
-
-  template <typename... Elements>
-  [[nodiscard]] constexpr auto make_type_vector(const Elements&...)
-  {
-    return type_vector<Elements...>{};
-  }
-
-  template <typename... Ls>
-  [[nodiscard]] constexpr auto operator==([[maybe_unused]] type_vector<Ls...>, [[maybe_unused]] type_vector<Ls...>) -> bool
-  {
-    return true;
-  }
-
   template <typename... Ls, typename... Rs>
-  [[nodiscard]] constexpr auto operator==([[maybe_unused]] type_vector<Ls...>, [[maybe_unused]] type_vector<Rs...>) -> bool
+  constexpr auto type_vector_is_subset_of(::sqlpp::type_vector<Ls...>, ::sqlpp::type_vector<Rs...>)
   {
-    return false;
+   return (true && ... && detail::is_in_rhs<Ls, Rs...>());
   }
 
-  template <typename... Ls, typename... Rs>
-  [[nodiscard]] constexpr auto operator+([[maybe_unused]] type_vector<Ls...>, [[maybe_unused]] type_vector<Rs...>)
-  {
-    return type_vector<Ls..., Rs...>{};
-  }
-}  // namespace sqlpp
+}
+

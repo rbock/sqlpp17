@@ -114,6 +114,13 @@ namespace sqlpp
   template <typename T>
   inline constexpr auto is_insert_required_v = is_insert_required<T>::value;
 
+  struct is_insert_required_pred_t
+  {
+    template<typename T>
+    static constexpr auto value = ::sqlpp::is_insert_required_v<T>;
+  };
+  inline constexpr auto is_insert_required_pred = is_insert_required_pred_t{};
+
   struct no_result;
 
   struct insert_result;
@@ -297,6 +304,13 @@ namespace sqlpp
 
   template <typename T>
   inline constexpr auto has_default_v = has_default<T>::value;
+
+  struct has_default_pred_t
+  {
+    template<typename T>
+    static constexpr auto value = ::sqlpp::has_default_v<T>;
+  };
+  inline constexpr auto has_default_pred = has_default_pred_t{};
 
   template <typename T>
   constexpr auto is_select_flag_v = false;
@@ -666,30 +680,12 @@ namespace sqlpp
   constexpr auto provided_ctes_of_v = provided_ctes_of(type_t<T>{});
 
   template <typename T>
-  constexpr auto default_columns_of_v = type_set_t<>();
-
-  template <typename T>
-  constexpr auto default_columns_of(const T&)
-  {
-    return default_columns_of_v<T>;
-  }
-
-  template <typename T>
   constexpr auto can_be_null_columns_of_v = type_set_t<>();
 
   template <typename T>
   constexpr auto can_be_null_columns_of(const T&)
   {
     return can_be_null_columns_of_v<T>;
-  }
-
-  template <typename T>
-  constexpr auto required_insert_columns_of_v = type_set_t<>();
-
-  template <typename T>
-  constexpr auto required_insert_columns_of_f(const T&)
-  {
-    return required_insert_columns_of_v<T>;
   }
 
   template <typename T>

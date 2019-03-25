@@ -103,14 +103,6 @@ namespace sqlpp
   }
 
   template <typename TableSpec>
-  constexpr auto required_insert_columns_of_v<table_t<TableSpec>> =
-      required_insert_columns_of_v<table_columns<TableSpec, typename TableSpec::_columns>>;
-
-  template <typename TableSpec>
-  constexpr auto default_columns_of_v<table_t<TableSpec>> =
-      default_columns_of_v<table_columns<TableSpec, typename TableSpec::_columns>>;
-
-  template <typename TableSpec>
   constexpr auto columns_of_v<table_t<TableSpec>> =
       columns_of_v<table_columns<TableSpec, typename TableSpec::_columns>>;
 

@@ -95,6 +95,6 @@ namespace sqlpp
   constexpr auto is_conditionless_join_v<conditionless_join_t<Lhs, JoinType, Rhs>> = true;
 
   template <typename Lhs, typename JoinType, typename Rhs>
-  constexpr auto columns_of_v<conditionless_join_t<Lhs, JoinType, Rhs>> = columns_of_v<Lhs> | columns_of_v<Rhs>;
+  constexpr auto columns_of_v<conditionless_join_t<Lhs, JoinType, Rhs>> = columns_of_v<Lhs> + columns_of_v<Rhs>;
 
 }  // namespace sqlpp

@@ -37,6 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/statement.h>
 #include <sqlpp17/tuple_to_sql_string.h>
 #include <sqlpp17/type_traits.h>
+#include <sqlpp17/type_vector_is_subset_of.h>
 #include <sqlpp17/wrapped_static_assert.h>
 
 namespace sqlpp
@@ -111,14 +112,29 @@ namespace sqlpp
   SQLPP_WRAPPED_STATIC_ASSERT(assert_insert_set_is_not_missing_assignment,
                               "at least one required column is missing in set()");
 
+  namespace detail
+  {
+    template <typename... Ls, typename Pred, typename... Rs>
+    constexpr auto some_elements_of_L_matching_P_are_not_in_R(::sqlpp::type_vector<Ls...>, Pred, ::sqlpp::type_vector<Rs...>) -> bool
+    {
+      return (false or ... or (Pred::template value<Ls> and detail::is_not_in_rhs<Ls, Rs...>()));
+    }
+
+    template <typename... Ls, typename Pred, typename... Rs>
+    constexpr auto some_elements_of_L_do_not_match_P(::sqlpp::type_vector<Ls...>, Pred) -> bool
+    {
+      return (false or ... or (not Pred::template value<Ls>));
+    }
+  }
+
   template <typename Db, typename Statement, typename... Assignments>
   constexpr auto check_clause_preparable(const type_t<clause_base<insert_values_t<Assignments...>, Statement>>&)
   {
     using _table_t = typename Statement::insert_into_table_t;
-    constexpr auto _set_columns = type_set<column_of_t<remove_optional_t<Assignments>>...>();
-    constexpr auto _required_columns = required_insert_columns_of_v<_table_t>;
+    constexpr auto _set_columns = type_vector<column_of_t<remove_optional_t<Assignments>>...>{};
 
-    if constexpr (not(_set_columns >= _required_columns))
+    if constexpr (::sqlpp::detail::some_elements_of_L_matching_P_are_not_in_R(
+                      columns_of_v<_table_t>, ::sqlpp::is_insert_required_pred, _set_columns))
     {
       return failed<assert_insert_set_is_not_missing_assignment>{};
     }
@@ -179,16 +195,14 @@ namespace sqlpp
   constexpr auto check_clause_preparable(const type_t<clause_base<insert_default_values_t, Statement>>&)
   {
     using _table_t = typename Statement::insert_into_table_t;
-    constexpr auto _all_columns = columns_of_v<_table_t>;
-    constexpr auto _default_columns = default_columns_of_v<_table_t>;
 
-    if constexpr (_all_columns == _default_columns)
+    if constexpr (::sqlpp::detail::some_elements_of_L_do_not_match_P(columns_of_v<_table_t>, ::sqlpp::has_default_pred))
     {
-      return succeeded{};
+      return failed<assert_default_values_require_all_defaults>{};
     }
     else
     {
-      return failed<assert_default_values_require_all_defaults>{};
+      return succeeded{};
     }
   }
 
