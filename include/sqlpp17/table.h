@@ -81,7 +81,7 @@ namespace sqlpp
   template <typename TableSpec>
   [[nodiscard]] constexpr auto provided_tables_of([[maybe_unused]] type_t<table_t<TableSpec>>)
   {
-    return type_set<TableSpec>();
+    return type_vector<TableSpec>();
   }
 
   template <typename TableSpec>

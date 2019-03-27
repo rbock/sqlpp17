@@ -59,8 +59,6 @@ namespace sqlpp
   SQLPP_WRAPPED_STATIC_ASSERT(assert_delete_from_arg_no_cte, "delete_from() arg must not depend on other tables");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_delete_from_arg_no_read_only_table,
                               "delete_from() arg must not be read-only table");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_delete_from_arg_no_required_tables,
-                              "delete_from() arg must not depend on other tables");
 
   template <typename T>
   constexpr auto check_delete_from_arg()
@@ -81,12 +79,10 @@ namespace sqlpp
     {
       return failed<assert_delete_from_arg_no_read_only_table>{};
     }
-    else if constexpr (!required_tables_of_v<T>.empty())
-    {
-      return failed<assert_delete_from_arg_no_required_tables>{};
-    }
     else
+    {
       return succeeded{};
+    }
   }
 
   template <typename Table, typename Statement>

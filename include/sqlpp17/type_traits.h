@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016 - 2018, Roland Bock
+Copyright (c) 2016 - 2019, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -619,25 +619,22 @@ namespace sqlpp
     using type = decltype((type_vector<>{} + ... + parameters_of_t<T>{}));
   };
 
-  template <typename... T>
-  [[nodiscard]] constexpr auto required_tables_of(type_vector<T...>)
+  template <typename... ProvidedTables, typename... Nodes>
+  [[nodiscard]] constexpr auto is_a_required_table_missing(type_vector<ProvidedTables...> providedTables, type_vector<Nodes...>)
   {
-    return (type_set() | ... | required_tables_of(type_t<T>{}));
+    return (false or ... or is_a_required_table_missing(providedTables, type_t<Nodes>{}));
   }
 
-  template <typename T>
-  [[nodiscard]] constexpr auto required_tables_of(type_t<T>)
+  template <typename... ProvidedTables, typename T>
+  [[nodiscard]] constexpr auto is_a_required_table_missing(type_vector<ProvidedTables...> providedTables, type_t<T>)
   {
-    return required_tables_of(nodes_of_t<T>{});
+    return is_a_required_table_missing(providedTables, nodes_of_t<T>{});
   }
-
-  template <typename T>
-  constexpr auto required_tables_of_v = required_tables_of(type_t<T>{});
 
   template <typename... T>
   [[nodiscard]] constexpr auto provided_tables_of(type_vector<T...>)
   {
-    return (type_set() | ... | provided_tables_of(type_t<T>{}));
+    return (type_vector<>{} + ... + provided_tables_of(type_t<T>{}));
   }
 
   template <typename T>

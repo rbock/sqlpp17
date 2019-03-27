@@ -60,7 +60,8 @@ namespace sqlpp
       {
         return failed<assert_conditionless_join_unique_names>{};
       }
-      else if constexpr (!required_tables_of_v<Lhs>.empty() || !required_tables_of_v<remove_optional_t<Rhs>>.empty())
+#warning: This should be checked when turning a select into a table
+      else if constexpr (is_a_required_table_missing(provided_tables_of_v<Lhs>, type_t<Lhs>{}) or is_a_required_table_missing(provided_tables_of_v<Rhs>, type_t<Rhs>{}))
       {
         return failed<assert_conditionless_join_no_table_dependencies>{};
       }

@@ -83,8 +83,6 @@ namespace sqlpp
   SQLPP_WRAPPED_STATIC_ASSERT(assert_insert_into_arg_is_table, "insert_into() arg has to be a table");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_insert_into_arg_no_read_only_table,
                               "insert_into() arg must not be read-only table");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_insert_into_arg_no_required_tables,
-                              "insert_into() arg must not depend on other tables");
 
   template <typename T>
   constexpr auto check_insert_into_arg(const T&)
@@ -97,12 +95,11 @@ namespace sqlpp
     {
       return failed<assert_insert_into_arg_no_read_only_table>{};
     }
-    else if constexpr (!required_tables_of_v<T>.empty())
-    {
-      return failed<assert_insert_into_arg_no_required_tables>{};
-    }
+#warning: If something is a table, it must not have unsatisfied dependencies on other tables. It should be unnecessary to test that here.
     else
+    {
       return succeeded{};
+    }
   }
 
   template <typename Table>

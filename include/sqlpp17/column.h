@@ -131,10 +131,10 @@ namespace sqlpp
   {
   };
 
-  template <typename TableSpec, typename ColumnSpec>
-  [[nodiscard]] constexpr auto required_tables_of([[maybe_unused]] type_t<column_t<TableSpec, ColumnSpec>>)
+  template <typename... ProvidedTables, typename TableSpec, typename ColumnSpec>
+  [[nodiscard]] constexpr auto is_a_required_table_missing(type_vector<ProvidedTables...>, [[maybe_unused]] type_t<column_t<TableSpec, ColumnSpec>>)
   {
-    return type_set<TableSpec>();
+    return (true and ... and (not std::is_same_v<ProvidedTables, TableSpec>));
   }
 
   template <typename Context, typename TableSpec, typename ColumnSpec>

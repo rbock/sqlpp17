@@ -81,7 +81,6 @@ namespace sqlpp
                               "update() arg must not be a join, maybe look at vendor specific versions");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_update_arg_is_not_cte, "update() arg must not be a CTE");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_update_arg_is_table, "update() arg has to be a table");
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_update_arg_no_required_tables, "update() arg must not depend on other tables");
 
   template <typename T>
   constexpr auto check_update_arg()
@@ -98,12 +97,10 @@ namespace sqlpp
     {
       return failed<assert_update_arg_is_table>{};
     }
-    else if constexpr (!required_tables_of_v<T>.empty())
-    {
-      return failed<assert_update_arg_no_required_tables>{};
-    }
     else
+    {
       return succeeded{};
+    }
   }
 
   template <typename Table>

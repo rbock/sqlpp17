@@ -90,7 +90,7 @@ namespace sqlpp
   SQLPP_WRAPPED_STATIC_ASSERT(assert_statement_parameters_have_unique_names, "statement parameters must be unique");
 
   template <typename Db, typename... Clauses>
-  constexpr auto check_statement_preparable([[maybe_unused]] const type_t<statement<Clauses...>>& s)
+  constexpr auto check_statement_preparable([[maybe_unused]] type_t<statement<Clauses...>> s)
   {
     using _statement_t = statement<Clauses...>;
 
@@ -98,7 +98,7 @@ namespace sqlpp
     {
       return failed<assert_statement_parameters_have_unique_names>{};
     }
-    else if constexpr (not(required_tables_of_v<_statement_t> <= provided_tables_of_v<_statement_t>))
+    else if constexpr (is_a_required_table_missing(provided_tables_of_v<_statement_t>, s))
     {
       return failed<assert_statement_all_required_tables_are_provided>{};
     }
