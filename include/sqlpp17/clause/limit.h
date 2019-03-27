@@ -28,7 +28,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sqlpp17/clause_fwd.h>
 #include <sqlpp17/statement.h>
-#include <sqlpp17/type_set.h>
 #include <sqlpp17/type_traits.h>
 #include <sqlpp17/wrapped_static_assert.h>
 
@@ -79,8 +78,8 @@ namespace sqlpp
   template <typename Db, typename Number, typename... Clauses>
   constexpr auto check_clause_preparable(const type_t<clause_base<limit_t<Number>, statement<Clauses...>>>& t)
   {
-    constexpr auto _tag_set = type_set(clause_tag<Clauses>...);
-    if constexpr (!_tag_set.template count<clause::order_by>())
+#warning: clause_tag should be a type, with clause_tag_v (if necessary) and clause_tag_t
+    if constexpr ((true and ... and (not std::is_same_v<clause::order_by, std::decay_t<decltype(clause_tag<Clauses>)>>)))
     {
       return failed<assert_limit_used_with_order_by>{};
     }

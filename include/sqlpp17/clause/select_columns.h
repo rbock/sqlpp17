@@ -102,17 +102,17 @@ namespace sqlpp
     std::tuple<select_column_t<Columns>...> _columns;
   };
 
- SQLPP_WRAPPED_STATIC_ASSERT(assert_selected_columns_all_aggregates_or_none,
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_selected_columns_all_aggregates_or_none,
                               "selected columns need to be either all aggregates or all non-aggregates");
 
   template <typename Db, typename... Columns, typename... Clauses>
   constexpr auto check_clause_preparable(
       const type_t<clause_base<select_columns_t<Columns...>, statement<Clauses...>>>& t)
   {
-    using known_aggregates_t = decltype((::sqlpp::type_set() | ... | provided_aggregates_of_v<Clauses>));
+    constexpr auto known_aggregates = (::sqlpp::type_vector{} + ... + provided_aggregates_of_v<Clauses>);
 
-    constexpr auto all_aggregates = (true and ... and recursive_is_aggregate<known_aggregates_t, Columns>());
-    constexpr auto no_aggregates = not(false or ... or recursive_contains_aggregate<known_aggregates_t, Columns>());
+    constexpr auto all_aggregates = (true and ... and recursive_is_aggregate(known_aggregates, ::sqlpp::type_vector<Columns>{}));
+    constexpr auto no_aggregates = not(false or ... or recursive_contains_aggregate(known_aggregates, ::sqlpp::type_vector<Columns>{}));
 
     if constexpr (not(all_aggregates or no_aggregates))
     {

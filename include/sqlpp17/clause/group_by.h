@@ -58,7 +58,7 @@ namespace sqlpp
   template <typename... Columns>
   struct provided_aggregates_of<group_by_t<Columns...>>
   {
-    static constexpr auto value = type_set<Columns...>();
+    static constexpr auto value = type_vector<Columns...>();
   };
 
   template <typename Table>
@@ -103,7 +103,7 @@ namespace sqlpp
     {
       return failed<assert_group_by_args_are_expressions>{};
     }
-    else if constexpr (recursive_contains_aggregate<type_set_t<>>(type_vector<T...>()))
+    else if constexpr (recursive_contains_aggregate(type_vector<>{}, type_vector<T...>{}))
     {
       return failed<assert_group_by_args_contain_no_aggregate>{};
     }

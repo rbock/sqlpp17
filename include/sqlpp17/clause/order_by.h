@@ -82,9 +82,9 @@ namespace sqlpp
   template <typename Db, typename... Columns, typename... Clauses>
   constexpr auto check_clause_preparable(const type_t<clause_base<order_by_t<Columns...>, statement<Clauses...>>>& t)
   {
-    using known_aggregates_t = decltype((::sqlpp::type_set() | ... | provided_aggregates_of_v<Clauses>));
+    constexpr auto known_aggregates = (::sqlpp::type_vector{} + ... + provided_aggregates_of_v<Clauses>);
 
-    if constexpr ((known_aggregates_t::empty() and ... and recursive_contains_aggregate<known_aggregates_t, Columns>()))
+    if constexpr ((known_aggregates.empty() and ... and recursive_contains_aggregate(known_aggregates, ::sqlpp::type_vector<Columns>{})))
     {
       return failed<assert_order_by_args_not_having_aggregates_without_group_by>{};
     }

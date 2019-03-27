@@ -120,7 +120,7 @@ namespace sqlpp
     {
       return failed<assert_where_arg_is_boolean>{};
     }
-    else if constexpr (recursive_contains_aggregate<type_set_t<>, Condition>())
+    else if constexpr (recursive_contains_aggregate(type_vector<>{}, type_t<Condition>{}))
     {
       return failed<assert_where_arg_contains_no_aggregate>{};
     }

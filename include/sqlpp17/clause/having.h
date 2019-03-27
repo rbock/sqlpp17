@@ -78,9 +78,9 @@ namespace sqlpp
   template <typename Db, typename Condition, typename... Clauses>
   constexpr auto check_clause_preparable(const type_t<clause_base<having_t<Condition>, statement<Clauses...>>>& t)
   {
-    using known_aggregates_t = decltype((::sqlpp::type_set() | ... | provided_aggregates_of_v<Clauses>));
+    constexpr auto known_aggregates = (::sqlpp::type_vector() + ... + provided_aggregates_of_v<Clauses>);
 
-    if constexpr (not recursive_is_aggregate<known_aggregates_t, Condition>())
+    if constexpr (not recursive_is_aggregate(known_aggregates, type_t<Condition>{}))
     {
       return failed<assert_having_condition_consists_of_aggregates>{};
     }

@@ -100,7 +100,7 @@ namespace sqlpp
   template <typename T>
   struct provided_aggregates_of
   {
-    static constexpr auto value = type_set_t<>{};
+    static constexpr auto value = type_vector<>{};
   };
 
   template <typename T>
@@ -349,36 +349,60 @@ namespace sqlpp
   template <typename T>
   constexpr auto is_aggregate_v = false;
 
-  template <typename KnownAggregatesSet, typename T>
-  constexpr auto recursive_is_aggregate();
+  template <typename... KnownAggregates, typename T>
+  constexpr auto recursive_is_aggregate(const sqlpp::type_vector<KnownAggregates...>, const type_t<T>);
 
-  template <typename KnownAggregatesSet, typename... Ts>
-  constexpr auto recursive_is_aggregate(const type_vector<Ts...>&)
+  template <typename... KnownAggregates, typename... Ts>
+  constexpr auto recursive_is_aggregate(const sqlpp::type_vector<KnownAggregates...>, const type_vector<Ts...>)
   {
-    return (true && ... && recursive_is_aggregate<KnownAggregatesSet, Ts>());
+    return (true and ... and recursive_is_aggregate(sqlpp::type_vector<KnownAggregates...>{}, ::sqlpp::type_t<Ts>{}));
   }
 
-  template <typename KnownAggregatesSet, typename T>
-  constexpr auto recursive_is_aggregate()
+  template <typename... KnownAggregates, typename T>
+  constexpr auto recursive_is_aggregate(const sqlpp::type_vector<KnownAggregates...>, const type_t<T>)
   {
-    return not is_expression_v<T> or is_aggregate_v<T> or KnownAggregatesSet::template count<T>() or
-           (not nodes_of_t<T>::empty() and recursive_is_aggregate<KnownAggregatesSet>(nodes_of_t<T>{}));
+    if constexpr (not is_expression_v<T>)
+    {
+      return true;
+    } else if constexpr (is_aggregate_v<T>)
+    {
+      return true;
+    }
+    else if constexpr ((false or ... or std::is_same_v<KnownAggregates, T>))
+    {
+      return true;
+    }
+    else
+    {
+#warning: old code validated if nodes_of_t was emtpy. Is this really needed?
+      return recursive_is_aggregate(sqlpp::type_vector<KnownAggregates...>{}, nodes_of_t<T>{});
+    }
   }
 
-  template <typename KnownAggregatesSet, typename T>
-  constexpr auto recursive_contains_aggregate();
+  template <typename... KnownAggregates, typename T>
+  constexpr auto recursive_contains_aggregate(const sqlpp::type_vector<KnownAggregates...>, const type_t<T>);
 
-  template <typename KnownAggregatesSet, typename... Ts>
-  constexpr auto recursive_contains_aggregate(const type_vector<Ts...>&)
+  template <typename... KnownAggregates, typename... Ts>
+  constexpr auto recursive_contains_aggregate(const sqlpp::type_vector<KnownAggregates...>, const type_vector<Ts...>)
   {
-    return (false or ... or recursive_contains_aggregate<KnownAggregatesSet, Ts>());
+    return (false or ... or recursive_contains_aggregate(sqlpp::type_vector<KnownAggregates...>{}, ::sqlpp::type_t<Ts>{}));
   }
 
-  template <typename KnownAggregatesSet, typename T>
-  constexpr auto recursive_contains_aggregate()
+  template <typename... KnownAggregates, typename T>
+  constexpr auto recursive_contains_aggregate(const sqlpp::type_vector<KnownAggregates...>, const type_t<T>)
   {
-    return is_aggregate_v<T> or KnownAggregatesSet::template count<T>() or
-           (not nodes_of_t<T>::empty() and recursive_contains_aggregate<KnownAggregatesSet>(nodes_of_t<T>{}));
+    if constexpr (is_aggregate_v<T>)
+    {
+      return true;
+    }else if constexpr((false or ... or std::is_same_v<KnownAggregates, T>))
+    {
+      return true;
+    }
+    else
+    {
+#warning: old code validated if nodes_of_t was emtpy. Is this really needed?
+      return recursive_contains_aggregate(sqlpp::type_vector<KnownAggregates...>{}, nodes_of_t<T>{});
+    }
   }
 
   template <typename T>
