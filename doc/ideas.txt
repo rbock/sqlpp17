@@ -1,3 +1,5 @@
+Checking for unique names in the the list of selected columns, makes no sense. The compiler does that for you (and produces error messages that tools can deal with).
+
 sql_cast does not check if the type can actually be casted to (treats it like a reinterpret cast)
 
 The sqlpp11 connector for sqlite3 has additional functions:

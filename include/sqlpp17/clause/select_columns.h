@@ -163,10 +163,6 @@ namespace sqlpp
     {
       return failed<assert_select_columns_args_are_selectable>{};
     }
-    else if constexpr (type_set<char_sequence_of_t<T>...>().size() != sizeof...(T))
-    {
-      return failed<assert_select_columns_args_have_unique_names>{};
-    }
     else
       return succeeded{};
   }

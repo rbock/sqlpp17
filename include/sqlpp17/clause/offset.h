@@ -77,8 +77,7 @@ namespace sqlpp
   template <typename Db, typename Number, typename... Clauses>
   constexpr auto check_clause_preparable(const type_t<clause_base<offset_t<Number>, statement<Clauses...>>>& t)
   {
-    constexpr auto _tag_set = type_set(clause_tag<Clauses>...);
-    if constexpr (!_tag_set.template count<clause::order_by>())
+    if constexpr ((true and ... and (not std::is_same_v<clause::order_by, std::decay_t<decltype(clause_tag<Clauses>)>>)))
     {
       return failed<assert_offset_used_with_order_by>{};
     }

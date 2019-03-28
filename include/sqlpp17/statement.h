@@ -27,6 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <sqlpp17/algorithm.h>
+#include <sqlpp17/array_unique.h>
 #include <sqlpp17/bad_expression.h>
 #include <sqlpp17/clause_fwd.h>
 #include <sqlpp17/detail/statement_constructor_arg.h>
@@ -81,7 +82,7 @@ namespace sqlpp
     template <typename... Ts>
     [[nodiscard]] constexpr auto have_unique_names(type_vector<Ts...>)
     {
-      return type_set(char_sequence_of_v<Ts>...).size() == type_vector<Ts...>::size();
+      return ::sqlpp::array_unique(::std::array<::std::string_view, sizeof...(Ts)>{name_tag_of_t<Ts>::name...});
     }
   }  // namespace detail
 
@@ -175,7 +176,7 @@ namespace sqlpp
   };
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_statement_contains_unique_clauses,
-                              "statements must contain uniquely tagged clauses only (except custom clauses)");
+                              "statements must contain unique clauses only");
 
   template <typename... Clauses>
   constexpr auto check_statement_clauses()
