@@ -51,19 +51,12 @@ namespace sqlpp
     using type = failed<assert_select_args_are_flags_or_columns>;
   };
 
-  namespace clause
-  {
-    struct select
-    {
-    };
-  }  // namespace clause
-
   struct select_t
   {
   };
 
   template <>
-  constexpr auto clause_tag<select_t> = clause::select{};
+  constexpr auto clause_tag<select_t> = ::std::string_view{"select"};
 
   template <typename Statement>
   class clause_base<select_t, Statement>

@@ -40,13 +40,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  namespace clause
-  {
-    struct select_columns
-    {
-    };
-  }  // namespace clause
-
   template <typename... Columns>
   struct select_columns_t
   {
@@ -60,7 +53,7 @@ namespace sqlpp
   };
 
   template <typename... Columns>
-  constexpr auto clause_tag<select_columns_t<Columns...>> = clause::select_columns{};
+  constexpr auto clause_tag<select_columns_t<Columns...>> = ::std::string_view{"select_columns"};
 
   template <typename Column>
   struct select_column_t

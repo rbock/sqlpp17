@@ -34,13 +34,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  namespace clause
-  {
-    struct having
-    {
-    };
-  }  // namespace clause
-
   template <typename Condition>
   struct having_t
   {
@@ -54,7 +47,7 @@ namespace sqlpp
   };
 
   template <typename Table>
-  constexpr auto clause_tag<having_t<Table>> = clause::having{};
+  constexpr auto clause_tag<having_t<Table>> = ::std::string_view{"having"};
 
   template <typename Condition, typename Statement>
   class clause_base<having_t<Condition>, Statement>

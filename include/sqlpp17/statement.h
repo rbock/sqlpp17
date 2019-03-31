@@ -84,6 +84,13 @@ namespace sqlpp
     {
       return ::sqlpp::array_unique(::std::array<::std::string_view, sizeof...(Ts)>{name_tag_of_t<Ts>::name...});
     }
+
+    template <typename... Ts>
+    [[nodiscard]] constexpr auto have_unique_clauses(type_vector<Ts...>)
+    {
+      return ::sqlpp::array_unique_or_special_value(
+          ::std::array<::std::string_view, sizeof...(Ts)>{clause_tag<Ts>...}, ::sqlpp::no_clause_tag);
+    }
   }  // namespace detail
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_statement_all_required_tables_are_provided,
@@ -95,7 +102,7 @@ namespace sqlpp
   {
     using _statement_t = statement<Clauses...>;
 
-    if constexpr (not detail::have_unique_names(parameters_of_t<_statement_t>{}))
+    if constexpr (not detail::have_unique_names(parameters_of_v<_statement_t>))
     {
       return failed<assert_statement_parameters_have_unique_names>{};
     }
@@ -113,7 +120,7 @@ namespace sqlpp
   template <typename Db, typename... Clauses>
   constexpr auto check_statement_executable(const type_t<statement<Clauses...>>& s)
   {
-    if constexpr (parameters_of_t<statement<Clauses...>>::size() != 0)
+    if constexpr (parameters_of_v<statement<Clauses...>>.size() != 0)
     {
       return failed<assert_execute_without_parameters>{};
     }
@@ -181,10 +188,7 @@ namespace sqlpp
   template <typename... Clauses>
   constexpr auto check_statement_clauses()
   {
-    constexpr auto count_untagged_clauses =
-        (std::size_t{} + ... + std::is_same_v<std::decay_t<decltype(clause_tag<Clauses>)>, no_clause>);
-    if constexpr ((type_set(clause_tag<Clauses>...) - type_set<no_clause>()).size() !=
-                  sizeof...(Clauses) - count_untagged_clauses)
+    if constexpr (not detail::have_unique_clauses(::sqlpp::type_vector<Clauses...>{}))
     {
       return failed<assert_statement_contains_unique_clauses>{};
     }

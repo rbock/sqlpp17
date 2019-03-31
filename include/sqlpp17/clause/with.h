@@ -35,13 +35,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  namespace clause
-  {
-    struct with
-    {
-    };
-  }  // namespace clause
-
   enum class with_mode
   {
     flat,
@@ -73,7 +66,7 @@ namespace sqlpp
   };
 
   template <with_mode Mode, typename... CommonTableExpressions>
-  constexpr auto clause_tag<with_t<Mode, CommonTableExpressions...>> = clause::with{};
+  constexpr auto clause_tag<with_t<Mode, CommonTableExpressions...>> = ::std::string_view{"with"};
 
   template <with_mode Mode, typename... CommonTableExpressions, typename Statement>
   class clause_base<with_t<Mode, CommonTableExpressions...>, Statement>

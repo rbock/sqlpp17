@@ -36,13 +36,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  namespace clause
-  {
-    struct group_by
-    {
-    };
-  }  // namespace clause
-
   template <typename... Columns>
   struct group_by_t
   {
@@ -62,7 +55,7 @@ namespace sqlpp
   };
 
   template <typename Table>
-  constexpr auto clause_tag<group_by_t<Table>> = clause::group_by{};
+  constexpr auto clause_tag<group_by_t<Table>> = ::std::string_view{"group_by"};
 
   template <typename... Columns, typename Statement>
   class clause_base<group_by_t<Columns...>, Statement>

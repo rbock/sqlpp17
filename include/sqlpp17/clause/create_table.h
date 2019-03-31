@@ -34,13 +34,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  namespace clause
-  {
-    struct create_table
-    {
-    };
-  }  // namespace clause
-
   template <typename Table>
   struct create_table_t
   {
@@ -54,7 +47,7 @@ namespace sqlpp
   };
 
   template <typename Table>
-  constexpr auto clause_tag<create_table_t<Table>> = clause::create_table{};
+  constexpr auto clause_tag<create_table_t<Table>> = ::std::string_view{"create_table"};
 
   template <typename Table, typename Statement>
   class clause_base<create_table_t<Table>, Statement>

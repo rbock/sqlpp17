@@ -65,13 +65,6 @@ namespace sqlpp
 
 namespace sqlpp
 {
-  namespace clause
-  {
-    struct update_set
-    {
-    };
-  }  // namespace clause
-
   template <typename... Assignments>
   struct update_set_t
   {
@@ -85,7 +78,7 @@ namespace sqlpp
   };
 
   template <typename... Assignments>
-  constexpr auto clause_tag<update_set_t<Assignments...>> = clause::update_set{};
+  constexpr auto clause_tag<update_set_t<Assignments...>> = ::std::string_view{"update_set"};
 
   template <typename... Assignments, typename Statement>
   class clause_base<update_set_t<Assignments...>, Statement>

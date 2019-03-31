@@ -34,13 +34,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  namespace clause
-  {
-    struct truncate
-    {
-    };
-  }  // namespace clause
-
   template <typename Table>
   struct truncate_t
   {
@@ -53,7 +46,7 @@ namespace sqlpp
   };
 
   template <typename Table>
-  constexpr auto clause_tag<truncate_t<Table>> = clause::truncate{};
+  constexpr auto clause_tag<truncate_t<Table>> = ::std::string_view{"truncate"};
 
   template <typename Table, typename Statement>
   class clause_base<truncate_t<Table>, Statement>

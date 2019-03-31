@@ -33,13 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  namespace clause
-  {
-    struct delete_from
-    {
-    };
-  }  // namespace clause
-
   template <typename Table>
   struct delete_from_t
   {
@@ -52,7 +45,7 @@ namespace sqlpp
   };
 
   template <typename Table>
-  constexpr auto clause_tag<delete_from_t<Table>> = clause::delete_from{};
+  constexpr auto clause_tag<delete_from_t<Table>> = ::std::string_view{"delete_from"};
 
   SQLPP_WRAPPED_STATIC_ASSERT(assert_delete_from_arg_is_table, "delete_from() arg has to be a table");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_delete_from_arg_no_join, "delete_from() arg must not depend on other tables");

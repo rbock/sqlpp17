@@ -36,13 +36,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  namespace clause
-  {
-    struct order_by
-    {
-    };
-  }  // namespace clause
-
   template <typename... Columns>
   struct order_by_t
   {
@@ -58,7 +51,7 @@ namespace sqlpp
   };
 
   template <typename Table>
-  constexpr auto clause_tag<order_by_t<Table>> = clause::order_by{};
+  constexpr auto clause_tag<order_by_t<Table>> = ::std::string_view{"order_by"};
 
   template <typename... Columns, typename Statement>
   class clause_base<order_by_t<Columns...>, Statement>

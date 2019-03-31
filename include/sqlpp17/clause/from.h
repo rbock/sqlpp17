@@ -34,13 +34,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  namespace clause
-  {
-    struct from
-    {
-    };
-  }  // namespace clause
-
   template <typename Table>
   struct from_t
   {
@@ -54,7 +47,7 @@ namespace sqlpp
   };
 
   template <typename Table>
-  constexpr auto clause_tag<from_t<Table>> = clause::from{};
+  constexpr auto clause_tag<from_t<Table>> = ::std::string_view{"from"};
 
   template <typename Table, typename Statement>
   class clause_base<from_t<Table>, Statement>

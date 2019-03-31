@@ -36,13 +36,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  namespace clause
-  {
-    struct select_flags
-    {
-    };
-  }  // namespace clause
-
   template <typename... Flags>
   struct select_flags_t
   {
@@ -56,7 +49,7 @@ namespace sqlpp
   };
 
   template <typename Table>
-  constexpr auto clause_tag<select_flags_t<Table>> = clause::select_flags{};
+  constexpr auto clause_tag<select_flags_t<Table>> = ::std::string_view{"select_flags"};
 
   template <typename... Flags, typename Statement>
   class clause_base<select_flags_t<Flags...>, Statement>

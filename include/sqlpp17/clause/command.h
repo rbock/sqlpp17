@@ -35,13 +35,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  namespace clause
-  {
-    struct command
-    {
-    };
-  }  // namespace clause
-
   struct command_t
   {
     std::string _command;
@@ -54,7 +47,7 @@ namespace sqlpp
   };
 
   template<>
-  constexpr auto clause_tag<command_t> = clause::command{};
+  constexpr auto clause_tag<command_t> = ::std::string_view{"command"};
 
   template <typename Statement>
   class clause_base<command_t, Statement>

@@ -33,14 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  namespace clause
-  {
-    struct offset
-    {
-    };
-    struct order_by;
-  }  // namespace clause
-
   template <typename Number>
   struct offset_t
   {
@@ -54,7 +46,7 @@ namespace sqlpp
   };
 
   template <typename Number>
-  constexpr auto clause_tag<offset_t<Number>> = clause::offset{};
+  constexpr auto clause_tag<offset_t<Number>> = ::std::string_view{"offset"};
 
   template <typename Number, typename Statement>
   class clause_base<offset_t<Number>, Statement>
@@ -77,7 +69,7 @@ namespace sqlpp
   template <typename Db, typename Number, typename... Clauses>
   constexpr auto check_clause_preparable(const type_t<clause_base<offset_t<Number>, statement<Clauses...>>>& t)
   {
-    if constexpr ((true and ... and (not std::is_same_v<clause::order_by, std::decay_t<decltype(clause_tag<Clauses>)>>)))
+    if constexpr ((true and ... and (clause_tag<Clauses> != ::std::string_view{"order_by"})))
     {
       return failed<assert_offset_used_with_order_by>{};
     }

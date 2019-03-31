@@ -33,13 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  namespace clause
-  {
-    struct update
-    {
-    };
-  }  // namespace clause
-
   template <typename Table>
   struct update_t
   {
@@ -53,7 +46,7 @@ namespace sqlpp
   };
 
   template <typename Table>
-  constexpr auto clause_tag<update_t<Table>> = clause::update{};
+  constexpr auto clause_tag<update_t<Table>> = ::std::string_view{"update"};
 
   template <typename Table, typename Statement>
   class clause_base<update_t<Table>, Statement>

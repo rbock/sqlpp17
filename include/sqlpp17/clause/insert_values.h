@@ -71,13 +71,6 @@ namespace sqlpp
 
 namespace sqlpp
 {
-  namespace clause
-  {
-    struct insert_values
-    {
-    };
-  }  // namespace clause
-
   template <typename... Assignments>
   struct insert_values_t
   {
@@ -91,7 +84,7 @@ namespace sqlpp
   };
 
   template <typename... Assignments>
-  constexpr auto clause_tag<insert_values_t<Assignments...>> = clause::insert_values{};
+  constexpr auto clause_tag<insert_values_t<Assignments...>> = ::std::string_view{"insert_values"};
 
   template <typename Statement, typename... Assignments>
   class clause_base<insert_values_t<Assignments...>, Statement>
@@ -172,7 +165,7 @@ namespace sqlpp
   };
 
   template <>
-  constexpr auto clause_tag<insert_default_values_t> = clause::insert_values{};
+  constexpr auto clause_tag<insert_default_values_t> = ::std::string_view{"insert_values"};
 
   template <typename Statement>
   class clause_base<insert_default_values_t, Statement>
@@ -225,7 +218,7 @@ namespace sqlpp
   };
 
   template <typename... Assignments>
-  constexpr auto clause_tag<insert_multi_values_t<Assignments...>> = clause::insert_values{};
+  constexpr auto clause_tag<insert_multi_values_t<Assignments...>> = ::std::string_view{"insert_values"};
 
   template <typename Statement, typename... Assignments>
   class clause_base<insert_multi_values_t<Assignments...>, Statement>

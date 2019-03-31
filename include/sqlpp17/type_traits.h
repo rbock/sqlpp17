@@ -75,9 +75,6 @@ namespace sqlpp
   constexpr auto type_v = type_t<T>{};
 
   struct boolean_t;
-  struct no_clause
-  {
-  };
 
   template <typename T>
   struct nodes_of
@@ -165,11 +162,12 @@ namespace sqlpp
     return is_failed_v<T>;
   }
 
+  inline constexpr auto no_clause_tag = ::std::string_view{"no clause"};
   template <typename T>
-  constexpr auto clause_tag = no_clause{};
+  constexpr auto clause_tag = no_clause_tag;
 
   template <typename T>
-  constexpr auto is_clause_v = !std::is_same_v<std::decay_t<decltype(clause_tag<T>)>, no_clause>;
+  constexpr auto is_clause_v = (clause_tag<T> != no_clause_tag);
 
   template <typename T>
   constexpr auto is_clause(const T&)
@@ -631,16 +629,19 @@ namespace sqlpp
   template <typename T>
   struct parameters_of
   {
-    using type = typename parameters_of<nodes_of_t<T>>::type;
+    static constexpr auto value = parameters_of<nodes_of_t<T>>::value;
   };
 
   template <typename T>
-  using parameters_of_t = typename parameters_of<T>::type;
+  inline constexpr auto parameters_of_v = parameters_of<T>::value;
+
+  template <typename T>
+  using parameters_of_t = std::decay_t<decltype(parameters_of<T>::value)>;
 
   template <typename... T>
   struct parameters_of<type_vector<T...>>
   {
-    using type = decltype((type_vector<>{} + ... + parameters_of_t<T>{}));
+    static constexpr auto value = (type_vector<>{} + ... + parameters_of_v<T>);
   };
 
   template <typename... ProvidedTables, typename... Nodes>

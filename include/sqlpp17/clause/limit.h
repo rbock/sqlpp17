@@ -33,15 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  namespace clause
-  {
-    struct limit
-    {
-    };
-
-    struct order_by;
-  }  // namespace clause
-
   template <typename Number>
   struct limit_t
   {
@@ -55,7 +46,7 @@ namespace sqlpp
   };
 
   template <typename Number>
-  constexpr auto clause_tag<limit_t<Number>> = clause::limit{};
+  constexpr auto clause_tag<limit_t<Number>> = ::std::string_view{"limit"};
 
   template <typename Number, typename Statement>
   class clause_base<limit_t<Number>, Statement>
@@ -78,8 +69,7 @@ namespace sqlpp
   template <typename Db, typename Number, typename... Clauses>
   constexpr auto check_clause_preparable(const type_t<clause_base<limit_t<Number>, statement<Clauses...>>>& t)
   {
-#warning: clause_tag should be a type, with clause_tag_v (if necessary) and clause_tag_t
-    if constexpr ((true and ... and (not std::is_same_v<clause::order_by, std::decay_t<decltype(clause_tag<Clauses>)>>)))
+    if constexpr ((true and ... and (clause_tag<Clauses> != ::std::string_view{"order_by"})))
     {
       return failed<assert_limit_used_with_order_by>{};
     }

@@ -33,13 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  namespace clause
-  {
-    struct where
-    {
-    };
-  }  // namespace clause
-
   template <typename Condition>
   struct where_t
   {
@@ -53,7 +46,7 @@ namespace sqlpp
   };
 
   template <typename Table>
-  constexpr auto clause_tag<where_t<Table>> = clause::where{};
+  constexpr auto clause_tag<where_t<Table>> = ::std::string_view{"where"};
 
   template <typename Condition, typename Statement>
   class clause_base<where_t<Condition>, Statement>
@@ -82,7 +75,7 @@ namespace sqlpp
   };
 
   template <>
-  constexpr auto clause_tag<unconditionally_t> = clause::where{};
+  constexpr auto clause_tag<unconditionally_t> = ::std::string_view{"where"};
 
   template <typename Statement>
   class clause_base<unconditionally_t, Statement>

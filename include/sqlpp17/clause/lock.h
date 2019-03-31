@@ -33,13 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  namespace clause
-  {
-    struct lock
-    {
-    };
-  }  // namespace clause
-
   struct for_update_t
   {
   };
@@ -49,10 +42,10 @@ namespace sqlpp
   };
 
   template <>
-  constexpr auto clause_tag<for_update_t> = clause::lock{};
+  constexpr auto clause_tag<for_update_t> = ::std::string_view{"lock"};
 
   template <>
-  constexpr auto clause_tag<for_share_t> = clause::lock{};
+  constexpr auto clause_tag<for_share_t> = ::std::string_view{"lock"};
 
   template <typename Statement>
   class clause_base<for_update_t, Statement>

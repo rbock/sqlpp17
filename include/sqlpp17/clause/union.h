@@ -35,13 +35,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  namespace clause
-  {
-    struct union_
-    {
-    };
-  }  // namespace clause
-
   template <typename Flag, typename LeftSelect, typename RightSelect>
   struct union_t
   {
@@ -66,7 +59,7 @@ namespace sqlpp
   };
 
   template <typename Flag, typename LeftSelect, typename RightSelect>
-  constexpr auto clause_tag<union_t<Flag, LeftSelect, RightSelect>> = clause::union_{};
+  constexpr auto clause_tag<union_t<Flag, LeftSelect, RightSelect>> = ::std::string_view{"union"};
 
   template <typename Flag, typename LeftSelect, typename RightSelect, typename Statement>
   class clause_base<union_t<Flag, LeftSelect, RightSelect>, Statement>

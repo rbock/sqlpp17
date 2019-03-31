@@ -53,7 +53,7 @@ namespace sqlpp
   template <typename ValueType, typename NameTag>
   struct parameters_of<parameter_t<ValueType, NameTag>>
   {
-    using type = type_vector<parameter_t<ValueType, NameTag>>;
+    static constexpr auto value = type_vector<parameter_t<ValueType, NameTag>>{};
   };
 
   SQLPP_WRAPPED_STATIC_ASSERT(

@@ -35,13 +35,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  namespace clause
-  {
-    struct drop_table
-    {
-    };
-  }  // namespace clause
-
   template <typename Table>
   struct drop_table_t
   {
@@ -55,7 +48,7 @@ namespace sqlpp
   };
 
   template <typename Table>
-  constexpr auto clause_tag<drop_table_t<Table>> = clause::drop_table{};
+  constexpr auto clause_tag<drop_table_t<Table>> = ::std::string_view{"drop_table"};
 
   template <typename Table, typename Statement>
   class clause_base<drop_table_t<Table>, Statement>

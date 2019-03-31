@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-Copyright (c) 2016 - 2018, Roland Bock
+Copyright (c) 2019 - 2019, Roland Bock
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -26,26 +26,45 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <sqlpp17/type_traits.h>
+#include <array>
+#include <string_view>
 
 namespace sqlpp
 {
-  template <typename... Clauses>
-  class statement;
-
-  template <typename... Clauses>
-  class prepared_statement;
-
-  template <typename Clause, typename Statement>
-  class clause_base
+  template <::std::size_t N>
+  constexpr auto array_unique(::std::array<::std::string_view, N> arr) -> bool
   {
-    static_assert(wrong<clause_base>, "Missing specialization for clause_base");
-  };
+    for (auto i = ::std::size_t{}; i < N; ++i)
+    {
+      for (auto k = i + 1; k < N; ++k)
+      {
+        if (arr[i] == arr[k])
+        {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
 
-  template <typename Clause, typename Statement>
-  struct parameters_of<clause_base<Clause, Statement>>
+  template <::std::size_t N>
+  constexpr auto array_unique_or_special_value(::std::array<::std::string_view, N> arr, ::std::string_view special_value) -> bool
   {
-    static constexpr auto value = parameters_of_v<Statement>;
-  };
+    for (auto i = ::std::size_t{}; i < N; ++i)
+    {
+      for (auto k = i + 1; k < N; ++k)
+      {
+        if (arr[i] == special_value)
+        {
+          continue;
+        }
+        if (arr[i] == arr[k])
+        {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+}
 
-}  // namespace sqlpp
