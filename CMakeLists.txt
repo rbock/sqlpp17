@@ -22,25 +22,46 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
+###############################################################################
+# Preamble
+###############################################################################
+cmake_minimum_required(VERSION 3.14)
 project(sqlpp17 VERSION 0.1 LANGUAGES CXX)
 
+###############################################################################
+# Project Wide Setup
+###############################################################################
 include(FeatureSummary)
+include(CTest)
 
-enable_testing()
-
+###############################################################################
+# Main targets
+###############################################################################
 add_library(sqlpp17 INTERFACE)
 
 target_include_directories(sqlpp17 INTERFACE
   $<BUILD_INTERFACE:${sqlpp17_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
-  )
+)
 
+add_subdirectory(connectors)
+
+###############################################################################
+# Tests
+###############################################################################
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
+  add_subdirectory(tests)
+endif()
+
+
+###############################################################################
+# Installation
+###############################################################################
 install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/sqlpp17"
         DESTINATION include
 )
 
-add_subdirectory(tests)
-add_subdirectory(connectors)
-
+################################################################################
+# Summary
+################################################################################
 feature_summary(WHAT ALL INCLUDE_QUIET_PACKAGES FATAL_ON_MISSING_REQUIRED_PACKAGES)
