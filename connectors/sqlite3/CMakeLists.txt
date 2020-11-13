@@ -41,6 +41,7 @@ endif()
 
 if (SQLITE3_FOUND)
     add_library(sqlpp17-connector-sqlite3 INTERFACE)
+    add_library(sqlpp17::sqllite3 ALIAS sqlpp17-connector-sqlite3)
 
     target_include_directories(sqlpp17-connector-sqlite3 INTERFACE
         ${SQLITE3_INCLUDE_DIRS}
