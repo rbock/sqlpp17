@@ -24,7 +24,7 @@
 
 include(FetchContent)
 
-FetchContent_Declare(sqlpp11
+FetchContent_Declare(sqlpp17
   GIT_REPOSITORY https://github.com/leon0402/sqlpp17
   GIT_TAG        origin/feature/fetchContent
 )
