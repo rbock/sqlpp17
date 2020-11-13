@@ -50,7 +50,7 @@ if (SQLITE3_FOUND)
     )
 
     target_link_libraries(sqlpp17-connector-sqlite3 INTERFACE sqlpp17)
-    target_link_libraries(sqlpp17-connector-sqlite3 INTERFACE "${SQLITE3_LIBRARIES}")
+    target_link_libraries(sqlpp17-connector-sqlite3 INTERFACE SQLite::SQLite3)
 
     if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
       add_subdirectory(tests)
