@@ -32,8 +32,8 @@ if (APPLE)
 endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-find_package(MySql)
-set_package_properties(MySql PROPERTIES URL "https://mariadb.org/" DESCRIPTION "MySql / MariaDb connector" TYPE OPTIONAL)
+find_package(MySQL)
+set_package_properties(MySQL PROPERTIES URL "https://mariadb.org/" DESCRIPTION "MySql / MariaDb connector" TYPE OPTIONAL)
 
 if (MYSQL_FOUND)
     add_library(sqlpp17-connector-mysql INTERFACE)
