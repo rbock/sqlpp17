@@ -37,7 +37,7 @@ endfunction()
 
 target_include_directories(sqlpp17_testing INTERFACE
   $<BUILD_INTERFACE:${sqlpp17_SOURCE_DIR}/tests/include>
-  )
+)
 
 add_subdirectory(usage)
 add_subdirectory(serialize)
