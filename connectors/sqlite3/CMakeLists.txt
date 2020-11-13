@@ -52,7 +52,9 @@ if (SQLITE3_FOUND)
     target_link_libraries(sqlpp17-connector-sqlite3 INTERFACE sqlpp17)
     target_link_libraries(sqlpp17-connector-sqlite3 INTERFACE "${SQLITE3_LIBRARIES}")
 
-    add_subdirectory(tests)
+    if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
+      add_subdirectory(tests)
+    endif()
 
     install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/sqlpp17"
             DESTINATION include
