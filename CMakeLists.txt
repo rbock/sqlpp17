@@ -31,6 +31,10 @@ project(sqlpp17 VERSION 0.1 LANGUAGES CXX)
 ###############################################################################
 # Project Wide Setup
 ###############################################################################
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 include(FeatureSummary)
 include(CTest)
 
