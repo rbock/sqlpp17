@@ -38,6 +38,7 @@ include(CTest)
 # Main targets
 ###############################################################################
 add_library(sqlpp17 INTERFACE)
+add_library(sqlpp17::sqlpp17 ALIAS sqlpp17)
 
 target_include_directories(sqlpp17 INTERFACE
   $<BUILD_INTERFACE:${sqlpp17_SOURCE_DIR}/include>
