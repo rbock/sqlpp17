@@ -26,30 +26,50 @@
 # Preamble
 ###############################################################################
 cmake_minimum_required(VERSION 3.14)
-project(sqlpp17 VERSION 0.1 LANGUAGES CXX)
+project(sqlpp17 VERSION 0.1.0 LANGUAGES CXX)
 
 ###############################################################################
 # Project Wide Setup
 ###############################################################################
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-include(FeatureSummary)
 include(CTest)
+
+option(SQLITE3_CONNECTOR "Build SQLite3 Connector" OFF)
+option(POSTGRESQL_CONNECTOR "Build PostgreSQL Connector" OFF)
+option(MYSQL_CONNECTOR "Build MySQL Connector" OFF)
+
+option(USE_SQLCIPHER "Build SQLite3 Connector with SQLCipher instead" OFF)
+
+###############################################################################
+# Dependencies
+###############################################################################
+find_package(Threads REQUIRED)
+
+if(SQLITE3_CONNECTOR)
+  if(USE_SQLCIPHER)
+    find_package(SQLCipher REQUIRED)
+  else()
+    find_package(SQLite3 REQUIRED)
+  endif()
+endif()
+
+if(POSTGRESQL_CONNECTOR)
+  find_package(PostgreSQL REQUIRED)
+endif()
+
+if(MYSQL_CONNECTOR)
+  find_package(MySQL REQUIRED)
+endif()
 
 ###############################################################################
 # Main targets
 ###############################################################################
-add_library(sqlpp17 INTERFACE)
-add_library(sqlpp17::sqlpp17 ALIAS sqlpp17)
-
-target_include_directories(sqlpp17 INTERFACE
-  $<BUILD_INTERFACE:${sqlpp17_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-)
-
-add_subdirectory(connectors)
+add_subdirectory(include/sqlpp17)
 
 ###############################################################################
 # Tests
@@ -57,16 +77,3 @@ add_subdirectory(connectors)
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
   add_subdirectory(tests)
 endif()
-
-
-###############################################################################
-# Installation
-###############################################################################
-install(DIRECTORY "${PROJECT_SOURCE_DIR}/include/sqlpp17"
-        DESTINATION include
-)
-
-################################################################################
-# Summary
-################################################################################
-feature_summary(WHAT ALL INCLUDE_QUIET_PACKAGES FATAL_ON_MISSING_REQUIRED_PACKAGES)

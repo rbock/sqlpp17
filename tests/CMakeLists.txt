@@ -21,26 +21,8 @@
 # ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-add_library(sqlpp17_testing INTERFACE)
-
-function(test_target name type)
-  set(target sqlpp17_test_${type}_${name})
-  add_executable(${target} ${name}.cpp)
-    set_target_properties(${target} PROPERTIES
-    CXX_STANDARD 17
-    CXX_EXTENSIONS ON
-  )
-  target_link_libraries(${target} PRIVATE sqlpp17 sqlpp17_testing)
-  add_test(${target} ${target})
-endfunction()
-
-target_include_directories(sqlpp17_testing INTERFACE
-  $<BUILD_INTERFACE:${sqlpp17_SOURCE_DIR}/tests/include>
-)
-
-add_subdirectory(usage)
-add_subdirectory(serialize)
-add_subdirectory(static_assert)
-add_subdirectory(type_traits)
+add_subdirectory(core/)
+add_subdirectory(mysql)
+add_subdirectory(postgresql)
+add_subdirectory(sqlite3)
 

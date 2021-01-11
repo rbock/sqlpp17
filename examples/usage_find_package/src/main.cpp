@@ -1,6 +1,6 @@
-#include <sqlpp17/clause/select.h>
-#include <sqlpp17/name_tag.h>
-#include <sqlpp17/value.h>
+#include <sqlpp17/core/clause/select.h>
+#include <sqlpp17/core/name_tag.h>
+#include <sqlpp17/core/value.h>
 
 SQLPP_CREATE_NAME_TAG(a);
 
