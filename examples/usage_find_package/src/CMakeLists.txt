@@ -25,6 +25,10 @@
 add_executable(Test)
 target_link_libraries(Test PRIVATE sqlpp17::sqlpp17)
 
+set(include_headers "")
+get_target_property(include_headers sqlpp17::sqlpp17 INTERFACE_INCLUDE_DIRECTORIES)
+message(${include_headers})
+
 target_sources(Test 
     PRIVATE 
         main.cpp 

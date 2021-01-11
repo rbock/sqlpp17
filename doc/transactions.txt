@@ -38,23 +38,23 @@ mysql> select * from tab_person;
 
 postgresql warns when starting a transaction while there is an open transaction and does nothing (i.e. there is still just one transaction).
 ```
-sqlpp17_test=> truncate tab_person;
+core_test=> truncate tab_person;
 TRUNCATE TABLE
-sqlpp17_test=> start transaction;
+core_test=> start transaction;
 START TRANSACTION
-sqlpp17_test=> insert into tab_person (name, language) VALUES ('Bjarne', 'C++');
+core_test=> insert into tab_person (name, language) VALUES ('Bjarne', 'C++');
 INSERT 0 1
-sqlpp17_test=> start transaction;  -- This does nothing
+core_test=> start transaction;  -- This does nothing
 WARNING:  there is already a transaction in progress
 START TRANSACTION
-sqlpp17_test=> insert into tab_person (name, language) VALUES ('Guido', 'Python');
+core_test=> insert into tab_person (name, language) VALUES ('Guido', 'Python');
 INSERT 0 1
-sqlpp17_test=> commit; -- This commits both inserts
+core_test=> commit; -- This commits both inserts
 COMMIT
-sqlpp17_test=> rollback; -- This does nothing
+core_test=> rollback; -- This does nothing
 WARNING:  there is no transaction in progress
 ROLLBACK
-sqlpp17_test=> select * from tab_person;
+core_test=> select * from tab_person;
  id | name   | language 
 ----+--------+----------
   6 | Bjarne | C++
