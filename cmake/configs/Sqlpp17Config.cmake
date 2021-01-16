@@ -20,5 +20,5 @@ include(${CMAKE_CURRENT_LIST_DIR}/Sqlpp17Targets.cmake)
 
 # Load any optional components 
 foreach(comp IN LISTS ${CMAKE_FIND_PACKAGE_NAME}_comps)
-    include(${CMAKE_CURRENT_LIST_DIR}/Sqlpp17_${comp}.cmake OPTIONAL)
+    include(${CMAKE_CURRENT_LIST_DIR}/Sqlpp17${comp}Config.cmake OPTIONAL)
 endforeach()

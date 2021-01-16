@@ -23,20 +23,43 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ### Targets
-add_library(sqlpp17_sqlite3 INTERFACE)
-add_library(sqlpp17::sqlite3 ALIAS sqlpp17_sqlite3)
-set_target_properties(sqlpp17_sqlite3 PROPERTIES
-    EXPORT_NAME sqlite3
-)
+if(SQLITE3_CONNECTOR)
+    add_library(sqlpp17_sqlite3 INTERFACE)
+    add_library(sqlpp17::sqlite3 ALIAS sqlpp17_sqlite3)
+    set_target_properties(sqlpp17_sqlite3 PROPERTIES
+        EXPORT_NAME sqlite3
+    )
 
-target_include_directories(sqlpp17_sqlite3 
-    INTERFACE
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-)
+    target_include_directories(sqlpp17_sqlite3 
+        INTERFACE
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    )
 
-target_link_libraries(sqlpp17_sqlite3 INTERFACE sqlpp17 SQLite::SQLite3)
+    target_link_libraries(sqlpp17_sqlite3 INTERFACE sqlpp17 SQLite::SQLite3)
+endif()
+
+if(SQLCIPHER_CONNECTOR)
+    add_library(sqlpp17_sqlcipher INTERFACE)
+    add_library(sqlpp17::sqlcipher ALIAS sqlpp17_sqlcipher)
+    set_target_properties(sqlpp17_sqlcipher PROPERTIES
+        EXPORT_NAME sqlcipher
+    )
+
+    target_include_directories(sqlpp17_sqlcipher
+        INTERFACE
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    )
+
+    target_link_libraries(sqlpp17_sqlcipher INTERFACE sqlpp17 SQLCipher::SQLCipher)
+endif()
 
 ### Installation
 include(InstallSqlpp17Target)
 
-install_component(NAME Sqlpp17SQLite3 TARGETS sqlpp17_sqlite3 DIRECTORY sqlite3)
+if(SQLITE3_CONNECTOR)
+    install_component(NAME Sqlpp17SQLite3 TARGETS sqlpp17_sqlite3 DIRECTORY sqlite3)
+endif() 
+
+if(SQLCIPHER_CONNECTOR)
+    install_component(NAME Sqlpp17SQLCipher TARGETS sqlpp17_sqlcipher DIRECTORY sqlite3)
+endif()

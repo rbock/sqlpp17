@@ -32,6 +32,7 @@ project(sqlpp17 VERSION 0.1.0 LANGUAGES CXX)
 # Project Wide Setup
 ###############################################################################
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -39,31 +40,30 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(CTest)
 
-option(SQLITE3_CONNECTOR "Build SQLite3 Connector" OFF)
-option(POSTGRESQL_CONNECTOR "Build PostgreSQL Connector" OFF)
 option(MYSQL_CONNECTOR "Build MySQL Connector" OFF)
-
-option(USE_SQLCIPHER "Build SQLite3 Connector with SQLCipher instead" OFF)
+option(POSTGRESQL_CONNECTOR "Build PostgreSQL Connector" OFF)
+option(SQLITE3_CONNECTOR "Build SQLite3 Connector" OFF)
+option(SQLCIPHER_CONNECTOR "Build SQLite3 Connector with SQLCipher" OFF)
 
 ###############################################################################
 # Dependencies
 ###############################################################################
 find_package(Threads REQUIRED)
 
-if(SQLITE3_CONNECTOR)
-  if(USE_SQLCIPHER)
-    find_package(SQLCipher REQUIRED)
-  else()
-    find_package(SQLite3 REQUIRED)
-  endif()
+if(MYSQL_CONNECTOR)
+  find_package(MySQL REQUIRED)
 endif()
 
 if(POSTGRESQL_CONNECTOR)
   find_package(PostgreSQL REQUIRED)
 endif()
 
-if(MYSQL_CONNECTOR)
-  find_package(MySQL REQUIRED)
+if(SQLITE3_CONNECTOR)
+  find_package(SQLite3 REQUIRED)
+endif()
+
+if(SQLCIPHER_CONNECTOR)
+  find_package(SQLCipher REQUIRED)
 endif()
 
 ###############################################################################
@@ -75,5 +75,5 @@ add_subdirectory(include/sqlpp17)
 # Tests
 ###############################################################################
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
-  add_subdirectory(tests)
+  # add_subdirectory(tests)
 endif()

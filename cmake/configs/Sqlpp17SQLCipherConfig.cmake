@@ -1,2 +1,2 @@
 include(CMakeFindDependencyMacro)
-find_dependency(MySQL)
+find_dependency(SQLCipher)

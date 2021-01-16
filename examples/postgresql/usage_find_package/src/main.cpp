@@ -10,8 +10,6 @@ SQLPP_CREATE_NAME_TAG(a);
 int main()
 {
   sqlpp::postgresql::connection_config_t config;
-  config.path_to_database = ":memory:";
-  config.flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE;
 
   sqlpp::postgresql::connection_t<> db{config};
 

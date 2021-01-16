@@ -23,7 +23,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 add_executable(Test)
-target_link_libraries(Test PRIVATE sqlpp17::sqllite3)
+target_link_libraries(Test PRIVATE sqlpp17::sqlite3)
 
 target_sources(Test 
     PRIVATE 

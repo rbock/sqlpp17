@@ -22,17 +22,11 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-### Preamble ###
-cmake_minimum_required(VERSION 3.14)
-project(Test VERSION 0.1 LANGUAGES CXX)
+include(FetchContent)
 
-##### Project wide setup ####
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+FetchContent_Declare(sqlpp17
+  GIT_REPOSITORY https://github.com/leon0402/sqlpp17
+  GIT_TAG        origin/feature/fetchContent
+)
 
-### Dependencies ###
-find_package(Sqlpp17 REQUIRED)
-
-### Main Targets ###
-add_subdirectory(src)
+add_subdirectory(sqlpp17)
