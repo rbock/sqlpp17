@@ -32,7 +32,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 ### Dependencies ###
-find_package(Sqlpp17 REQUIRED)
+add_subdirectory(dependencies)
 
 ### Main Targets ###
 add_subdirectory(src)

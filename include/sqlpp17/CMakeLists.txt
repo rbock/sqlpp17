@@ -31,16 +31,16 @@ target_include_directories(sqlpp17
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
 )
 
-if(SQLITE3_CONNECTOR)
-  add_subdirectory(sqlite3)
+if(MYSQL_CONNECTOR)
+  add_subdirectory(mysql)
 endif()
 
 if(POSTGRESQL_CONNECTOR)
   add_subdirectory(postgresql)
 endif()
 
-if(MYSQL_CONNECTOR)
-  add_subdirectory(mysql)
+if(SQLITE3_CONNECTOR OR SQLCIPHER_CONNECTOR)
+  add_subdirectory(sqlite3)
 endif()
 
 ### Installation
@@ -56,4 +56,4 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/Sqlpp17ConfigVersion.cmake
   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/sqlpp17
 )
 
-install_component(NAME Sqlpp17 TARGETS sqlpp17 DIRECTORY core/)
+install_component(NAME Sqlpp17 TARGETS sqlpp17 DIRECTORY core)

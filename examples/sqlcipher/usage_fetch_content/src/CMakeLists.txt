@@ -22,17 +22,10 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-### Preamble ###
-cmake_minimum_required(VERSION 3.14)
-project(Test VERSION 0.1 LANGUAGES CXX)
+add_executable(Test)
+target_link_libraries(Test PRIVATE sqlpp17::sqlcipher)
 
-##### Project wide setup ####
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
-### Dependencies ###
-find_package(Sqlpp17 REQUIRED)
-
-### Main Targets ###
-add_subdirectory(src)
+target_sources(Test 
+    PRIVATE 
+        main.cpp 
+)

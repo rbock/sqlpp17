@@ -22,7 +22,16 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 add_subdirectory(core/)
-add_subdirectory(mysql)
-add_subdirectory(postgresql)
-add_subdirectory(sqlite3)
+
+if(MYSQL_CONNECTOR)
+    add_subdirectory(mysql)
+endif()
+
+if(POSTGRESQL_CONNECTOR)
+    add_subdirectory(postgresql)
+endif() 
+
+if(SQLITE3_CONNECTOR OR SQLCIPHER_CONNECTOR)
+    add_subdirectory(sqlite3)
+endif()
 
