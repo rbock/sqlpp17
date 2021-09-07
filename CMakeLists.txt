@@ -48,6 +48,8 @@ option(SQLCIPHER_CONNECTOR "Build SQLite3 Connector with SQLCipher" OFF)
 ###############################################################################
 # Dependencies
 ###############################################################################
+add_subdirectory(dependencies)
+
 find_package(Threads REQUIRED)
 
 if(MYSQL_CONNECTOR)
@@ -75,5 +77,5 @@ add_subdirectory(include/sqlpp17)
 # Tests
 ###############################################################################
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
-  # add_subdirectory(tests)
+  add_subdirectory(tests)
 endif()
