@@ -58,14 +58,16 @@ namespace sqlpp::test
   template <typename Assert, typename T>
   auto assert_bad_expression(const Assert&, const T&)
   {
-    INFO(type_name<T>());
+    INFO("Expected: " + std::string(type_name<Assert>()));
+    INFO("Actual: " + std::string(type_name<T>()));
     REQUIRE(::sqlpp::is_specific_bad_expression<Assert, T>());
   }
 
   template <typename T>
   auto assert_good_expression(const T&)
   {
-    INFO(type_name<T>());
+    INFO("Expected: " + std::string(type_name<Assert>()));
+    INFO("Actual: " + std::string(type_name<T>()));
     REQUIRE(not ::sqlpp::is_bad_expression<T>());
   }
 }  // namespace sqlpp::test
