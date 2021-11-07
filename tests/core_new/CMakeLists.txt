@@ -6,7 +6,7 @@ target_sources(core_unit_tests
 )
 target_include_directories(core_unit_tests
   PRIVATE
-    ${PROJECT_SOURCE_DIR}/tests/include
+    ${PROJECT_SOURCE_DIR}/tests/include_new
 )
 
 add_subdirectory(function)
