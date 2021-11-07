@@ -1,31 +1,57 @@
+#include <sqlpp17/core/aggregate.h>
 #include <sqlpp17/core/context_base.h>
 #include <sqlpp17/core/function/avg.h>
 
-#include <core_test/tables/TabPerson.h>
+#include <assert_bad_expression.h>
+#include <tables/tab_person.h>
 
 #include <catch2/catch.hpp>
 
 using ::test::tabPerson;
 
-SCENARIO("Constructing avg sql statement")
+namespace sqlpp
 {
-  WHEN("average statement is converted to string")
-  {
-    std::string avgString = to_sql_string_c(::sqlpp::context_base{}, avg(tabPerson.id));
+  template <typename... T>
+  constexpr auto wrong<assert_avg_arg_is_numeric, T...> = true;
 
-    THEN("it should match the sql statement")
-    {
-      REQUIRE(avgString == "AVG(tab_person.id)");
-    }
+  template <typename... T>
+  constexpr auto wrong<assert_avg_arg_is_not_alias, T...> = true;
+
+  template <typename... T>
+  constexpr auto wrong<assert_avg_arg_is_not_aggregate, T...> = true;
+}  // namespace sqlpp
+
+TEST_CASE("Serialize average statement")
+{
+  auto serialize = [](const auto& expr) { return sqlpp::to_sql_string_c(sqlpp::context_base{}, expr); };
+
+  SECTION("AVG")
+  {
+    REQUIRE(serialize(avg(tabPerson.id)) == "AVG(tab_person.id)");
   }
 
-  WHEN("distinct average statement is converted to string")
+  SECTION("AVG DISTINCT")
   {
-    std::string avgString = to_sql_string_c(::sqlpp::context_base{}, avg(::sqlpp::distinct, tabPerson.id));
+    REQUIRE(serialize(avg(sqlpp::distinct, tabPerson.id)) == "AVG(DISTINCT tab_person.id)");
+  }
+}
 
-    THEN("it should match the sql statement")
-    {
-      REQUIRE(avgString == "AVG(DISTINCT tab_person.id)");
-    }
+TEST_CASE("Construct average statement")
+{
+  SECTION("good expression")
+  {
+    sqlpp::test::assert_good_expression(avg(tabPerson.id));
+  }
+  SECTION("wrong expression with non-numeric arg")
+  {
+    sqlpp::test::assert_bad_expression(sqlpp::assert_avg_arg_is_numeric{}, avg(tabPerson.name));
+  }
+  SECTION("wrong expression with alias arg")
+  {
+    sqlpp::test::assert_bad_expression(sqlpp::assert_avg_arg_is_not_alias{}, avg(avg(tabPerson.id)));
+  }
+  SECTION("wrong expression with aggregate arg")
+  {
+    // TO DO: Find example
   }
 }
