@@ -1,4 +1,5 @@
 #include <sqlpp17/core/aggregate.h>
+#include <sqlpp17/core/clause/select.h>
 #include <sqlpp17/core/context_base.h>
 #include <sqlpp17/core/function/avg.h>
 #include <sqlpp17/core/function/count.h>
@@ -28,12 +29,12 @@ TEST_CASE("Serialize average statement")
 {
   auto serialize = [](const auto& expr) { return sqlpp::to_sql_string_c(sqlpp::context_base{}, expr); };
 
-  SECTION("AVG")
+  SECTION("avg")
   {
     REQUIRE(serialize(avg(tabPerson.id)) == "AVG(tab_person.id)");
   }
 
-  SECTION("AVG DISTINCT")
+  SECTION("avg distinct")
   {
     REQUIRE(serialize(avg(sqlpp::distinct, tabPerson.id)) == "AVG(DISTINCT tab_person.id)");
   }
@@ -41,12 +42,25 @@ TEST_CASE("Serialize average statement")
 
 TEST_CASE("Construct average statement")
 {
-  SECTION("good expression")
+  SECTION("good expression with numeric column arg")
   {
     sqlpp::test::assert_good_expression(avg(tabPerson.id));
+  }
+  SECTION("good expression with arithmetic column expression arg")
+  {
     sqlpp::test::assert_good_expression(avg(tabPerson.id + tabPerson.id));
   }
-  SECTION("wrong expression with non-numeric arg")
+  SECTION("good expression with constant")
+  {
+    sqlpp::test::assert_good_expression(sqlpp::avg(5));
+  }
+  SECTION("wrong expression with subquery")
+  {
+    sqlpp::test::assert_bad_expression(sqlpp::assert_avg_arg_is_numeric{},
+                                       avg(sqlpp::select(tabPerson.id).from(tabPerson).unconditionally()));
+  }
+
+  SECTION("wrong expression with non-numeric column arg")
   {
     sqlpp::test::assert_bad_expression(sqlpp::assert_avg_arg_is_numeric{}, avg(tabPerson.name));
   }
