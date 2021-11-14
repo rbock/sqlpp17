@@ -14,7 +14,7 @@ using ::test::tabPerson;
 namespace sqlpp
 {
   template <typename... T>
-  constexpr auto wrong<assert_max_arg_is_expression, T...> = true;
+  constexpr auto wrong<assert_max_arg_is_numeric_or_text, T...> = true;
 
   template <typename... T>
   constexpr auto wrong<assert_max_arg_is_not_alias, T...> = true;
@@ -35,32 +35,58 @@ TEST_CASE("Serialize max statement")
   }
 }
 
-TEST_CASE("Construct max statement")
+TEST_CASE("Construct good max statement")
 {
-  SECTION("good expression with numeric column arg")
+  // true: mysql, postgresql, sqlite3
+  SECTION("numeric literal")
+  {
+    sqlpp::test::assert_good_expression(sqlpp::max(5));
+  }
+
+  // true: mysql, sqlite3
+  // false: postgresql
+  SECTION("non-numeric literal")
+  {
+    sqlpp::test::assert_good_expression(sqlpp::max("Test"));
+  }
+
+  // true: mysql, postgresql, sqlite3
+  SECTION("numeric column")
   {
     sqlpp::test::assert_good_expression(max(tabPerson.id));
   }
-  SECTION("good expression with character column arg")
+
+  // true: mysql, postgresql, sqlite3
+  SECTION("non numeric column")
   {
     sqlpp::test::assert_good_expression(max(tabPerson.name));
   }
-#warning Constant should be a good expression?
-  // SECTION("good expression with constant")
-  // {
-  //   sqlpp::test::assert_good_expression(sqlpp::max(5));
-  // }
-  SECTION("wrong expression with subquery")
+
+  // true: mysql, postgresql, sqlite3
+  SECTION("arithmetic column expression")
   {
-    sqlpp::test::assert_bad_expression(sqlpp::assert_max_arg_is_expression{},
-                                       max(sqlpp::select(tabPerson.id).from(tabPerson).unconditionally()));
+    sqlpp::test::assert_good_expression(max(tabPerson.id + tabPerson.id));
   }
-  SECTION("wrong expression with aggregate arg")
+}
+
+TEST_CASE("Construct bad max statement")
+{
+  // true: mysql, postgresql, sqlite3
+  SECTION("subquery (with numeric column)")
   {
-    sqlpp::test::assert_bad_expression(sqlpp::assert_max_arg_is_not_aggregate{}, max(count(tabPerson.name)));
+    auto subquery = sqlpp::select(tabPerson.id).from(tabPerson).unconditionally();
+    sqlpp::test::assert_bad_expression(sqlpp::assert_max_arg_is_numeric_or_text{}, max(subquery));
   }
+
+  // true: mysql, postgresql, sqlite3
   SECTION("wrong expression with alias arg")
   {
     sqlpp::test::assert_bad_expression(sqlpp::assert_max_arg_is_not_alias{}, max(tabPerson.id.as(tag)));
+  }
+
+  // true: mysql, postgresql, sqlite3
+  SECTION("wrong expression with aggregate arg")
+  {
+    sqlpp::test::assert_bad_expression(sqlpp::assert_max_arg_is_not_aggregate{}, max(count(tabPerson.id)));
   }
 }
