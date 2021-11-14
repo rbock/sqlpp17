@@ -14,7 +14,7 @@ using ::test::tabPerson;
 namespace sqlpp
 {
   template <typename... T>
-  constexpr auto wrong<assert_avg_arg_is_numeric, T...> = true;
+  constexpr auto wrong<assert_avg_arg_is_numeric_or_text, T...> = true;
 
   template <typename... T>
   constexpr auto wrong<assert_avg_arg_is_not_alias, T...> = true;
@@ -40,34 +40,57 @@ TEST_CASE("Serialize average statement")
   }
 }
 
-TEST_CASE("Construct average statement")
+TEST_CASE("Construct good average statement")
 {
-  SECTION("good expression with numeric column arg")
-  {
-    sqlpp::test::assert_good_expression(avg(tabPerson.id));
-  }
-  SECTION("good expression with arithmetic column expression arg")
-  {
-    sqlpp::test::assert_good_expression(avg(tabPerson.id + tabPerson.id));
-  }
-  SECTION("good expression with constant")
+  // true: mysql, postgresql, sqlite3
+  SECTION("numeric literal")
   {
     sqlpp::test::assert_good_expression(sqlpp::avg(5));
   }
-  SECTION("wrong expression with subquery")
+
+  // true: mysql, sqlite3
+  // false: postgresql
+  SECTION("non-numeric literal")
   {
-    sqlpp::test::assert_bad_expression(sqlpp::assert_avg_arg_is_numeric{},
-                                       avg(sqlpp::select(tabPerson.id).from(tabPerson).unconditionally()));
+    sqlpp::test::assert_good_expression(sqlpp::avg("Test"));
   }
 
-  SECTION("wrong expression with non-numeric column arg")
+  // true: mysql, postgresql, sqlite3
+  SECTION("numeric column")
   {
-    sqlpp::test::assert_bad_expression(sqlpp::assert_avg_arg_is_numeric{}, avg(tabPerson.name));
+    sqlpp::test::assert_good_expression(avg(tabPerson.id));
   }
+
+  // true: mysql, sqlite3
+  // false: postgresql
+  SECTION("non numeric column")
+  {
+    sqlpp::test::assert_good_expression(avg(tabPerson.name));
+  }
+
+  // true: mysql, postgresql, sqlite3
+  SECTION("arithmetic column expression")
+  {
+    sqlpp::test::assert_good_expression(avg(tabPerson.id + tabPerson.id));
+  }
+}
+
+TEST_CASE("Construct bad average statement")
+{
+  // true: mysql, postgresql, sqlite3
+  SECTION("subquery (with numeric column)")
+  {
+    auto subquery = sqlpp::select(tabPerson.id).from(tabPerson).unconditionally();
+    sqlpp::test::assert_bad_expression(sqlpp::assert_avg_arg_is_numeric_or_text{}, avg(subquery));
+  }
+
+  // true: mysql, postgresql, sqlite3
   SECTION("wrong expression with alias arg")
   {
     sqlpp::test::assert_bad_expression(sqlpp::assert_avg_arg_is_not_alias{}, avg(tabPerson.id.as(tag)));
   }
+
+  // true: mysql, postgresql, sqlite3
   SECTION("wrong expression with aggregate arg")
   {
     sqlpp::test::assert_bad_expression(sqlpp::assert_avg_arg_is_not_aggregate{}, avg(count(tabPerson.id)));
