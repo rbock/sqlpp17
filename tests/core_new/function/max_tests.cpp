@@ -14,7 +14,7 @@ using ::test::tabPerson;
 namespace sqlpp
 {
   template <typename... T>
-  constexpr auto wrong<assert_max_arg_is_numeric_or_text, T...> = true;
+  constexpr auto wrong<assert_max_arg_is_orderable, T...> = true;
 
   template <typename... T>
   constexpr auto wrong<assert_max_arg_is_not_alias, T...> = true;
@@ -75,7 +75,7 @@ TEST_CASE("Construct bad max statement")
   SECTION("subquery (with numeric column)")
   {
     auto subquery = sqlpp::select(tabPerson.id).from(tabPerson).unconditionally();
-    sqlpp::test::assert_bad_expression(sqlpp::assert_max_arg_is_numeric_or_text{}, max(subquery));
+    sqlpp::test::assert_bad_expression(sqlpp::assert_max_arg_is_orderable{}, max(subquery));
   }
 
   // true: mysql, postgresql, sqlite3
