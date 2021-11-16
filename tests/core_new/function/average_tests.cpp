@@ -74,14 +74,14 @@ TEST_CASE("Construct bad average statement")
   // false: mysql, sqlite3
   SECTION("non-numeric literal")
   {
-    sqlpp::test::assert_good_expression(sqlpp::avg("Test"));
+    sqlpp::test::assert_bad_expression(sqlpp::assert_avg_arg_is_numeric{}, sqlpp::avg("Test"));
   }
 
   // true: postgresql
   // false: mysql, sqlite3
   SECTION("non numeric column")
   {
-    sqlpp::test::assert_good_expression(avg(tabPerson.name));
+    sqlpp::test::assert_bad_expression(sqlpp::assert_avg_arg_is_numeric{}, avg(tabPerson.name));
   }
 
   // true: mysql, postgresql, sqlite3
