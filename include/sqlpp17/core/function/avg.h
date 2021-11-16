@@ -35,7 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_avg_arg_is_numeric_or_text, "avg() arg must be a numeric or text expression");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_avg_arg_is_numeric, "avg() arg must be a numeric expression");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_avg_arg_is_not_alias, "avg() arg must not be an alias");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_avg_arg_is_not_aggregate, "avg() arg must not be an aggregate");
 
@@ -44,7 +44,7 @@ namespace sqlpp
   {
     if constexpr (not has_numeric_value_v<Expression> and not has_text_value_v<Expression>)
     {
-      return failed<assert_avg_arg_is_numeric_or_text>{};
+      return failed<assert_avg_arg_is_numeric>{};
     }
     else if constexpr (is_alias_v<Expression>)
     {
