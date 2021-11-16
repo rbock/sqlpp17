@@ -35,16 +35,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_min_arg_is_expression, "min() arg must be a value expression");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_min_arg_is_orderable, "min() arg must be an orderable expression");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_min_arg_is_not_alias, "min() arg must not be an alias");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_min_arg_is_not_aggregate, "min() arg must not be an aggregate");
 
   template <typename Expression>
   constexpr auto check_min_args()
   {
-    if constexpr (not is_expression_v<Expression>)
+    if constexpr (not has_ordable_value_v<Expression>)
     {
-      return failed<assert_min_arg_is_expression>{};
+      return failed<assert_min_arg_is_orderable>{};
     }
     else if constexpr (is_alias_v<Expression>)
     {
