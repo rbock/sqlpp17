@@ -3,4 +3,5 @@ target_sources(core_unit_tests
         average_tests.cpp
         max_tests.cpp
         min_tests.cpp
+        sum_tests.cpp
 )
