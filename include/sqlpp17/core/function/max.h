@@ -35,16 +35,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace sqlpp
 {
-  SQLPP_WRAPPED_STATIC_ASSERT(assert_max_arg_is_numeric_or_text, "max() arg must be a numeric or text expression");
+  SQLPP_WRAPPED_STATIC_ASSERT(assert_max_arg_is_orderable, "max() arg must be an orderable expression");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_max_arg_is_not_alias, "max() arg must not be an alias");
   SQLPP_WRAPPED_STATIC_ASSERT(assert_max_arg_is_not_aggregate, "max() arg must not be an aggregate");
 
   template <typename Expression>
   constexpr auto check_max_args()
   {
-    if constexpr (not has_numeric_value_v<Expression> and not has_text_value_v<Expression>)
+    if constexpr (not has_ordable_value_v<Expression>)
     {
-      return failed<assert_max_arg_is_numeric_or_text>{};
+      return failed<assert_max_arg_is_orderable>{};
     }
     else if constexpr (is_alias_v<Expression>)
     {

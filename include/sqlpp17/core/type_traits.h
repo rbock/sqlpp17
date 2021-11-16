@@ -584,6 +584,12 @@ namespace sqlpp
   template <typename T>
   constexpr auto has_text_value_v = is_text_v<remove_optional_t<T>> or is_text_v<remove_optional_t<value_type_of_t<T>>>;
 
+  /**
+   * @brief Documentation here
+   */
+  template <typename T>
+  constexpr auto has_ordable_value_v = has_numeric_value_v<T> or has_text_value_v<T>;
+
   template <typename L, typename R, typename Enable = void>
   struct values_are_compatible : std::false_type
   {
