@@ -42,7 +42,7 @@ namespace sqlpp
   template <typename Expression>
   constexpr auto check_count_args()
   {
-    if constexpr (not is_expression_v<Expression> and not std::is_integral_v<Expression>)
+    if constexpr (not is_expression_v<Expression> and not std::is_integral_v<Expression> and not is_text_v<Expression>)
     {
       return failed<assert_count_arg_is_expression>{};
     }
@@ -91,5 +91,4 @@ namespace sqlpp
       return ::sqlpp::bad_expression_t{_check};
     }
   }
-
 }  // namespace sqlpp
