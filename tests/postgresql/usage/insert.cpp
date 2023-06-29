@@ -26,10 +26,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <iostream>
 
-#include <core_test/insert_tests.h>
-
 #include <sqlpp17/postgresql/connection.h>
-#include <sqlpp17/postgresql_test/get_config.h>
+
+#include <core_test/insert_tests.h>
+#include <postgresql_test/get_config.h>
 
 namespace postgresql = sqlpp::postgresql;
 int main()

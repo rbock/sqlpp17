@@ -27,9 +27,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sqlpp17/core/name_tag.h>
 #include <sqlpp17/core/operator.h>
 #include <sqlpp17/core/parameter.h>
-
-#include <serialize/assert_equality.h>
 #include <sqlpp17/postgresql/connection.h>
+
+#include "assert_equality.h"
 
 using ::sqlpp::postgresql::context_t;
 using ::sqlpp::test::assert_equality;
