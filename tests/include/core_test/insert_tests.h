@@ -27,9 +27,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <iostream>
 
-#include <sqlpp17/clause/create_table.h>
-#include <sqlpp17/clause/drop_table.h>
-#include <sqlpp17/clause/insert_into.h>
+#include <sqlpp17/core/clause/create_table.h>
+#include <sqlpp17/core/clause/drop_table.h>
+#include <sqlpp17/core/clause/insert_into.h>
 
 #include <core_test/tables/TabDepartment.h>
 
