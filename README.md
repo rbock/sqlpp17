@@ -1,6 +1,10 @@
-sqlpp17
-=======
+# sqlpp17
 This is an experimental rewrite of [sqlpp11](https://github.com/rbock/sqlpp11) to C++17.
+___
+> [!IMPORTANT]
+> 
+> ***This repository is discontinued infavor of https://github.com/rbock/sqlpp23***
+___
 
 It is done from scratch. C++17 makes a lot of things much simpler. Some aspects I described in my CppCon 2017 talk:
 
